@@ -1,0 +1,9 @@
+# MacOS files
+.DS_Store
+
+# Golang specific files
+go.work
+go.work.sum
+
+# This folder is used as a playground during development.
+/sandbox
