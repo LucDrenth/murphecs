@@ -1,7 +1,10 @@
-# MacOS files
+# MacOS
 .DS_Store
 
-# Golang specific files
+# IDE
+/.vscode
+
+# Golang
 go.work
 go.work.sum
 
