@@ -18,7 +18,7 @@ import (
 )
 
 func main() {
-	world := ecs.World{}
+	world := ecs.NewWorld()
 	fmt.Printf("hello %T\n", world)
 
     // TODO show the basic ECS functionalities

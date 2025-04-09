@@ -1,4 +1,4 @@
-// Demonstrate how to initialise the ECS
+// The example in the readme to prevent compiler errors
 package main
 
 import (
@@ -8,6 +8,6 @@ import (
 )
 
 func main() {
-	world := ecs.World{}
+	world := ecs.NewWorld()
 	fmt.Printf("hello %T\n", world)
 }
