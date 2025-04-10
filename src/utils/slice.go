@@ -1,6 +1,6 @@
 package utils
 
-// If there are no duplciates, returns (nil, -1, -1)
+// If there are no duplicates, returns (nil, -1, -1)
 // If there are duplicates, return the duplicate element and the array indices in which the duplicates are
 func GetFirstDuplicate[T comparable](typeIds []T) (*T, int, int) {
 	for i := range len(typeIds) {
