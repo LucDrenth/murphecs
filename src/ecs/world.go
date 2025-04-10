@@ -2,7 +2,6 @@ package ecs
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/lucdrenth/murphy/src/utils"
 )
@@ -10,7 +9,7 @@ import (
 type entityId = uint
 
 type entry struct {
-	components []any
+	components []IComponent
 }
 
 type world struct {
@@ -24,18 +23,20 @@ func NewWorld() world {
 	}
 }
 
-func (world *world) Spawn(components ...any) (entityId, error) {
-	typeIds := make([]string, len(components))
-	for i, component := range components {
-		typeIds[i] = reflect.TypeOf(component).String()
-	}
+func (world *world) Spawn(components ...IComponent) (entityId, error) {
+	componentTypes := toComponentTypes(components)
 
 	// check for duplicates
-	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(typeIds)
+	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(componentTypes)
 	if duplicate != nil {
 		return 0, fmt.Errorf("can not spawn duplicate component: %s at positions %d and %d", *duplicate, duplicateIndexA, duplicateIndexB)
 	}
 
+	// get required components
+	requiredComponents := getAllRequiredComponents(&componentTypes, components)
+	components = append(components, requiredComponents...)
+
+	// spawn components
 	world.entityIdCounter++
 	entityId := world.entityIdCounter
 	world.entities[entityId] = entry{
@@ -43,4 +44,18 @@ func (world *world) Spawn(components ...any) (entityId, error) {
 	}
 
 	return entityId, nil
+}
+
+func (world *world) CountEntities() int {
+	return len(world.entities)
+}
+
+func (world *world) CountComponents() int {
+	result := 0
+
+	for _, entry := range world.entities {
+		result += len(entry.components)
+	}
+
+	return result
 }

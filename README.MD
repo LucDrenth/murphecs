@@ -27,7 +27,7 @@ func main() {
 
 For more examples, see [/examples](./examples/).
 
-To run any example, run below command and replace `hello_ecs` with the example you want to run.
+To run any example, run below command and replace `readme` with the directory of the example you want to run.
 ```bash
-go run ./examples/hello_ecs.go
+go run ./examples/readme
 ```
