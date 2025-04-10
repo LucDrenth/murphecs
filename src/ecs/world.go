@@ -3,6 +3,8 @@ package ecs
 import (
 	"fmt"
 	"reflect"
+
+	"github.com/lucdrenth/murphy/src/utils"
 )
 
 type entityId = uint
@@ -29,7 +31,7 @@ func (world *world) Spawn(components ...any) (entityId, error) {
 	}
 
 	// check for duplicates
-	duplicate := getFirstDuplicate(typeIds)
+	duplicate := utils.GetFirstDuplicate(typeIds)
 	if duplicate != nil {
 		return 0, fmt.Errorf("found duplicate component: %s", *duplicate)
 	}
@@ -41,20 +43,4 @@ func (world *world) Spawn(components ...any) (entityId, error) {
 	}
 
 	return entityId, nil
-}
-
-func getFirstDuplicate(typeIds []string) *string {
-	for i := range len(typeIds) {
-		for j := range len(typeIds) {
-			if i == j {
-				continue
-			}
-
-			if typeIds[i] == typeIds[j] {
-				return &typeIds[i]
-			}
-		}
-	}
-
-	return nil
 }
