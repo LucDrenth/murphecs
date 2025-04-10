@@ -31,9 +31,9 @@ func (world *world) Spawn(components ...any) (entityId, error) {
 	}
 
 	// check for duplicates
-	duplicate := utils.GetFirstDuplicate(typeIds)
+	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(typeIds)
 	if duplicate != nil {
-		return 0, fmt.Errorf("found duplicate component: %s", *duplicate)
+		return 0, fmt.Errorf("can not spawn duplicate component: %s at positions %d and %d", *duplicate, duplicateIndexA, duplicateIndexB)
 	}
 
 	world.entityIdCounter++
