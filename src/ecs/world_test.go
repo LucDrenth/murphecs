@@ -9,26 +9,26 @@ import (
 type A struct{}
 type B struct{}
 
-func TestWorldInsert(t *testing.T) {
-	t.Run("Successfully inserts components", func(t *testing.T) {
+func TestWorldSpawn(t *testing.T) {
+	t.Run("Successfully spawns", func(t *testing.T) {
 		world := NewWorld()
 
-		entity, err := world.Insert()
+		entity, err := world.Spawn()
 		assert.Nil(t, err)
 		assert.Equal(t, entity, entityId(1))
-		entity, err = world.Insert(A{})
+		entity, err = world.Spawn(A{})
 		assert.Nil(t, err)
 		assert.Equal(t, entity, entityId(2))
-		entity, err = world.Insert(A{})
+		entity, err = world.Spawn(A{})
 		assert.Nil(t, err)
 		assert.Equal(t, entity, entityId(3))
-		entity, err = world.Insert(B{})
+		entity, err = world.Spawn(B{})
 		assert.Nil(t, err)
 		assert.Equal(t, entity, entityId(4))
-		entity, err = world.Insert(A{}, B{})
+		entity, err = world.Spawn(A{}, B{})
 		assert.Nil(t, err)
 		assert.Equal(t, entity, entityId(5))
-		entity, err = world.Insert(B{}, A{})
+		entity, err = world.Spawn(B{}, A{})
 		assert.Nil(t, err)
 		assert.Equal(t, entity, entityId(6))
 
@@ -38,15 +38,15 @@ func TestWorldInsert(t *testing.T) {
 	t.Run("returns error if there are duplicate components", func(t *testing.T) {
 		world := NewWorld()
 
-		_, err := world.Insert(A{}, A{})
+		_, err := world.Spawn(A{}, A{})
 		assert.Error(t, err)
-		_, err = world.Insert(A{}, A{}, A{})
+		_, err = world.Spawn(A{}, A{}, A{})
 		assert.Error(t, err)
-		_, err = world.Insert(A{}, A{}, B{})
+		_, err = world.Spawn(A{}, A{}, B{})
 		assert.Error(t, err)
-		_, err = world.Insert(A{}, B{}, A{})
+		_, err = world.Spawn(A{}, B{}, A{})
 		assert.Error(t, err)
-		_, err = world.Insert(B{}, A{}, A{})
+		_, err = world.Spawn(B{}, A{}, A{})
 		assert.Error(t, err)
 
 		assert.Equal(t, uint(0), world.entityIdCounter)

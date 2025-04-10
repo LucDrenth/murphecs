@@ -22,7 +22,7 @@ func NewWorld() world {
 	}
 }
 
-func (world *world) Insert(components ...any) (entityId, error) {
+func (world *world) Spawn(components ...any) (entityId, error) {
 	typeIds := make([]string, len(components))
 	for i, component := range components {
 		typeIds[i] = reflect.TypeOf(component).String()
