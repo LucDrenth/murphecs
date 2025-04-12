@@ -8,6 +8,10 @@ import (
 
 type entityId = uint
 
+// This entityId can never exist in `world` because the inserted entityId's starts at 1.
+// Useful for tests.
+const nonExistingEntity = entityId(0)
+
 type entry struct {
 	components []IComponent
 }
@@ -23,6 +27,11 @@ func NewWorld() world {
 	}
 }
 
+// Spawn spawns the given components and all their required components that are not declared in the component parameters. Return the associated entityId on success.
+//
+// An error is returned when any of the given components are of the same type.
+//
+// Spawn without any components to generate an entityId is allowed.
 func (world *world) Spawn(components ...IComponent) (entityId, error) {
 	componentTypes := toComponentTypes(components)
 
