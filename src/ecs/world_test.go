@@ -6,10 +6,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type componentA struct{ Component }
-type componentB struct{ Component }
-
 func TestWorldSpawn(t *testing.T) {
+	type componentA struct{ Component }
+	type componentB struct{ Component }
+
 	t.Run("successfully spawns", func(t *testing.T) {
 		world := NewWorld()
 
