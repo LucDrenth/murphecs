@@ -235,5 +235,5 @@ func setComponentFromEntry[T IComponent](entry *entry, target **T, genericPositi
 		}
 	}
 
-	return fmt.Errorf("entity does not have component at generic position %d", genericPosition)
+	return fmt.Errorf("%w: entity does not have component at generic position %d", ErrComponentNotFound, genericPosition)
 }

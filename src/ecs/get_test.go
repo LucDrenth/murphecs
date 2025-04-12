@@ -90,6 +90,7 @@ func TestGet(t *testing.T) {
 
 		_, err := Get[nonExistingComponent](world, entity)
 		assert.Error(err)
+		assert.True(errors.Is(ErrComponentNotFound, errors.Unwrap(err)))
 	})
 
 	t.Run("returns an error if the entity is not found", func(t *testing.T) {
