@@ -11,8 +11,8 @@ type Luc struct{ Component }
 // Returns an error if either the entity or the component is not found.
 //
 // WARNING: Do not store the component pointer
-func Get[A IComponent](entity entityId, world *world) (a *A, err error) {
-	entry, err := getEntry(entity, world)
+func Get[A IComponent](world *world, entity entityId) (a *A, err error) {
+	entry, err := getEntry(world, entity)
 	if err != nil {
 		return nil, err
 	}
@@ -30,8 +30,8 @@ func Get[A IComponent](entity entityId, world *world) (a *A, err error) {
 // Returns an "entity does not have component ..." error if duplicate components are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get2[A IComponent, B IComponent](entity entityId, world *world) (a *A, b *B, err error) {
-	entry, err := getEntry(entity, world)
+func Get2[A IComponent, B IComponent](world *world, entity entityId) (a *A, b *B, err error) {
+	entry, err := getEntry(world, entity)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -51,8 +51,8 @@ func Get2[A IComponent, B IComponent](entity entityId, world *world) (a *A, b *B
 // Returns an "entity does not have component ..." error if duplicate components are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get3[A IComponent, B IComponent, C IComponent](entity entityId, world *world) (a *A, b *B, c *C, err error) {
-	entry, err := getEntry(entity, world)
+func Get3[A IComponent, B IComponent, C IComponent](world *world, entity entityId) (a *A, b *B, c *C, err error) {
+	entry, err := getEntry(world, entity)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -74,8 +74,8 @@ func Get3[A IComponent, B IComponent, C IComponent](entity entityId, world *worl
 // Returns an "entity does not have component ..." error if duplicate components are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get4[A IComponent, B IComponent, C IComponent, D IComponent](entity entityId, world *world) (a *A, b *B, c *C, d *D, err error) {
-	entry, err := getEntry(entity, world)
+func Get4[A IComponent, B IComponent, C IComponent, D IComponent](world *world, entity entityId) (a *A, b *B, c *C, d *D, err error) {
+	entry, err := getEntry(world, entity)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
@@ -99,8 +99,8 @@ func Get4[A IComponent, B IComponent, C IComponent, D IComponent](entity entityI
 // Returns an "entity does not have component ..." error if duplicate components are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get5[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent](entity entityId, world *world) (a *A, b *B, c *C, d *D, e *E, err error) {
-	entry, err := getEntry(entity, world)
+func Get5[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent](world *world, entity entityId) (a *A, b *B, c *C, d *D, e *E, err error) {
+	entry, err := getEntry(world, entity)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
 	}
@@ -126,8 +126,8 @@ func Get5[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent](
 // Returns an "entity does not have component ..." error if duplicate components are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get6[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, F IComponent](entity entityId, world *world) (a *A, b *B, c *C, d *D, e *E, f *F, err error) {
-	entry, err := getEntry(entity, world)
+func Get6[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, F IComponent](world *world, entity entityId) (a *A, b *B, c *C, d *D, e *E, f *F, err error) {
+	entry, err := getEntry(world, entity)
 	if err != nil {
 		return nil, nil, nil, nil, nil, nil, err
 	}
@@ -155,10 +155,10 @@ func Get6[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, 
 // Returns an "entity does not have component ..." error if duplicate components are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get7[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, F IComponent, G IComponent](entity entityId, world *world) (
+func Get7[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, F IComponent, G IComponent](world *world, entity entityId) (
 	a *A, b *B, c *C, d *D, e *E, f *F, g *G, err error,
 ) {
-	entry, err := getEntry(entity, world)
+	entry, err := getEntry(world, entity)
 	if err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, err
 	}
@@ -188,10 +188,10 @@ func Get7[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, 
 // Returns an "entity does not have component ..." error if duplicate components are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get8[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, F IComponent, G IComponent, H IComponent](entity entityId, world *world) (
+func Get8[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, F IComponent, G IComponent, H IComponent](world *world, entity entityId) (
 	a *A, b *B, c *C, d *D, e *E, f *F, g *G, h *H, err error,
 ) {
-	entry, err := getEntry(entity, world)
+	entry, err := getEntry(world, entity)
 	if err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, nil, err
 	}
@@ -218,7 +218,7 @@ func Get8[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, 
 }
 
 // getEntry returns the entry that correspond to entity, or an error if it wasn't found.
-func getEntry(entity entityId, world *world) (*entry, error) {
+func getEntry(world *world, entity entityId) (*entry, error) {
 	entry, ok := world.entities[entity]
 	if !ok {
 		return nil, fmt.Errorf("entity not found")
