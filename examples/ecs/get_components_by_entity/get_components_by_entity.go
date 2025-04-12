@@ -1,4 +1,4 @@
-// Demonstrate how to get the components of an entity for a given entity.
+// Demonstrate how to get an entity its components
 package main
 
 import (

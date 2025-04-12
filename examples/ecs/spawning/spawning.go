@@ -1,3 +1,4 @@
+// Demonstrate how to spawn components
 package main
 
 import (
