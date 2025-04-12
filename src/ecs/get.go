@@ -5,8 +5,6 @@ import (
 	"fmt"
 )
 
-type Luc struct{ Component }
-
 // Get returns the component that belongs to the given entity.
 // Returns an error if either the entity or the component is not found.
 //
