@@ -1,5 +1,7 @@
 # About
-Murphy is an Entity Component System written in Golang.
+Murphy is a Game Engine based on a custom Entity Component System written in Golang.
+
+!! This project is currently in a very early stage of development.
 
 # Installation
 ```bash
@@ -7,7 +9,7 @@ go get github.com/lucdrenth/murphy
 ```
 
 # Usage
-Below is an example of this ECS. 
+Below is an example of the ECS. 
 ```go
 package main
 
