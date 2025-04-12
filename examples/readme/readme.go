@@ -1,4 +1,4 @@
-// The example in the readme to prevent compiler errors
+// The example in the readme. It is added here to catch compiler errors
 package main
 
 import (
