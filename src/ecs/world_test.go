@@ -13,22 +13,22 @@ func TestWorldSpawn(t *testing.T) {
 	t.Run("successfully spawns", func(t *testing.T) {
 		world := NewWorld()
 
-		entity, err := world.Spawn()
+		entity, err := Spawn(&world)
 		assert.Nil(t, err)
 		assert.Equal(t, entity, entityId(1))
-		entity, err = world.Spawn(componentA{})
+		entity, err = Spawn(&world, componentA{})
 		assert.Nil(t, err)
 		assert.Equal(t, entity, entityId(2))
-		entity, err = world.Spawn(componentA{})
+		entity, err = Spawn(&world, componentA{})
 		assert.Nil(t, err)
 		assert.Equal(t, entity, entityId(3))
-		entity, err = world.Spawn(componentB{})
+		entity, err = Spawn(&world, componentB{})
 		assert.Nil(t, err)
 		assert.Equal(t, entity, entityId(4))
-		entity, err = world.Spawn(componentA{}, componentB{})
+		entity, err = Spawn(&world, componentA{}, componentB{})
 		assert.Nil(t, err)
 		assert.Equal(t, entity, entityId(5))
-		entity, err = world.Spawn(componentB{}, componentA{})
+		entity, err = Spawn(&world, componentB{}, componentA{})
 		assert.Nil(t, err)
 		assert.Equal(t, entity, entityId(6))
 
@@ -39,15 +39,15 @@ func TestWorldSpawn(t *testing.T) {
 	t.Run("returns error if there are duplicate components", func(t *testing.T) {
 		world := NewWorld()
 
-		_, err := world.Spawn(componentA{}, componentA{})
+		_, err := Spawn(&world, componentA{}, componentA{})
 		assert.Error(t, err)
-		_, err = world.Spawn(componentA{}, componentA{}, componentA{})
+		_, err = Spawn(&world, componentA{}, componentA{}, componentA{})
 		assert.Error(t, err)
-		_, err = world.Spawn(componentA{}, componentA{}, componentB{})
+		_, err = Spawn(&world, componentA{}, componentA{}, componentB{})
 		assert.Error(t, err)
-		_, err = world.Spawn(componentA{}, componentB{}, componentA{})
+		_, err = Spawn(&world, componentA{}, componentB{}, componentA{})
 		assert.Error(t, err)
-		_, err = world.Spawn(componentB{}, componentA{}, componentA{})
+		_, err = Spawn(&world, componentB{}, componentA{}, componentA{})
 		assert.Error(t, err)
 
 		assert.Equal(t, 0, world.CountEntities())
@@ -65,7 +65,7 @@ func TestRequiredComponents(t *testing.T) {
 	t.Run("successfully spawns required components", func(t *testing.T) {
 		world := NewWorld()
 
-		_, err := world.Spawn(withRequiredComponents{})
+		_, err := Spawn(&world, withRequiredComponents{})
 
 		assert.NoError(t, err)
 		assert.Equal(t, 1, world.CountEntities())

@@ -32,7 +32,7 @@ func NewWorld() world {
 // An error is returned when any of the given components are of the same type.
 //
 // Spawn without any components to generate an entityId is allowed.
-func (world *world) Spawn(components ...IComponent) (entityId, error) {
+func Spawn(world *world, components ...IComponent) (entityId, error) {
 	componentTypes := toComponentTypes(components)
 
 	// check for duplicates

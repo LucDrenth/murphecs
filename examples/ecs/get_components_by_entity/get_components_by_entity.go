@@ -24,7 +24,7 @@ type NPC struct {
 func main() {
 	world := ecs.NewWorld()
 
-	entity, _ := world.Spawn(Friendly{}, Health{max: 100, current: 80}, NPC{name: "Murphy"})
+	entity, _ := ecs.Spawn(&world, Friendly{}, Health{max: 100, current: 80}, NPC{name: "Murphy"})
 
 	// only get the NPC component
 	npc, _ := ecs.Get[NPC](entity, &world)

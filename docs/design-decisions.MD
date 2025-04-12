@@ -8,17 +8,17 @@ I will be linking to any other project I mention for the sake of easily comparin
 
 # Design Decisions
 
-## ECS - spawning components
+## ECS - spawning components with variadic
 For the spawning API, I have chosen to go with a variadic parameter of components without using generics. 
 ```Go
 func (world *world) Spawn(components ...IComponent)
 ```
 It can be used like this:
 ```Go
-world.Spawn(Position{...}, Velocity{...})
+ecs.Spawn(&world, Position{...}, Velocity{...})
 
 // If we want to add another component, simply add it as a parameter
-world.Spawn(Position{...}, Velocity{...}, Color{...})
+ecs.Spawn(&world, Position{...}, Velocity{...}, Color{...})
 ```
 
 I think this provides the cleanest spawning API that is currently possible in Go (1.24.2). When using generics, like implemented in [Ark](https://github.com/mlange-42/ark), it would look something like this:
@@ -32,7 +32,11 @@ ecs.Spawn3[Position, Velocity, Color](&world, Position{...}, Velocity{...}, Colo
 Comparing this to the variadic approach, the generic approach has a couple of major downsides:
 1. We have to pass both the component type (as generic) and the component itself. With the variadic approach, we only have to add the component.
 2. If we'd want to add another component (which is frequently needed during development), we'd have to update 3 things: the function name, the component types (as generics) and finally adding the actual component. With the variadic implementation, we can simply add the component.
-3. We need to pass the world as a parameter, because Golang does not allow generics to be used with methods. Calling Spawn as a method of world is simpler. However, many of the rest of the ECS API does use generics, which leads to inconsistency in the API.
-4. We'd have to create a separate spawn function for each number of components we might possibly add. Go does not currently implement variadic generics.
+3. We'd have to create a separate spawn function for each number of components we might possibly add. Go does not currently implement variadic generics.
 
 I have not looked in to the performance difference of these two approaches yet. But in my opinion, the much cleaner API makes up for any possible performance improvement that the generics approach might have.
+
+## ECS - functions instead of world methods
+Some world-related functions, like `Spawn`, could have been implemented as methods of `world`. However, some world-related functions can not be implemented as methods because they involve generics, and Go (1.24.2) does not support this methods with generics.
+
+To keep the ECS API consistent, all major user-facing ECS functionality is implemented with functions.

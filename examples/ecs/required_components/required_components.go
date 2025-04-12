@@ -36,13 +36,13 @@ func main() {
 	world := ecs.NewWorld()
 
 	// because NPC requires Health and Dialog, they will also be added to the entity.
-	entity, _ := world.Spawn(NPC{})
+	entity, _ := ecs.Spawn(&world, NPC{})
 	dialog, health, _ := ecs.Get2[Dialog, Health](entity, &world)
 	fmt.Printf("npc has %d/%d health and the following dialog: %s\n", (*health).current, (*health).max, (*dialog).text)
 
 	// NPC requires Dialog and provides a default for that component.
 	// But because we specify Dialog here, it will not use the default implementation from the required component.
-	entity, _ = world.Spawn(NPC{}, Dialog{text: "Good morning."})
+	entity, _ = ecs.Spawn(&world, NPC{}, Dialog{text: "Good morning."})
 	dialog, health, _ = ecs.Get2[Dialog, Health](entity, &world)
 	fmt.Printf("npc has %d/%d health and the following dialog: %s\n", (*health).current, (*health).max, (*dialog).text)
 }
