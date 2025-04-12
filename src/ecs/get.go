@@ -219,7 +219,7 @@ func Get8[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, 
 func getEntry(world *world, entity entityId) (*entry, error) {
 	entry, ok := world.entities[entity]
 	if !ok {
-		return nil, fmt.Errorf("entity not found")
+		return nil, ErrEntityNotFound
 	}
 
 	return &entry, nil

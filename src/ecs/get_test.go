@@ -1,6 +1,7 @@
 package ecs
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -84,11 +85,19 @@ func TestGet(t *testing.T) {
 		assert.Equal(expectedValue, (*a).value)
 	})
 
-	t.Run("returns the expected component", func(t *testing.T) {
-		_, world, assert := setup(componentA{value: expectedValue})
+	t.Run("returns an error if the component does not exist on the entity", func(t *testing.T) {
+		entity, world, assert := setup(componentA{value: expectedValue})
 
-		_, err := Get[nonExistingComponent](world, nonExistingEntity)
+		_, err := Get[nonExistingComponent](world, entity)
 		assert.Error(err)
+	})
+
+	t.Run("returns an error if the entity is not found", func(t *testing.T) {
+		_, world, assert := setup(componentB{})
+
+		_, err := Get[componentB](world, nonExistingEntity)
+		assert.Error(err)
+		assert.True(errors.Is(err, ErrEntityNotFound))
 	})
 
 	t.Run("returns an error if a component is exactly like the requested component", func(t *testing.T) {
@@ -134,18 +143,22 @@ func TestGet2(t *testing.T) {
 		assert.Equal(expectedValueB, (*b).value)
 	})
 
-	t.Run("returns error if a components was not found, regardless of the component order", func(t *testing.T) {
-		_, world, assert := setup()
-		_, _, err := Get2[nonExistingComponent, componentA](world, nonExistingEntity)
-		assert.Error(err)
-		_, _, err = Get2[componentA, nonExistingComponent](world, nonExistingEntity)
-		assert.Error(err)
+	t.Run("returns the expected components even if two of the same components are given", func(t *testing.T) {
+		entity, world, assert := setup()
+
+		a, alsoA, err := Get2[componentA, componentA](world, entity)
+		assert.NoError(err)
+		assert.NotNil(a)
+		assert.Equal(expectedValueA, (*a).value)
+		assert.NotNil(alsoA)
+		assert.Equal(expectedValueA, (*alsoA).value)
 	})
 
 	t.Run("returns error if a components was not found, regardless of the component order", func(t *testing.T) {
-		_, world, assert := setup()
-
-		_, _, err := Get2[componentA, componentA](world, nonExistingEntity)
+		entity, world, assert := setup()
+		_, _, err := Get2[nonExistingComponent, componentA](world, entity)
+		assert.Error(err)
+		_, _, err = Get2[componentA, nonExistingComponent](world, entity)
 		assert.Error(err)
 	})
 }
