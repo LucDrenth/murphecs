@@ -6,12 +6,12 @@ import (
 )
 
 type IComponent interface {
-	requiredComponents() []IComponent
+	RequiredComponents() []IComponent
 }
 
 type Component struct{}
 
-func (c Component) requiredComponents() []IComponent {
+func (c Component) RequiredComponents() []IComponent {
 	return []IComponent{}
 }
 
@@ -37,7 +37,7 @@ func getRequiredComponents(typesToExclude *[]componentType, components []ICompon
 	newComponents = []IComponent{}
 
 	for _, component := range components {
-		for _, required_component := range component.requiredComponents() {
+		for _, required_component := range component.RequiredComponents() {
 			componentType := toComponentType(required_component)
 
 			if slices.Contains(*typesToExclude, componentType) {

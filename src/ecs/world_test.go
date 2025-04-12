@@ -57,7 +57,7 @@ func TestWorldSpawn(t *testing.T) {
 
 type withRequiredComponents struct{ Component }
 
-func (a withRequiredComponents) requiredComponents() []IComponent {
+func (a withRequiredComponents) RequiredComponents() []IComponent {
 	return []IComponent{componentA{}, componentB{}}
 }
 

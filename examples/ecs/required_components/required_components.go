@@ -7,29 +7,42 @@ package main
 
 import (
 	"fmt"
-	"reflect"
-	"strings"
 
 	"github.com/lucdrenth/murphy/src/ecs"
 )
 
-type A struct{ ecs.Component }
-type B struct{ ecs.Component }
-type C struct{ ecs.Component }
+type NPC struct{ ecs.Component }
 
-func (a A) requiredComponents() []ecs.IComponent {
+type Health struct {
+	max     int
+	current int
+	ecs.Component
+}
+
+type Dialog struct {
+	text string
+	ecs.Component
+}
+
+// TODO this does not overwrite the implementation from ecs.Component
+func (NPC) RequiredComponents() []ecs.IComponent {
 	return []ecs.IComponent{
-		B{}, C{},
+		Health{max: 100, current: 50},
+		Dialog{text: "I am an NPC!"},
 	}
 }
 
 func main() {
-	a := A{}
+	world := ecs.NewWorld()
 
-	requiredComponents := []string{}
-	for _, c := range a.requiredComponents() {
-		requiredComponents = append(requiredComponents, reflect.TypeOf(c).String())
-	}
+	// because NPC requires Health and Dialog, they will also be added to the entity.
+	entity, _ := world.Spawn(NPC{})
+	dialog, health, _ := ecs.Get2[Dialog, Health](entity, &world)
+	fmt.Printf("npc has %d/%d health and the following dialog: %s\n", (*health).current, (*health).max, (*dialog).text)
 
-	fmt.Printf("Component %T requires: %s\n", a, strings.Join(requiredComponents, ", "))
+	// NPC requires Dialog and provides a default for that component.
+	// But because we specify Dialog here, it will not use the default implementation from the required component.
+	entity, _ = world.Spawn(NPC{}, Dialog{text: "Good morning."})
+	dialog, health, _ = ecs.Get2[Dialog, Health](entity, &world)
+	fmt.Printf("npc has %d/%d health and the following dialog: %s\n", (*health).current, (*health).max, (*dialog).text)
 }

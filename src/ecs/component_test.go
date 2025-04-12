@@ -20,10 +20,10 @@ type componentWithoutRequire struct{ Component }
 type componentThatRequiresEachOtherA struct{ Component }
 type componentThatRequiresEachOtherB struct{ Component }
 
-func (a componentThatRequiresEachOtherA) requiredComponents() []IComponent {
+func (a componentThatRequiresEachOtherA) RequiredComponents() []IComponent {
 	return []IComponent{componentThatRequiresEachOtherB{}}
 }
-func (a componentThatRequiresEachOtherB) requiredComponents() []IComponent {
+func (a componentThatRequiresEachOtherB) RequiredComponents() []IComponent {
 	return []IComponent{componentThatRequiresEachOtherA{}}
 }
 
@@ -32,7 +32,7 @@ func (a componentThatRequiresEachOtherB) requiredComponents() []IComponent {
  **********************************/
 type componentThatRequiresItself struct{ Component }
 
-func (a componentThatRequiresItself) requiredComponents() []IComponent {
+func (a componentThatRequiresItself) RequiredComponents() []IComponent {
 	return []IComponent{componentThatRequiresItself{}}
 }
 
@@ -65,22 +65,22 @@ type componentTree3A struct{ Component }
 type componentTree3B struct{ Component }
 type componentTree3C struct{ Component }
 
-func (a componentTree0A) requiredComponents() []IComponent {
+func (a componentTree0A) RequiredComponents() []IComponent {
 	return []IComponent{componentTree1A{}, componentTree1B{}}
 }
-func (a componentTree1B) requiredComponents() []IComponent {
+func (a componentTree1B) RequiredComponents() []IComponent {
 	return []IComponent{componentTree2C{}}
 }
-func (a componentTree2C) requiredComponents() []IComponent {
+func (a componentTree2C) RequiredComponents() []IComponent {
 	return []IComponent{componentTree3C{}, componentTree0B{}}
 }
-func (a componentTree1A) requiredComponents() []IComponent {
+func (a componentTree1A) RequiredComponents() []IComponent {
 	return []IComponent{componentTree2A{}, componentTree2B{}}
 }
-func (a componentTree2B) requiredComponents() []IComponent {
+func (a componentTree2B) RequiredComponents() []IComponent {
 	return []IComponent{componentTree3A{}, componentTree3B{}}
 }
-func (a componentTree3A) requiredComponents() []IComponent {
+func (a componentTree3A) RequiredComponents() []IComponent {
 	return []IComponent{componentTree2A{}}
 }
 

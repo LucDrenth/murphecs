@@ -7,27 +7,34 @@ import (
 	"github.com/lucdrenth/murphy/src/ecs"
 )
 
-type Foo struct {
-	value int
+type Health struct {
+	max     int
+	current int
 	ecs.Component
 }
-type Bar struct {
-	value int
+
+type Friendly struct{ ecs.Component }
+type Aggressive struct{ ecs.Component }
+
+type NPC struct {
+	name string
 	ecs.Component
 }
-type Baz struct{ ecs.Component }
-type ComponentThatWasNotAdded struct{ ecs.Component }
 
 func main() {
 	world := ecs.NewWorld()
 
-	entity, _ := world.Spawn(Foo{value: 25}, Bar{value: 100}, Baz{})
-	bar, _ := ecs.Get[Bar](entity, &world)
-	fmt.Printf("Value of Bar is %d\n", (*bar).value)
+	entity, _ := world.Spawn(Friendly{}, Health{max: 100, current: 80}, NPC{name: "Murphy"})
 
-	foo, bar, _ := ecs.Get2[Foo, Bar](entity, &world)
-	fmt.Printf("Value of Foo is %d, value of Baz is %d\n", (*foo).value, (*bar).value)
+	// only get the NPC component
+	npc, _ := ecs.Get[NPC](entity, &world)
+	fmt.Printf("npc name is %s\n", (*npc).name)
 
-	_, _, _, err := ecs.Get3[Foo, Bar, ComponentThatWasNotAdded](entity, &world)
+	// get bot hthe NPC and the Health component
+	npc, health, _ := ecs.Get2[NPC, Health](entity, &world)
+	fmt.Printf("npc name is %s, current health is %d\n", (*npc).name, (*health).current)
+
+	// returns an error because the entity does not have the Aggressive component
+	_, _, _, err := ecs.Get3[NPC, Health, Aggressive](entity, &world)
 	fmt.Println(err)
 }

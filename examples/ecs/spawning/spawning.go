@@ -29,7 +29,7 @@ func main() {
 	// You can spawn any amount of unique components!
 	entity, err := world.Spawn(
 		Friendly{},
-		NPC{name: "Murph"},
+		NPC{name: "Murphy"},
 		Health{max: 100, current: 80},
 	)
 	fmt.Printf("entity=%d, err=%v\n", entity, err)
