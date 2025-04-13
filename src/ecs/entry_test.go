@@ -106,3 +106,37 @@ func TestEntryContainsComponentType(t *testing.T) {
 		})
 	}
 }
+
+func TestEntryCountComponents(t *testing.T) {
+	type componentA struct{ Component }
+	type componentB struct{ Component }
+	type componentC struct{ Component }
+
+	scenarios := []struct {
+		description    string
+		entry          entry
+		expectedResult int
+	}{
+		{
+			description:    "returns 0 if entry is empty",
+			entry:          entry{components: []IComponent{}},
+			expectedResult: 0,
+		},
+		{
+			description: "returns the right amount of components",
+			entry: entry{components: []IComponent{
+				componentA{},
+				componentB{},
+				componentC{},
+			}},
+			expectedResult: 3,
+		},
+	}
+
+	for _, scenario := range scenarios {
+		t.Run(scenario.description, func(t *testing.T) {
+			result := scenario.entry.countComponents()
+			assert.Equal(t, scenario.expectedResult, result)
+		})
+	}
+}

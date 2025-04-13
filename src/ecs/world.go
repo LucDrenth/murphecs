@@ -59,3 +59,13 @@ func (world *world) CountComponents() int {
 
 	return result
 }
+
+// getEntry returns the entry that correspond to entity, or an ErrEntityNotFound error if it wasn't found.
+func (world *world) getEntry(entity entityId) (*entry, error) {
+	entry, ok := world.entities[entity]
+	if !ok {
+		return nil, ErrEntityNotFound
+	}
+
+	return entry, nil
+}

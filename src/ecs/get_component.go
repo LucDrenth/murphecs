@@ -13,7 +13,7 @@ import (
 //
 // WARNING: Do not store the component pointer
 func Get[A IComponent](world *world, entity entityId) (a *A, err error) {
-	entry, err := getEntry(world, entity)
+	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func Get[A IComponent](world *world, entity entityId) (a *A, err error) {
 //
 // WARNING: Do not store any of the component pointers
 func Get2[A IComponent, B IComponent](world *world, entity entityId) (a *A, b *B, err error) {
-	entry, err := getEntry(world, entity)
+	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -55,7 +55,7 @@ func Get2[A IComponent, B IComponent](world *world, entity entityId) (a *A, b *B
 //
 // WARNING: Do not store any of the component pointers
 func Get3[A IComponent, B IComponent, C IComponent](world *world, entity entityId) (a *A, b *B, c *C, err error) {
-	entry, err := getEntry(world, entity)
+	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, nil, nil, err
 	}
@@ -79,7 +79,7 @@ func Get3[A IComponent, B IComponent, C IComponent](world *world, entity entityI
 //
 // WARNING: Do not store any of the component pointers
 func Get4[A IComponent, B IComponent, C IComponent, D IComponent](world *world, entity entityId) (a *A, b *B, c *C, d *D, err error) {
-	entry, err := getEntry(world, entity)
+	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, nil, nil, nil, err
 	}
@@ -105,7 +105,7 @@ func Get4[A IComponent, B IComponent, C IComponent, D IComponent](world *world, 
 //
 // WARNING: Do not store any of the component pointers
 func Get5[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent](world *world, entity entityId) (a *A, b *B, c *C, d *D, e *E, err error) {
-	entry, err := getEntry(world, entity)
+	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
 	}
@@ -133,7 +133,7 @@ func Get5[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent](
 //
 // WARNING: Do not store any of the component pointers
 func Get6[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, F IComponent](world *world, entity entityId) (a *A, b *B, c *C, d *D, e *E, f *F, err error) {
-	entry, err := getEntry(world, entity)
+	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, nil, nil, nil, nil, nil, err
 	}
@@ -165,7 +165,7 @@ func Get6[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, 
 func Get7[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, F IComponent, G IComponent](world *world, entity entityId) (
 	a *A, b *B, c *C, d *D, e *E, f *F, g *G, err error,
 ) {
-	entry, err := getEntry(world, entity)
+	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, err
 	}
@@ -199,7 +199,7 @@ func Get7[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, 
 func Get8[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, F IComponent, G IComponent, H IComponent](world *world, entity entityId) (
 	a *A, b *B, c *C, d *D, e *E, f *F, g *G, h *H, err error,
 ) {
-	entry, err := getEntry(world, entity)
+	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, nil, err
 	}
@@ -223,16 +223,6 @@ func Get8[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, 
 	}
 
 	return a, b, c, d, e, f, g, h, nil
-}
-
-// getEntry returns the entry that correspond to entity, or an ErrEntityNotFound error if it wasn't found.
-func getEntry(world *world, entity entityId) (*entry, error) {
-	entry, ok := world.entities[entity]
-	if !ok {
-		return nil, ErrEntityNotFound
-	}
-
-	return entry, nil
 }
 
 // If a component of type T exists in entry, make target point to that component.
