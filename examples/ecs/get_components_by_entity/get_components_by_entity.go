@@ -30,7 +30,7 @@ func main() {
 	npc, _ := ecs.Get[NPC](&world, entity)
 	fmt.Printf("npc name is %s\n", (*npc).name)
 
-	// get bot hthe NPC and the Health component
+	// get both the NPC and the Health component
 	npc, health, _ := ecs.Get2[NPC, Health](&world, entity)
 	fmt.Printf("npc name is %s, current health is %d\n", (*npc).name, (*health).current)
 
