@@ -9,6 +9,9 @@
 **Nice-to-have**
 - Relationships (like parent/child)
 
+**Bugs**
+- toComponentType does not guarantee uniqueness for every component
+
 # Window
 - Be able to create a window
 

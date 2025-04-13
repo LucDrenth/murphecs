@@ -18,6 +18,9 @@ func (c Component) RequiredComponents() []IComponent {
 type componentType = string
 
 func toComponentType(component IComponent) componentType {
+	// TODO reflect.Type.String is not safe because it does not guarantee uniqueness. Instead, it recommends
+	// to compare the types directly. We probably don't want use reflect.Type as componentType because it is
+	// way bigger than we need. Instead, we could make a map[reflect.Type]componentType and look it up in there.
 	return reflect.TypeOf(component).String()
 }
 
