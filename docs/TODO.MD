@@ -1,7 +1,6 @@
 # ECS
 **Must have**
 - Insert component in to entity
-- Remove entity (and its components)
 - Query components
 - Put the S in to the ECS (implement systems)
 - Benchmarks
