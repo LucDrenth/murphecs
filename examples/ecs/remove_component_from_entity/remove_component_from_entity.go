@@ -36,4 +36,8 @@ func main() {
 	// Getting the component that was not removed still works
 	npc, err := ecs.Get[NPC](&world, entity)
 	fmt.Printf("After remove: npc=%v, err=%v\n", (*npc).name, err)
+
+	// Remove Dialog component after it was already removed will result in an error
+	err = ecs.Remove[Dialog](&world, entity)
+	fmt.Printf("Error when removing a component that is not present: %v\n", err)
 }
