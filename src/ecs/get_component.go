@@ -3,6 +3,8 @@ package ecs
 
 import (
 	"fmt"
+	"reflect"
+	"strings"
 )
 
 // Get returns the component that belongs to the given entity.
@@ -15,7 +17,7 @@ func Get[A IComponent](world *world, entity entityId) (a *A, err error) {
 		return nil, err
 	}
 
-	if err = setComponentFromEntry(entry, &a, 1); err != nil {
+	if err = setComponentFromEntry(entry, &a); err != nil {
 		return nil, err
 	}
 
@@ -34,9 +36,9 @@ func Get2[A IComponent, B IComponent](world *world, entity entityId) (a *A, b *B
 		return nil, nil, err
 	}
 
-	if err = setComponentFromEntry(entry, &a, 1); err != nil {
+	if err = setComponentFromEntry(entry, &a); err != nil {
 		return nil, nil, err
-	} else if err = setComponentFromEntry(entry, &b, 2); err != nil {
+	} else if err = setComponentFromEntry(entry, &b); err != nil {
 		return nil, nil, err
 	}
 
@@ -55,11 +57,11 @@ func Get3[A IComponent, B IComponent, C IComponent](world *world, entity entityI
 		return nil, nil, nil, err
 	}
 
-	if err = setComponentFromEntry(entry, &a, 1); err != nil {
+	if err = setComponentFromEntry(entry, &a); err != nil {
 		return nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &b, 2); err != nil {
+	} else if err = setComponentFromEntry(entry, &b); err != nil {
 		return nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &c, 3); err != nil {
+	} else if err = setComponentFromEntry(entry, &c); err != nil {
 		return nil, nil, nil, err
 	}
 
@@ -78,13 +80,13 @@ func Get4[A IComponent, B IComponent, C IComponent, D IComponent](world *world, 
 		return nil, nil, nil, nil, err
 	}
 
-	if err = setComponentFromEntry(entry, &a, 1); err != nil {
+	if err = setComponentFromEntry(entry, &a); err != nil {
 		return nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &b, 2); err != nil {
+	} else if err = setComponentFromEntry(entry, &b); err != nil {
 		return nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &c, 3); err != nil {
+	} else if err = setComponentFromEntry(entry, &c); err != nil {
 		return nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &d, 4); err != nil {
+	} else if err = setComponentFromEntry(entry, &d); err != nil {
 		return nil, nil, nil, nil, err
 	}
 
@@ -103,15 +105,15 @@ func Get5[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent](
 		return nil, nil, nil, nil, nil, err
 	}
 
-	if err = setComponentFromEntry(entry, &a, 1); err != nil {
+	if err = setComponentFromEntry(entry, &a); err != nil {
 		return nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &b, 2); err != nil {
+	} else if err = setComponentFromEntry(entry, &b); err != nil {
 		return nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &c, 3); err != nil {
+	} else if err = setComponentFromEntry(entry, &c); err != nil {
 		return nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &d, 4); err != nil {
+	} else if err = setComponentFromEntry(entry, &d); err != nil {
 		return nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &e, 5); err != nil {
+	} else if err = setComponentFromEntry(entry, &e); err != nil {
 		return nil, nil, nil, nil, nil, err
 	}
 
@@ -130,17 +132,17 @@ func Get6[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, 
 		return nil, nil, nil, nil, nil, nil, err
 	}
 
-	if err = setComponentFromEntry(entry, &a, 1); err != nil {
+	if err = setComponentFromEntry(entry, &a); err != nil {
 		return nil, nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &b, 2); err != nil {
+	} else if err = setComponentFromEntry(entry, &b); err != nil {
 		return nil, nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &c, 3); err != nil {
+	} else if err = setComponentFromEntry(entry, &c); err != nil {
 		return nil, nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &d, 4); err != nil {
+	} else if err = setComponentFromEntry(entry, &d); err != nil {
 		return nil, nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &e, 5); err != nil {
+	} else if err = setComponentFromEntry(entry, &e); err != nil {
 		return nil, nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &f, 6); err != nil {
+	} else if err = setComponentFromEntry(entry, &f); err != nil {
 		return nil, nil, nil, nil, nil, nil, err
 	}
 
@@ -161,19 +163,19 @@ func Get7[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, 
 		return nil, nil, nil, nil, nil, nil, nil, err
 	}
 
-	if err = setComponentFromEntry(entry, &a, 1); err != nil {
+	if err = setComponentFromEntry(entry, &a); err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &b, 2); err != nil {
+	} else if err = setComponentFromEntry(entry, &b); err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &c, 3); err != nil {
+	} else if err = setComponentFromEntry(entry, &c); err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &d, 4); err != nil {
+	} else if err = setComponentFromEntry(entry, &d); err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &e, 5); err != nil {
+	} else if err = setComponentFromEntry(entry, &e); err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &f, 6); err != nil {
+	} else if err = setComponentFromEntry(entry, &f); err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &g, 7); err != nil {
+	} else if err = setComponentFromEntry(entry, &g); err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, err
 	}
 
@@ -194,21 +196,21 @@ func Get8[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, 
 		return nil, nil, nil, nil, nil, nil, nil, nil, err
 	}
 
-	if err = setComponentFromEntry(entry, &a, 1); err != nil {
+	if err = setComponentFromEntry(entry, &a); err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &b, 2); err != nil {
+	} else if err = setComponentFromEntry(entry, &b); err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &c, 3); err != nil {
+	} else if err = setComponentFromEntry(entry, &c); err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &d, 4); err != nil {
+	} else if err = setComponentFromEntry(entry, &d); err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &e, 5); err != nil {
+	} else if err = setComponentFromEntry(entry, &e); err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &f, 6); err != nil {
+	} else if err = setComponentFromEntry(entry, &f); err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &g, 7); err != nil {
+	} else if err = setComponentFromEntry(entry, &g); err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, nil, err
-	} else if err = setComponentFromEntry(entry, &h, 8); err != nil {
+	} else if err = setComponentFromEntry(entry, &h); err != nil {
 		return nil, nil, nil, nil, nil, nil, nil, nil, err
 	}
 
@@ -227,14 +229,21 @@ func getEntry(world *world, entity entityId) (*entry, error) {
 
 // If a component of type T exists in entry, make target point to that component.
 // If a component of type T does not exist in entry, return an error
-func setComponentFromEntry[T IComponent](entry *entry, target **T, genericPosition int) error {
+func setComponentFromEntry[T IComponent](entry *entry, target **T) error {
 	newTarget, _, err := getComponentFromEntry[T](entry)
 	if err != nil {
-		return fmt.Errorf("%w: entity does not have component at generic position %d", err, genericPosition)
+		componentType := reflect.TypeOf(*target).String()
+
+		// componentType will have format of "*package.Component". We only want the part after "*".
+		// Because the underlying value is probably nil, we can not dereference it. So we'll remove it from the string manually.
+		if len(componentType) != 0 {
+			componentType, _ = strings.CutPrefix(componentType, "*")
+		}
+
+		return fmt.Errorf("%w: entity does not have component %s", err, componentType)
 	}
 
 	*target = newTarget
 
 	return nil
-
 }
