@@ -1,6 +1,7 @@
 package ecs
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -37,38 +38,54 @@ func TestSpawn(t *testing.T) {
 	})
 
 	t.Run("returns error if there are duplicate components", func(t *testing.T) {
+		assert := assert.New(t)
 		world := NewWorld()
 
 		_, err := Spawn(&world, componentA{}, componentA{})
-		assert.Error(t, err)
+		assert.Error(err)
+		assert.True(errors.Is(err, ErrDuplicateComponent))
 		_, err = Spawn(&world, componentA{}, componentA{}, componentA{})
-		assert.Error(t, err)
+		assert.Error(err)
+		assert.True(errors.Is(err, ErrDuplicateComponent))
 		_, err = Spawn(&world, componentA{}, componentA{}, componentB{})
-		assert.Error(t, err)
+		assert.Error(err)
+		assert.True(errors.Is(err, ErrDuplicateComponent))
 		_, err = Spawn(&world, componentA{}, componentB{}, componentA{})
-		assert.Error(t, err)
+		assert.Error(err)
+		assert.True(errors.Is(err, ErrDuplicateComponent))
 		_, err = Spawn(&world, componentB{}, componentA{}, componentA{})
-		assert.Error(t, err)
+		assert.Error(err)
+		assert.True(errors.Is(err, ErrDuplicateComponent))
 
-		assert.Equal(t, 0, world.CountEntities())
-		assert.Equal(t, 0, world.CountComponents())
+		assert.Equal(0, world.CountEntities())
+		assert.Equal(0, world.CountComponents())
 	})
 }
+
+type requiredComponentA struct{ Component }
+type requiredComponentB struct{ Component }
 
 type withRequiredComponents struct{ Component }
 
 func (a withRequiredComponents) RequiredComponents() []IComponent {
-	return []IComponent{componentA{}, componentB{}}
+	return []IComponent{requiredComponentA{}, requiredComponentB{}}
 }
 
 func TestSpawnWithRequiredComponents(t *testing.T) {
 	t.Run("successfully spawns required components", func(t *testing.T) {
+		assert := assert.New(t)
 		world := NewWorld()
 
-		_, err := Spawn(&world, withRequiredComponents{})
+		entity, err := Spawn(&world, withRequiredComponents{})
 
-		assert.NoError(t, err)
-		assert.Equal(t, 1, world.CountEntities())
-		assert.Equal(t, 3, world.CountComponents())
+		assert.NoError(err)
+		assert.Equal(1, world.CountEntities())
+		assert.Equal(3, world.CountComponents())
+
+		a, b, c, err := Get3[requiredComponentA, requiredComponentB, withRequiredComponents](&world, entity)
+		assert.NotNil(a)
+		assert.NotNil(b)
+		assert.NotNil(c)
+		assert.NoError(err)
 	})
 }
