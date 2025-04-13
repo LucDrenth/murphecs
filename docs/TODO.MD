@@ -18,3 +18,7 @@
 
 # Graphics
 - Draw a triangle
+
+# Project
+- Linter
+- Pipeline in Github that automatically runs tests and linter
