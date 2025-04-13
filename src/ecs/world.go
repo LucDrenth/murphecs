@@ -6,22 +6,6 @@ import (
 	"github.com/lucdrenth/murph/engine/src/utils"
 )
 
-type entry struct {
-	components []IComponent
-}
-
-// getComponentFromEntry returns a pointer to the component, the index of the component and nil if entry contains the component.
-// returns nil, -1, error if entry does not contain the component.
-func getComponentFromEntry[T IComponent](entry *entry) (*T, int, error) {
-	for i, component := range entry.components {
-		if maybeTarget, ok := component.(T); ok {
-			return &maybeTarget, i, nil
-		}
-	}
-
-	return nil, -1, ErrComponentNotFound
-}
-
 // world contains all of the entities and their components.
 type world struct {
 	entityIdCounter uint

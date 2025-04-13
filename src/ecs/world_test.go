@@ -1,7 +1,6 @@
 package ecs
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -71,47 +70,5 @@ func TestRequiredComponents(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 1, world.CountEntities())
 		assert.Equal(t, 3, world.CountComponents())
-	})
-}
-
-func TestGetComponentFromEntry(t *testing.T) {
-	type componentA struct {
-		value int
-		Component
-	}
-	const expectedValueA = 101
-	type componentB struct {
-		value int
-		Component
-	}
-	const expectedValueB = 102
-
-	t.Run("gets the component if its present in entry", func(t *testing.T) {
-		assert := assert.New(t)
-		entry := entry{components: []IComponent{
-			componentA{value: expectedValueA},
-			componentB{value: expectedValueB},
-		}}
-
-		componentA, _, err := getComponentFromEntry[componentA](&entry)
-		assert.NoError(err)
-		assert.Equal(expectedValueA, (*componentA).value)
-
-		componentB, _, err := getComponentFromEntry[componentB](&entry)
-		assert.NoError(err)
-		assert.Equal(expectedValueB, (*componentB).value)
-	})
-
-	t.Run("return an error if the entry does not contain the component", func(t *testing.T) {
-		assert := assert.New(t)
-
-		entry := entry{components: []IComponent{
-			componentA{},
-		}}
-
-		componentA, _, err := getComponentFromEntry[componentB](&entry)
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrComponentNotFound))
-		assert.Nil(componentA)
 	})
 }
