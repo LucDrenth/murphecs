@@ -103,3 +103,75 @@ func TestGetFirstDuplicate(t *testing.T) {
 		})
 	}
 }
+
+func TestRemoveFromSlice(t *testing.T) {
+	scenarios := []struct {
+		description    string
+		slice          []int
+		indexToRemove  int
+		expectedResult []int
+	}{
+		{
+			description:    "remove the first element",
+			slice:          []int{0, 1, 2, 3, 4},
+			indexToRemove:  0,
+			expectedResult: []int{1, 2, 3, 4},
+		},
+		{
+			description:    "remove the last element",
+			slice:          []int{0, 1, 2, 3, 4},
+			indexToRemove:  4,
+			expectedResult: []int{0, 1, 2, 3},
+		},
+		{
+			description:    "remove an element from the middle",
+			slice:          []int{0, 1, 2, 3, 4},
+			indexToRemove:  2,
+			expectedResult: []int{0, 1, 3, 4},
+		},
+	}
+
+	for _, scenario := range scenarios {
+		t.Run(scenario.description, func(t *testing.T) {
+			RemoveFromSlice(&scenario.slice, scenario.indexToRemove)
+
+			assert.ElementsMatch(t, scenario.expectedResult, scenario.slice)
+		})
+	}
+}
+
+func TestRemoveFromSliceAndMaintainOrder(t *testing.T) {
+	scenarios := []struct {
+		description    string
+		slice          []int
+		indexToRemove  int
+		expectedResult []int
+	}{
+		{
+			description:    "remove the first element",
+			slice:          []int{0, 1, 2, 3, 4},
+			indexToRemove:  0,
+			expectedResult: []int{1, 2, 3, 4},
+		},
+		{
+			description:    "remove the last element",
+			slice:          []int{0, 1, 2, 3, 4},
+			indexToRemove:  4,
+			expectedResult: []int{0, 1, 2, 3},
+		},
+		{
+			description:    "remove an element from the middle",
+			slice:          []int{0, 1, 2, 3, 4},
+			indexToRemove:  2,
+			expectedResult: []int{0, 1, 3, 4},
+		},
+	}
+
+	for _, scenario := range scenarios {
+		t.Run(scenario.description, func(t *testing.T) {
+			RemoveFromSliceAndMaintainOrder(&scenario.slice, scenario.indexToRemove)
+
+			assert.Equal(t, scenario.expectedResult, scenario.slice)
+		})
+	}
+}

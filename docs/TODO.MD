@@ -1,6 +1,5 @@
 # ECS
 **Must have**
-- Remove component from entity
 - Insert component in to entity
 - Remove entity (and its components)
 - Query components

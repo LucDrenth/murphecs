@@ -24,7 +24,6 @@ type NPC struct {
 
 func main() {
 	world := ecs.NewWorld()
-	fmt.Printf("hello %T\n", world)
 
 	// You can spawn any amount of unique components!
 	entity, err := ecs.Spawn(&world,

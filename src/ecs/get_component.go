@@ -222,18 +222,19 @@ func getEntry(world *world, entity entityId) (*entry, error) {
 		return nil, ErrEntityNotFound
 	}
 
-	return &entry, nil
+	return entry, nil
 }
 
 // If a component of type T exists in entry, make target point to that component.
 // If a component of type T does not exist in entry, return an error
 func setComponentFromEntry[T IComponent](entry *entry, target **T, genericPosition int) error {
-	for _, component := range entry.components {
-		if maybeTarget, ok := component.(T); ok {
-			*target = &maybeTarget
-			return nil
-		}
+	newTarget, _, err := getComponentFromEntry[T](entry)
+	if err != nil {
+		return fmt.Errorf("%w: entity does not have component at generic position %d", err, genericPosition)
 	}
 
-	return fmt.Errorf("%w: entity does not have component at generic position %d", ErrComponentNotFound, genericPosition)
+	*target = newTarget
+
+	return nil
+
 }
