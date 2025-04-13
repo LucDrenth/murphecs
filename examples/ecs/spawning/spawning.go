@@ -1,4 +1,4 @@
-// Demonstrate how to spawn components
+// Demonstrate how to spawn an entity with components
 package main
 
 import (
@@ -31,5 +31,9 @@ func main() {
 		NPC{name: "Murphy"},
 		Health{max: 100, current: 80},
 	)
-	fmt.Printf("entity=%d, err=%v\n", entity, err)
+	fmt.Printf("Spawned entity=%d, err=%v\n", entity, err)
+
+	// You'll get an error if you put in any duplicate components
+	_, err = ecs.Spawn(&world, NPC{}, NPC{})
+	fmt.Printf("Failed to spawn entity: %v\n", err)
 }

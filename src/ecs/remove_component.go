@@ -3,8 +3,10 @@ package ecs
 
 import "github.com/lucdrenth/murph/engine/src/utils"
 
-// Remove removes the given component from entity. Returns an error if the entity does not exist in world,
-// or if the entity does not contain the component.
+// Remove removes the given component from entity.
+//
+// Returns an ErrEntityNotFound error if the entity does not exist in world.
+// Returns an ErrComponentNotFound error if the entity does not have the component.
 func Remove[T IComponent](world *world, entity entityId) error {
 	entry, ok := world.entities[entity]
 	if !ok {

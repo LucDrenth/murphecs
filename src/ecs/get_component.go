@@ -8,6 +8,7 @@ import (
 )
 
 // Get returns the component that belongs to the given entity.
+//
 // Returns an ErrEntityNotFound error if the entity is not found.
 // Returns an ErrComponentNotFound error if the component is not found.
 //
@@ -26,6 +27,7 @@ func Get[A IComponent](world *world, entity entityId) (a *A, err error) {
 }
 
 // Get2 returns the component that belongs to the given entity.
+//
 // Returns an ErrEntityNotFound error if the entity is not found.
 // Returns an ErrComponentNotFound error if any of the components is not found.
 //
@@ -48,6 +50,7 @@ func Get2[A IComponent, B IComponent](world *world, entity entityId) (a *A, b *B
 }
 
 // Get3 returns the component that belongs to the given entity.
+//
 // Returns an ErrEntityNotFound error if the entity is not found.
 // Returns an ErrComponentNotFound error if any of the components is not found.
 //
@@ -72,6 +75,7 @@ func Get3[A IComponent, B IComponent, C IComponent](world *world, entity entityI
 }
 
 // Get4 returns the component that belongs to the given entity.
+//
 // Returns an ErrEntityNotFound error if the entity is not found.
 // Returns an ErrComponentNotFound error if any of the components is not found.
 //
@@ -98,6 +102,7 @@ func Get4[A IComponent, B IComponent, C IComponent, D IComponent](world *world, 
 }
 
 // Get5 returns the component that belongs to the given entity.
+//
 // Returns an ErrEntityNotFound error if the entity is not found.
 // Returns an ErrComponentNotFound error if any of the components is not found.
 //
@@ -126,6 +131,7 @@ func Get5[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent](
 }
 
 // Get6 returns the component that belongs to the given entity.
+//
 // Returns an ErrEntityNotFound error if the entity is not found.
 // Returns an ErrComponentNotFound error if any of the components is not found.
 //
@@ -156,6 +162,7 @@ func Get6[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, 
 }
 
 // Get7 returns the component that belongs to the given entity.
+//
 // Returns an ErrEntityNotFound error if the entity is not found.
 // Returns an ErrComponentNotFound error if any of the components is not found.
 //
@@ -190,6 +197,7 @@ func Get7[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, 
 }
 
 // Get8 returns the component that belongs to the given entity.
+//
 // Returns an ErrEntityNotFound error if the entity is not found.
 // Returns an ErrComponentNotFound error if any of the components is not found.
 //

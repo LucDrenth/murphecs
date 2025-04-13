@@ -10,7 +10,7 @@ import (
 // Spawn spawns the given components and all their required components that are not declared in the component parameters.
 // Return the associated entityId of the newly created entity on success.
 //
-// An ErrDuplicateComponent error is returned when any of the given components are of the same type.
+// Returns an ErrDuplicateComponent error when any of the given components are of the same type.
 //
 // Calling Spawn without any components to generate an entityId is allowed.
 func Spawn(world *world, components ...IComponent) (entityId, error) {
