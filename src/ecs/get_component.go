@@ -8,7 +8,8 @@ import (
 )
 
 // Get returns the component that belongs to the given entity.
-// Returns an error if either the entity or the component is not found.
+// Returns an ErrEntityNotFound error if the entity is not found.
+// Returns an ErrComponentNotFound error if the component is not found.
 //
 // WARNING: Do not store the component pointer
 func Get[A IComponent](world *world, entity entityId) (a *A, err error) {
@@ -25,9 +26,10 @@ func Get[A IComponent](world *world, entity entityId) (a *A, err error) {
 }
 
 // Get2 returns the component that belongs to the given entity.
-// Returns an error if either the entity or any of the components is not found.
+// Returns an ErrEntityNotFound error if the entity is not found.
+// Returns an ErrComponentNotFound error if any of the components is not found.
 //
-// Returns an "entity does not have component ..." error if duplicate components are given.
+// Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
 func Get2[A IComponent, B IComponent](world *world, entity entityId) (a *A, b *B, err error) {
@@ -46,9 +48,10 @@ func Get2[A IComponent, B IComponent](world *world, entity entityId) (a *A, b *B
 }
 
 // Get3 returns the component that belongs to the given entity.
-// Returns an error if either the entity or any of the components is not found.
+// Returns an ErrEntityNotFound error if the entity is not found.
+// Returns an ErrComponentNotFound error if any of the components is not found.
 //
-// Returns an "entity does not have component ..." error if duplicate components are given.
+// Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
 func Get3[A IComponent, B IComponent, C IComponent](world *world, entity entityId) (a *A, b *B, c *C, err error) {
@@ -69,9 +72,10 @@ func Get3[A IComponent, B IComponent, C IComponent](world *world, entity entityI
 }
 
 // Get4 returns the component that belongs to the given entity.
-// Returns an error if either the entity or any of the components is not found.
+// Returns an ErrEntityNotFound error if the entity is not found.
+// Returns an ErrComponentNotFound error if any of the components is not found.
 //
-// Returns an "entity does not have component ..." error if duplicate components are given.
+// Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
 func Get4[A IComponent, B IComponent, C IComponent, D IComponent](world *world, entity entityId) (a *A, b *B, c *C, d *D, err error) {
@@ -94,9 +98,10 @@ func Get4[A IComponent, B IComponent, C IComponent, D IComponent](world *world, 
 }
 
 // Get5 returns the component that belongs to the given entity.
-// Returns an error if either the entity or any of the components is not found.
+// Returns an ErrEntityNotFound error if the entity is not found.
+// Returns an ErrComponentNotFound error if any of the components is not found.
 //
-// Returns an "entity does not have component ..." error if duplicate components are given.
+// Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
 func Get5[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent](world *world, entity entityId) (a *A, b *B, c *C, d *D, e *E, err error) {
@@ -121,9 +126,10 @@ func Get5[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent](
 }
 
 // Get6 returns the component that belongs to the given entity.
-// Returns an error if either the entity or any of the components is not found.
+// Returns an ErrEntityNotFound error if the entity is not found.
+// Returns an ErrComponentNotFound error if any of the components is not found.
 //
-// Returns an "entity does not have component ..." error if duplicate components are given.
+// Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
 func Get6[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, F IComponent](world *world, entity entityId) (a *A, b *B, c *C, d *D, e *E, f *F, err error) {
@@ -150,9 +156,10 @@ func Get6[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, 
 }
 
 // Get7 returns the component that belongs to the given entity.
-// Returns an error if either the entity or any of the components is not found.
+// Returns an ErrEntityNotFound error if the entity is not found.
+// Returns an ErrComponentNotFound error if any of the components is not found.
 //
-// Returns an "entity does not have component ..." error if duplicate components are given.
+// Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
 func Get7[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, F IComponent, G IComponent](world *world, entity entityId) (
@@ -183,9 +190,10 @@ func Get7[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, 
 }
 
 // Get8 returns the component that belongs to the given entity.
-// Returns an error if either the entity or any of the components is not found.
+// Returns an ErrEntityNotFound error if the entity is not found.
+// Returns an ErrComponentNotFound error if any of the components is not found.
 //
-// Returns an "entity does not have component ..." error if duplicate components are given.
+// Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
 func Get8[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, F IComponent, G IComponent, H IComponent](world *world, entity entityId) (
@@ -217,7 +225,7 @@ func Get8[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, 
 	return a, b, c, d, e, f, g, h, nil
 }
 
-// getEntry returns the entry that correspond to entity, or an error if it wasn't found.
+// getEntry returns the entry that correspond to entity, or an ErrEntityNotFound error if it wasn't found.
 func getEntry(world *world, entity entityId) (*entry, error) {
 	entry, ok := world.entities[entity]
 	if !ok {
