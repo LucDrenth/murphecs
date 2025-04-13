@@ -1,4 +1,4 @@
-module github.com/lucdrenth/murphy
+module github.com/lucdrenth/murph/engine
 
 go 1.24.2
 

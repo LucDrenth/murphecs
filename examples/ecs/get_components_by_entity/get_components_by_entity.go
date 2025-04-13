@@ -4,7 +4,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/lucdrenth/murphy/src/ecs"
+	"github.com/lucdrenth/murph/engine/src/ecs"
 )
 
 type Health struct {

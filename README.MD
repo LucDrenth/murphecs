@@ -1,11 +1,11 @@
 # About
-Murphy is a Game Engine based on a custom Entity Component System written in Golang.
+Murph Engine is a Game Engine based on a custom Entity Component System written in Go.
 
 !! This project is currently in a very early stage of development.
 
 # Installation
 ```bash
-go get github.com/lucdrenth/murphy
+go get github.com/lucdrenth/murph-engine
 ```
 
 # Usage
@@ -16,7 +16,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/lucdrenth/murphy/src/ecs"
+	"github.com/lucdrenth/murph/engine/src/ecs"
 )
 
 func main() {

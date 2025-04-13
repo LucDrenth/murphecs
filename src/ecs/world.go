@@ -3,7 +3,7 @@ package ecs
 import (
 	"fmt"
 
-	"github.com/lucdrenth/murphy/src/utils"
+	"github.com/lucdrenth/murph/engine/src/utils"
 )
 
 type entry struct {

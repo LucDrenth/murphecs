@@ -1,2 +1,2 @@
-// Package Murphy provides an Entity Component System (ECS).
-package murphy
+// Package engine provides the core of Murphy Engine
+package engine
