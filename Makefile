@@ -10,3 +10,7 @@ run:
 # run tests and ignore output that indicates that directories don't have a folder
 test:
 	go test ./... 2>&1 | grep -v "\[no test files\]"
+
+# run all benchmarks and only display the benchmark results
+benchmark:
+	go test -bench=.  ./... | grep -E "\bBenchmark"
