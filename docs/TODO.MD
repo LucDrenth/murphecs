@@ -10,9 +10,6 @@
 - Events
 - Observers
 
-**Bugs**
-- toComponentType does not guarantee uniqueness for every component
-
 # Window
 - Be able to create a window
 
@@ -21,5 +18,8 @@
 
 # Project
 - Linter
-- Pipeline in Github that automatically runs tests and linter
-- Run `go mod tidy` to check if it changes things
+- Pipeline in Github that automatically runs:
+    - tests - fail if any fails
+    - linter - fail if project is not linted
+    - benchmarks - warn if there are degradations
+    - run `go mod tidy` - fail if anything changed
