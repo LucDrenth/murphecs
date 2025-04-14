@@ -45,6 +45,14 @@ func BenchmarkGetFirstDuplicate(b *testing.B) {
 				GetFirstDuplicate(data)
 			}
 		})
+
+		b.Run(fmt.Sprintf("NoDuplicates-Size-%d", size), func(b *testing.B) {
+			data := setup()
+
+			for b.Loop() {
+				GetFirstDuplicate(data)
+			}
+		})
 	}
 }
 
