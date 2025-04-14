@@ -16,20 +16,16 @@ func (c Component) RequiredComponents() []IComponent {
 	return []IComponent{}
 }
 
-type componentType = string
+type componentType = reflect.Type
 
+// toComponentType returns a unique representation of the component type
 func toComponentType(component IComponent) componentType {
-	// TODO reflect.Type.String is not safe because it does not guarantee uniqueness. Instead, it recommends
-	// to compare the types directly. We probably don't want use reflect.Type as componentType because it is
-	// way bigger than we need. Instead, we could make a map[reflect.Type]componentType and look it up in there.
-	return reflect.TypeOf(component).String()
+	return reflect.TypeOf(component)
 }
 
+// getComponentType returns a unique representation of the component type
 func getComponentType[T IComponent]() componentType {
-	// TODO reflect.Type.String is not safe because it does not guarantee uniqueness. Instead, it recommends
-	// to compare the types directly. We probably don't want use reflect.Type as componentType because it is
-	// way bigger than we need. Instead, we could make a map[reflect.Type]componentType and look it up in there.
-	return reflect.TypeOf((*T)(nil)).String()
+	return reflect.TypeOf((*T)(nil))
 }
 
 // toComponentDebugType returns a string reflection of the component type such as "ecs.Entity"
@@ -45,7 +41,7 @@ func getComponentDebugType[T IComponent]() string {
 }
 
 func toComponentTypes(components []IComponent) []componentType {
-	componentTypes := make([]string, len(components))
+	componentTypes := make([]componentType, len(components))
 
 	for i, component := range components {
 		componentTypes[i] = toComponentType(component)
