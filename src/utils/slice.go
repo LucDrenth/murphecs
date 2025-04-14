@@ -5,11 +5,8 @@ import "slices"
 // If there are no duplicates, returns (nil, -1, -1).
 // If there are duplicates, return the duplicate element and the array indices of the duplicates
 func GetFirstDuplicate[T comparable](elements []T) (*T, int, int) {
-	for i := range len(elements) {
-		for j := range len(elements) {
-			if i == j {
-				continue
-			}
+	for i := range len(elements) - 1 {
+		for j := i + 1; j < len(elements); j++ {
 
 			if elements[i] == elements[j] {
 				return &elements[i], i, j
