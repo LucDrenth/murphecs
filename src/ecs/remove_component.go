@@ -1,7 +1,7 @@
 // functions to remove components from a specific entity
 package ecs
 
-import "github.com/lucdrenth/murph/engine/src/utils"
+import "github.com/lucdrenth/murph_engine/src/utils"
 
 // Remove removes the given component from entity.
 //

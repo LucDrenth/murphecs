@@ -5,7 +5,7 @@ Murph Engine is a Game Engine based on a custom Entity Component System written 
 
 # Installation
 ```bash
-go get github.com/lucdrenth/murph-engine
+go get github.com/lucdrenth/murph_engine
 ```
 
 # Usage
@@ -16,7 +16,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/lucdrenth/murph/engine/src/ecs"
+	"github.com/lucdrenth/murph_engine/src/ecs"
 )
 
 func main() {

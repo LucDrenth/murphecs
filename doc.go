@@ -1,2 +1,2 @@
-// Package engine provides the core of Murphy Engine
-package engine
+// Package murph_engine provides the core of Murphy Engine
+package murph_engine
