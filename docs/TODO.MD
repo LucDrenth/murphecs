@@ -22,3 +22,4 @@
 # Project
 - Linter
 - Pipeline in Github that automatically runs tests and linter
+- Run `go mod tidy` to check if it changes things
