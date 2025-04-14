@@ -2,7 +2,6 @@ package ecs
 
 import (
 	"fmt"
-	"reflect"
 
 	"github.com/lucdrenth/murph_engine/src/utils"
 )
@@ -19,8 +18,8 @@ func Spawn(world *world, components ...IComponent) (entityId, error) {
 	// check for duplicates
 	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(componentTypes)
 	if duplicate != nil {
-		componentType := reflect.TypeOf(components[duplicateIndexA]).String()
-		return 0, fmt.Errorf("%w: %s at positions %d and %d", ErrDuplicateComponent, componentType, duplicateIndexA, duplicateIndexB)
+		debugType := toComponentDebugType(components[duplicateIndexA])
+		return 0, fmt.Errorf("%w: %s at positions %d and %d", ErrDuplicateComponent, debugType, duplicateIndexA, duplicateIndexB)
 	}
 
 	// get required components

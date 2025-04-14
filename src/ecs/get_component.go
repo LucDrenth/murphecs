@@ -3,8 +3,6 @@ package ecs
 
 import (
 	"fmt"
-	"reflect"
-	"strings"
 )
 
 // Get returns the component that belongs to the given entity.
@@ -34,7 +32,7 @@ func Get[A IComponent](world *world, entity entityId) (a *A, err error) {
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get2[A IComponent, B IComponent](world *world, entity entityId) (a *A, b *B, err error) {
+func Get2[A, B IComponent](world *world, entity entityId) (a *A, b *B, err error) {
 	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, nil, err
@@ -57,7 +55,7 @@ func Get2[A IComponent, B IComponent](world *world, entity entityId) (a *A, b *B
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get3[A IComponent, B IComponent, C IComponent](world *world, entity entityId) (a *A, b *B, c *C, err error) {
+func Get3[A, B, C IComponent](world *world, entity entityId) (a *A, b *B, c *C, err error) {
 	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, nil, nil, err
@@ -82,7 +80,7 @@ func Get3[A IComponent, B IComponent, C IComponent](world *world, entity entityI
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get4[A IComponent, B IComponent, C IComponent, D IComponent](world *world, entity entityId) (a *A, b *B, c *C, d *D, err error) {
+func Get4[A, B, C, D IComponent](world *world, entity entityId) (a *A, b *B, c *C, d *D, err error) {
 	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, nil, nil, nil, err
@@ -109,7 +107,7 @@ func Get4[A IComponent, B IComponent, C IComponent, D IComponent](world *world, 
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get5[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent](world *world, entity entityId) (a *A, b *B, c *C, d *D, e *E, err error) {
+func Get5[A, B, C, D, E IComponent](world *world, entity entityId) (a *A, b *B, c *C, d *D, e *E, err error) {
 	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
@@ -138,7 +136,7 @@ func Get5[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent](
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get6[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, F IComponent](world *world, entity entityId) (a *A, b *B, c *C, d *D, e *E, f *F, err error) {
+func Get6[A, B, C, D, E, F IComponent](world *world, entity entityId) (a *A, b *B, c *C, d *D, e *E, f *F, err error) {
 	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, nil, nil, nil, nil, nil, err
@@ -169,7 +167,7 @@ func Get6[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, 
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get7[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, F IComponent, G IComponent](world *world, entity entityId) (
+func Get7[A, B, C, D, E, F, G IComponent](world *world, entity entityId) (
 	a *A, b *B, c *C, d *D, e *E, f *F, g *G, err error,
 ) {
 	entry, err := world.getEntry(entity)
@@ -204,7 +202,7 @@ func Get7[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, 
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get8[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, F IComponent, G IComponent, H IComponent](world *world, entity entityId) (
+func Get8[A, B, C, D, E, F, G, H IComponent](world *world, entity entityId) (
 	a *A, b *B, c *C, d *D, e *E, f *F, g *G, h *H, err error,
 ) {
 	entry, err := world.getEntry(entity)
@@ -238,15 +236,7 @@ func Get8[A IComponent, B IComponent, C IComponent, D IComponent, E IComponent, 
 func setComponentFromEntry[T IComponent](entry *entry, target **T) error {
 	newTarget, _, err := getComponentFromEntry[T](entry)
 	if err != nil {
-		componentType := reflect.TypeOf(*target).String()
-
-		// componentType will have format of "*package.Component". We only want the part after "*".
-		// Because the underlying value is probably nil, we can not dereference it. So we'll remove it from the string manually.
-		if len(componentType) != 0 {
-			componentType, _ = strings.CutPrefix(componentType, "*")
-		}
-
-		return fmt.Errorf("%w: entity does not have component %s", err, componentType)
+		return fmt.Errorf("%w: entity does not have component %s", err, getComponentDebugType[T]())
 	}
 
 	*target = newTarget

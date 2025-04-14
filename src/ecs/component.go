@@ -3,6 +3,7 @@ package ecs
 import (
 	"reflect"
 	"slices"
+	"strings"
 )
 
 type IComponent interface {
@@ -22,6 +23,25 @@ func toComponentType(component IComponent) componentType {
 	// to compare the types directly. We probably don't want use reflect.Type as componentType because it is
 	// way bigger than we need. Instead, we could make a map[reflect.Type]componentType and look it up in there.
 	return reflect.TypeOf(component).String()
+}
+
+func getComponentType[T IComponent]() componentType {
+	// TODO reflect.Type.String is not safe because it does not guarantee uniqueness. Instead, it recommends
+	// to compare the types directly. We probably don't want use reflect.Type as componentType because it is
+	// way bigger than we need. Instead, we could make a map[reflect.Type]componentType and look it up in there.
+	return reflect.TypeOf((*T)(nil)).String()
+}
+
+// toComponentDebugType returns a string reflection of the component type such as "ecs.Entity"
+func toComponentDebugType(component IComponent) string {
+	return reflect.TypeOf(component).String()
+}
+
+// getComponentDebugType returns a string reflection of the component type such as "ecs.Entity"
+func getComponentDebugType[T IComponent]() string {
+	result := reflect.TypeOf((*T)(nil)).String()
+	result, _ = strings.CutPrefix(result, "*")
+	return result
 }
 
 func toComponentTypes(components []IComponent) []componentType {
