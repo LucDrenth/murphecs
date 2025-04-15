@@ -81,3 +81,174 @@ func TestRemove(t *testing.T) {
 		assert.NotNil(b)
 	})
 }
+
+func TestRemove2(t *testing.T) {
+	type componentA struct{ Component }
+	type componentB struct{ Component }
+	type componentC struct{ Component }
+
+	t.Run("returns an error if any of the components is not present in the entity, but still removes the other one", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewWorld()
+
+		entity, err := Spawn(&world, componentA{}, componentB{})
+		assert.NoError(err)
+		err = Remove2[componentB, componentC](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentB](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentA](&world, entity)
+		assert.NoError(err)
+
+		entity, err = Spawn(&world, componentA{}, componentB{})
+		assert.NoError(err)
+		err = Remove2[componentC, componentB](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentB](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentA](&world, entity)
+		assert.NoError(err)
+
+		entity, err = Spawn(&world, componentA{}, componentB{})
+		assert.NoError(err)
+		err = Remove2[componentA, componentC](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentA](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentB](&world, entity)
+		assert.NoError(err)
+
+		entity, err = Spawn(&world, componentA{}, componentB{})
+		assert.NoError(err)
+		err = Remove2[componentC, componentA](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentA](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentB](&world, entity)
+		assert.NoError(err)
+	})
+
+	t.Run("successfully removes the right components, no matter the order of the given components", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewWorld()
+
+		entity, err := Spawn(&world, componentA{}, componentB{}, componentC{})
+		assert.NoError(err)
+		err = Remove2[componentA, componentB](&world, entity)
+		assert.NoError(err)
+		_, err = Get[componentA](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentB](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentC](&world, entity)
+		assert.NoError(err)
+
+		entity, err = Spawn(&world, componentA{}, componentB{}, componentC{})
+		assert.NoError(err)
+		err = Remove2[componentB, componentC](&world, entity)
+		assert.NoError(err)
+		_, err = Get[componentA](&world, entity)
+		assert.NoError(err)
+		_, err = Get[componentB](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentC](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+
+		entity, err = Spawn(&world, componentA{}, componentB{}, componentC{})
+		assert.NoError(err)
+		err = Remove2[componentA, componentC](&world, entity)
+		assert.NoError(err)
+		_, err = Get[componentA](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentB](&world, entity)
+		assert.NoError(err)
+		_, err = Get[componentC](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+
+		entity, err = Spawn(&world, componentA{}, componentB{}, componentC{})
+		assert.NoError(err)
+		err = Remove2[componentB, componentA](&world, entity)
+		assert.NoError(err)
+		_, err = Get[componentA](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentB](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentC](&world, entity)
+		assert.NoError(err)
+
+		entity, err = Spawn(&world, componentA{}, componentB{}, componentC{})
+		assert.NoError(err)
+		err = Remove2[componentC, componentB](&world, entity)
+		assert.NoError(err)
+		_, err = Get[componentA](&world, entity)
+		assert.NoError(err)
+		_, err = Get[componentB](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentC](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+
+		entity, err = Spawn(&world, componentA{}, componentB{}, componentC{})
+		assert.NoError(err)
+		err = Remove2[componentC, componentA](&world, entity)
+		assert.NoError(err)
+		_, err = Get[componentA](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentB](&world, entity)
+		assert.NoError(err)
+		_, err = Get[componentC](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+	})
+}
+
+func TestRemove3(t *testing.T) {
+	type componentA struct{ Component }
+	type componentB struct{ Component }
+	type componentC struct{ Component }
+	type componentD struct{ Component }
+
+	t.Run("successfully removes the right components", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewWorld()
+
+		entity, err := Spawn(&world, componentA{}, componentB{}, componentC{}, componentD{})
+		assert.NoError(err)
+		err = Remove3[componentB, componentD, componentA](&world, entity)
+		assert.NoError(err)
+		_, err = Get[componentA](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentB](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentC](&world, entity)
+		assert.NoError(err)
+		_, err = Get[componentD](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+	})
+}
+
+func TestRemove4(t *testing.T) {
+	type componentA struct{ Component }
+	type componentB struct{ Component }
+	type componentC struct{ Component }
+	type componentD struct{ Component }
+	type componentE struct{ Component }
+
+	t.Run("successfully removes the right components", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewWorld()
+
+		entity, err := Spawn(&world, componentA{}, componentB{}, componentC{}, componentD{}, componentE{})
+		assert.NoError(err)
+		err = Remove4[componentB, componentD, componentA, componentE](&world, entity)
+		assert.NoError(err)
+		_, err = Get[componentA](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentB](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentC](&world, entity)
+		assert.NoError(err)
+		_, err = Get[componentD](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+		_, err = Get[componentE](&world, entity)
+		assert.ErrorIs(err, ErrComponentNotFound)
+	})
+}
