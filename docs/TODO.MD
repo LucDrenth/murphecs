@@ -8,7 +8,7 @@
 - Relationships (like parent/child)
 - Events
 - Observers
-- More realistic benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
+- More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
 
 # Window
 - Be able to create a window
