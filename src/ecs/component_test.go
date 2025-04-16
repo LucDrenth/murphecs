@@ -130,3 +130,34 @@ func TestGetAllRequiredComponents(t *testing.T) {
 		})
 	}
 }
+
+func TestComponentTypeConversions(t *testing.T) {
+	type componentA struct{ Component }
+	type componentB struct{ Component }
+
+	t.Run("test that component types differ", func(t *testing.T) {
+		assert := assert.New(t)
+
+		assert.NotEqual(
+			toComponentType(componentA{}),
+			toComponentType(componentB{}),
+		)
+		assert.NotEqual(
+			getComponentType[componentA](),
+			getComponentType[componentB](),
+		)
+	})
+
+	t.Run("toComponentType and getComponentType result in the same type", func(t *testing.T) {
+		assert := assert.New(t)
+
+		assert.NotEqual(
+			toComponentType(componentA{}),
+			getComponentType[componentA](),
+		)
+		assert.NotEqual(
+			getComponentType[componentA](),
+			getComponentType[componentB](),
+		)
+	})
+}
