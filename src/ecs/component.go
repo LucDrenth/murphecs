@@ -27,7 +27,7 @@ func toComponentType(component IComponent) componentType {
 
 // getComponentType returns a unique representation of the component type
 func getComponentType[T IComponent]() componentType {
-	return utils.TypeOf[T]().Elem()
+	return utils.TypeOf[T]()
 }
 
 // toComponentDebugType returns a string reflection of the component type such as "ecs.Entity"

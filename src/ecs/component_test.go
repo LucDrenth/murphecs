@@ -148,6 +148,19 @@ func TestComponentTypeConversions(t *testing.T) {
 		)
 	})
 
+	t.Run("toComponentDebugType and getComponentDebugType result in the same type", func(t *testing.T) {
+		assert := assert.New(t)
+
+		assert.Equal(
+			toComponentDebugType(componentA{}),
+			getComponentDebugType[componentA](),
+		)
+		assert.NotEqual(
+			getComponentDebugType[componentA](),
+			getComponentDebugType[componentB](),
+		)
+	})
+
 	t.Run("toComponentType and getComponentType result in the same type", func(t *testing.T) {
 		assert := assert.New(t)
 
