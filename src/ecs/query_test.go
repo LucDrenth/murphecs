@@ -45,12 +45,17 @@ func TestQuery1(t *testing.T) {
 		assert.NoError(err)
 
 		result := Query1[componentB](&world)
-		err = result.Iter(func(_ entityId, b *componentB) error {
+		resultEntities := []entityId{}
+
+		for entityId, b := range result.Iter() {
 			assert.NotNil(b)
-			return nil
-		})
+			resultEntities = append(resultEntities, entityId)
+		}
 
 		assert.NoError(err)
+
+		// check both resultEntities and result.entityIds to ensure that Iter() works as expected
 		assert.ElementsMatch(expected, result.entityIds)
+		assert.ElementsMatch(expected, resultEntities)
 	})
 }

@@ -1,22 +1,22 @@
 package ecs
 
-import "slices"
+import (
+	"slices"
+)
 
 type query1Result[A IComponent] struct {
 	componentsA []*A
 	entityIds   []entityId
 }
 
-// Iter executes function f on each entity that the query returned, until f returns an error.
-// If any of the calls to f returned an error, this function returns that error.
-func (q query1Result[A]) Iter(f func(entityId entityId, a *A) error) error {
-	for i := range q.entityIds {
-		if err := f(q.entityIds[i], q.componentsA[i]); err != nil {
-			return err
+func (q query1Result[A]) Iter() func(yield func(entityId entityId, a *A) bool) {
+	return func(yield func(entityId entityId, a *A) bool) {
+		for i := range q.entityIds {
+			if !yield(q.entityIds[i], q.componentsA[i]) {
+				return
+			}
 		}
 	}
-
-	return nil
 }
 
 // Query gets the given component of all entities that match the options.
@@ -81,16 +81,14 @@ type query2Result[A, B IComponent] struct {
 	entityIds   []entityId
 }
 
-// Iter executes function f on each entity that the query returned, until f returns an error.
-// If any of the calls to f returned an error, this function returns that error.
-func (q query2Result[A, B]) Iter(f func(entityId entityId, a *A, b *B) error) error {
-	for i := range q.entityIds {
-		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i]); err != nil {
-			return err
+func (q query2Result[A, B]) Iter() func(yield func(entityId entityId, a *A, b *B) bool) {
+	return func(yield func(entityId entityId, a *A, b *B) bool) {
+		for i := range q.entityIds {
+			if !yield(q.entityIds[i], q.componentsA[i], q.componentsB[i]) {
+				return
+			}
 		}
 	}
-
-	return nil
 }
 
 // Query2 gets the given components of all entities that match the options.
