@@ -1,7 +1,6 @@
 package ecs
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -89,16 +88,14 @@ func TestGet(t *testing.T) {
 		entity, world, assert := setup(componentA{value: expectedValue})
 
 		_, err := Get[nonExistingComponent](world, entity)
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrComponentNotFound))
+		assert.ErrorIs(err, ErrComponentNotFound)
 	})
 
 	t.Run("returns an error if the entity is not found", func(t *testing.T) {
 		_, world, assert := setup(componentB{})
 
 		_, err := Get[componentB](world, nonExistingEntity)
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrEntityNotFound))
+		assert.ErrorIs(err, ErrEntityNotFound)
 	})
 
 	t.Run("returns an error if a component is exactly like the requested component", func(t *testing.T) {

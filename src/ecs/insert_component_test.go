@@ -1,7 +1,6 @@
 package ecs
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -28,8 +27,7 @@ func TestInsert(t *testing.T) {
 		world := NewWorld()
 
 		err := Insert(&world, nonExistingEntity)
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrEntityNotFound))
+		assert.ErrorIs(err, ErrEntityNotFound)
 	})
 
 	t.Run("returns an error if any of the components are already present", func(t *testing.T) {
@@ -41,33 +39,27 @@ func TestInsert(t *testing.T) {
 
 		// one component that is already present
 		err = Insert(&world, entity, componentA{})
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrComponentAlreadyPresent))
+		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 
 		// another component that is already present
 		err = Insert(&world, entity, componentB{})
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrComponentAlreadyPresent))
+		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 
 		// all components already present
 		err = Insert(&world, entity, componentA{}, componentB{})
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrComponentAlreadyPresent))
+		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 
 		// all components already present - different order
 		err = Insert(&world, entity, componentB{}, componentA{})
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrComponentAlreadyPresent))
+		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 
 		// one component already and 1 component not present
 		err = Insert(&world, entity, componentB{}, componentC{})
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrComponentAlreadyPresent))
+		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 
 		// one component already and 1 component not present - different order
 		err = Insert(&world, entity, componentC{}, componentB{})
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrComponentAlreadyPresent))
+		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 	})
 
 	t.Run("if any component is already present, still inserts the other components that are not present", func(t *testing.T) {
@@ -78,8 +70,7 @@ func TestInsert(t *testing.T) {
 		assert.NoError(err)
 
 		err = Insert(&world, entity, componentA{}, componentB{}, componentC{})
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrComponentAlreadyPresent))
+		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 
 		assert.Equal(3, world.CountComponents())
 	})

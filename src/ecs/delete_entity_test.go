@@ -1,7 +1,6 @@
 package ecs
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,8 +13,7 @@ func TestDelete(t *testing.T) {
 		world := NewWorld()
 		err := Delete(&world, nonExistingEntity)
 
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrEntityNotFound))
+		assert.Error(err, ErrEntityNotFound)
 	})
 
 	t.Run("successfully removes the entity", func(t *testing.T) {

@@ -1,7 +1,6 @@
 package ecs
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -42,20 +41,15 @@ func TestSpawn(t *testing.T) {
 		world := NewWorld()
 
 		_, err := Spawn(&world, componentA{}, componentA{})
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrDuplicateComponent))
+		assert.ErrorIs(err, ErrDuplicateComponent)
 		_, err = Spawn(&world, componentA{}, componentA{}, componentA{})
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrDuplicateComponent))
+		assert.ErrorIs(err, ErrDuplicateComponent)
 		_, err = Spawn(&world, componentA{}, componentA{}, componentB{})
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrDuplicateComponent))
+		assert.ErrorIs(err, ErrDuplicateComponent)
 		_, err = Spawn(&world, componentA{}, componentB{}, componentA{})
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrDuplicateComponent))
+		assert.ErrorIs(err, ErrDuplicateComponent)
 		_, err = Spawn(&world, componentB{}, componentA{}, componentA{})
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrDuplicateComponent))
+		assert.ErrorIs(err, ErrDuplicateComponent)
 
 		assert.Equal(0, world.CountEntities())
 		assert.Equal(0, world.CountComponents())

@@ -1,7 +1,6 @@
 package ecs
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,8 +15,7 @@ func TestWorldGetEntry(t *testing.T) {
 
 		entry, err := world.getEntry(nonExistingEntity)
 		assert.Nil(entry)
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrEntityNotFound))
+		assert.ErrorIs(err, ErrEntityNotFound)
 	})
 
 	t.Run("returns an error if the given entity is not present", func(t *testing.T) {
@@ -28,8 +26,7 @@ func TestWorldGetEntry(t *testing.T) {
 
 		entry, err := world.getEntry(nonExistingEntity)
 		assert.Nil(entry)
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrEntityNotFound))
+		assert.ErrorIs(err, ErrEntityNotFound)
 	})
 
 	t.Run("successfully gets the right entry", func(t *testing.T) {

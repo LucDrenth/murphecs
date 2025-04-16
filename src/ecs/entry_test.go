@@ -1,7 +1,6 @@
 package ecs
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -43,8 +42,7 @@ func TestGetComponentFromEntry(t *testing.T) {
 		}}
 
 		componentA, _, err := getComponentFromEntry[componentB](&entry)
-		assert.Error(err)
-		assert.True(errors.Is(err, ErrComponentNotFound))
+		assert.ErrorIs(err, ErrComponentNotFound)
 		assert.Nil(componentA)
 	})
 }
