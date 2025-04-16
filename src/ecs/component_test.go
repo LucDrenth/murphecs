@@ -151,13 +151,24 @@ func TestComponentTypeConversions(t *testing.T) {
 	t.Run("toComponentType and getComponentType result in the same type", func(t *testing.T) {
 		assert := assert.New(t)
 
-		assert.NotEqual(
+		assert.Equal(
 			toComponentType(componentA{}),
 			getComponentType[componentA](),
 		)
 		assert.NotEqual(
 			getComponentType[componentA](),
 			getComponentType[componentB](),
+		)
+	})
+
+	t.Run("getting type from an IComponent returns the same type as when passing type param", func(t *testing.T) {
+		assert := assert.New(t)
+
+		var iComponent IComponent = componentA{}
+
+		assert.Equal(
+			toComponentType(iComponent).String(),
+			getComponentType[componentA]().String(),
 		)
 	})
 }
