@@ -3,13 +3,13 @@ package ecs
 // world contains all of the entities and their components.
 type world struct {
 	entityIdCounter uint
-	entities        map[entityId]*entry
+	entities        map[EntityId]*entry
 }
 
 // NewWorld returns a world that can contain entities and components.
 func NewWorld() world {
 	return world{
-		entities: map[entityId]*entry{},
+		entities: map[EntityId]*entry{},
 	}
 }
 
@@ -28,7 +28,7 @@ func (world *world) CountComponents() int {
 }
 
 // getEntry returns the entry that correspond to entity, or an ErrEntityNotFound error if it wasn't found.
-func (world *world) getEntry(entity entityId) (*entry, error) {
+func (world *world) getEntry(entity EntityId) (*entry, error) {
 	entry, ok := world.entities[entity]
 	if !ok {
 		return nil, ErrEntityNotFound

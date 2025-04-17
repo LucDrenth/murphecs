@@ -11,7 +11,7 @@ import (
 // Returns an ErrComponentNotFound error if the component is not found.
 //
 // WARNING: Do not store the component pointer
-func Get[A IComponent](world *world, entity entityId) (a *A, err error) {
+func Get[A IComponent](world *world, entity EntityId) (a *A, err error) {
 	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, err
@@ -32,7 +32,7 @@ func Get[A IComponent](world *world, entity entityId) (a *A, err error) {
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get2[A, B IComponent](world *world, entity entityId) (a *A, b *B, err error) {
+func Get2[A, B IComponent](world *world, entity EntityId) (a *A, b *B, err error) {
 	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, nil, err
@@ -55,7 +55,7 @@ func Get2[A, B IComponent](world *world, entity entityId) (a *A, b *B, err error
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get3[A, B, C IComponent](world *world, entity entityId) (a *A, b *B, c *C, err error) {
+func Get3[A, B, C IComponent](world *world, entity EntityId) (a *A, b *B, c *C, err error) {
 	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, nil, nil, err
@@ -80,7 +80,7 @@ func Get3[A, B, C IComponent](world *world, entity entityId) (a *A, b *B, c *C, 
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get4[A, B, C, D IComponent](world *world, entity entityId) (a *A, b *B, c *C, d *D, err error) {
+func Get4[A, B, C, D IComponent](world *world, entity EntityId) (a *A, b *B, c *C, d *D, err error) {
 	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, nil, nil, nil, err
@@ -107,7 +107,7 @@ func Get4[A, B, C, D IComponent](world *world, entity entityId) (a *A, b *B, c *
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get5[A, B, C, D, E IComponent](world *world, entity entityId) (a *A, b *B, c *C, d *D, e *E, err error) {
+func Get5[A, B, C, D, E IComponent](world *world, entity EntityId) (a *A, b *B, c *C, d *D, e *E, err error) {
 	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, nil, nil, nil, nil, err
@@ -136,7 +136,7 @@ func Get5[A, B, C, D, E IComponent](world *world, entity entityId) (a *A, b *B, 
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get6[A, B, C, D, E, F IComponent](world *world, entity entityId) (a *A, b *B, c *C, d *D, e *E, f *F, err error) {
+func Get6[A, B, C, D, E, F IComponent](world *world, entity EntityId) (a *A, b *B, c *C, d *D, e *E, f *F, err error) {
 	entry, err := world.getEntry(entity)
 	if err != nil {
 		return nil, nil, nil, nil, nil, nil, err
@@ -167,7 +167,7 @@ func Get6[A, B, C, D, E, F IComponent](world *world, entity entityId) (a *A, b *
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get7[A, B, C, D, E, F, G IComponent](world *world, entity entityId) (
+func Get7[A, B, C, D, E, F, G IComponent](world *world, entity EntityId) (
 	a *A, b *B, c *C, d *D, e *E, f *F, g *G, err error,
 ) {
 	entry, err := world.getEntry(entity)
@@ -202,7 +202,7 @@ func Get7[A, B, C, D, E, F, G IComponent](world *world, entity entityId) (
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get8[A, B, C, D, E, F, G, H IComponent](world *world, entity entityId) (
+func Get8[A, B, C, D, E, F, G, H IComponent](world *world, entity EntityId) (
 	a *A, b *B, c *C, d *D, e *E, f *F, g *G, h *H, err error,
 ) {
 	entry, err := world.getEntry(entity)

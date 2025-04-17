@@ -8,7 +8,7 @@ import (
 //
 // Returns an ErrComponentAlreadyPresent error if any of the components is already present
 // while still inserting the components that are not yet present.
-func Insert(world *world, entity entityId, components ...IComponent) (err error) {
+func Insert(world *world, entity EntityId, components ...IComponent) (err error) {
 	entry, ok := world.entities[entity]
 	if !ok {
 		return ErrEntityNotFound

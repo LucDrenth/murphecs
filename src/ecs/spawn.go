@@ -12,7 +12,7 @@ import (
 // Returns an ErrDuplicateComponent error when any of the given components are of the same type.
 //
 // Calling Spawn without any components to generate an entityId is allowed.
-func Spawn(world *world, components ...IComponent) (entityId, error) {
+func Spawn(world *world, components ...IComponent) (EntityId, error) {
 	componentTypes := toComponentTypes(components)
 
 	// check for duplicates

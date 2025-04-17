@@ -6,11 +6,30 @@ import (
 
 type query1Result[A IComponent] struct {
 	componentsA []*A
-	entityIds   []entityId
+	entityIds   []EntityId
 }
 
-func (q query1Result[A]) Iter() func(yield func(entityId entityId, a *A) bool) {
-	return func(yield func(entityId entityId, a *A) bool) {
+// Iter executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q query1Result[A]) Iter(f func(entityId EntityId, a *A) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i], q.componentsA[i]); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Range allow you to range over the query result
+//
+// ```
+// for entityId, component := range queryResult.Range() { ... }
+// ```
+//
+// Due to yield only being able to return 2 params, it can not be implemented for query2Result, query3Result, query4Result etc.
+func (q query1Result[A]) Range() func(yield func(entityId EntityId, a *A) bool) {
+	return func(yield func(entityId EntityId, a *A) bool) {
 		for i := range q.entityIds {
 			if !yield(q.entityIds[i], q.componentsA[i]) {
 				return
@@ -78,17 +97,19 @@ func Query1[A IComponent](world *world, options ...queryOption) query1Result[A] 
 type query2Result[A, B IComponent] struct {
 	componentsA []*A
 	componentsB []*B
-	entityIds   []entityId
+	entityIds   []EntityId
 }
 
-func (q query2Result[A, B]) Iter() func(yield func(entityId entityId, a *A, b *B) bool) {
-	return func(yield func(entityId entityId, a *A, b *B) bool) {
-		for i := range q.entityIds {
-			if !yield(q.entityIds[i], q.componentsA[i], q.componentsB[i]) {
-				return
-			}
+// Iter executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q query2Result[A, B]) Iter(f func(entityId EntityId, a *A, b *B) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i]); err != nil {
+			return err
 		}
 	}
+
+	return nil
 }
 
 // Query2 gets the given components of all entities that match the options.
@@ -105,7 +126,7 @@ func (q query2Result[A, B]) Iter() func(yield func(entityId entityId, a *A, b *B
 // By default, entities have to have the given components. You can mark components
 // as optional by passing 1 or more ecs.Options as an option. This will result in nil
 // being returned for that component for the entities that don't have that component.
-func Query2[A IComponent, B IComponent](world *world, options ...queryOption) (query2Result[A, B], error) {
+func Query2[A IComponent, B IComponent](world *world, options ...queryOption) query2Result[A, B] {
 	result := query2Result[A, B]{}
 	queryOptions, err := createCombinedQueryOptions(options)
 	if err != nil {
@@ -132,7 +153,7 @@ func Query2[A IComponent, B IComponent](world *world, options ...queryOption) (q
 		result.entityIds = append(result.entityIds, entityId)
 	}
 
-	return result, nil
+	return result
 }
 
 func getQueryComponent[T IComponent](entry *entry, queryOptions *combinedQueryOptions) (result *T, match bool) {

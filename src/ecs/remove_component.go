@@ -11,7 +11,7 @@ import (
 //
 // Returns an ErrEntityNotFound error if the entity does not exist in world.
 // Returns an ErrComponentNotFound error if the component is not present in the entity.
-func Remove[A IComponent](world *world, entity entityId) error {
+func Remove[A IComponent](world *world, entity EntityId) error {
 	entry, ok := world.entities[entity]
 	if !ok {
 		return ErrEntityNotFound
@@ -24,7 +24,7 @@ func Remove[A IComponent](world *world, entity entityId) error {
 //
 // Returns an ErrEntityNotFound error if the entity does not exist in world.
 // Returns an ErrComponentNotFound error if any of the components are not present in entity, while still removing the ones that are present.
-func Remove2[A, B IComponent](world *world, entity entityId) (result error) {
+func Remove2[A, B IComponent](world *world, entity EntityId) (result error) {
 	entry, ok := world.entities[entity]
 	if !ok {
 		return ErrEntityNotFound
@@ -44,7 +44,7 @@ func Remove2[A, B IComponent](world *world, entity entityId) (result error) {
 //
 // Returns an ErrEntityNotFound error if the entity does not exist in world.
 // Returns an ErrComponentNotFound error if any of the components are not present in entity, while still removing the ones that are present.
-func Remove3[A, B, C IComponent](world *world, entity entityId) (result error) {
+func Remove3[A, B, C IComponent](world *world, entity EntityId) (result error) {
 	entry, ok := world.entities[entity]
 	if !ok {
 		return ErrEntityNotFound
@@ -67,7 +67,7 @@ func Remove3[A, B, C IComponent](world *world, entity entityId) (result error) {
 //
 // Returns an ErrEntityNotFound error if the entity does not exist in world.
 // Returns an ErrComponentNotFound error if any of the components are not present in entity, while still removing the ones that are present.
-func Remove4[A, B, C, D IComponent](world *world, entity entityId) (result error) {
+func Remove4[A, B, C, D IComponent](world *world, entity EntityId) (result error) {
 	entry, ok := world.entities[entity]
 	if !ok {
 		return ErrEntityNotFound

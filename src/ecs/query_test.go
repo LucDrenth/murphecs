@@ -3,10 +3,41 @@ package ecs
 import (
 	"testing"
 
+	"github.com/lucdrenth/murph_engine/src/utils"
 	"github.com/stretchr/testify/assert"
 )
 
 // TODO much more tests to write here
+
+func TestRangeQueryResult1(t *testing.T) {
+	type componentA struct{ Component }
+
+	t.Run("range works as expected", func(t *testing.T) {
+		assert := assert.New(t)
+
+		expectedEntityIds := []EntityId{
+			3,
+			10,
+		}
+
+		result := query1Result[componentA]{
+			[]*componentA{
+				utils.PointerTo(componentA{}),
+				utils.PointerTo(componentA{}),
+			},
+			expectedEntityIds,
+		}
+
+		entityIdResults := []EntityId{}
+
+		for entityId, component := range result.Range() {
+			assert.NotNil(component)
+			entityIdResults = append(entityIdResults, entityId)
+		}
+
+		assert.ElementsMatch(expectedEntityIds, entityIdResults)
+	})
+}
 
 func TestQuery1(t *testing.T) {
 	type componentA struct{ Component }
@@ -17,7 +48,7 @@ func TestQuery1(t *testing.T) {
 		assert := assert.New(t)
 		world := NewWorld()
 
-		expected := []entityId{}
+		expected := []EntityId{}
 
 		expectedEntity, err := Spawn(&world, componentA{}, componentB{}, componentC{})
 		assert.NoError(err)
@@ -45,12 +76,14 @@ func TestQuery1(t *testing.T) {
 		assert.NoError(err)
 
 		result := Query1[componentB](&world)
-		resultEntities := []entityId{}
+		resultEntities := []EntityId{}
 
-		for entityId, b := range result.Iter() {
+		// check that Iter works as expected
+		err = result.Iter(func(entityId EntityId, b *componentB) error {
 			assert.NotNil(b)
 			resultEntities = append(resultEntities, entityId)
-		}
+			return nil
+		})
 
 		assert.NoError(err)
 
