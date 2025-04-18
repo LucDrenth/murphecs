@@ -21,9 +21,9 @@ func (entry *entry) countComponents() int {
 // getComponentFromEntry returns a pointer to the component, the index of the component and nil if entry contains the component.
 // returns nil, -1, error if entry does not contain the component.
 func getComponentFromEntry[T IComponent](entry *entry) (*T, int, error) {
-	for i, component := range entry.components {
-		if maybeTarget, ok := component.(T); ok {
-			return &maybeTarget, i, nil
+	for i := range entry.components {
+		if result, ok := entry.components[i].(T); ok {
+			return &result, i, nil
 		}
 	}
 

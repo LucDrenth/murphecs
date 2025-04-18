@@ -1,8 +1,14 @@
+// Due to yield only being able to return 2 params, it can not be implemented for queries that return
+// more than 2 components.
 package ecs
 
 import (
 	"slices"
 )
+
+type QueryResult interface {
+	NumberOfResult() uint
+}
 
 type query1Result[A IComponent] struct {
 	componentsA []*A
@@ -11,7 +17,7 @@ type query1Result[A IComponent] struct {
 
 // Iter executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
-func (q query1Result[A]) Iter(f func(entityId EntityId, a *A) error) error {
+func (q *query1Result[A]) Iter(f func(entityId EntityId, a *A) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i]); err != nil {
 			return err
@@ -21,21 +27,21 @@ func (q query1Result[A]) Iter(f func(entityId EntityId, a *A) error) error {
 	return nil
 }
 
-// Range allow you to range over the query result
+// Range lets you range over the query result
 //
-// ```
-// for entityId, component := range queryResult.Range() { ... }
-// ```
-//
-// Due to yield only being able to return 2 params, it can not be implemented for query2Result, query3Result, query4Result etc.
-func (q query1Result[A]) Range() func(yield func(entityId EntityId, a *A) bool) {
-	return func(yield func(entityId EntityId, a *A) bool) {
+// for component := range queryResult.Range() { ... }
+func (q *query1Result[A]) Range() func(yield func(a *A) bool) {
+	return func(yield func(a *A) bool) {
 		for i := range q.entityIds {
-			if !yield(q.entityIds[i], q.componentsA[i]) {
+			if !yield(q.componentsA[i]) {
 				return
 			}
 		}
 	}
+}
+
+func (q *query1Result[A]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
 }
 
 // Query gets the given component of all entities that match the options.
@@ -102,7 +108,7 @@ type query2Result[A, B IComponent] struct {
 
 // Iter executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
-func (q query2Result[A, B]) Iter(f func(entityId EntityId, a *A, b *B) error) error {
+func (q *query2Result[A, B]) Iter(f func(entityId EntityId, a *A, b *B) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i]); err != nil {
 			return err
