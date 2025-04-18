@@ -5,8 +5,8 @@ type entry struct {
 }
 
 func (entry *entry) containsComponentType(componentTypeToCheck componentType) bool {
-	for _, component := range entry.components {
-		if toComponentType(component) == componentTypeToCheck {
+	for i := range entry.components {
+		if toComponentType(entry.components[i]) == componentTypeToCheck {
 			return true
 		}
 	}
