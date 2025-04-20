@@ -22,12 +22,24 @@ type componentType = reflect.Type
 
 // toComponentType returns a unique representation of the component type
 func toComponentType(component IComponent) componentType {
-	return reflect.TypeOf(component)
+	result := reflect.TypeOf(component)
+
+	if result.Kind() == reflect.Pointer {
+		return result.Elem()
+	}
+
+	return result
 }
 
 // getComponentType returns a unique representation of the component type
 func getComponentType[T IComponent]() componentType {
-	return utils.TypeOf[T]()
+	result := utils.TypeOf[T]()
+
+	if result.Kind() == reflect.Pointer {
+		return result.Elem()
+	}
+
+	return result
 }
 
 // toComponentDebugType returns a string reflection of the component type such as "ecs.Entity"

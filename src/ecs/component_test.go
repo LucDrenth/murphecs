@@ -184,4 +184,17 @@ func TestComponentTypeConversions(t *testing.T) {
 			getComponentType[componentA]().String(),
 		)
 	})
+
+	t.Run("return the same result for components and component pointers", func(t *testing.T) {
+		assert := assert.New(t)
+
+		assert.Equal(
+			toComponentType(&componentA{}),
+			toComponentType(componentA{}),
+		)
+		assert.Equal(
+			getComponentType[componentA](),
+			getComponentType[*componentA](),
+		)
+	})
 }
