@@ -32,6 +32,6 @@ func main() {
 	err := ecs.Insert(&world, entity, &Dialog{text: "good evening"}, &Friendly{})
 	fmt.Printf("Insert error: %v\n", err)
 
-	dialog, _ := ecs.Get[Dialog](&world, entity)
+	dialog, _ := ecs.Get1[Dialog](&world, entity)
 	fmt.Printf("Dialog text: %s\n", dialog.text)
 }

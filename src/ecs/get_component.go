@@ -1,14 +1,14 @@
 // functions to get components for a given entity
 package ecs
 
-// Get returns the component that belongs to the given entity.
+// Get1 returns the component that belongs to the given entity.
 //
 // Can return the following errors:
 //   - Returns an ErrEntityNotFound error if the entity is not found.
 //   - Returns an ErrComponentNotFound error if the entity does not have the component.
 //
 // WARNING: Do not store the component pointer
-func Get[A IComponent](world *world, entity EntityId) (a *A, err error) {
+func Get1[A IComponent](world *world, entity EntityId) (a *A, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return nil, ErrEntityNotFound

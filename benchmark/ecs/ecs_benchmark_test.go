@@ -133,9 +133,9 @@ func BenchmarkGet(b *testing.B) {
 	target, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 	ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 
-	b.Run("Get", func(b *testing.B) {
+	b.Run("Get1", func(b *testing.B) {
 		for b.Loop() {
-			ecs.Get[emptyComponentA](&world, target)
+			ecs.Get1[emptyComponentA](&world, target)
 		}
 	})
 

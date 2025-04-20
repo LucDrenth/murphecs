@@ -33,9 +33,9 @@ func TestDelete(t *testing.T) {
 		assert.NoError(err)
 
 		// check that we can still get entity1 and entity3
-		_, err = Get[structA](&world, entity1)
+		_, err = Get1[structA](&world, entity1)
 		assert.NoError(err)
-		_, err = Get[structA](&world, entity3)
+		_, err = Get1[structA](&world, entity3)
 		assert.NoError(err)
 	})
 }

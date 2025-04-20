@@ -27,7 +27,7 @@ func main() {
 	entity, _ := ecs.Spawn(&world, &Friendly{}, &Health{max: 100, current: 80}, &NPC{name: "Murphy"})
 
 	// only get the NPC component
-	npc, _ := ecs.Get[NPC](&world, entity)
+	npc, _ := ecs.Get1[NPC](&world, entity)
 	fmt.Printf("npc name is %s\n", (*npc).name)
 
 	// get both the NPC and the Health component

@@ -78,7 +78,7 @@ func TestGet(t *testing.T) {
 	t.Run("returns the expected component", func(t *testing.T) {
 		entity, world, assert := setup(&componentA{value: expectedValue})
 
-		a, err := Get[componentA](world, entity)
+		a, err := Get1[componentA](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValue, (*a).value)
@@ -87,21 +87,21 @@ func TestGet(t *testing.T) {
 	t.Run("returns an error if the component does not exist on the entity", func(t *testing.T) {
 		entity, world, assert := setup(&componentA{value: expectedValue})
 
-		_, err := Get[nonExistingComponent](world, entity)
+		_, err := Get1[nonExistingComponent](world, entity)
 		assert.ErrorIs(err, ErrComponentNotFound)
 	})
 
 	t.Run("returns an error if the entity is not found", func(t *testing.T) {
 		_, world, assert := setup(&componentB{})
 
-		_, err := Get[componentB](world, nonExistingEntity)
+		_, err := Get1[componentB](world, nonExistingEntity)
 		assert.ErrorIs(err, ErrEntityNotFound)
 	})
 
 	t.Run("returns an error if a component is exactly like the requested component", func(t *testing.T) {
 		entity, world, assert := setup(&componentB{})
 
-		_, err := Get[componentLikeB](world, entity)
+		_, err := Get1[componentLikeB](world, entity)
 		assert.Error(err)
 	})
 }
