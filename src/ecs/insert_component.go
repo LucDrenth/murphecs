@@ -2,25 +2,69 @@ package ecs
 
 import (
 	"fmt"
+
+	"github.com/lucdrenth/murph_engine/src/utils"
 )
 
-// Insert adds components to the given entity.
+// Insert adds the given components and all their required components (that the entity does not yet have) to the given entity.
 //
-// Returns an ErrComponentAlreadyPresent error if any of the components is already present
-// while still inserting the components that are not yet present.
-func Insert(world *world, entity EntityId, components ...IComponent) (err error) {
-	entry, ok := world.entities[entity]
+// Can return the following errors:
+//   - Returns an ErrEntityNotFound error when the given entity does not exist
+//   - Returns an ErrDuplicateComponent error when any of the given components are of the same type.
+//   - Returns an ErrComponentAlreadyPresent error if any of the components is already present while still inserting
+//     the components that are not yet present.
+//   - Returns an ErrComponentIsNotAPointer error if any of the given components, or their required components, are not
+//     passed as a reference (e.g. componentA{} instead of &componentA{})
+func Insert(world *world, entity EntityId, components ...IComponent) (resultErr error) {
+	entityData, ok := world.entities[entity]
 	if !ok {
 		return ErrEntityNotFound
 	}
 
-	for _, component := range components {
-		if entry.containsComponentType(toComponentType(component)) {
-			err = fmt.Errorf("%w: %s", ErrComponentAlreadyPresent, toComponentDebugType(component))
-		} else {
-			entry.components = append(entry.components, component)
-		}
+	componentTypes := toComponentTypes(components)
+
+	// check for duplicates
+	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(componentTypes)
+	if duplicate != nil {
+		debugType := toComponentDebugType(components[duplicateIndexA])
+		return fmt.Errorf("%w: %s at positions %d and %d", ErrDuplicateComponent, debugType, duplicateIndexA, duplicateIndexB)
 	}
 
-	return err
+	for i, component := range components {
+		if _, componentExists := entityData.components[componentTypes[i]]; componentExists {
+			resultErr = fmt.Errorf("%w: %s", ErrComponentAlreadyPresent, toComponentDebugType(component))
+			continue
+		}
+
+		componentRegistry := world.getComponentRegistry(componentTypes[i])
+
+		componentIndex, err := componentRegistry.insert(component)
+		if err != nil {
+			resultErr = fmt.Errorf("failed to insert component: %w", err)
+			continue
+		}
+
+		world.entities[entity].components[componentTypes[i]] = componentIndex
+	}
+
+	requiredComponents := getAllRequiredComponents(&componentTypes, components)
+	componentTypes = toComponentTypes(requiredComponents)
+
+	for i, component := range requiredComponents {
+		if _, componentExists := entityData.components[componentTypes[i]]; componentExists {
+			continue
+		}
+
+		componentRegistry := world.getComponentRegistry(componentTypes[i])
+
+		componentIndex, err := componentRegistry.insert(component)
+		if err != nil {
+			resultErr = fmt.Errorf("failed to insert a required component: %w", err)
+			continue
+		}
+
+		world.entities[entity].components[componentTypes[i]] = componentIndex
+	}
+
+	return resultErr
 }

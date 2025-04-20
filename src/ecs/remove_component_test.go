@@ -22,7 +22,7 @@ func TestRemove(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewWorld()
-		entity, err := Spawn(&world, componentA{})
+		entity, err := Spawn(&world, &componentA{})
 		assert.NoError(err)
 
 		err = Remove[componentB](&world, entity)
@@ -33,7 +33,7 @@ func TestRemove(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewWorld()
-		entity, err := Spawn(&world, componentA{}, componentB{})
+		entity, err := Spawn(&world, &componentA{}, &componentB{})
 		assert.NoError(err)
 
 		err = Remove[componentA](&world, entity)
@@ -57,7 +57,7 @@ func TestRemove(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewWorld()
-		entity, err := Spawn(&world, componentA{}, componentB{})
+		entity, err := Spawn(&world, &componentA{}, &componentB{})
 		assert.NoError(err)
 
 		err = Remove[componentB](&world, entity)
@@ -95,7 +95,7 @@ func TestRemove2(t *testing.T) {
 		assert := assert.New(t)
 		world := NewWorld()
 
-		entity, err := Spawn(&world, componentA{}, componentB{})
+		entity, err := Spawn(&world, &componentA{}, &componentB{})
 		assert.NoError(err)
 		err = Remove2[componentB, componentC](&world, entity)
 		assert.ErrorIs(err, ErrComponentNotFound)
@@ -104,7 +104,7 @@ func TestRemove2(t *testing.T) {
 		_, err = Get[componentA](&world, entity)
 		assert.NoError(err)
 
-		entity, err = Spawn(&world, componentA{}, componentB{})
+		entity, err = Spawn(&world, &componentA{}, &componentB{})
 		assert.NoError(err)
 		err = Remove2[componentC, componentB](&world, entity)
 		assert.ErrorIs(err, ErrComponentNotFound)
@@ -113,7 +113,7 @@ func TestRemove2(t *testing.T) {
 		_, err = Get[componentA](&world, entity)
 		assert.NoError(err)
 
-		entity, err = Spawn(&world, componentA{}, componentB{})
+		entity, err = Spawn(&world, &componentA{}, &componentB{})
 		assert.NoError(err)
 		err = Remove2[componentA, componentC](&world, entity)
 		assert.ErrorIs(err, ErrComponentNotFound)
@@ -122,7 +122,7 @@ func TestRemove2(t *testing.T) {
 		_, err = Get[componentB](&world, entity)
 		assert.NoError(err)
 
-		entity, err = Spawn(&world, componentA{}, componentB{})
+		entity, err = Spawn(&world, &componentA{}, &componentB{})
 		assert.NoError(err)
 		err = Remove2[componentC, componentA](&world, entity)
 		assert.ErrorIs(err, ErrComponentNotFound)
@@ -136,7 +136,7 @@ func TestRemove2(t *testing.T) {
 		assert := assert.New(t)
 		world := NewWorld()
 
-		entity, err := Spawn(&world, componentA{}, componentB{}, componentC{})
+		entity, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{})
 		assert.NoError(err)
 		err = Remove2[componentA, componentB](&world, entity)
 		assert.NoError(err)
@@ -147,7 +147,7 @@ func TestRemove2(t *testing.T) {
 		_, err = Get[componentC](&world, entity)
 		assert.NoError(err)
 
-		entity, err = Spawn(&world, componentA{}, componentB{}, componentC{})
+		entity, err = Spawn(&world, &componentA{}, &componentB{}, &componentC{})
 		assert.NoError(err)
 		err = Remove2[componentB, componentC](&world, entity)
 		assert.NoError(err)
@@ -158,7 +158,7 @@ func TestRemove2(t *testing.T) {
 		_, err = Get[componentC](&world, entity)
 		assert.ErrorIs(err, ErrComponentNotFound)
 
-		entity, err = Spawn(&world, componentA{}, componentB{}, componentC{})
+		entity, err = Spawn(&world, &componentA{}, &componentB{}, &componentC{})
 		assert.NoError(err)
 		err = Remove2[componentA, componentC](&world, entity)
 		assert.NoError(err)
@@ -169,7 +169,7 @@ func TestRemove2(t *testing.T) {
 		_, err = Get[componentC](&world, entity)
 		assert.ErrorIs(err, ErrComponentNotFound)
 
-		entity, err = Spawn(&world, componentA{}, componentB{}, componentC{})
+		entity, err = Spawn(&world, &componentA{}, &componentB{}, &componentC{})
 		assert.NoError(err)
 		err = Remove2[componentB, componentA](&world, entity)
 		assert.NoError(err)
@@ -180,7 +180,7 @@ func TestRemove2(t *testing.T) {
 		_, err = Get[componentC](&world, entity)
 		assert.NoError(err)
 
-		entity, err = Spawn(&world, componentA{}, componentB{}, componentC{})
+		entity, err = Spawn(&world, &componentA{}, &componentB{}, &componentC{})
 		assert.NoError(err)
 		err = Remove2[componentC, componentB](&world, entity)
 		assert.NoError(err)
@@ -191,7 +191,7 @@ func TestRemove2(t *testing.T) {
 		_, err = Get[componentC](&world, entity)
 		assert.ErrorIs(err, ErrComponentNotFound)
 
-		entity, err = Spawn(&world, componentA{}, componentB{}, componentC{})
+		entity, err = Spawn(&world, &componentA{}, &componentB{}, &componentC{})
 		assert.NoError(err)
 		err = Remove2[componentC, componentA](&world, entity)
 		assert.NoError(err)
@@ -222,7 +222,7 @@ func TestRemove3(t *testing.T) {
 		assert := assert.New(t)
 		world := NewWorld()
 
-		entity, err := Spawn(&world, componentA{}, componentB{}, componentC{}, componentD{})
+		entity, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{}, &componentD{})
 		assert.NoError(err)
 		err = Remove3[componentB, componentD, componentA](&world, entity)
 		assert.NoError(err)
@@ -256,7 +256,7 @@ func TestRemove4(t *testing.T) {
 		assert := assert.New(t)
 		world := NewWorld()
 
-		entity, err := Spawn(&world, componentA{}, componentB{}, componentC{}, componentD{}, componentE{})
+		entity, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{}, &componentD{}, &componentE{})
 		assert.NoError(err)
 		err = Remove4[componentB, componentD, componentA, componentE](&world, entity)
 		assert.NoError(err)

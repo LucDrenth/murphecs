@@ -6,42 +6,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestWorldGetEntry(t *testing.T) {
+func TestCreateEntity(t *testing.T) {
+	assert := assert.New(t)
+
+	world := NewWorld()
+	entity1 := world.createEntity()
+	entity2 := world.createEntity()
+
+	assert.NotEqual(entity1, entity2)
+}
+
+func TestGetComponentRegistry(t *testing.T) {
 	type componentA struct{ Component }
 
-	t.Run("returns an error if world is empty", func(t *testing.T) {
-		assert := assert.New(t)
-		world := NewWorld()
+	assert := assert.New(t)
 
-		entry, err := world.getEntry(nonExistingEntity)
-		assert.Nil(entry)
-		assert.ErrorIs(err, ErrEntityNotFound)
-	})
+	// create component registry if it is not present yet
+	world := NewWorld()
+	componentRegistry := world.getComponentRegistry(getComponentType[componentA]())
+	assert.NotNil(componentRegistry)
 
-	t.Run("returns an error if the given entity is not present", func(t *testing.T) {
-		assert := assert.New(t)
-		world := NewWorld()
-		_, err := Spawn(&world)
-		assert.NoError(err)
-
-		entry, err := world.getEntry(nonExistingEntity)
-		assert.Nil(entry)
-		assert.ErrorIs(err, ErrEntityNotFound)
-	})
-
-	t.Run("successfully gets the right entry", func(t *testing.T) {
-		assert := assert.New(t)
-		world := NewWorld()
-
-		_, err := Spawn(&world)
-		assert.NoError(err)
-		entity, err := Spawn(&world, componentA{})
-		assert.NoError(err)
-		_, err = Spawn(&world)
-		assert.NoError(err)
-
-		entry, err := world.getEntry(entity)
-		assert.NoError(err)
-		assert.Equal(1, entry.countComponents())
-	})
+	// get the same component registry if it is already present
+	componentRegistry2 := world.getComponentRegistry(getComponentType[componentA]())
+	assert.NotNil(componentRegistry)
+	assert.Equal(componentRegistry, componentRegistry2)
 }

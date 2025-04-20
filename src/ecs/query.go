@@ -44,24 +44,6 @@ func (q *query1Result[A]) NumberOfResult() uint {
 	return uint(len(q.entityIds))
 }
 
-// Query gets the given component of all entities that match the options.
-// Use Query2, Query3, Query4 etc. to query multiple components.
-//
-// For filtering, choose from:
-//   - ecs.With
-//   - ecs.Without
-//
-// Or use ecs.Or and ecs.And to combine filters.
-// If you pass multiple filters in options, all of them must pass for an entity to come up
-// in the results.
-//
-// By default, entities have to have the given component. You can mark the component that
-// you query as optional by passing ecs.Optional as an option. This will result in nil
-// being returned for that component for the entities that don't have that component.
-func Query[A IComponent](world *world, options ...queryOption) query1Result[A] {
-	return Query1[A](world, options...)
-}
-
 // Query1 gets the given component of all entities that match the options.
 // Use Query2, Query3, Query4 etc. to query multiple components.
 //
@@ -83,12 +65,12 @@ func Query1[A IComponent](world *world, options ...queryOption) query1Result[A] 
 		// TODO log warning but do not return.
 	}
 
-	for entityId, entry := range world.entities {
-		if ok := validateQueryFilters(entry, &queryOptions); !ok {
+	for entityId, entityData := range world.entities {
+		if ok := validateQueryFilters(entityData, &queryOptions); !ok {
 			continue
 		}
 
-		a, match := getQueryComponent[A](entry, &queryOptions)
+		a, match := getQueryComponent[A](world, entityData, &queryOptions)
 		if !match {
 			continue
 		}
@@ -139,17 +121,17 @@ func Query2[A IComponent, B IComponent](world *world, options ...queryOption) qu
 		// TODO log warning but do not return.
 	}
 
-	for entityId, entry := range world.entities {
-		if ok := validateQueryFilters(entry, &queryOptions); !ok {
+	for entityId, entityData := range world.entities {
+		if ok := validateQueryFilters(entityData, &queryOptions); !ok {
 			continue
 		}
 
-		a, match := getQueryComponent[A](entry, &queryOptions)
+		a, match := getQueryComponent[A](world, entityData, &queryOptions)
 		if !match {
 			continue
 		}
 
-		b, match := getQueryComponent[B](entry, &queryOptions)
+		b, match := getQueryComponent[B](world, entityData, &queryOptions)
 		if !match {
 			continue
 		}
@@ -162,15 +144,30 @@ func Query2[A IComponent, B IComponent](world *world, options ...queryOption) qu
 	return result
 }
 
-func getQueryComponent[T IComponent](entry *entry, queryOptions *combinedQueryOptions) (result *T, match bool) {
-	result, _, _ = getComponentFromEntry[T](entry)
-	match = result != nil || slices.Contains(queryOptions.optionalComponents, getComponentType[T]())
-	return result, match
+// getQueryComponent returns a pointer to T if the component is found on the entity.
+//
+// match is true when the entity has the component or if the component is marked marked as optional.
+// When match is true, the entity should be present in the query results.
+func getQueryComponent[T IComponent](world *world, entityData *entityData, queryOptions *combinedQueryOptions) (result *T, match bool) {
+	componentType := getComponentType[T]()
+
+	componentRegistryIndex, entityHasComponent := entityData.components[componentType]
+	if !entityHasComponent {
+		return nil, slices.Contains(queryOptions.optionalComponents, getComponentType[T]())
+	}
+
+	result, err := getComponentFromComponentRegistry[T](world.components[componentType], componentRegistryIndex)
+	if err != nil {
+		// TODO this should never happen. Log an error!
+		return nil, false
+	}
+
+	return result, true
 }
 
-func validateQueryFilters(entry *entry, queryOptions *combinedQueryOptions) bool {
+func validateQueryFilters(entityData *entityData, queryOptions *combinedQueryOptions) bool {
 	for _, filter := range queryOptions.filters {
-		if !filter.validate(entry) {
+		if !filter.validate(entityData) {
 			return false
 		}
 	}

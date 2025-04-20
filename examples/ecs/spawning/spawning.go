@@ -27,13 +27,9 @@ func main() {
 
 	// You can spawn any amount of unique components!
 	entity, err := ecs.Spawn(&world,
-		Friendly{},
-		NPC{name: "Murphy"},
-		Health{max: 100, current: 80},
+		&Friendly{},
+		&NPC{name: "Murphy"},
+		&Health{max: 100, current: 80},
 	)
 	fmt.Printf("Spawned entity=%d, err=%v\n", entity, err)
-
-	// You'll get an error if you put in any duplicate components
-	_, err = ecs.Spawn(&world, NPC{}, NPC{})
-	fmt.Printf("Failed to spawn entity: %v\n", err)
 }

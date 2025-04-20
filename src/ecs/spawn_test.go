@@ -16,19 +16,19 @@ func TestSpawn(t *testing.T) {
 		entity, err := Spawn(&world)
 		assert.Nil(t, err)
 		assert.Equal(t, entity, EntityId(1))
-		entity, err = Spawn(&world, componentA{})
+		entity, err = Spawn(&world, &componentA{})
 		assert.Nil(t, err)
 		assert.Equal(t, entity, EntityId(2))
-		entity, err = Spawn(&world, componentA{})
+		entity, err = Spawn(&world, &componentA{})
 		assert.Nil(t, err)
 		assert.Equal(t, entity, EntityId(3))
-		entity, err = Spawn(&world, componentB{})
+		entity, err = Spawn(&world, &componentB{})
 		assert.Nil(t, err)
 		assert.Equal(t, entity, EntityId(4))
-		entity, err = Spawn(&world, componentA{}, componentB{})
+		entity, err = Spawn(&world, &componentA{}, &componentB{})
 		assert.Nil(t, err)
 		assert.Equal(t, entity, EntityId(5))
-		entity, err = Spawn(&world, componentB{}, componentA{})
+		entity, err = Spawn(&world, &componentB{}, &componentA{})
 		assert.Nil(t, err)
 		assert.Equal(t, entity, EntityId(6))
 
@@ -40,15 +40,15 @@ func TestSpawn(t *testing.T) {
 		assert := assert.New(t)
 		world := NewWorld()
 
-		_, err := Spawn(&world, componentA{}, componentA{})
+		_, err := Spawn(&world, &componentA{}, &componentA{})
 		assert.ErrorIs(err, ErrDuplicateComponent)
-		_, err = Spawn(&world, componentA{}, componentA{}, componentA{})
+		_, err = Spawn(&world, &componentA{}, &componentA{}, &componentA{})
 		assert.ErrorIs(err, ErrDuplicateComponent)
-		_, err = Spawn(&world, componentA{}, componentA{}, componentB{})
+		_, err = Spawn(&world, &componentA{}, &componentA{}, &componentB{})
 		assert.ErrorIs(err, ErrDuplicateComponent)
-		_, err = Spawn(&world, componentA{}, componentB{}, componentA{})
+		_, err = Spawn(&world, &componentA{}, &componentB{}, &componentA{})
 		assert.ErrorIs(err, ErrDuplicateComponent)
-		_, err = Spawn(&world, componentB{}, componentA{}, componentA{})
+		_, err = Spawn(&world, &componentB{}, &componentA{}, &componentA{})
 		assert.ErrorIs(err, ErrDuplicateComponent)
 
 		assert.Equal(0, world.CountEntities())
@@ -62,7 +62,7 @@ type requiredComponentB struct{ Component }
 type withRequiredComponents struct{ Component }
 
 func (a withRequiredComponents) RequiredComponents() []IComponent {
-	return []IComponent{requiredComponentA{}, requiredComponentB{}}
+	return []IComponent{&requiredComponentA{}, &requiredComponentB{}}
 }
 
 func TestSpawnWithRequiredComponents(t *testing.T) {
@@ -70,7 +70,7 @@ func TestSpawnWithRequiredComponents(t *testing.T) {
 		assert := assert.New(t)
 		world := NewWorld()
 
-		entity, err := Spawn(&world, withRequiredComponents{})
+		entity, err := Spawn(&world, &withRequiredComponents{})
 
 		assert.NoError(err)
 		assert.Equal(1, world.CountEntities())

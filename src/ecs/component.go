@@ -14,7 +14,7 @@ type IComponent interface {
 
 type Component struct{}
 
-func (c Component) RequiredComponents() []IComponent {
+func (Component) RequiredComponents() []IComponent {
 	return []IComponent{}
 }
 

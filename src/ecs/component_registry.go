@@ -18,8 +18,8 @@ type componentRegistry struct {
 	capacity       uint // the number of components that can be stored with the current size of data
 }
 
-// newComponentRegistry creates a new instance of newComponentRegistry that can hold [capacity] components of type [componentType].
-func newComponentRegistry(capacity uint, componentType reflect.Type) componentRegistry {
+// createComponentRegistry creates a new instance of createComponentRegistry that can hold [capacity] components of type [componentType].
+func createComponentRegistry(capacity uint, componentType reflect.Type) componentRegistry {
 	data := reflect.New(reflect.ArrayOf(int(capacity), componentType)).Elem()
 
 	return componentRegistry{
@@ -43,29 +43,34 @@ func (c *componentRegistry) increaseCapacity(extraCapacity uint) {
 	c.capacity = newCapacity
 }
 
-func (c *componentRegistry) insert(component IComponent) error {
+// insert returns the index at which the component was inserted.
+//
+// Returns an ErrComponentIsNotAPointer when component is not passed as a reference (e.g. componentA{}, instead of &componentA{})
+func (c *componentRegistry) insert(component IComponent) (uint, error) {
 	componentValue := reflect.ValueOf(component)
 
 	if componentValue.Kind() != reflect.Ptr {
-		return fmt.Errorf("%w: component %s must be a pointer", ErrComponentIsNotAPointer, toComponentDebugType(component))
+		return 0, fmt.Errorf("%w: component %s must be a pointer", ErrComponentIsNotAPointer, toComponentDebugType(component))
 	}
 
 	componentPointer := componentValue.UnsafePointer()
+	insertIndex := c.nextItemIndex
 
-	if c.capacity == c.nextItemIndex {
+	if c.capacity == insertIndex {
 		// double our current capacity
 		c.increaseCapacity(c.capacity)
 	}
 
-	destination, err := c.getComponentPointer(c.nextItemIndex)
+	destination, err := c.getComponentPointer(insertIndex)
 	if err != nil {
-		return err
+		// this error should never happen because we always make sure we have enough capacity.
+		return 0, fmt.Errorf("unexpected error when getting component pointer: %w", err)
 	}
 
 	utils.CopyPointerData(componentPointer, destination, c.componentSize)
 	c.nextItemIndex += 1
 
-	return nil
+	return insertIndex, nil
 }
 
 // getComponentPointer returns an unsafe.Pointer to the component at index.

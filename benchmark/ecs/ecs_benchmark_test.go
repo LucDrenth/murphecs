@@ -1,4 +1,4 @@
-// Benchmark user facing ECS functions
+// Benchmark ECS using its public (user facing) functions
 package ecs_test
 
 import (
@@ -16,28 +16,28 @@ func BenchmarkSpawn(b *testing.B) {
 	b.Run("VariadicOneComponent", func(b *testing.B) {
 		for b.Loop() {
 			world := ecs.NewWorld()
-			ecs.Spawn(&world, emptyComponentA{})
+			ecs.Spawn(&world, &emptyComponentA{})
 		}
 	})
 
 	b.Run("VariadicTwoComponents", func(b *testing.B) {
 		for b.Loop() {
 			world := ecs.NewWorld()
-			ecs.Spawn(&world, emptyComponentA{}, emptyComponentB{})
+			ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{})
 		}
 	})
 
 	b.Run("VariadicThreeComponents", func(b *testing.B) {
 		for b.Loop() {
 			world := ecs.NewWorld()
-			ecs.Spawn(&world, emptyComponentA{}, emptyComponentB{}, emptyComponentC{})
+			ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{})
 		}
 	})
 
 	b.Run("VariadicFourComponents", func(b *testing.B) {
 		for b.Loop() {
 			world := ecs.NewWorld()
-			ecs.Spawn(&world, emptyComponentA{}, emptyComponentB{}, emptyComponentC{}, emptyComponentD{})
+			ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 		}
 	})
 }
@@ -48,7 +48,7 @@ func BenchmarkInsert(b *testing.B) {
 			world := ecs.NewWorld()
 			entity, _ := ecs.Spawn(&world)
 
-			ecs.Insert(&world, entity, emptyComponentA{})
+			ecs.Insert(&world, entity, &emptyComponentA{})
 		}
 	})
 
@@ -57,7 +57,7 @@ func BenchmarkInsert(b *testing.B) {
 			world := ecs.NewWorld()
 			entity, _ := ecs.Spawn(&world)
 
-			ecs.Insert(&world, entity, emptyComponentA{}, emptyComponentB{})
+			ecs.Insert(&world, entity, &emptyComponentA{}, &emptyComponentB{})
 		}
 	})
 
@@ -66,7 +66,7 @@ func BenchmarkInsert(b *testing.B) {
 			world := ecs.NewWorld()
 			entity, _ := ecs.Spawn(&world)
 
-			ecs.Insert(&world, entity, emptyComponentA{}, emptyComponentB{}, emptyComponentC{})
+			ecs.Insert(&world, entity, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{})
 		}
 	})
 
@@ -75,7 +75,7 @@ func BenchmarkInsert(b *testing.B) {
 			world := ecs.NewWorld()
 			entity, _ := ecs.Spawn(&world)
 
-			ecs.Insert(&world, entity, emptyComponentA{}, emptyComponentB{}, emptyComponentC{}, emptyComponentD{})
+			ecs.Insert(&world, entity, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 		}
 	})
 }
@@ -84,7 +84,7 @@ func BenchmarkRemove(b *testing.B) {
 	b.Run("OneComponent", func(b *testing.B) {
 		for b.Loop() {
 			world := ecs.NewWorld()
-			entity, _ := ecs.Spawn(&world, emptyComponentA{}, emptyComponentB{}, emptyComponentC{}, emptyComponentD{})
+			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 
 			ecs.Remove[emptyComponentA](&world, entity)
 		}
@@ -93,7 +93,7 @@ func BenchmarkRemove(b *testing.B) {
 	b.Run("TwoComponents", func(b *testing.B) {
 		for b.Loop() {
 			world := ecs.NewWorld()
-			entity, _ := ecs.Spawn(&world, emptyComponentA{}, emptyComponentB{}, emptyComponentC{}, emptyComponentD{})
+			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 
 			ecs.Remove2[emptyComponentA, emptyComponentB](&world, entity)
 		}
@@ -102,7 +102,7 @@ func BenchmarkRemove(b *testing.B) {
 	b.Run("ThreeComponents", func(b *testing.B) {
 		for b.Loop() {
 			world := ecs.NewWorld()
-			entity, _ := ecs.Spawn(&world, emptyComponentA{}, emptyComponentB{}, emptyComponentC{}, emptyComponentD{})
+			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 
 			ecs.Remove3[emptyComponentA, emptyComponentB, emptyComponentC](&world, entity)
 		}
@@ -111,7 +111,7 @@ func BenchmarkRemove(b *testing.B) {
 	b.Run("FourComponents", func(b *testing.B) {
 		for b.Loop() {
 			world := ecs.NewWorld()
-			entity, _ := ecs.Spawn(&world, emptyComponentA{}, emptyComponentB{}, emptyComponentC{}, emptyComponentD{})
+			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 
 			ecs.Remove4[emptyComponentA, emptyComponentB, emptyComponentC, emptyComponentD](&world, entity)
 		}
@@ -122,16 +122,16 @@ func BenchmarkDelete(b *testing.B) {
 	world := ecs.NewWorld()
 
 	for b.Loop() {
-		entity, _ := ecs.Spawn(&world, emptyComponentA{}, emptyComponentB{}, emptyComponentC{}, emptyComponentD{})
+		entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 		ecs.Delete(&world, entity)
 	}
 }
 
 func BenchmarkGet(b *testing.B) {
 	world := ecs.NewWorld()
-	ecs.Spawn(&world, emptyComponentA{}, emptyComponentB{}, emptyComponentC{}, emptyComponentD{})
-	target, _ := ecs.Spawn(&world, emptyComponentA{}, emptyComponentB{}, emptyComponentC{}, emptyComponentD{})
-	ecs.Spawn(&world, emptyComponentA{}, emptyComponentB{}, emptyComponentC{}, emptyComponentD{})
+	ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+	target, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+	ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 
 	b.Run("Get", func(b *testing.B) {
 		for b.Loop() {

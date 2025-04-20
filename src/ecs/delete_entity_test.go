@@ -22,11 +22,11 @@ func TestDelete(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewWorld()
-		entity1, err := Spawn(&world, structA{})
+		entity1, err := Spawn(&world, &structA{})
 		assert.NoError(err)
-		entity2, err := Spawn(&world, structA{})
+		entity2, err := Spawn(&world, &structA{})
 		assert.NoError(err)
-		entity3, err := Spawn(&world, structA{})
+		entity3, err := Spawn(&world, &structA{})
 		assert.NoError(err)
 
 		err = Delete(&world, entity2)

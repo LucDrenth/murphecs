@@ -5,12 +5,14 @@
 - Proper archetype ECS implementation. Once all of the above is implemented, the basic user facing API is there. But the implementation is its most basic form and is not efficient at all. [See this article from flecs ECS creator](https://ajmmertens.medium.com/building-an-ecs-1-where-are-my-entities-and-components-63d07c7da742).
 
 **Nice-to-have**
-- Check if files can be split up in to 3 packages: storage, actions, filter
-- Relationships (like parent/child)
-- Events
-- Observers
-- More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
-- Better query validations:
+- [code-cleanup] Check if files can be split up in to 3 packages: storage, actions, filter
+- [performance] Generational entities
+- [performance] When removing component from entity, or deleting an entity, the place of the component(s) in the component registry are never reused. We could move the last componentRegistry component to the place of the removed component to reuse the memory and prevent memory from forever growing. When moving a component in componentRegistry, Don't forget to update the index in entityData
+- [feature] Relationships (like parent/child)
+- [feature] Events
+- [feature] Observers
+- [tests] More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
+- [quality-of-life] Better query validations:
     - Return error if marking a component as optional while that component is not queried
     - Return error if there are any duplicate filters
 

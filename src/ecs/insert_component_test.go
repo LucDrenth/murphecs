@@ -6,6 +6,31 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type testInsertComponentA struct{ Component }
+type testInsertComponentB struct{ Component }
+type testInsertComponentC struct{ Component }
+type testInsertComponentWithFaultyRequiredComponent struct{ Component }
+type testInsertComponentD struct{ Component }
+
+func (c testInsertComponentB) RequiredComponents() []IComponent {
+	return []IComponent{
+		&testInsertComponentA{},
+	}
+}
+
+func (c testInsertComponentC) RequiredComponents() []IComponent {
+	return []IComponent{
+		&testInsertComponentB{},
+	}
+}
+
+func (c testInsertComponentWithFaultyRequiredComponent) RequiredComponents() []IComponent {
+	return []IComponent{
+		testInsertComponentD{}, // not passed by reference, should result in error
+		&testInsertComponentA{},
+	}
+}
+
 func TestInsert(t *testing.T) {
 	type componentA struct{ Component }
 	type componentB struct{ Component }
@@ -34,31 +59,31 @@ func TestInsert(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewWorld()
-		entity, err := Spawn(&world, componentA{}, componentB{})
+		entity, err := Spawn(&world, &componentA{}, &componentB{})
 		assert.NoError(err)
 
 		// one component that is already present
-		err = Insert(&world, entity, componentA{})
+		err = Insert(&world, entity, &componentA{})
 		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 
 		// another component that is already present
-		err = Insert(&world, entity, componentB{})
+		err = Insert(&world, entity, &componentB{})
 		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 
 		// all components already present
-		err = Insert(&world, entity, componentA{}, componentB{})
+		err = Insert(&world, entity, &componentA{}, &componentB{})
 		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 
 		// all components already present - different order
-		err = Insert(&world, entity, componentB{}, componentA{})
+		err = Insert(&world, entity, &componentB{}, &componentA{})
 		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 
 		// one component already and 1 component not present
-		err = Insert(&world, entity, componentB{}, componentC{})
+		err = Insert(&world, entity, &componentB{}, &componentC{})
 		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 
 		// one component already and 1 component not present - different order
-		err = Insert(&world, entity, componentC{}, componentB{})
+		err = Insert(&world, entity, &componentC{}, &componentB{})
 		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 	})
 
@@ -66,11 +91,24 @@ func TestInsert(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewWorld()
-		entity, err := Spawn(&world, componentB{})
+		entity, err := Spawn(&world, &componentB{})
 		assert.NoError(err)
 
-		err = Insert(&world, entity, componentA{}, componentB{}, componentC{})
+		err = Insert(&world, entity, &componentA{}, &componentB{}, &componentC{})
 		assert.ErrorIs(err, ErrComponentAlreadyPresent)
+
+		assert.Equal(3, world.CountComponents())
+	})
+
+	t.Run("if any component is not passed by reference, still inserts the other components that are passed by reference", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewWorld()
+		entity, err := Spawn(&world, &componentA{})
+		assert.NoError(err)
+
+		err = Insert(&world, entity, &componentB{}, componentC{}, &componentD{})
+		assert.ErrorIs(err, ErrComponentIsNotAPointer)
 
 		assert.Equal(3, world.CountComponents())
 	})
@@ -81,10 +119,11 @@ func TestInsert(t *testing.T) {
 		world := NewWorld()
 		entityA, err := Spawn(&world)
 		assert.NoError(err)
-		entityB, err := Spawn(&world, componentB{})
+		entityB, err := Spawn(&world, &componentB{})
 		assert.NoError(err)
 
-		Insert(&world, entityA, componentA{}, componentC{})
+		err = Insert(&world, entityA, &componentA{}, &componentC{})
+		assert.NoError(err)
 
 		a, err := Get[componentA](&world, entityA)
 		assert.NoError(err)
@@ -94,5 +133,31 @@ func TestInsert(t *testing.T) {
 		assert.Nil(a)
 
 		assert.Equal(3, world.CountComponents())
+	})
+
+	t.Run("correctly inserts component and their required components", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewWorld()
+		entity, err := Spawn(&world, &testInsertComponentA{})
+		assert.NoError(err)
+
+		err = Insert(&world, entity, &testInsertComponentC{})
+		assert.NoError(err)
+
+		assert.Equal(3, world.CountComponents())
+	})
+
+	t.Run("returns an error if any of the required components is not passed by reference, while still inserting the correctly passed required components", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewWorld()
+		entity, err := Spawn(&world)
+		assert.NoError(err)
+
+		err = Insert(&world, entity, &testInsertComponentWithFaultyRequiredComponent{})
+		assert.ErrorIs(err, ErrComponentIsNotAPointer)
+
+		assert.Equal(2, world.CountComponents())
 	})
 }

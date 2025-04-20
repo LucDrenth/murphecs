@@ -57,36 +57,36 @@ func TestQueryFilter(t *testing.T) {
 	t.Run("queryFilterWith only validates if entry has the component", func(t *testing.T) {
 		assert := assert.New(t)
 
-		entry := entry{components: []IComponent{
-			componentA{},
+		entityData := entityData{components: map[componentType]uint{
+			getComponentType[componentA](): 0,
 		}}
 
 		filter := With[componentA]()
-		assert.True(filter.validate(&entry))
+		assert.True(filter.validate(&entityData))
 
 		filter = With[componentB]()
-		assert.False(filter.validate(&entry))
+		assert.False(filter.validate(&entityData))
 	})
 
 	t.Run("queryFilterWithout only validates if entry does not have the component", func(t *testing.T) {
 		assert := assert.New(t)
 
-		entry := entry{components: []IComponent{
-			componentA{},
+		entityData := entityData{components: map[componentType]uint{
+			getComponentType[componentA](): 0,
 		}}
 
 		filter := Without[componentA]()
-		assert.False(filter.validate(&entry))
+		assert.False(filter.validate(&entityData))
 
 		filter = Without[componentB]()
-		assert.True(filter.validate(&entry))
+		assert.True(filter.validate(&entityData))
 	})
 
 	t.Run("queryFilterAnd only validates if both sub-filters are true", func(t *testing.T) {
 		assert := assert.New(t)
 
-		entry := entry{components: []IComponent{
-			componentA{},
+		entityData := entityData{components: map[componentType]uint{
+			getComponentType[componentA](): 0,
 		}}
 
 		// both are true
@@ -94,14 +94,14 @@ func TestQueryFilter(t *testing.T) {
 			With[componentA](),
 			Without[componentB](),
 		)
-		assert.True(filter.validate(&entry))
+		assert.True(filter.validate(&entityData))
 
 		// one is true, 1 is false
 		filter = And(
 			With[componentA](),
 			With[componentB](),
 		)
-		assert.False(filter.validate(&entry))
+		assert.False(filter.validate(&entityData))
 
 		// both are false
 		// one is true, 1 is false
@@ -109,15 +109,15 @@ func TestQueryFilter(t *testing.T) {
 			With[componentB](),
 			With[componentC](),
 		)
-		assert.False(filter.validate(&entry))
+		assert.False(filter.validate(&entityData))
 	})
 
 	t.Run("queryFilterOr returns true if either one or both of the sub-filters are true", func(t *testing.T) {
 		assert := assert.New(t)
 
-		entry := entry{components: []IComponent{
-			componentA{},
-			componentB{},
+		entityData := entityData{components: map[componentType]uint{
+			getComponentType[componentA](): 0,
+			getComponentType[componentB](): 0,
 		}}
 
 		// both are true
@@ -125,20 +125,20 @@ func TestQueryFilter(t *testing.T) {
 			With[componentA](),
 			With[componentB](),
 		)
-		assert.True(filter.validate(&entry))
+		assert.True(filter.validate(&entityData))
 
 		// one is true, one is false
 		filter = Or(
 			With[componentA](),
 			With[componentC](),
 		)
-		assert.True(filter.validate(&entry))
+		assert.True(filter.validate(&entityData))
 
 		// both are false
 		filter = Or(
 			With[componentC](),
 			With[componentD](),
 		)
-		assert.False(filter.validate(&entry))
+		assert.False(filter.validate(&entityData))
 	})
 }

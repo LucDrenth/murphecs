@@ -39,8 +39,8 @@ func createCombinedQueryOptions(options []queryOption) (result combinedQueryOpti
 //
 // All these queryOption's will be merged in tot a combinedQueryOptions.
 type queryOption interface {
-	// validate that entry satisfies the filter
-	validate(*entry) bool
+	// validate that entityData satisfies the filter
+	validate(*entityData) bool
 }
 
 type queryFilterAnd struct {
@@ -48,7 +48,7 @@ type queryFilterAnd struct {
 	b queryOption
 }
 
-func (filter queryFilterAnd) validate(e *entry) bool {
+func (filter queryFilterAnd) validate(e *entityData) bool {
 	return filter.a.validate(e) && filter.b.validate(e)
 }
 
@@ -57,7 +57,7 @@ type queryFilterOr struct {
 	b queryOption
 }
 
-func (filter queryFilterOr) validate(e *entry) bool {
+func (filter queryFilterOr) validate(e *entityData) bool {
 	return filter.a.validate(e) || filter.b.validate(e)
 }
 
@@ -65,23 +65,23 @@ type queryFilterWith struct {
 	c componentType
 }
 
-func (filter queryFilterWith) validate(e *entry) bool {
-	return e.containsComponentType(filter.c)
+func (filter queryFilterWith) validate(e *entityData) bool {
+	return e.hasComponent(filter.c)
 }
 
 type queryFilterWithout struct {
 	c componentType
 }
 
-func (filter queryFilterWithout) validate(e *entry) bool {
-	return !e.containsComponentType(filter.c)
+func (filter queryFilterWithout) validate(e *entityData) bool {
+	return !e.hasComponent(filter.c)
 }
 
 type optionalQueryComponent struct {
 	componentType componentType
 }
 
-func (filter optionalQueryComponent) validate(e *entry) bool {
+func (filter optionalQueryComponent) validate(e *entityData) bool {
 	return true
 }
 

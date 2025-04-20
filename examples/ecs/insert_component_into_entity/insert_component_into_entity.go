@@ -21,15 +21,15 @@ type Friendly struct {
 func main() {
 	world := ecs.NewWorld()
 
-	entity, _ := ecs.Spawn(&world, NPC{name: "Murphy"})
+	entity, _ := ecs.Spawn(&world, &NPC{name: "Murphy"})
 
 	// Insert Dialog component in to the entity, so that is has both NPC and Dialog
-	ecs.Insert(&world, entity, Dialog{text: "good morning"})
+	ecs.Insert(&world, entity, &Dialog{text: "good morning"})
 
 	// Insert Dialog component, that already exists, and a new Friendly component.
 	// This will return an error about Dialog already being present, so it will be skipped.
 	// The Friendly component, that is not already present, will still be added.
-	err := ecs.Insert(&world, entity, Dialog{text: "good evening"}, Friendly{})
+	err := ecs.Insert(&world, entity, &Dialog{text: "good evening"}, &Friendly{})
 	fmt.Printf("Insert error: %v\n", err)
 
 	dialog, _ := ecs.Get[Dialog](&world, entity)

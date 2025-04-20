@@ -20,7 +20,7 @@ func main() {
 	world := ecs.NewWorld()
 
 	// Spawn an entity with two components: NPC and Dialog
-	entity, _ := ecs.Spawn(&world, NPC{name: "Murphy"}, Dialog{text: "Hello!"})
+	entity, _ := ecs.Spawn(&world, &NPC{name: "Murphy"}, &Dialog{text: "Hello!"})
 
 	// Get the dialog to see its current value
 	dialog, err := ecs.Get[Dialog](&world, entity)
@@ -37,7 +37,7 @@ func main() {
 	npc, err := ecs.Get[NPC](&world, entity)
 	fmt.Printf("After remove: npc=%v, err=%v\n", (*npc).name, err)
 
-	// Remove Dialog component after it was already removed will result in an error
+	// Removing the Dialog component after it was already removed will result in an error
 	err = ecs.Remove[Dialog](&world, entity)
 	fmt.Printf("Error when removing a component that is not present: %v\n", err)
 }

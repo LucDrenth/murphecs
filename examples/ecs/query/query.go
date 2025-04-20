@@ -19,20 +19,20 @@ type Dialog struct {
 
 func main() {
 	world := ecs.NewWorld()
-	ecs.Spawn(&world, NPC{name: "Murphy"}, Friendly{}, Dialog{text: "hi my name is Murphy"})
-	ecs.Spawn(&world, NPC{name: "Yuki"}, Dialog{text: "my name is Yuki"})
-	ecs.Spawn(&world, NPC{name: "Fiona"}, Friendly{}, Dialog{text: "hi my name is Fiona"})
-	ecs.Spawn(&world, NPC{name: "Bob"})
+	ecs.Spawn(&world, &NPC{name: "Murphy"}, &Friendly{}, &Dialog{text: "hi my name is Murphy"})
+	ecs.Spawn(&world, &NPC{name: "Yuki"}, &Dialog{text: "my name is Yuki"})
+	ecs.Spawn(&world, &NPC{name: "Fiona"}, &Friendly{}, &Dialog{text: "hi my name is Fiona"})
+	ecs.Spawn(&world, &NPC{name: "Bob"})
 
 	// Query all NPC components
-	queryResult := ecs.Query[NPC](&world)
+	queryResult := ecs.Query1[NPC](&world)
 	queryResult.Iter(func(entityId ecs.EntityId, npc *NPC) error {
 		fmt.Printf("simple query: %d: %s \n", entityId, npc.name)
 		return nil
 	})
 
 	// Query all NPC components of entities that have both the Friendly and the Dialog component
-	queryResult = ecs.Query[NPC](&world, ecs.With[Friendly](), ecs.With[Dialog]())
+	queryResult = ecs.Query1[NPC](&world, ecs.With[Friendly](), ecs.With[Dialog]())
 	queryResult.Iter(func(entityId ecs.EntityId, npc *NPC) error {
 		fmt.Printf("query with Friendly and Dialog: %d: %s \n", entityId, npc.name)
 		return nil
