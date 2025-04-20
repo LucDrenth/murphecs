@@ -30,8 +30,8 @@ func (q *query1Result[A]) Iter(f func(entityId EntityId, a *A) error) error {
 // Range lets you range over the query result
 //
 // for component := range queryResult.Range() { ... }
-func (q *query1Result[A]) Range() func(yield func(a *A) bool) {
-	return func(yield func(a *A) bool) {
+func (q *query1Result[A]) Range() func(yield func(*A) bool) {
+	return func(yield func(*A) bool) {
 		for i := range q.entityIds {
 			if !yield(q.componentsA[i]) {
 				return
@@ -98,6 +98,23 @@ func (q *query2Result[A, B]) Iter(f func(entityId EntityId, a *A, b *B) error) e
 	}
 
 	return nil
+}
+
+// Range lets you range over the query result
+//
+// for component := range queryResult.Range() { ... }
+func (q *query2Result[A, B]) Range() func(yield func(*A, *B) bool) {
+	return func(yield func(*A, *B) bool) {
+		for i := range q.entityIds {
+			if !yield(q.componentsA[i], q.componentsB[i]) {
+				return
+			}
+		}
+	}
+}
+
+func (q *query2Result[A, B]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
 }
 
 // Query2 gets the given components of all entities that match the options.

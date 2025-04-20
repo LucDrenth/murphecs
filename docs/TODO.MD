@@ -1,6 +1,6 @@
 # ECS
 **Must have**
-- Update readme with querying example
+- Write more query functions (and tests for them)
 - Put the S in to the ECS (implement systems)
 - Proper archetype ECS implementation. Once all of the above is implemented, the basic user facing API is there. But the implementation is its most basic form and is not efficient at all. [See this article from flecs ECS creator](https://ajmmertens.medium.com/building-an-ecs-1-where-are-my-entities-and-components-63d07c7da742).
 
