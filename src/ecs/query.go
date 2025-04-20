@@ -45,7 +45,6 @@ func (q *query1Result[A]) NumberOfResult() uint {
 }
 
 // Query1 gets the given component of all entities that match the options.
-// Use Query2, Query3, Query4 etc. to query multiple components.
 //
 // For filtering, choose from:
 //   - ecs.With
@@ -118,7 +117,6 @@ func (q *query2Result[A, B]) NumberOfResult() uint {
 }
 
 // Query2 gets the given components of all entities that match the options.
-// Use Query, Query3, Query4 etc. to get a different number of components.
 //
 // For filtering, choose from:
 //   - ecs.With
@@ -131,7 +129,7 @@ func (q *query2Result[A, B]) NumberOfResult() uint {
 // By default, entities have to have the given components. You can mark components
 // as optional by passing 1 or more ecs.Options as an option. This will result in nil
 // being returned for that component for the entities that don't have that component.
-func Query2[A IComponent, B IComponent](world *world, options ...queryOption) query2Result[A, B] {
+func Query2[A, B IComponent](world *world, options ...queryOption) query2Result[A, B] {
 	result := query2Result[A, B]{}
 	queryOptions, err := createCombinedQueryOptions(options)
 	if err != nil {
@@ -155,6 +153,157 @@ func Query2[A IComponent, B IComponent](world *world, options ...queryOption) qu
 
 		result.componentsA = append(result.componentsA, a)
 		result.componentsB = append(result.componentsB, b)
+		result.entityIds = append(result.entityIds, entityId)
+	}
+
+	return result
+}
+
+type query3Result[A, B, C IComponent] struct {
+	componentsA []*A
+	componentsB []*B
+	componentsC []*C
+	entityIds   []EntityId
+}
+
+// Iter executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *query3Result[A, B, C]) Iter(f func(entityId EntityId, a *A, b *B, c *C) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i]); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (q *query3Result[A, B, C]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
+}
+
+// Query3 gets the given components of all entities that match the options.
+//
+// For filtering, choose from:
+//   - ecs.With
+//   - ecs.Without
+//
+// Or use ecs.Or and ecs.And to combine filters.
+// If you pass multiple filters in options, all of them must pass for an entity to come up
+// in the results.
+//
+// By default, entities have to have the given components. You can mark components
+// as optional by passing 1 or more ecs.Options as an option. This will result in nil
+// being returned for that component for the entities that don't have that component.
+func Query3[A, B, C IComponent](world *world, options ...queryOption) query3Result[A, B, C] {
+	result := query3Result[A, B, C]{}
+	queryOptions, err := createCombinedQueryOptions(options)
+	if err != nil {
+		// TODO log warning but do not return.
+	}
+
+	for entityId, entityData := range world.entities {
+		if ok := validateQueryFilters(entityData, &queryOptions); !ok {
+			continue
+		}
+
+		a, match := getQueryComponent[A](world, entityData, &queryOptions)
+		if !match {
+			continue
+		}
+
+		b, match := getQueryComponent[B](world, entityData, &queryOptions)
+		if !match {
+			continue
+		}
+
+		c, match := getQueryComponent[C](world, entityData, &queryOptions)
+		if !match {
+			continue
+		}
+
+		result.componentsA = append(result.componentsA, a)
+		result.componentsB = append(result.componentsB, b)
+		result.componentsC = append(result.componentsC, c)
+		result.entityIds = append(result.entityIds, entityId)
+	}
+
+	return result
+}
+
+type query4Result[A, B, C, D IComponent] struct {
+	componentsA []*A
+	componentsB []*B
+	componentsC []*C
+	componentsD []*D
+	entityIds   []EntityId
+}
+
+// Iter executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *query4Result[A, B, C, D]) Iter(f func(entityId EntityId, a *A, b *B, c *C, d *D) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i]); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (q *query4Result[A, B, C, D]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
+}
+
+// Query4 gets the given components of all entities that match the options.
+//
+// For filtering, choose from:
+//   - ecs.With
+//   - ecs.Without
+//
+// Or use ecs.Or and ecs.And to combine filters.
+// If you pass multiple filters in options, all of them must pass for an entity to come up
+// in the results.
+//
+// By default, entities have to have the given components. You can mark components
+// as optional by passing 1 or more ecs.Options as an option. This will result in nil
+// being returned for that component for the entities that don't have that component.
+func Query4[A, B, C, D IComponent](world *world, options ...queryOption) query4Result[A, B, C, D] {
+	result := query4Result[A, B, C, D]{}
+	queryOptions, err := createCombinedQueryOptions(options)
+	if err != nil {
+		// TODO log warning but do not return.
+	}
+
+	for entityId, entityData := range world.entities {
+		if ok := validateQueryFilters(entityData, &queryOptions); !ok {
+			continue
+		}
+
+		a, match := getQueryComponent[A](world, entityData, &queryOptions)
+		if !match {
+			continue
+		}
+
+		b, match := getQueryComponent[B](world, entityData, &queryOptions)
+		if !match {
+			continue
+		}
+
+		c, match := getQueryComponent[C](world, entityData, &queryOptions)
+		if !match {
+			continue
+		}
+
+		d, match := getQueryComponent[D](world, entityData, &queryOptions)
+		if !match {
+			continue
+		}
+
+		result.componentsA = append(result.componentsA, a)
+		result.componentsB = append(result.componentsB, b)
+		result.componentsC = append(result.componentsC, c)
+		result.componentsD = append(result.componentsD, d)
 		result.entityIds = append(result.entityIds, entityId)
 	}
 

@@ -351,3 +351,88 @@ func TestQuery2(t *testing.T) {
 		assert.ElementsMatch(expected, result.entityIds)
 	})
 }
+
+func TestQuery3(t *testing.T) {
+	type componentA struct{ Component }
+	type componentB struct{ Component }
+	type componentC struct{ Component }
+
+	t.Run("can iter over query results", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewWorld()
+
+		_, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentA{}, &componentB{}, &componentC{})
+		assert.NoError(err)
+
+		numberOfResults := 0
+
+		queryResult := Query3[componentA, componentB, componentC](&world)
+		queryResult.Iter(func(entityId EntityId, a *componentA, b *componentB, c *componentC) error {
+			numberOfResults++
+			return nil
+		})
+
+		assert.Equal(2, numberOfResults)
+	})
+
+	t.Run("query result implements QueryResult", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewWorld()
+
+		q := Query3[componentA, componentB, componentC](&world)
+		var result QueryResult = &q
+		assert.Equal(uint(0), result.NumberOfResult())
+
+		_, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{})
+		assert.NoError(err)
+
+		q = Query3[componentA, componentB, componentC](&world)
+		result = &q
+		assert.Equal(uint(1), result.NumberOfResult())
+	})
+}
+
+func TestQuery4(t *testing.T) {
+	type componentA struct{ Component }
+	type componentB struct{ Component }
+	type componentC struct{ Component }
+	type componentD struct{ Component }
+
+	t.Run("can iter over query results", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewWorld()
+
+		_, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{}, &componentD{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentA{}, &componentB{}, &componentC{}, &componentD{})
+		assert.NoError(err)
+
+		numberOfResults := 0
+
+		queryResult := Query4[componentA, componentB, componentC, componentD](&world)
+		queryResult.Iter(func(entityId EntityId, a *componentA, b *componentB, c *componentC, d *componentD) error {
+			numberOfResults++
+			return nil
+		})
+
+		assert.Equal(2, numberOfResults)
+	})
+
+	t.Run("query result implements QueryResult", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewWorld()
+
+		q := Query4[componentA, componentB, componentC, componentD](&world)
+		var result QueryResult = &q
+		assert.Equal(uint(0), result.NumberOfResult())
+
+		_, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{}, &componentD{})
+		assert.NoError(err)
+
+		q = Query4[componentA, componentB, componentC, componentD](&world)
+		result = &q
+		assert.Equal(uint(1), q.NumberOfResult())
+	})
+}
