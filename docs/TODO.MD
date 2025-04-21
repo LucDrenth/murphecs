@@ -18,7 +18,6 @@
 
 # Logging
 **Nice-to-have**
-- Log levels to skip logs from lower levels. For example, log level WARN should skip DEBUG and INFO logs
 - Methods to log something only once (based on the caller)
 - Add something to distinguish between logs from application and logs from engine
 - Add method to print stacktrace
