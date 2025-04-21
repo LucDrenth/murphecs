@@ -10,21 +10,18 @@
 - [feature] Relationships (like parent/child)
 - [feature] Events
 - [feature] Observers
+- [feature] World configs (logger, default componentEntry size)
 - [tests] More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
 - [quality-of-life] Better query validations:
     - Return error if marking a component as optional while that component is not queried
     - Return error if there are any duplicate filters
 
 # Logging
-**Must have**
-- Logger Interface with:
-    - info
-    - warn
-    - error
-- Logger implementation that logs to console
-
 **Nice-to-have**
-- Methods to log something only once. Maybe we can use caller location for this?
+- Log levels to skip logs from lower levels. For example, log level WARN should skip DEBUG and INFO logs
+- Methods to log something only once (based on the caller)
+- Add something to distinguish between logs from application and logs from engine
+- Add method to print stacktrace
 
 # Window
 - Be able to create a window

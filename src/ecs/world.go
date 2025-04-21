@@ -1,17 +1,26 @@
 package ecs
 
+import (
+	"github.com/lucdrenth/murph_engine/src/log"
+)
+
 // world contains all of the entities and their components.
 type world struct {
 	entityIdCounter uint
 	entities        map[EntityId]*entityData
 	components      map[componentType]*componentRegistry
+	logger          log.Logger
 }
 
 // NewWorld returns a world that can contain entities and components.
 func NewWorld() world {
+	logger := log.Console()
+	logger.Info("hello, world!")
+
 	return world{
 		entities:   map[EntityId]*entityData{},
 		components: map[componentType]*componentRegistry{},
+		logger:     logger,
 	}
 }
 

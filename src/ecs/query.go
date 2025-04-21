@@ -3,6 +3,7 @@
 package ecs
 
 import (
+	"fmt"
 	"slices"
 )
 
@@ -61,7 +62,7 @@ func Query1[A IComponent](world *world, options ...queryOption) query1Result[A] 
 	result := query1Result[A]{}
 	queryOptions, err := createCombinedQueryOptions(options)
 	if err != nil {
-		// TODO log warning but do not return.
+		world.logger.Warn(fmt.Sprintf("Query1 encountered issue with query options: %v", err))
 	}
 
 	for entityId, entityData := range world.entities {
@@ -133,7 +134,7 @@ func Query2[A, B IComponent](world *world, options ...queryOption) query2Result[
 	result := query2Result[A, B]{}
 	queryOptions, err := createCombinedQueryOptions(options)
 	if err != nil {
-		// TODO log warning but do not return.
+		world.logger.Warn(fmt.Sprintf("Query2 encountered issue with query options: %v", err))
 	}
 
 	for entityId, entityData := range world.entities {
@@ -199,7 +200,7 @@ func Query3[A, B, C IComponent](world *world, options ...queryOption) query3Resu
 	result := query3Result[A, B, C]{}
 	queryOptions, err := createCombinedQueryOptions(options)
 	if err != nil {
-		// TODO log warning but do not return.
+		world.logger.Warn(fmt.Sprintf("Query3 encountered issue with query options: %v", err))
 	}
 
 	for entityId, entityData := range world.entities {
@@ -272,7 +273,7 @@ func Query4[A, B, C, D IComponent](world *world, options ...queryOption) query4R
 	result := query4Result[A, B, C, D]{}
 	queryOptions, err := createCombinedQueryOptions(options)
 	if err != nil {
-		// TODO log warning but do not return.
+		world.logger.Warn(fmt.Sprintf("Query4 encountered issue with query options: %v", err))
 	}
 
 	for entityId, entityData := range world.entities {
@@ -324,7 +325,7 @@ func getQueryComponent[T IComponent](world *world, entityData *entityData, query
 
 	result, err := getComponentFromComponentRegistry[T](world.components[componentType], componentRegistryIndex)
 	if err != nil {
-		// TODO this should never happen. Log an error!
+		world.logger.Error(fmt.Sprintf("getQueryComponent encountered unexpected error: %v", err))
 		return nil, false
 	}
 
