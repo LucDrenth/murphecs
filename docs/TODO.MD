@@ -16,10 +16,6 @@
     - Return error if marking a component as optional while that component is not queried
     - Return error if there are any duplicate filters
 
-# Logging
-**Nice-to-have**
-- [feature] Add something to distinguish between logs from application and logs from engine. Including only a part of the caller is not sufficient.
-
 # Window
 - [feature] Be able to create a window
 
