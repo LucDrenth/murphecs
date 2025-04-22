@@ -19,7 +19,7 @@
 # Logging
 **Nice-to-have**
 - [feature] Add something to distinguish between logs from application and logs from engine. Including only a part of the caller is not sufficient.
-- [feature] Add method to print stacktrace
+- [bug] Prevent race conditions in Storage
 
 # Window
 - [feature] Be able to create a window

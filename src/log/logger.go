@@ -17,6 +17,10 @@ type Logger interface {
 	Error(string)
 	// Log an error message. Skip if the same message is logged from the same location in the code.
 	ErrorOnce(string)
+	// Trace logs a stack trace. Gets logged no matter the log level.
+	Trace(string)
+	// Trace logs a stack trace. Gets logged no matter the log level. Skip if the same message is logged from the same location in the code.
+	TraceOnce(string)
 
 	// ClearStorage clears the storage that is used for the LogOnce methods.
 	//

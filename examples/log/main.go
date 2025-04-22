@@ -22,4 +22,8 @@ func main() {
 		logger.InfoOnce("this is logged only once")
 		logger.InfoOnce(fmt.Sprintf("this is logged %d/5 times because this message is not unique", i+1))
 	}
+
+	println()
+
+	logger.Trace("lets find out where this is called from")
 }

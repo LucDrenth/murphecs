@@ -7,6 +7,9 @@ const (
 	LevelInfo
 	LevelWarn
 	LevelError
+
+	// The highest level so that it is always allowed to be logged.
+	levelStackTrace
 )
 
 // String returns a lowercase representation of the log level
@@ -20,6 +23,8 @@ func (l Level) String() string {
 		return "warn"
 	case LevelError:
 		return "error"
+	case levelStackTrace:
+		return "trace"
 	default:
 		return "unknown"
 	}

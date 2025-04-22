@@ -3,6 +3,7 @@ package log
 import (
 	"fmt"
 	"runtime"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -14,6 +15,7 @@ type ConsoleLogger struct {
 	InfoColor  ansi.Color
 	WarnColor  ansi.Color
 	ErrorColor ansi.Color
+	TraceColor ansi.Color
 
 	TimestampColor  ansi.Color
 	TimestampFormat string
@@ -37,6 +39,7 @@ func Console() ConsoleLogger {
 		InfoColor:       ansi.ColorWhite,
 		WarnColor:       ansi.ColorYellow,
 		ErrorColor:      ansi.ColorBrightRed,
+		TraceColor:      ansi.ColorGrey,
 		CallerColor:     ansi.ColorCyan,
 		TimestampColor:  ansi.ColorGreen,
 		TimestampFormat: "15:04:05.0000",
@@ -79,6 +82,20 @@ func (logger *ConsoleLogger) ErrorOnce(message string) {
 	logger.logOnce(LevelError, logger.ErrorColor, message)
 }
 
+func (logger *ConsoleLogger) Trace(message string) {
+	stackTrace := string(debug.Stack())
+	message = fmt.Sprintf("%s\n%s", message, stackTrace)
+
+	logger.log(levelStackTrace, logger.TraceColor, message, 3)
+}
+
+func (logger *ConsoleLogger) TraceOnce(message string) {
+	stackTrace := string(debug.Stack())
+	message = fmt.Sprintf("%s\n%s", message, stackTrace)
+
+	logger.logOnce(levelStackTrace, logger.TraceColor, message)
+}
+
 func (logger *ConsoleLogger) logOnce(level Level, messageColor ansi.Color, message string) {
 	caller, ok := logger.getCallerForStorage()
 	if !ok {
@@ -86,8 +103,6 @@ func (logger *ConsoleLogger) logOnce(level Level, messageColor ansi.Color, messa
 		// Let's try to continue to log our original message with an empty caller and log an additional error message.
 		logger.Error("failed to get caller location")
 	}
-
-	// fmt.Println(caller, message)
 
 	if logger.storage.Exists(level, message, caller) {
 		return
