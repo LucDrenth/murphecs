@@ -66,7 +66,7 @@ func TestGet(t *testing.T) {
 
 	expectedValue := 101
 
-	setup := func(component IComponent) (EntityId, *world, *assert.Assertions) {
+	setup := func(component IComponent) (EntityId, *World, *assert.Assertions) {
 		assert := assert.New(t)
 		world := NewWorld()
 		entity, err := Spawn(&world, component, &anotherComponent{})
@@ -113,7 +113,7 @@ func TestGet2(t *testing.T) {
 	expectedValueA := 101
 	expectedValueB := 102
 
-	setup := func() (EntityId, *world, *assert.Assertions) {
+	setup := func() (EntityId, *World, *assert.Assertions) {
 		assert := assert.New(t)
 		world := NewWorld()
 		entity, err := Spawn(&world, &componentA{value: expectedValueA}, &anotherComponent{}, &componentB{value: expectedValueB})
@@ -164,7 +164,7 @@ func TestGet2(t *testing.T) {
 func TestGet3(t *testing.T) {
 	type nonExistingComponent struct{ Component }
 
-	setup := func() (EntityId, *world, *assert.Assertions) {
+	setup := func() (EntityId, *World, *assert.Assertions) {
 		assert := assert.New(t)
 		world := NewWorld()
 		entity, err := Spawn(&world,

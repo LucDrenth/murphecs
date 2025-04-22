@@ -15,7 +15,7 @@ import (
 // a reference, while still inserting all other components that are valid.
 //
 // Calling Spawn without any components to generate an entityId is allowed.
-func Spawn(world *world, components ...IComponent) (EntityId, error) {
+func Spawn(world *World, components ...IComponent) (EntityId, error) {
 	componentTypes := toComponentTypes(components)
 
 	// check for duplicates

@@ -4,8 +4,8 @@ import (
 	"github.com/lucdrenth/murph_engine/src/log"
 )
 
-// world contains all of the entities and their components.
-type world struct {
+// World contains all of the entities and their components.
+type World struct {
 	entityIdCounter uint
 	entities        map[EntityId]*entityData
 	components      map[componentType]*componentRegistry
@@ -13,21 +13,21 @@ type world struct {
 }
 
 // NewWorld returns a world that can contain entities and components.
-func NewWorld() world {
+func NewWorld() World {
 	logger := log.Console()
 
-	return world{
+	return World{
 		entities:   map[EntityId]*entityData{},
 		components: map[componentType]*componentRegistry{},
 		logger:     &logger,
 	}
 }
 
-func (world *world) CountEntities() int {
+func (world *World) CountEntities() int {
 	return len(world.entities)
 }
 
-func (world *world) CountComponents() int {
+func (world *World) CountComponents() int {
 	result := 0
 
 	for _, entry := range world.entities {
@@ -37,7 +37,7 @@ func (world *world) CountComponents() int {
 	return result
 }
 
-func (world *world) createEntity() EntityId {
+func (world *World) createEntity() EntityId {
 	world.entityIdCounter++
 	entity := EntityId(world.entityIdCounter)
 	world.entities[entity] = &entityData{components: map[componentType]uint{}}
@@ -45,7 +45,7 @@ func (world *world) createEntity() EntityId {
 }
 
 // getComponentRegistry creates a new component registry if it doesn't exist yet.
-func (world *world) getComponentRegistry(componentType componentType) *componentRegistry {
+func (world *World) getComponentRegistry(componentType componentType) *componentRegistry {
 	componentRegistry, ok := world.components[componentType]
 	if !ok {
 		newComponentRegistry := createComponentRegistry(1024, componentType)

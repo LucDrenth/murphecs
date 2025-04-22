@@ -15,7 +15,7 @@ import (
 //     the components that are not yet present.
 //   - Returns an ErrComponentIsNotAPointer error if any of the given components, or their required components, are not
 //     passed as a reference (e.g. componentA{} instead of &componentA{})
-func Insert(world *world, entity EntityId, components ...IComponent) (resultErr error) {
+func Insert(world *World, entity EntityId, components ...IComponent) (resultErr error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return ErrEntityNotFound

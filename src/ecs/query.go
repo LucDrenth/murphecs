@@ -58,7 +58,7 @@ func (q *query1Result[A]) NumberOfResult() uint {
 // By default, entities have to have the given component. You can mark the component that
 // you query as optional by passing ecs.Optional as an option. This will result in nil
 // being returned for that component for the entities that don't have that component.
-func Query1[A IComponent](world *world, options ...queryOption) query1Result[A] {
+func Query1[A IComponent](world *World, options ...queryOption) query1Result[A] {
 	result := query1Result[A]{}
 	queryOptions, err := createCombinedQueryOptions(options)
 	if err != nil {
@@ -130,7 +130,7 @@ func (q *query2Result[A, B]) NumberOfResult() uint {
 // By default, entities have to have the given components. You can mark components
 // as optional by passing 1 or more ecs.Options as an option. This will result in nil
 // being returned for that component for the entities that don't have that component.
-func Query2[A, B IComponent](world *world, options ...queryOption) query2Result[A, B] {
+func Query2[A, B IComponent](world *World, options ...queryOption) query2Result[A, B] {
 	result := query2Result[A, B]{}
 	queryOptions, err := createCombinedQueryOptions(options)
 	if err != nil {
@@ -196,7 +196,7 @@ func (q *query3Result[A, B, C]) NumberOfResult() uint {
 // By default, entities have to have the given components. You can mark components
 // as optional by passing 1 or more ecs.Options as an option. This will result in nil
 // being returned for that component for the entities that don't have that component.
-func Query3[A, B, C IComponent](world *world, options ...queryOption) query3Result[A, B, C] {
+func Query3[A, B, C IComponent](world *World, options ...queryOption) query3Result[A, B, C] {
 	result := query3Result[A, B, C]{}
 	queryOptions, err := createCombinedQueryOptions(options)
 	if err != nil {
@@ -269,7 +269,7 @@ func (q *query4Result[A, B, C, D]) NumberOfResult() uint {
 // By default, entities have to have the given components. You can mark components
 // as optional by passing 1 or more ecs.Options as an option. This will result in nil
 // being returned for that component for the entities that don't have that component.
-func Query4[A, B, C, D IComponent](world *world, options ...queryOption) query4Result[A, B, C, D] {
+func Query4[A, B, C, D IComponent](world *World, options ...queryOption) query4Result[A, B, C, D] {
 	result := query4Result[A, B, C, D]{}
 	queryOptions, err := createCombinedQueryOptions(options)
 	if err != nil {
@@ -315,7 +315,7 @@ func Query4[A, B, C, D IComponent](world *world, options ...queryOption) query4R
 //
 // match is true when the entity has the component or if the component is marked marked as optional.
 // When match is true, the entity should be present in the query results.
-func getQueryComponent[T IComponent](world *world, entityData *entityData, queryOptions *combinedQueryOptions) (result *T, match bool) {
+func getQueryComponent[T IComponent](world *World, entityData *entityData, queryOptions *combinedQueryOptions) (result *T, match bool) {
 	componentType := getComponentType[T]()
 
 	componentRegistryIndex, entityHasComponent := entityData.components[componentType]

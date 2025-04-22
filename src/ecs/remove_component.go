@@ -10,7 +10,7 @@ import (
 // Can return the following errors:
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
-func Remove[A IComponent](world *world, entity EntityId) error {
+func Remove[A IComponent](world *World, entity EntityId) error {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return ErrEntityNotFound
@@ -24,7 +24,7 @@ func Remove[A IComponent](world *world, entity EntityId) error {
 // Can return the following errors:
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
-func Remove2[A, B IComponent](world *world, entity EntityId) (result error) {
+func Remove2[A, B IComponent](world *World, entity EntityId) (result error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return ErrEntityNotFound
@@ -45,7 +45,7 @@ func Remove2[A, B IComponent](world *world, entity EntityId) (result error) {
 // Can return the following errors:
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
-func Remove3[A, B, C IComponent](world *world, entity EntityId) (result error) {
+func Remove3[A, B, C IComponent](world *World, entity EntityId) (result error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return ErrEntityNotFound
@@ -69,7 +69,7 @@ func Remove3[A, B, C IComponent](world *world, entity EntityId) (result error) {
 // Can return the following errors:
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
-func Remove4[A, B, C, D IComponent](world *world, entity EntityId) (result error) {
+func Remove4[A, B, C, D IComponent](world *World, entity EntityId) (result error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return ErrEntityNotFound

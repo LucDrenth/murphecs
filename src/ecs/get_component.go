@@ -8,7 +8,7 @@ package ecs
 //   - Returns an ErrComponentNotFound error if the entity does not have the component.
 //
 // WARNING: Do not store the component pointer
-func Get1[A IComponent](world *world, entity EntityId) (a *A, err error) {
+func Get1[A IComponent](world *World, entity EntityId) (a *A, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return nil, ErrEntityNotFound
@@ -30,7 +30,7 @@ func Get1[A IComponent](world *world, entity EntityId) (a *A, err error) {
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get2[A, B IComponent](world *world, entity EntityId) (a *A, b *B, err error) {
+func Get2[A, B IComponent](world *World, entity EntityId) (a *A, b *B, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return nil, nil, ErrEntityNotFound
@@ -54,7 +54,7 @@ func Get2[A, B IComponent](world *world, entity EntityId) (a *A, b *B, err error
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get3[A, B, C IComponent](world *world, entity EntityId) (a *A, b *B, c *C, err error) {
+func Get3[A, B, C IComponent](world *World, entity EntityId) (a *A, b *B, c *C, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return nil, nil, nil, ErrEntityNotFound
@@ -80,7 +80,7 @@ func Get3[A, B, C IComponent](world *world, entity EntityId) (a *A, b *B, c *C, 
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get4[A, B, C, D IComponent](world *world, entity EntityId) (a *A, b *B, c *C, d *D, err error) {
+func Get4[A, B, C, D IComponent](world *World, entity EntityId) (a *A, b *B, c *C, d *D, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return nil, nil, nil, nil, ErrEntityNotFound
@@ -108,7 +108,7 @@ func Get4[A, B, C, D IComponent](world *world, entity EntityId) (a *A, b *B, c *
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get5[A, B, C, D, E IComponent](world *world, entity EntityId) (a *A, b *B, c *C, d *D, e *E, err error) {
+func Get5[A, B, C, D, E IComponent](world *World, entity EntityId) (a *A, b *B, c *C, d *D, e *E, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return nil, nil, nil, nil, nil, ErrEntityNotFound
@@ -138,7 +138,7 @@ func Get5[A, B, C, D, E IComponent](world *world, entity EntityId) (a *A, b *B, 
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get6[A, B, C, D, E, F IComponent](world *world, entity EntityId) (a *A, b *B, c *C, d *D, e *E, f *F, err error) {
+func Get6[A, B, C, D, E, F IComponent](world *World, entity EntityId) (a *A, b *B, c *C, d *D, e *E, f *F, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return nil, nil, nil, nil, nil, nil, ErrEntityNotFound
@@ -170,7 +170,7 @@ func Get6[A, B, C, D, E, F IComponent](world *world, entity EntityId) (a *A, b *
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get7[A, B, C, D, E, F, G IComponent](world *world, entity EntityId) (
+func Get7[A, B, C, D, E, F, G IComponent](world *World, entity EntityId) (
 	a *A, b *B, c *C, d *D, e *E, f *F, g *G, err error,
 ) {
 	entityData, ok := world.entities[entity]
@@ -206,7 +206,7 @@ func Get7[A, B, C, D, E, F, G IComponent](world *world, entity EntityId) (
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get8[A, B, C, D, E, F, G, H IComponent](world *world, entity EntityId) (
+func Get8[A, B, C, D, E, F, G, H IComponent](world *World, entity EntityId) (
 	a *A, b *B, c *C, d *D, e *E, f *F, g *G, h *H, err error,
 ) {
 	entityData, ok := world.entities[entity]
@@ -239,7 +239,7 @@ func Get8[A, B, C, D, E, F, G, H IComponent](world *world, entity EntityId) (
 //
 // Can return the following errors:
 //   - ErrComponentNotFound error when the entity does not have a component of type T.
-func setComponentFromEntry[T IComponent](world *world, entityData *entityData, target **T) error {
+func setComponentFromEntry[T IComponent](world *World, entityData *entityData, target **T) error {
 	componentType := getComponentType[T]()
 
 	componentRegistryIndex, ok := entityData.components[componentType]
