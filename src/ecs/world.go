@@ -15,12 +15,11 @@ type world struct {
 // NewWorld returns a world that can contain entities and components.
 func NewWorld() world {
 	logger := log.Console()
-	logger.Info("hello, world!")
 
 	return world{
 		entities:   map[EntityId]*entityData{},
 		components: map[componentType]*componentRegistry{},
-		logger:     logger,
+		logger:     &logger,
 	}
 }
 
