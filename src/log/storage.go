@@ -1,7 +1,10 @@
 package log
 
+import "sync"
+
 type Storage struct {
 	records map[Level][]record
+	mutex   sync.RWMutex
 }
 
 type record struct {
@@ -16,10 +19,16 @@ func NewStorage() Storage {
 }
 
 func (s *Storage) Insert(level Level, message string, caller string) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	s.records[level] = append(s.records[level], record{message, caller})
 }
 
 func (s *Storage) Exists(level Level, message string, caller string) bool {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
 	records, exists := s.records[level]
 	if !exists {
 		return false
@@ -35,5 +44,8 @@ func (s *Storage) Exists(level Level, message string, caller string) bool {
 }
 
 func (s *Storage) Clear() {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	s.records = map[Level][]record{}
 }
