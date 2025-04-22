@@ -23,7 +23,7 @@ type ConsoleLogger struct {
 	CallerPathDepth int   // the number of caller directories to include. For example, use 3 for path/to/file.go
 	Level           Level // skip logs that are lower than this level
 
-	Storage Storage
+	storage Storage
 }
 
 var _ Logger = &ConsoleLogger{}
@@ -43,7 +43,7 @@ func Console() ConsoleLogger {
 		LogCaller:       true,
 		CallerPathDepth: 3,
 		Level:           LevelDebug,
-		Storage:         NewStorage(),
+		storage:         NewStorage(),
 	}
 }
 
@@ -89,7 +89,7 @@ func (logger *ConsoleLogger) logOnce(level Level, messageColor ansi.Color, messa
 
 	// fmt.Println(caller, message)
 
-	if logger.Storage.Exists(level, message, caller) {
+	if logger.storage.Exists(level, message, caller) {
 		return
 	}
 
@@ -98,7 +98,7 @@ func (logger *ConsoleLogger) logOnce(level Level, messageColor ansi.Color, messa
 		return
 	}
 
-	logger.Storage.Insert(level, message, caller)
+	logger.storage.Insert(level, message, caller)
 }
 
 // log returns wether the message was logged or not.
@@ -148,4 +148,8 @@ func (logger *ConsoleLogger) getCallerForLogMessage(callerDepth int) (caller str
 	}
 
 	return fmt.Sprintf("%s:%d", path, line), true
+}
+
+func (logger *ConsoleLogger) ClearStorage() {
+	logger.storage.Clear()
 }

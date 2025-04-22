@@ -17,3 +17,4 @@ func (*noOpLogger) Warn(string)      {}
 func (*noOpLogger) WarnOnce(string)  {}
 func (*noOpLogger) Error(string)     {}
 func (*noOpLogger) ErrorOnce(string) {}
+func (*noOpLogger) ClearStorage()    {}

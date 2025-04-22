@@ -17,4 +17,11 @@ type Logger interface {
 	Error(string)
 	// Log an error message. Skip if the same message is logged from the same location in the code.
 	ErrorOnce(string)
+
+	// ClearStorage clears the storage that is used for the LogOnce methods.
+	//
+	// It might be a good idea to call this periodically if you make excessive use of those methods
+	// to prevent memory from continuously increasing. But keep in mind that this will make the logs
+	// from LogOnce methods log once again.
+	ClearStorage()
 }
