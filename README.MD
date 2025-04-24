@@ -30,7 +30,7 @@ type Position struct {
 type Velocity struct {
 	X float64
 	Y float64
-	
+
 	ecs.Component
 }
 
@@ -48,8 +48,11 @@ func main() {
 
 	for range 5 {
 		// Loop over the entities with the Position and the Velocity component
-		queryResult := ecs.Query2[Position, Velocity](&world)
-		for position, velocity := range queryResult.Range() {
+		query := ecs.Query2[Position, Velocity, ecs.NoFilter, ecs.AllRequired]{}
+		query.PrepareOptions()
+		query.Exec(&world)
+
+		for position, velocity := range query.Result().Range() {
 			position.X += velocity.X
 			position.Y += velocity.Y
 		}

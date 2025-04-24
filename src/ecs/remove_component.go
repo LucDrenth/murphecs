@@ -91,8 +91,8 @@ func Remove4[A, B, C, D IComponent](world *World, entity EntityId) (result error
 	return result
 }
 
-func removeComponentFromEntityData[T IComponent](entry *entityData) error {
-	componentType := getComponentType[T]()
+func removeComponentFromEntityData[T IComponent](entry *EntityData) error {
+	componentType := GetComponentType[T]()
 	if _, ok := entry.components[componentType]; !ok {
 		return fmt.Errorf("%w: %s", ErrComponentNotFound, getComponentDebugType[T]())
 	}

@@ -25,30 +25,29 @@ func main() {
 	ecs.Spawn(&world, &NPC{name: "Bob"})
 
 	// Query all NPC components
-	queryResult := ecs.Query1[NPC](&world)
-	queryResult.Iter(func(entityId ecs.EntityId, npc *NPC) error {
+	query := ecs.Query1[NPC, ecs.NoFilter, ecs.AllRequired]{}
+	query.PrepareOptions()
+	query.Exec(&world)
+	query.Result().Iter(func(entityId ecs.EntityId, npc *NPC) error {
 		fmt.Printf("simple query: %d: %s \n", entityId, npc.name)
 		return nil
 	})
 
-	// Query all NPC components of entities that have both the Friendly and the Dialog component
-	queryResult = ecs.Query1[NPC](&world, ecs.With[Friendly](), ecs.With[Dialog]())
-	queryResult.Iter(func(entityId ecs.EntityId, npc *NPC) error {
-		fmt.Printf("query with Friendly and Dialog: %d: %s \n", entityId, npc.name)
+	// Query all NPC components of entities that hav the Friendly component
+	query2 := ecs.Query1[NPC, ecs.With[Friendly], ecs.AllRequired]{}
+	query2.PrepareOptions()
+	query2.Exec(&world)
+	query2.Result().Iter(func(entityId ecs.EntityId, npc *NPC) error {
+		fmt.Printf("query with Friendly: %d: %s \n", entityId, npc.name)
 		return nil
 	})
 
 	// Query all NPC and Dialog components of entities that do not have the Friendly component
-	queryResult2 := ecs.Query2[NPC, Dialog](&world, ecs.Without[Friendly]())
-	queryResult2.Iter(func(entityId ecs.EntityId, npc *NPC, dialog *Dialog) error {
+	query3 := ecs.Query2[NPC, Dialog, ecs.Without[Friendly], ecs.AllRequired]{}
+	query3.PrepareOptions()
+	query3.Exec(&world)
+	query3.Result().Iter(func(entityId ecs.EntityId, npc *NPC, dialog *Dialog) error {
 		fmt.Printf("query without Friendly: %d: %s says %s \n", entityId, npc.name, dialog.text)
-		return nil
-	})
-
-	// Query all NPC and (optionally) Dialog component of all entities that do not have the friendly component
-	queryResult2 = ecs.Query2[NPC, Dialog](&world, ecs.Optional[Dialog](), ecs.Without[Friendly]())
-	queryResult2.Iter(func(entityId ecs.EntityId, npc *NPC, dialog *Dialog) error {
-		fmt.Printf("query with optional Dialog: %d: %s has dialog %v \n", entityId, npc.name, dialog)
 		return nil
 	})
 }

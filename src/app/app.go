@@ -32,7 +32,7 @@ func NewBasicSubApp(logger log.Logger) BasicSubApp {
 }
 
 func (app *BasicSubApp) AddStartupSystem(schedule Schedule, system System) {
-	err := app.startupSchedules.AddSystem(schedule, system)
+	err := app.startupSchedules.AddSystem(schedule, system, &app.world, app.logger)
 	if err != nil {
 		app.logger.Error(fmt.Sprintf("failed to add startup system: %v", err))
 	}
@@ -46,7 +46,7 @@ func (app *BasicSubApp) AddStartupSchedule(schedule Schedule) {
 }
 
 func (app *BasicSubApp) AddSystem(schedule Schedule, system System) {
-	err := app.repeatedSchedules.AddSystem(schedule, system)
+	err := app.repeatedSchedules.AddSystem(schedule, system, &app.world, app.logger)
 	if err != nil {
 		app.logger.Error(fmt.Sprintf("failed to add system: %v", err))
 	}
@@ -60,7 +60,7 @@ func (app *BasicSubApp) AddSchedule(schedule Schedule) {
 }
 
 func (app *BasicSubApp) AddCleanupSystem(schedule Schedule, system System) {
-	err := app.cleanupSchedules.AddSystem(schedule, system)
+	err := app.cleanupSchedules.AddSystem(schedule, system, &app.world, app.logger)
 	if err != nil {
 		app.logger.Error(fmt.Sprintf("failed to add cleanup system: %v", err))
 	}
@@ -124,6 +124,8 @@ func (app *BasicSubApp) Logger() log.Logger {
 
 func (app *BasicSubApp) runSystemSet(systemSets []*SystemSet) {
 	for _, systemSet := range systemSets {
-		systemSet.Run(app)
+		for i := range systemSet.systems {
+			systemSet.systems[i].exec(app.logger)
+		}
 	}
 }

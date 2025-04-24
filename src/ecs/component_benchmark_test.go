@@ -17,6 +17,6 @@ func BenchmarkGetComponentType(b *testing.B) {
 	type aComponent struct{ Component }
 
 	for b.Loop() {
-		getComponentType[aComponent]()
+		GetComponentType[aComponent]()
 	}
 }

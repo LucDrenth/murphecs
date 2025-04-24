@@ -7,8 +7,8 @@ import (
 // World contains all of the entities and their components.
 type World struct {
 	entityIdCounter uint
-	entities        map[EntityId]*entityData
-	components      map[componentType]*componentRegistry
+	entities        map[EntityId]*EntityData
+	components      map[ComponentType]*componentRegistry
 	logger          log.Logger
 }
 
@@ -17,8 +17,8 @@ func NewWorld() World {
 	logger := log.Console()
 
 	return World{
-		entities:   map[EntityId]*entityData{},
-		components: map[componentType]*componentRegistry{},
+		entities:   map[EntityId]*EntityData{},
+		components: map[ComponentType]*componentRegistry{},
 		logger:     &logger,
 	}
 }
@@ -40,12 +40,12 @@ func (world *World) CountComponents() int {
 func (world *World) createEntity() EntityId {
 	world.entityIdCounter++
 	entity := EntityId(world.entityIdCounter)
-	world.entities[entity] = &entityData{components: map[componentType]uint{}}
+	world.entities[entity] = &EntityData{components: map[ComponentType]uint{}}
 	return entity
 }
 
 // getComponentRegistry creates a new component registry if it doesn't exist yet.
-func (world *World) getComponentRegistry(componentType componentType) *componentRegistry {
+func (world *World) getComponentRegistry(componentType ComponentType) *componentRegistry {
 	componentRegistry, ok := world.components[componentType]
 	if !ok {
 		newComponentRegistry := createComponentRegistry(1024, componentType)

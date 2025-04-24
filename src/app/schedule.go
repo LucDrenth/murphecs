@@ -1,6 +1,11 @@
 package app
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/lucdrenth/murph_engine/src/ecs"
+	"github.com/lucdrenth/murph_engine/src/log"
+)
 
 type Schedule string
 
@@ -27,14 +32,13 @@ func (s *Scheduler) AddSchedule(schedule Schedule) error {
 	return nil
 }
 
-func (s *Scheduler) AddSystem(schedule Schedule, system System) error {
+func (s *Scheduler) AddSystem(schedule Schedule, system System, world *ecs.World, logger log.Logger) error {
 	systemSet, exists := s.schedules[schedule]
 	if !exists {
 		return fmt.Errorf("schedule %s does not exist", schedule)
 	}
 
-	systemSet.systems = append(systemSet.systems, system)
-	return nil
+	return systemSet.add(system, world, logger)
 }
 
 func (s *Scheduler) GetSystemSets() ([]*SystemSet, error) {

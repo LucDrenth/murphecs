@@ -6,11 +6,11 @@ type EntityId = uint
 // Useful for tests.
 const nonExistingEntity = EntityId(0)
 
-type entityData struct {
-	components map[componentType]uint // componentType --> componentRegistry index
+type EntityData struct {
+	components map[ComponentType]uint // componentType --> componentRegistry index
 }
 
-func (e *entityData) hasComponent(c componentType) bool {
+func (e *EntityData) hasComponent(c ComponentType) bool {
 	_, ok := e.components[c]
 	return ok
 }

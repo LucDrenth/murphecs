@@ -7,31 +7,216 @@ import (
 	"slices"
 )
 
-type QueryResult interface {
-	NumberOfResult() uint
+type Query interface {
+	Exec(world *World)
+
+	// PrepareOptions extracts the query options and puts it in CombinedQueryOptions. This should be called
+	// once, after which the query is ready to be used (e.g. Exec can be called).
+	PrepareOptions() error
+}
+type Query1[ComponentA IComponent, _ QueryParamFilter, _ OptionalComponents] struct {
+	options CombinedQueryOptions
+	results Query1Result[ComponentA]
+}
+type Query2[ComponentA, ComponentB IComponent, _ QueryParamFilter, _ OptionalComponents] struct {
+	options CombinedQueryOptions
+	results Query2Result[ComponentA, ComponentB]
+}
+type Query3[ComponentA, ComponentB, ComponentC IComponent, _ QueryParamFilter, _ OptionalComponents] struct {
+	options CombinedQueryOptions
+	results Query3Result[ComponentA, ComponentB, ComponentC]
+}
+type Query4[ComponentA, ComponentB, ComponentC, ComponentD IComponent, _ QueryParamFilter, _ OptionalComponents] struct {
+	options CombinedQueryOptions
+	results Query4Result[ComponentA, ComponentB, ComponentC, ComponentD]
 }
 
-type query1Result[A IComponent] struct {
+func (q *Query1[ComponentA, Filters, OptionalComponents]) Exec(world *World) {
+	q.results.Clear()
+
+	for entityId, entityData := range world.entities {
+		a, match := getQueryComponent[ComponentA](world, entityData, &q.options)
+		if !match {
+			continue
+		}
+
+		q.results.componentsA = append(q.results.componentsA, a)
+		q.results.entityIds = append(q.results.entityIds, entityId)
+	}
+}
+func (q *Query2[ComponentA, ComponentB, Filters, OptionalComponents]) Exec(world *World) {
+	q.results.Clear()
+
+	for entityId, entityData := range world.entities {
+		a, match := getQueryComponent[ComponentA](world, entityData, &q.options)
+		if !match {
+			continue
+		}
+
+		b, match := getQueryComponent[ComponentB](world, entityData, &q.options)
+		if !match {
+			continue
+		}
+
+		q.results.componentsA = append(q.results.componentsA, a)
+		q.results.componentsB = append(q.results.componentsB, b)
+		q.results.entityIds = append(q.results.entityIds, entityId)
+	}
+}
+func (q *Query3[ComponentA, ComponentB, ComponentC, Filters, OptionalComponents]) Exec(world *World) {
+	q.results.Clear()
+
+	for entityId, entityData := range world.entities {
+		a, match := getQueryComponent[ComponentA](world, entityData, &q.options)
+		if !match {
+			continue
+		}
+
+		b, match := getQueryComponent[ComponentB](world, entityData, &q.options)
+		if !match {
+			continue
+		}
+
+		c, match := getQueryComponent[ComponentC](world, entityData, &q.options)
+		if !match {
+			continue
+		}
+
+		q.results.componentsA = append(q.results.componentsA, a)
+		q.results.componentsB = append(q.results.componentsB, b)
+		q.results.componentsC = append(q.results.componentsC, c)
+		q.results.entityIds = append(q.results.entityIds, entityId)
+	}
+}
+func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, Filters, OptionalComponents]) Exec(world *World) {
+	q.results.Clear()
+
+	for entityId, entityData := range world.entities {
+		a, match := getQueryComponent[ComponentA](world, entityData, &q.options)
+		if !match {
+			continue
+		}
+
+		b, match := getQueryComponent[ComponentB](world, entityData, &q.options)
+		if !match {
+			continue
+		}
+
+		c, match := getQueryComponent[ComponentC](world, entityData, &q.options)
+		if !match {
+			continue
+		}
+
+		d, match := getQueryComponent[ComponentD](world, entityData, &q.options)
+		if !match {
+			continue
+		}
+
+		q.results.componentsA = append(q.results.componentsA, a)
+		q.results.componentsB = append(q.results.componentsB, b)
+		q.results.componentsC = append(q.results.componentsC, c)
+		q.results.componentsD = append(q.results.componentsD, d)
+		q.results.entityIds = append(q.results.entityIds, entityId)
+	}
+}
+
+func (q *Query1[A, Filters, OptionalComponents]) PrepareOptions() (err error) {
+	q.options, err = getCombinedQueryOptions[Filters, OptionalComponents]()
+	return err
+}
+func (q *Query2[A, B, Filters, OptionalComponents]) PrepareOptions() (err error) {
+	q.options, err = getCombinedQueryOptions[Filters, OptionalComponents]()
+	return err
+}
+func (q *Query3[A, B, C, Filters, OptionalComponents]) PrepareOptions() (err error) {
+	q.options, err = getCombinedQueryOptions[Filters, OptionalComponents]()
+	return err
+}
+func (q *Query4[A, B, C, D, Filters, OptionalComponents]) PrepareOptions() (err error) {
+	q.options, err = getCombinedQueryOptions[Filters, OptionalComponents]()
+	return err
+}
+
+func (q *Query1[ComponentA, Filters, OptionalComponents]) Result() *Query1Result[ComponentA] {
+	return &q.results
+}
+func (q *Query2[ComponentA, ComponentB, Filters, OptionalComponents]) Result() *Query2Result[ComponentA, ComponentB] {
+	return &q.results
+}
+func (q *Query3[ComponentA, ComponentB, ComponentC, Filters, OptionalComponents]) Result() *Query3Result[ComponentA, ComponentB, ComponentC] {
+	return &q.results
+}
+func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, Filters, OptionalComponents]) Result() *Query4Result[ComponentA, ComponentB, ComponentC, ComponentD] {
+	return &q.results
+}
+
+type QueryResult interface {
+	NumberOfResult() uint
+	Clear()
+}
+type Query1Result[A IComponent] struct {
 	componentsA []*A
 	entityIds   []EntityId
 }
+type Query2Result[A, B IComponent] struct {
+	componentsA []*A
+	componentsB []*B
+	entityIds   []EntityId
+}
+type Query3Result[A, B, C IComponent] struct {
+	componentsA []*A
+	componentsB []*B
+	componentsC []*C
+	entityIds   []EntityId
+}
+type Query4Result[A, B, C, D IComponent] struct {
+	componentsA []*A
+	componentsB []*B
+	componentsC []*C
+	componentsD []*D
+	entityIds   []EntityId
+}
 
-// Iter executes function f on each entity that the query returned, until f returns an error.
-// If any of the calls to f returned an error, this function returns that error.
-func (q *query1Result[A]) Iter(f func(entityId EntityId, a *A) error) error {
-	for i := range q.entityIds {
-		if err := f(q.entityIds[i], q.componentsA[i]); err != nil {
-			return err
-		}
-	}
+func (q *Query1Result[A]) Clear() {
+	q.componentsA = []*A{}
+	q.entityIds = []EntityId{}
+}
+func (q *Query2Result[A, B]) Clear() {
+	q.componentsA = []*A{}
+	q.componentsB = []*B{}
+	q.entityIds = []EntityId{}
+}
+func (q *Query3Result[A, B, C]) Clear() {
+	q.componentsA = []*A{}
+	q.componentsB = []*B{}
+	q.componentsC = []*C{}
+	q.entityIds = []EntityId{}
+}
+func (q *Query4Result[A, B, C, D]) Clear() {
+	q.componentsA = []*A{}
+	q.componentsB = []*B{}
+	q.componentsC = []*C{}
+	q.componentsD = []*D{}
+	q.entityIds = []EntityId{}
+}
 
-	return nil
+func (q *Query1Result[A]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
+}
+func (q *Query2Result[A, B]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
+}
+func (q *Query3Result[A, B, C]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
+}
+func (q *Query4Result[A, B, C, D]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
 }
 
 // Range lets you range over the query result
 //
 // for component := range queryResult.Range() { ... }
-func (q *query1Result[A]) Range() func(yield func(*A) bool) {
+func (q *Query1Result[A]) Range() func(yield func(*A) bool) {
 	return func(yield func(*A) bool) {
 		for i := range q.entityIds {
 			if !yield(q.componentsA[i]) {
@@ -41,69 +226,10 @@ func (q *query1Result[A]) Range() func(yield func(*A) bool) {
 	}
 }
 
-func (q *query1Result[A]) NumberOfResult() uint {
-	return uint(len(q.entityIds))
-}
-
-// Query1 gets the given component of all entities that match the options.
-//
-// For filtering, choose from:
-//   - ecs.With
-//   - ecs.Without
-//
-// Or use ecs.Or and ecs.And to combine filters.
-// If you pass multiple filters in options, all of them must pass for an entity to come up
-// in the results.
-//
-// By default, entities have to have the given component. You can mark the component that
-// you query as optional by passing ecs.Optional as an option. This will result in nil
-// being returned for that component for the entities that don't have that component.
-func Query1[A IComponent](world *World, options ...queryOption) query1Result[A] {
-	result := query1Result[A]{}
-	queryOptions, err := createCombinedQueryOptions(options)
-	if err != nil {
-		world.logger.Warn(fmt.Sprintf("Query1 encountered issue with query options: %v", err))
-	}
-
-	for entityId, entityData := range world.entities {
-		if ok := validateQueryFilters(entityData, &queryOptions); !ok {
-			continue
-		}
-
-		a, match := getQueryComponent[A](world, entityData, &queryOptions)
-		if !match {
-			continue
-		}
-
-		result.componentsA = append(result.componentsA, a)
-		result.entityIds = append(result.entityIds, entityId)
-	}
-
-	return result
-}
-
-type query2Result[A, B IComponent] struct {
-	componentsA []*A
-	componentsB []*B
-	entityIds   []EntityId
-}
-
-// Iter executes function f on each entity that the query returned, until f returns an error.
-// If any of the calls to f returned an error, this function returns that error.
-func (q *query2Result[A, B]) Iter(f func(entityId EntityId, a *A, b *B) error) error {
-	for i := range q.entityIds {
-		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i]); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 // Range lets you range over the query result
 //
 // for component := range queryResult.Range() { ... }
-func (q *query2Result[A, B]) Range() func(yield func(*A, *B) bool) {
+func (q *Query2Result[A, B]) Range() func(yield func(*A, *B) bool) {
 	return func(yield func(*A, *B) bool) {
 		for i := range q.entityIds {
 			if !yield(q.componentsA[i], q.componentsB[i]) {
@@ -113,63 +239,33 @@ func (q *query2Result[A, B]) Range() func(yield func(*A, *B) bool) {
 	}
 }
 
-func (q *query2Result[A, B]) NumberOfResult() uint {
-	return uint(len(q.entityIds))
-}
-
-// Query2 gets the given components of all entities that match the options.
-//
-// For filtering, choose from:
-//   - ecs.With
-//   - ecs.Without
-//
-// Or use ecs.Or and ecs.And to combine filters.
-// If you pass multiple filters in options, all of them must pass for an entity to come up
-// in the results.
-//
-// By default, entities have to have the given components. You can mark components
-// as optional by passing 1 or more ecs.Options as an option. This will result in nil
-// being returned for that component for the entities that don't have that component.
-func Query2[A, B IComponent](world *World, options ...queryOption) query2Result[A, B] {
-	result := query2Result[A, B]{}
-	queryOptions, err := createCombinedQueryOptions(options)
-	if err != nil {
-		world.logger.Warn(fmt.Sprintf("Query2 encountered issue with query options: %v", err))
+// Iter executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query1Result[A]) Iter(f func(entityId EntityId, a *A) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i], q.componentsA[i]); err != nil {
+			return err
+		}
 	}
 
-	for entityId, entityData := range world.entities {
-		if ok := validateQueryFilters(entityData, &queryOptions); !ok {
-			continue
-		}
-
-		a, match := getQueryComponent[A](world, entityData, &queryOptions)
-		if !match {
-			continue
-		}
-
-		b, match := getQueryComponent[B](world, entityData, &queryOptions)
-		if !match {
-			continue
-		}
-
-		result.componentsA = append(result.componentsA, a)
-		result.componentsB = append(result.componentsB, b)
-		result.entityIds = append(result.entityIds, entityId)
-	}
-
-	return result
-}
-
-type query3Result[A, B, C IComponent] struct {
-	componentsA []*A
-	componentsB []*B
-	componentsC []*C
-	entityIds   []EntityId
+	return nil
 }
 
 // Iter executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
-func (q *query3Result[A, B, C]) Iter(f func(entityId EntityId, a *A, b *B, c *C) error) error {
+func (q *Query2Result[A, B]) Iter(f func(entityId EntityId, a *A, b *B) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i]); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Iter executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query3Result[A, B, C]) Iter(f func(entityId EntityId, a *A, b *B, c *C) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i]); err != nil {
 			return err
@@ -179,70 +275,9 @@ func (q *query3Result[A, B, C]) Iter(f func(entityId EntityId, a *A, b *B, c *C)
 	return nil
 }
 
-func (q *query3Result[A, B, C]) NumberOfResult() uint {
-	return uint(len(q.entityIds))
-}
-
-// Query3 gets the given components of all entities that match the options.
-//
-// For filtering, choose from:
-//   - ecs.With
-//   - ecs.Without
-//
-// Or use ecs.Or and ecs.And to combine filters.
-// If you pass multiple filters in options, all of them must pass for an entity to come up
-// in the results.
-//
-// By default, entities have to have the given components. You can mark components
-// as optional by passing 1 or more ecs.Options as an option. This will result in nil
-// being returned for that component for the entities that don't have that component.
-func Query3[A, B, C IComponent](world *World, options ...queryOption) query3Result[A, B, C] {
-	result := query3Result[A, B, C]{}
-	queryOptions, err := createCombinedQueryOptions(options)
-	if err != nil {
-		world.logger.Warn(fmt.Sprintf("Query3 encountered issue with query options: %v", err))
-	}
-
-	for entityId, entityData := range world.entities {
-		if ok := validateQueryFilters(entityData, &queryOptions); !ok {
-			continue
-		}
-
-		a, match := getQueryComponent[A](world, entityData, &queryOptions)
-		if !match {
-			continue
-		}
-
-		b, match := getQueryComponent[B](world, entityData, &queryOptions)
-		if !match {
-			continue
-		}
-
-		c, match := getQueryComponent[C](world, entityData, &queryOptions)
-		if !match {
-			continue
-		}
-
-		result.componentsA = append(result.componentsA, a)
-		result.componentsB = append(result.componentsB, b)
-		result.componentsC = append(result.componentsC, c)
-		result.entityIds = append(result.entityIds, entityId)
-	}
-
-	return result
-}
-
-type query4Result[A, B, C, D IComponent] struct {
-	componentsA []*A
-	componentsB []*B
-	componentsC []*C
-	componentsD []*D
-	entityIds   []EntityId
-}
-
 // Iter executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
-func (q *query4Result[A, B, C, D]) Iter(f func(entityId EntityId, a *A, b *B, c *C, d *D) error) error {
+func (q *Query4Result[A, B, C, D]) Iter(f func(entityId EntityId, a *A, b *B, c *C, d *D) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i]); err != nil {
 			return err
@@ -252,75 +287,16 @@ func (q *query4Result[A, B, C, D]) Iter(f func(entityId EntityId, a *A, b *B, c 
 	return nil
 }
 
-func (q *query4Result[A, B, C, D]) NumberOfResult() uint {
-	return uint(len(q.entityIds))
-}
-
-// Query4 gets the given components of all entities that match the options.
-//
-// For filtering, choose from:
-//   - ecs.With
-//   - ecs.Without
-//
-// Or use ecs.Or and ecs.And to combine filters.
-// If you pass multiple filters in options, all of them must pass for an entity to come up
-// in the results.
-//
-// By default, entities have to have the given components. You can mark components
-// as optional by passing 1 or more ecs.Options as an option. This will result in nil
-// being returned for that component for the entities that don't have that component.
-func Query4[A, B, C, D IComponent](world *World, options ...queryOption) query4Result[A, B, C, D] {
-	result := query4Result[A, B, C, D]{}
-	queryOptions, err := createCombinedQueryOptions(options)
-	if err != nil {
-		world.logger.Warn(fmt.Sprintf("Query4 encountered issue with query options: %v", err))
-	}
-
-	for entityId, entityData := range world.entities {
-		if ok := validateQueryFilters(entityData, &queryOptions); !ok {
-			continue
-		}
-
-		a, match := getQueryComponent[A](world, entityData, &queryOptions)
-		if !match {
-			continue
-		}
-
-		b, match := getQueryComponent[B](world, entityData, &queryOptions)
-		if !match {
-			continue
-		}
-
-		c, match := getQueryComponent[C](world, entityData, &queryOptions)
-		if !match {
-			continue
-		}
-
-		d, match := getQueryComponent[D](world, entityData, &queryOptions)
-		if !match {
-			continue
-		}
-
-		result.componentsA = append(result.componentsA, a)
-		result.componentsB = append(result.componentsB, b)
-		result.componentsC = append(result.componentsC, c)
-		result.componentsD = append(result.componentsD, d)
-		result.entityIds = append(result.entityIds, entityId)
-	}
-
-	return result
-}
-
 // getQueryComponent returns a pointer to T if the component is found on the entity.
 //
 // match is true when the entity has the component or if the component is marked marked as optional.
 // When match is true, the entity should be present in the query results.
-func getQueryComponent[T IComponent](world *World, entityData *entityData, queryOptions *combinedQueryOptions) (result *T, match bool) {
-	componentType := getComponentType[T]()
+func getQueryComponent[T IComponent](world *World, entityData *EntityData, queryOptions *CombinedQueryOptions) (result *T, match bool) {
+	componentType := GetComponentType[T]()
 
 	componentRegistryIndex, entityHasComponent := entityData.components[componentType]
 	if !entityHasComponent {
-		return nil, slices.Contains(queryOptions.optionalComponents, getComponentType[T]())
+		return nil, slices.Contains(queryOptions.OptionalComponents, componentType)
 	}
 
 	result, err := getComponentFromComponentRegistry[T](world.components[componentType], componentRegistryIndex)
@@ -330,14 +306,4 @@ func getQueryComponent[T IComponent](world *World, entityData *entityData, query
 	}
 
 	return result, true
-}
-
-func validateQueryFilters(entityData *entityData, queryOptions *combinedQueryOptions) bool {
-	for _, filter := range queryOptions.filters {
-		if !filter.validate(entityData) {
-			return false
-		}
-	}
-
-	return true
 }

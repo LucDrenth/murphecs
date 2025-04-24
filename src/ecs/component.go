@@ -18,10 +18,10 @@ func (Component) RequiredComponents() []IComponent {
 	return []IComponent{}
 }
 
-type componentType = reflect.Type
+type ComponentType = reflect.Type
 
 // toComponentType returns a unique representation of the component type
-func toComponentType(component IComponent) componentType {
+func toComponentType(component IComponent) ComponentType {
 	result := reflect.TypeOf(component)
 
 	if result.Kind() == reflect.Pointer {
@@ -31,8 +31,8 @@ func toComponentType(component IComponent) componentType {
 	return result
 }
 
-// getComponentType returns a unique representation of the component type
-func getComponentType[T IComponent]() componentType {
+// GetComponentType returns a unique representation of the component type
+func GetComponentType[T IComponent]() ComponentType {
 	result := utils.TypeOf[T]()
 
 	if result.Kind() == reflect.Pointer {
@@ -54,8 +54,8 @@ func getComponentDebugType[T IComponent]() string {
 	return result
 }
 
-func toComponentTypes(components []IComponent) []componentType {
-	componentTypes := make([]componentType, len(components))
+func toComponentTypes(components []IComponent) []ComponentType {
+	componentTypes := make([]ComponentType, len(components))
 
 	for i, component := range components {
 		componentTypes[i] = toComponentType(component)
@@ -66,7 +66,7 @@ func toComponentTypes(components []IComponent) []componentType {
 
 // getARequiredComponents non-exhaustively gets required components of `components` adds those components to `result`, and their types to `typesToExclude`.
 // Required components of which their type exists in `typesToExclude` are skipped.
-func getRequiredComponents(typesToExclude *[]componentType, components []IComponent, result *[]IComponent) (newComponents []IComponent) {
+func getRequiredComponents(typesToExclude *[]ComponentType, components []IComponent, result *[]IComponent) (newComponents []IComponent) {
 	newComponents = []IComponent{}
 
 	for _, component := range components {
@@ -89,7 +89,7 @@ func getRequiredComponents(typesToExclude *[]componentType, components []ICompon
 // getAllRequiredComponents exhaustively gets all required components of `components`.
 //
 // `typesToExclude` gets updated with the types from the result.
-func getAllRequiredComponents(typesToExclude *[]componentType, components []IComponent) []IComponent {
+func getAllRequiredComponents(typesToExclude *[]ComponentType, components []IComponent) []IComponent {
 	result := []IComponent{}
 
 	for {

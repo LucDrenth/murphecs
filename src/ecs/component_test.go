@@ -143,8 +143,8 @@ func TestComponentTypeConversions(t *testing.T) {
 			toComponentType(componentB{}),
 		)
 		assert.NotEqual(
-			getComponentType[componentA](),
-			getComponentType[componentB](),
+			GetComponentType[componentA](),
+			GetComponentType[componentB](),
 		)
 	})
 
@@ -166,11 +166,11 @@ func TestComponentTypeConversions(t *testing.T) {
 
 		assert.Equal(
 			toComponentType(componentA{}),
-			getComponentType[componentA](),
+			GetComponentType[componentA](),
 		)
 		assert.NotEqual(
-			getComponentType[componentA](),
-			getComponentType[componentB](),
+			GetComponentType[componentA](),
+			GetComponentType[componentB](),
 		)
 	})
 
@@ -181,7 +181,7 @@ func TestComponentTypeConversions(t *testing.T) {
 
 		assert.Equal(
 			toComponentType(iComponent).String(),
-			getComponentType[componentA]().String(),
+			GetComponentType[componentA]().String(),
 		)
 	})
 
@@ -193,8 +193,8 @@ func TestComponentTypeConversions(t *testing.T) {
 			toComponentType(componentA{}),
 		)
 		assert.Equal(
-			getComponentType[componentA](),
-			getComponentType[*componentA](),
+			GetComponentType[componentA](),
+			GetComponentType[*componentA](),
 		)
 	})
 }
