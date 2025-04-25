@@ -31,6 +31,3 @@
     - linter - fail if project is not linted
     - benchmarks - warn if there are degradations
     - run `go mod tidy` - fail if anything changed
-
-# General
-- [code-cleanup] use reflect.TypeFor instead of utils.TypeOf. But make sure to benchmark it to see how performant it is 

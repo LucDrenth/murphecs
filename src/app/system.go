@@ -7,7 +7,6 @@ import (
 
 	"github.com/lucdrenth/murph_engine/src/ecs"
 	"github.com/lucdrenth/murph_engine/src/log"
-	"github.com/lucdrenth/murph_engine/src/utils"
 )
 
 type System interface{}
@@ -98,7 +97,7 @@ func validateSystemReturnTypes(systemValue reflect.Value) error {
 	if numberOfSystemReturnValues == 1 {
 		returnType := systemValue.Type().Out(0)
 
-		if returnType == utils.TypeOf[error]() {
+		if returnType == reflect.TypeFor[error]() {
 			return nil
 		}
 

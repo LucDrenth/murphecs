@@ -133,31 +133,31 @@ func (o AllRequired) getOptionalComponentTypes() []ComponentType {
 
 func (o Optional1[A]) getOptionalComponentTypes() []ComponentType {
 	return []ComponentType{
-		utils.TypeOf[A](),
+		GetComponentType[A](),
 	}
 }
 
 func (o Optional2[A, B]) getOptionalComponentTypes() []ComponentType {
 	return []ComponentType{
-		utils.TypeOf[A](),
-		utils.TypeOf[B](),
+		GetComponentType[A](),
+		GetComponentType[B](),
 	}
 }
 
 func (o Optional3[A, B, C]) getOptionalComponentTypes() []ComponentType {
 	return []ComponentType{
-		utils.TypeOf[A](),
-		utils.TypeOf[B](),
-		utils.TypeOf[C](),
+		GetComponentType[A](),
+		GetComponentType[B](),
+		GetComponentType[C](),
 	}
 }
 
 func (o Optional4[A, B, C, D]) getOptionalComponentTypes() []ComponentType {
 	return []ComponentType{
-		utils.TypeOf[A](),
-		utils.TypeOf[B](),
-		utils.TypeOf[C](),
-		utils.TypeOf[D](),
+		GetComponentType[A](),
+		GetComponentType[B](),
+		GetComponentType[C](),
+		GetComponentType[D](),
 	}
 }
 

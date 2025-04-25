@@ -18,5 +18,6 @@ func BenchmarkGetComponentType(b *testing.B) {
 
 	for b.Loop() {
 		GetComponentType[aComponent]()
+		GetComponentType[*aComponent]()
 	}
 }

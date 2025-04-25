@@ -4,8 +4,6 @@ import (
 	"reflect"
 	"slices"
 	"strings"
-
-	"github.com/lucdrenth/murph_engine/src/utils"
 )
 
 type IComponent interface {
@@ -33,7 +31,7 @@ func toComponentType(component IComponent) ComponentType {
 
 // GetComponentType returns a unique representation of the component type
 func GetComponentType[T IComponent]() ComponentType {
-	result := utils.TypeOf[T]()
+	result := reflect.TypeFor[T]()
 
 	if result.Kind() == reflect.Pointer {
 		return result.Elem()
@@ -49,7 +47,7 @@ func toComponentDebugType(component IComponent) string {
 
 // getComponentDebugType returns a string reflection of the component type such as "ecs.Entity"
 func getComponentDebugType[T IComponent]() string {
-	result := utils.TypeOf[T]().String()
+	result := reflect.TypeFor[T]().String()
 	result, _ = strings.CutPrefix(result, "*")
 	return result
 }
