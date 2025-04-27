@@ -23,6 +23,7 @@ func CopyPointerData(source unsafe.Pointer, destination unsafe.Pointer, itemSize
 }
 
 // ClonePointerValue returns a new pointer that points to a copy of what target points to.
+// Panics if target is nil.
 func ClonePointerValue[T any](target *T) *T {
 	originalValue := *target
 	newPointer := new(T)
