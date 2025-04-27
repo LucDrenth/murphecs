@@ -56,12 +56,9 @@ func TestClonePointerValue(t *testing.T) {
 	t.Run("panics when passing nil", func(t *testing.T) {
 		assert := assert.New(t)
 
-		defer func() {
-			r := recover()
-			assert.NotNil(r)
-		}()
-
-		ClonePointerValue[dataStruct](nil)
+		assert.Panics(func() {
+			ClonePointerValue[dataStruct](nil)
+		})
 	})
 
 	t.Run("updating the cloned value does not alert the original value", func(t *testing.T) {
