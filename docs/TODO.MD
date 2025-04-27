@@ -1,6 +1,7 @@
 # ECS
 **Must have**
-- [feature] implement query filters And / Or
+- [feature] Implement query filters And / Or
+- [feature] Make query components passed by ref they are given with pointer (e.g. Query[*MyComponent]) and passed by value (so clone component before passing) if they are given without pointer (e.g. Query[MyComponent]). This will allow automatically running systems in parallel. It is important to do this early because it will be a big hidden API change.
 - [performance] Proper archetype ECS implementation. Once all of the above is implemented, the basic user facing API is there. But the implementation is its most basic form and is not efficient at all. [See this article from flecs ECS creator](https://ajmmertens.medium.com/building-an-ecs-1-where-are-my-entities-and-components-63d07c7da742).
 
 **Nice-to-have**
@@ -8,7 +9,6 @@
 - [code-cleanup] Check if files can be split up in to 3 packages: storage, actions, filter
 - [performance] Generational entities
 - [performance] When removing component from entity, or deleting an entity, the place of the component(s) in the component registry are never reused. We could move the last componentRegistry component to the place of the removed component to reuse the memory and prevent memory from forever growing. When moving a component in componentRegistry, Don't forget to update the index in entityData
-- [performance] Run schedule systems in parallel. We could have the query params use Q[C] for immutable read and Q[*C] for mutable read. We can then parallelize all systems in the same schedule that do not query a component that is mutably queried by another system.
 - [feature] Relationships (like parent/child)
 - [feature] Events
 - [feature] Observers
@@ -31,3 +31,13 @@
     - linter - fail if project is not linted
     - benchmarks - warn if there are degradations
     - run `go mod tidy` - fail if anything changed
+
+# App
+**Must have**
+- [feature] Dynamically insert resource (maybe name it pullable?) and convert logger to that.
+- [feature] Loop that can run at a fixed rate
+- [feature] Delta resource
+
+**Nice-to-have**
+- [feature] Resource without pointer to make a copy
+- [feature] Execute systems in parallel. If systems are in the same schedule, they can be run in parallel if the systems do not touch any passed-by-ref resource (query/resource) of any of the other systems. Mind that we can probably not run a system with a Query in parallel with any other system that pulls in ecs.World, because we can not detect if it will be used to mutate anything that other systems touch system-insert time.
