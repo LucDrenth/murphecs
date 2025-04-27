@@ -21,3 +21,11 @@ func CopyPointerData(source unsafe.Pointer, destination unsafe.Pointer, itemSize
 	dataSlice := (*[math.MaxInt32]byte)(source)[:itemSize:itemSize]
 	copy(destinationSlice, dataSlice)
 }
+
+// ClonePointerValue returns a new pointer that points to a copy of what target points to.
+func ClonePointerValue[T any](target *T) *T {
+	originalValue := *target
+	newPointer := new(T)
+	*newPointer = originalValue
+	return newPointer
+}

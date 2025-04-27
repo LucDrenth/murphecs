@@ -25,7 +25,7 @@ func main() {
 	ecs.Spawn(&world, &NPC{name: "Bob"})
 
 	// Query all NPC components
-	query := ecs.Query1[NPC, ecs.NoFilter, ecs.AllRequired]{}
+	query := ecs.Query1[NPC, ecs.NoFilter, ecs.AllRequired, ecs.NoReadOnly]{}
 	query.PrepareOptions()
 	query.Exec(&world)
 	query.Result().Iter(func(entityId ecs.EntityId, npc *NPC) error {
@@ -34,7 +34,7 @@ func main() {
 	})
 
 	// Query all NPC components of entities that hav the Friendly component
-	query2 := ecs.Query1[NPC, ecs.With[Friendly], ecs.AllRequired]{}
+	query2 := ecs.Query1[NPC, ecs.With[Friendly], ecs.AllRequired, ecs.NoReadOnly]{}
 	query2.PrepareOptions()
 	query2.Exec(&world)
 	query2.Result().Iter(func(entityId ecs.EntityId, npc *NPC) error {
@@ -43,7 +43,7 @@ func main() {
 	})
 
 	// Query all NPC and Dialog components of entities that do not have the Friendly component
-	query3 := ecs.Query2[NPC, Dialog, ecs.Without[Friendly], ecs.AllRequired]{}
+	query3 := ecs.Query2[NPC, Dialog, ecs.Without[Friendly], ecs.AllRequired, ecs.NoReadOnly]{}
 	query3.PrepareOptions()
 	query3.Exec(&world)
 	query3.Result().Iter(func(entityId ecs.EntityId, npc *NPC, dialog *Dialog) error {

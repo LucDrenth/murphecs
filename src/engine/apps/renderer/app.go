@@ -39,7 +39,7 @@ func startup(logger log.Logger) {
 	logger.Info("Init renderer")
 }
 
-func printer(logger log.Logger, world *ecs.World, tickCounterQuery *ecs.Query1[tick.TickCounter, ecs.NoFilter, ecs.AllRequired]) {
+func printer(logger log.Logger, world *ecs.World, tickCounterQuery *ecs.Query1[tick.TickCounter, ecs.NoFilter, ecs.AllRequired, ecs.NoReadOnly]) {
 	tickCounterQuery.Exec(world)
 
 	count := uint(0)

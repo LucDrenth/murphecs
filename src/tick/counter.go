@@ -21,7 +21,7 @@ func spawnCounter(world *ecs.World) error {
 	return err
 }
 
-func updateCounter(world *ecs.World, query *ecs.Query1[TickCounter, ecs.NoFilter, ecs.AllRequired]) {
+func updateCounter(world *ecs.World, query *ecs.Query1[TickCounter, ecs.NoFilter, ecs.AllRequired, ecs.NoReadOnly]) {
 	query.Exec(world)
 
 	query.Result().Iter(func(_ ecs.EntityId, counter *TickCounter) error {

@@ -49,3 +49,16 @@ func TestCopyPointerData(t *testing.T) {
 		}
 	}
 }
+
+func TestClonePointerValue(t *testing.T) {
+	assert := assert.New(t)
+
+	expectedValue := 10
+	type dataStruct struct{ value int }
+	data := &dataStruct{value: expectedValue}
+	dataCopy := ClonePointerValue(data)
+	dataCopy.value *= 2
+
+	assert.Equal(expectedValue, data.value)
+	assert.NotEqual(expectedValue, dataCopy.value)
+}

@@ -23,7 +23,7 @@ func TestQuery1(t *testing.T) {
 		expectedValue1 := 10
 		expectedValue2 := 20
 		world := NewWorld()
-		query := Query1[componentA, NoFilter, AllRequired]{}
+		query := Query1[componentA, NoFilter, AllRequired, NoReadOnly]{}
 		err := query.PrepareOptions()
 		assert.NoError(err)
 
@@ -59,7 +59,7 @@ func TestQuery1(t *testing.T) {
 
 		expectedValue := 10
 		world := NewWorld()
-		query := Query1[componentA, NoFilter, AllRequired]{}
+		query := Query1[componentA, NoFilter, AllRequired, NoReadOnly]{}
 		err := query.PrepareOptions()
 		assert.NoError(err)
 		_, err = Spawn(&world, &componentA{value: 0}, &componentB{})
@@ -80,6 +80,32 @@ func TestQuery1(t *testing.T) {
 		})
 	})
 
+	t.Run("queried component can not be mutated if is specified as read-only", func(t *testing.T) {
+		assert := assert.New(t)
+
+		expectedValue := 0
+		world := NewWorld()
+		query := Query1[componentA, NoFilter, AllRequired, ReadOnly1[componentA]]{}
+		err := query.PrepareOptions()
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentA{value: 0}, &componentB{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentB{})
+		assert.NoError(err)
+
+		query.Exec(&world)
+		query.results.Iter(func(entityId EntityId, a *componentA) error {
+			a.value = 10
+			return nil
+		})
+
+		query.Exec(&world)
+		query.results.Iter(func(entityId EntityId, a *componentA) error {
+			assert.Equal(expectedValue, a.value)
+			return nil
+		})
+	})
+
 	t.Run("query results stops iterating when returning an error", func(t *testing.T) {
 		assert := assert.New(t)
 
@@ -88,7 +114,7 @@ func TestQuery1(t *testing.T) {
 		assert.NoError(err)
 		_, err = Spawn(&world, &componentA{})
 		assert.NoError(err)
-		query := Query1[componentA, NoFilter, AllRequired]{}
+		query := Query1[componentA, NoFilter, AllRequired, NoReadOnly]{}
 		err = query.PrepareOptions()
 		assert.NoError(err)
 		query.Exec(&world)
