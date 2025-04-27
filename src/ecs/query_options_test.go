@@ -13,14 +13,14 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("returns an error when passing an incorrect query param filter", func(t *testing.T) {
 		assert := assert.New(t)
 
-		_, err := getCombinedQueryOptions[QueryParamFilter, AllRequired, NoReadOnly]()
+		_, err := getCombinedQueryOptions[QueryParamFilter, NoOptional, NoReadOnly]()
 		assert.Error(err)
 	})
 
 	t.Run("returns an error when passing an incorrect read-only option", func(t *testing.T) {
 		assert := assert.New(t)
 
-		_, err := getCombinedQueryOptions[QueryParamFilter, AllRequired, ReadOnlyComponents]()
+		_, err := getCombinedQueryOptions[QueryParamFilter, NoOptional, ReadOnlyComponents]()
 		assert.Error(err)
 	})
 
@@ -34,7 +34,7 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("successfully creates the combined query options with default options", func(t *testing.T) {
 		assert := assert.New(t)
 
-		result, err := getCombinedQueryOptions[NoFilter, AllRequired, NoReadOnly]()
+		result, err := getCombinedQueryOptions[NoFilter, NoOptional, NoReadOnly]()
 		assert.NoError(err)
 		assert.Equal(0, len(result.Filters))
 		assert.Equal(0, len(result.OptionalComponents))
@@ -43,7 +43,7 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("successfully creates the combined query options with the right amount of filters", func(t *testing.T) {
 		assert := assert.New(t)
 
-		result, err := getCombinedQueryOptions[With[componentA], AllRequired, NoReadOnly]()
+		result, err := getCombinedQueryOptions[With[componentA], NoOptional, NoReadOnly]()
 		assert.NoError(err)
 		assert.Equal(1, len(result.Filters))
 		assert.Equal(0, len(result.OptionalComponents))
@@ -66,16 +66,16 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("successfully creates combined query options with the right amount of read-only components", func(t *testing.T) {
 		assert := assert.New(t)
 
-		result, err := getCombinedQueryOptions[NoFilter, AllRequired, NoReadOnly]()
+		result, err := getCombinedQueryOptions[NoFilter, NoOptional, NoReadOnly]()
 		assert.NoError(err)
 		assert.Equal(0, len(result.ReadOnlyComponents.ComponentTypes))
 		assert.False(result.ReadOnlyComponents.IsAllReadOnly)
 
-		result, err = getCombinedQueryOptions[NoFilter, AllRequired, AllReadOnly]()
+		result, err = getCombinedQueryOptions[NoFilter, NoOptional, AllReadOnly]()
 		assert.NoError(err)
 		assert.True(result.ReadOnlyComponents.IsAllReadOnly)
 
-		result, err = getCombinedQueryOptions[NoFilter, AllRequired, ReadOnly1[componentA]]()
+		result, err = getCombinedQueryOptions[NoFilter, NoOptional, ReadOnly1[componentA]]()
 		assert.NoError(err)
 		assert.Equal(1, len(result.ReadOnlyComponents.ComponentTypes))
 		assert.False(result.ReadOnlyComponents.IsAllReadOnly)

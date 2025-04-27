@@ -5,7 +5,6 @@
 
 **Nice-to-have**
 - [quality-of-life] Automatically execute queries from system params before calling the system. We could then also have a LazyQuery that only gets called when getting query results.
-- [quality-of-live] Rename AllRequired to NoOptional to keep the query options consistent
 - [quality-of-live] Add Query structs to only get 1 or maybe 2 options, such as QueryWithOptional, QueryWithout, QueryReadOnly and such. This is so that we don't have to write out all query options in every query.
 - [code-cleanup] Check if files can be split up in to 3 packages: storage, actions, filter
 - [performance] Generational entities

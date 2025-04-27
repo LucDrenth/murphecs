@@ -48,7 +48,7 @@ func main() {
 
 	for range 5 {
 		// Loop over the entities with the Position and the Velocity component
-		query := ecs.Query2[Position, Velocity, ecs.NoFilter, ecs.AllRequired, ecs.NoReadOnly]{}
+		query := ecs.Query2[Position, Velocity, ecs.NoFilter, ecs.NoOptional, ecs.NoReadOnly]{}
 		query.PrepareOptions()
 		query.Exec(&world)
 

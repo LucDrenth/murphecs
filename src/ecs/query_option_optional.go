@@ -5,7 +5,7 @@ type OptionalComponents interface {
 }
 
 // Entities have to have all components in order to be in the query result
-type AllRequired struct{}
+type NoOptional struct{}
 
 // Entities will be in query result even if A is not present. If A is not present,
 // it will be nil in the query result.
@@ -23,7 +23,7 @@ type Optional3[A, B, C IComponent] struct{}
 // not present will be nil in the query result.
 type Optional4[A, B, C, D IComponent] struct{}
 
-func (o AllRequired) getOptionalComponentTypes() []ComponentType {
+func (o NoOptional) getOptionalComponentTypes() []ComponentType {
 	return []ComponentType{}
 }
 
