@@ -13,10 +13,12 @@
 - [feature] Events
 - [feature] Observers
 - [feature] World configs (logger, default componentEntry size)
-- [tests] More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
+- [feature] Add Query5..Query16 and Optional5..Optional16
 - [quality-of-life] Better query validations:
     - Return error if marking a component as optional while that component is not queried
     - Return error if there are any duplicate filters
+- [quality-of-life] Function to check if a specific entity has components. This is already possible by using Get1..Get8 and checking if the error is ErrComponentNotFound, but its not very user-friendly.
+- [tests] More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
 
 # Window
 - [feature] Be able to create a window
