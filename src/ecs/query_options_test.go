@@ -7,7 +7,63 @@ import (
 )
 
 func TestGetCombinedQueryOptions(t *testing.T) {
-	// TODO
+	type componentA struct{ Component }
+	type componentB struct{ Component }
+
+	t.Run("returns an error when passing an incorrect query param filter", func(t *testing.T) {
+		assert := assert.New(t)
+
+		_, err := getCombinedQueryOptions[QueryParamFilter, AllRequired]()
+		assert.Error(err)
+	})
+
+	t.Run("returns an error when passing incorrect optional components", func(t *testing.T) {
+		assert := assert.New(t)
+
+		_, err := getCombinedQueryOptions[NoFilter, OptionalComponents]()
+		assert.Error(err)
+	})
+
+	t.Run("successfully creates the combined query options with default options", func(t *testing.T) {
+		assert := assert.New(t)
+
+		result, err := getCombinedQueryOptions[NoFilter, AllRequired]()
+		assert.NoError(err)
+		assert.Equal(0, len(result.Filters))
+		assert.Equal(0, len(result.OptionalComponents))
+	})
+
+	t.Run("successfully creates the combined query options with the right amount of filters", func(t *testing.T) {
+		assert := assert.New(t)
+
+		result, err := getCombinedQueryOptions[With[componentA], AllRequired]()
+		assert.NoError(err)
+		assert.Equal(1, len(result.Filters))
+		assert.Equal(0, len(result.OptionalComponents))
+	})
+
+	t.Run("successfully creates the combined query options with the right amount of optional components", func(t *testing.T) {
+		assert := assert.New(t)
+
+		result, err := getCombinedQueryOptions[NoFilter, Optional1[componentA]]()
+		assert.NoError(err)
+		assert.Equal(0, len(result.Filters))
+		assert.Equal(1, len(result.OptionalComponents))
+
+		result, err = getCombinedQueryOptions[NoFilter, Optional2[componentA, componentB]]()
+		assert.NoError(err)
+		assert.Equal(0, len(result.Filters))
+		assert.Equal(2, len(result.OptionalComponents))
+	})
+
+	t.Run("successfully creates the combined query options with both filter and optional component", func(t *testing.T) {
+		assert := assert.New(t)
+
+		result, err := getCombinedQueryOptions[Without[componentB], Optional1[componentA]]()
+		assert.NoError(err)
+		assert.Equal(1, len(result.Filters))
+		assert.Equal(1, len(result.OptionalComponents))
+	})
 }
 
 func TestQueryFilter(t *testing.T) {
