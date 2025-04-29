@@ -15,9 +15,10 @@ type SubApp interface {
 
 type BasicSubApp struct {
 	world             ecs.World
-	startupSchedules  Scheduler // these systems only run once, on startup
-	repeatedSchedules Scheduler // these systems run in the main loop
-	cleanupSchedules  Scheduler // these systems only run once, before quitting
+	startupSchedules  Scheduler       // these systems only run once, on startup
+	repeatedSchedules Scheduler       // these systems run in the main loop
+	cleanupSchedules  Scheduler       // these systems only run once, before quitting
+	resources         resourceStorage // resources that can be pulled by system params.
 	logger            log.Logger
 }
 
@@ -27,12 +28,13 @@ func NewBasicSubApp(logger log.Logger) BasicSubApp {
 		startupSchedules:  NewScheduler(),
 		repeatedSchedules: NewScheduler(),
 		cleanupSchedules:  NewScheduler(),
+		resources:         newResourceStorage(),
 		logger:            logger,
 	}
 }
 
 func (app *BasicSubApp) AddStartupSystem(schedule Schedule, system System) {
-	err := app.startupSchedules.AddSystem(schedule, system, &app.world, app.logger)
+	err := app.startupSchedules.AddSystem(schedule, system, &app.world, app.logger, &app.resources)
 	if err != nil {
 		app.logger.Error(fmt.Sprintf("failed to add startup system: %v", err))
 	}
@@ -46,7 +48,7 @@ func (app *BasicSubApp) AddStartupSchedule(schedule Schedule) {
 }
 
 func (app *BasicSubApp) AddSystem(schedule Schedule, system System) {
-	err := app.repeatedSchedules.AddSystem(schedule, system, &app.world, app.logger)
+	err := app.repeatedSchedules.AddSystem(schedule, system, &app.world, app.logger, &app.resources)
 	if err != nil {
 		app.logger.Error(fmt.Sprintf("failed to add system: %v", err))
 	}
@@ -60,7 +62,7 @@ func (app *BasicSubApp) AddSchedule(schedule Schedule) {
 }
 
 func (app *BasicSubApp) AddCleanupSystem(schedule Schedule, system System) {
-	err := app.cleanupSchedules.AddSystem(schedule, system, &app.world, app.logger)
+	err := app.cleanupSchedules.AddSystem(schedule, system, &app.world, app.logger, &app.resources)
 	if err != nil {
 		app.logger.Error(fmt.Sprintf("failed to add cleanup system: %v", err))
 	}
@@ -70,6 +72,15 @@ func (app *BasicSubApp) AddCleanupSchedule(schedule Schedule) {
 	err := app.cleanupSchedules.AddSchedule(schedule)
 	if err != nil {
 		app.logger.Error(fmt.Sprintf("failed to add cleanup schedule %s", schedule))
+	}
+}
+
+// AddResource adds a new resource to the app. There can only exist 1 resource per type per app.
+// The resource can then by used as a system param, either by reference or by value.
+func (app *BasicSubApp) AddResource(resource Resource) {
+	err := app.resources.add(resource)
+	if err != nil {
+		app.logger.Error(fmt.Sprintf("failed to add resource: %v", err))
 	}
 }
 

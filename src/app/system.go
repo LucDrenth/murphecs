@@ -9,7 +9,7 @@ import (
 	"github.com/lucdrenth/murph_engine/src/log"
 )
 
-type System interface{}
+type System any
 
 type systemEntry struct {
 	system reflect.Value
@@ -31,11 +31,11 @@ type SystemSet struct {
 	systems []systemEntry
 }
 
-func (s *SystemSet) add(sys System, world *ecs.World, logger log.Logger) error {
+func (s *SystemSet) add(sys System, world *ecs.World, logger log.Logger, resources *resourceStorage) error {
 	systemValue := reflect.ValueOf(sys)
 	queryType := reflect.TypeOf((*ecs.Query)(nil)).Elem()
 
-	if err := validateSystem(systemValue, queryType); err != nil {
+	if err := validateSystem(systemValue, queryType, resources); err != nil {
 		return fmt.Errorf("failed to validate system: %w", err)
 	}
 
@@ -62,7 +62,12 @@ func (s *SystemSet) add(sys System, world *ecs.World, logger log.Logger) error {
 		} else if parameterType == reflect.TypeFor[log.Logger]() {
 			params[i] = reflect.ValueOf(logger)
 		} else {
-			return fmt.Errorf("received unexpected system parameter")
+			resource, err := resources.getReflectResource(parameterType)
+			if err != nil {
+				return fmt.Errorf("received unexpected system parameter: %w", err)
+			}
+
+			params[i] = resource
 		}
 	}
 
@@ -71,7 +76,7 @@ func (s *SystemSet) add(sys System, world *ecs.World, logger log.Logger) error {
 	return nil
 }
 
-func validateSystem(sys reflect.Value, queryType reflect.Type) error {
+func validateSystem(sys reflect.Value, queryType reflect.Type, resources *resourceStorage) error {
 	if sys.Kind() != reflect.Func {
 		return errors.New("not a function")
 	}
@@ -80,7 +85,7 @@ func validateSystem(sys reflect.Value, queryType reflect.Type) error {
 		return fmt.Errorf("invalid return type(s): %w", err)
 	}
 
-	if err := validateSystemParameters(sys, queryType); err != nil {
+	if err := validateSystemParameters(sys, queryType, resources); err != nil {
 		return fmt.Errorf("invalid parameter(s): %w", err)
 	}
 
@@ -107,7 +112,7 @@ func validateSystemReturnTypes(systemValue reflect.Value) error {
 	return fmt.Errorf("has %d return values but must have either 1 (error) or 0", numberOfSystemReturnValues)
 }
 
-func validateSystemParameters(systemValue reflect.Value, queryType reflect.Type) error {
+func validateSystemParameters(systemValue reflect.Value, queryType reflect.Type, resources *resourceStorage) error {
 	for i := range systemValue.Type().NumIn() {
 		parameterType := systemValue.Type().In(i)
 
@@ -120,7 +125,12 @@ func validateSystemParameters(systemValue reflect.Value, queryType reflect.Type)
 		} else if parameterType == reflect.TypeFor[log.Logger]() {
 			return nil
 		} else {
-			return fmt.Errorf("system parameter %d of type %s is not valid", i+1, parameterType.String())
+			_, err := resources.getReflectResource(parameterType)
+			if err != nil {
+				return fmt.Errorf("system parameter %d of type %s is not valid: %w", i+1, parameterType.String(), err)
+			}
+
+			return nil
 		}
 	}
 
