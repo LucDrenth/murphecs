@@ -5,7 +5,8 @@
 - [quality-of-life] Automatically execute queries from system params before calling the system. We could then also have a LazyQuery that only gets called when getting query results. We need this because then we don't have to pass *ecs.World to systems to execute queries, which opens up running systems in parallel.
 
 **Nice-to-have**
-- [quality-of-live] Add Query structs to only get 1 or maybe 2 options, such as QueryWithOptional, QueryWithout, QueryReadOnly and such. This is so that we don't have to write out all query options in every query.
+- [quality-of-life] Error when trying to add a system with a by-value Query as system parameter
+- [quality-of-life] Add Query structs to only get 1 or maybe 2 options, such as QueryWithOptional, QueryWithout, QueryReadOnly and such. This is so that we don't have to write out all query options in every query.
 - [quality-of-life] Easier world queries - easily create queries in a system body instead of as a system param. The system param can be hard to work with, so it would be nice to be able to do `go ecs.NewQuery1[myComponent].withOptional(...).with(...).without(...).exec()`.
 - [code-cleanup] Check if files can be split up in to 3 packages: storage, actions, filter
 - [performance] Generational entities
@@ -41,7 +42,7 @@
 - [plugin] Plugins that encapsulate resources and systems to add. On running the engine, we first need to add all plugin resources and then all plugin systems. We need to have added all resources before we can validate system params, and plugins make this easy.
 - [feature] Loop that can run at a fixed rate
 - [feature] Delta resource
-- [documentation] add App examples
 
 **Nice-to-have**
+- [quality-of-life] Use only 1 app method to add system param and let app figure out if it belong in the startup/repeating/cleanup schedule.
 - [feature] Execute systems in parallel. If systems are in the same schedule, they can be run in parallel if the systems do not touch any passed-by-ref resource (query/resource) of any of the other systems. Mind that we can probably not run a system with a Query in parallel with any other system that pulls in ecs.World, because we can not detect if it will be used to mutate anything that other systems touch system-insert time.
