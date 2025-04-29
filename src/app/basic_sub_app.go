@@ -8,11 +8,6 @@ import (
 	"github.com/lucdrenth/murph_engine/src/log"
 )
 
-type SubApp interface {
-	Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool)
-	Logger() log.Logger
-}
-
 type BasicSubApp struct {
 	world             ecs.World
 	startupSchedules  Scheduler       // these systems only run once, on startup

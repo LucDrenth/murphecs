@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"reflect"
 	"syscall"
 
 	"github.com/lucdrenth/murph_engine/src/app"
@@ -12,9 +13,14 @@ import (
 	"github.com/lucdrenth/murph_engine/src/log"
 )
 
+const (
+	AppIDCore app.ID = iota
+	AppIDRenderer
+)
+
 // Engine is the main struct of a Murph application.
 type Engine struct {
-	subApps       []app.SubApp
+	apps          map[app.ID]app.SubApp
 	logger        log.Logger
 	exitChannel   chan struct{}
 	isDoneChannel chan bool
@@ -24,7 +30,7 @@ func Empty() Engine {
 	logger := log.NoOp()
 
 	return Engine{
-		subApps:       []app.SubApp{},
+		apps:          map[app.ID]app.SubApp{},
 		logger:        &logger,
 		exitChannel:   make(chan struct{}),
 		isDoneChannel: make(chan bool),
@@ -33,23 +39,23 @@ func Empty() Engine {
 
 func Default() Engine {
 	logger := log.Console()
-
 	coreApp := core.New(&logger)
-	rendererApp := renderer.New(&logger)
+	renderApp := renderer.New(&logger)
 
-	return Engine{
-		subApps: []app.SubApp{
-			&coreApp,
-			&rendererApp,
-		},
-		logger:        &logger,
-		exitChannel:   make(chan struct{}),
-		isDoneChannel: make(chan bool),
-	}
+	engine := Empty()
+	engine.SetLogger(&logger)
+	engine.AddSubApp(&coreApp, AppIDCore)
+	engine.AddSubApp(&renderApp, AppIDRenderer)
+	return engine
 }
 
-func (e *Engine) AddSubApp(app app.SubApp) {
-	e.subApps = append(e.subApps, app)
+func (e *Engine) AddSubApp(app app.SubApp, id app.ID) {
+	if _, exists := e.apps[id]; exists {
+		e.logger.Error(fmt.Sprintf("failed to add sub app %s: already exists", reflect.TypeOf(app).String()))
+		return
+	}
+
+	e.apps[id] = app
 }
 
 func (e *Engine) SetLogger(logger log.Logger) {
@@ -58,10 +64,14 @@ func (e *Engine) SetLogger(logger log.Logger) {
 	}
 }
 
+func (e *Engine) App(id app.ID) app.SubApp {
+	return e.apps[id]
+}
+
 func (e *Engine) Run() {
 	e.logger.Debug("Running Murph application")
 
-	for _, app := range e.subApps {
+	for _, app := range e.apps {
 		go app.Run(e.exitChannel, e.isDoneChannel)
 	}
 
@@ -72,7 +82,7 @@ func (e *Engine) Run() {
 }
 
 func (e *Engine) waitForAppsCleanup() {
-	for range e.subApps {
+	for range e.apps {
 		<-e.isDoneChannel
 	}
 }
