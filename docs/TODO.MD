@@ -7,7 +7,7 @@
 **Nice-to-have**
 - [quality-of-life] Error when trying to add a system with a by-value Query as system parameter
 - [quality-of-life] Add Query structs to only get 1 or maybe 2 options, such as QueryWithOptional, QueryWithout, QueryReadOnly and such. This is so that we don't have to write out all query options in every query.
-- [quality-of-life] Easier world queries - easily create queries in a system body instead of as a system param. The system param can be hard to work with, so it would be nice to be able to do `go ecs.NewQuery1[myComponent].withOptional(...).with(...).without(...).exec()`.
+- [quality-of-life] Easier world queries - easily create queries in a system body instead of as a system param. The system param can be hard to work with, so it would be nice to be able to do `ecs.NewQuery1[myComponent].withOptional(...).with(...).without(...).exec()`.
 - [code-cleanup] Check if files can be split up in to 3 packages: storage, actions, filter
 - [performance] Generational entities
 - [performance] When removing component from entity, or deleting an entity, the place of the component(s) in the component registry are never reused. We could move the last componentRegistry component to the place of the removed component to reuse the memory and prevent memory from forever growing. When moving a component in componentRegistry, Don't forget to update the index in entityData
