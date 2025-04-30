@@ -43,5 +43,4 @@
 - [feature] Delta resource
 
 **Nice-to-have**
-- [quality-of-life] Use only 1 app method to add system param and let app figure out if it belong in the startup/repeating/cleanup schedule.
 - [feature] Execute systems in parallel. If systems are in the same schedule, they can be run in parallel if the systems do not touch any passed-by-ref resource (query/resource) of any of the other systems. Mind that we can probably not run a system with a Query in parallel with any other system that pulls in ecs.World, because we can not detect if it will be used to mutate anything that other systems touch system-insert time.

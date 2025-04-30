@@ -2,71 +2,77 @@ package app
 
 import (
 	"fmt"
+	"reflect"
+	"slices"
 	"time"
 
 	"github.com/lucdrenth/murph_engine/src/ecs"
 	"github.com/lucdrenth/murph_engine/src/log"
+	"github.com/lucdrenth/murph_engine/src/utils"
+)
+
+type ScheduleType int
+
+const (
+	ScheduleTypeStartup   ScheduleType = iota // run only once, on startup
+	ScheduleTypeRepeating                     // runs repeatedly, in the main loop
+	ScheduleTypeCleanup                       // runs only once, before quitting
 )
 
 type BasicSubApp struct {
-	world             ecs.World
-	startupSchedules  Scheduler       // these systems only run once, on startup
-	repeatedSchedules Scheduler       // these systems run in the main loop
-	cleanupSchedules  Scheduler       // these systems only run once, before quitting
-	resources         resourceStorage // resources that can be pulled by system params.
-	logger            log.Logger
+	world     ecs.World
+	schedules map[ScheduleType]*Scheduler
+	resources resourceStorage // resources that can be pulled by system params.
+	logger    log.Logger
+	debugType string
 }
 
 func NewBasicSubApp(logger log.Logger) BasicSubApp {
 	return BasicSubApp{
-		world:             ecs.NewWorld(),
-		startupSchedules:  NewScheduler(),
-		repeatedSchedules: NewScheduler(),
-		cleanupSchedules:  NewScheduler(),
-		resources:         newResourceStorage(),
-		logger:            logger,
-	}
-}
-
-func (app *BasicSubApp) AddStartupSystem(schedule Schedule, system System) {
-	err := app.startupSchedules.AddSystem(schedule, system, &app.world, app.logger, &app.resources)
-	if err != nil {
-		app.logger.Error(fmt.Sprintf("failed to add startup system: %v", err))
-	}
-}
-
-func (app *BasicSubApp) AddStartupSchedule(schedule Schedule) {
-	err := app.startupSchedules.AddSchedule(schedule)
-	if err != nil {
-		app.logger.Error(fmt.Sprintf("failed to add startup schedule %s", schedule))
+		world: ecs.NewWorld(),
+		schedules: map[ScheduleType]*Scheduler{
+			ScheduleTypeStartup:   utils.PointerTo(NewScheduler()),
+			ScheduleTypeRepeating: utils.PointerTo(NewScheduler()),
+			ScheduleTypeCleanup:   utils.PointerTo(NewScheduler()),
+		},
+		resources: newResourceStorage(),
+		logger:    logger,
+		debugType: "App",
 	}
 }
 
 func (app *BasicSubApp) AddSystem(schedule Schedule, system System) {
-	err := app.repeatedSchedules.AddSystem(schedule, system, &app.world, app.logger, &app.resources)
-	if err != nil {
-		app.logger.Error(fmt.Sprintf("failed to add system: %v", err))
+	for _, scheduler := range app.schedules {
+		if slices.Contains(scheduler.order, schedule) {
+			err := scheduler.AddSystem(schedule, system, &app.world, app.logger, &app.resources)
+			if err != nil {
+				app.logger.Error(fmt.Sprintf("%s - failed to add system %s: %v",
+					app.debugType,
+					reflect.TypeOf(system).String(),
+					err,
+				))
+			}
+
+			return
+		}
 	}
+
+	app.logger.Error(fmt.Sprintf("%s - failed to add system %s: schedule %s not found",
+		app.debugType,
+		reflect.TypeOf(system).String(),
+		schedule,
+	))
 }
 
-func (app *BasicSubApp) AddSchedule(schedule Schedule) {
-	err := app.repeatedSchedules.AddSchedule(schedule)
-	if err != nil {
-		app.logger.Error(fmt.Sprintf("failed to add schedule %s", schedule))
+func (app *BasicSubApp) AddSchedule(schedule Schedule, scheduleType ScheduleType) {
+	scheduler, ok := app.schedules[scheduleType]
+	if !ok {
+		app.logger.Error(fmt.Sprintf("%s - failed to add schedule %s: invalid schedule type", app.debugType, schedule))
 	}
-}
 
-func (app *BasicSubApp) AddCleanupSystem(schedule Schedule, system System) {
-	err := app.cleanupSchedules.AddSystem(schedule, system, &app.world, app.logger, &app.resources)
+	err := scheduler.AddSchedule(schedule)
 	if err != nil {
-		app.logger.Error(fmt.Sprintf("failed to add cleanup system: %v", err))
-	}
-}
-
-func (app *BasicSubApp) AddCleanupSchedule(schedule Schedule) {
-	err := app.cleanupSchedules.AddSchedule(schedule)
-	if err != nil {
-		app.logger.Error(fmt.Sprintf("failed to add cleanup schedule %s", schedule))
+		app.logger.Error(fmt.Sprintf("%s - failed to add schedule %s: %v", app.debugType, schedule, err))
 	}
 }
 
@@ -75,26 +81,26 @@ func (app *BasicSubApp) AddCleanupSchedule(schedule Schedule) {
 func (app *BasicSubApp) AddResource(resource Resource) {
 	err := app.resources.add(resource)
 	if err != nil {
-		app.logger.Error(fmt.Sprintf("failed to add resource: %v", err))
+		app.logger.Error(fmt.Sprintf("%s - failed to add resource: %v", app.debugType, err))
 	}
 }
 
 func (app *BasicSubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
-	startupSystems, err := app.startupSchedules.GetSystemSets()
+	startupSystems, err := app.schedules[ScheduleTypeStartup].GetSystemSets()
 	if err != nil {
-		app.logger.Error(fmt.Sprintf("failed to get startup systems: %v", err))
+		app.logger.Error(fmt.Sprintf("%s - failed to get startup systems: %v", app.debugType, err))
 		return
 	}
 
-	repeatedSystems, err := app.repeatedSchedules.GetSystemSets()
+	repeatedSystems, err := app.schedules[ScheduleTypeRepeating].GetSystemSets()
 	if err != nil {
-		app.logger.Error(fmt.Sprintf("failed to get repeated systems: %v", err))
+		app.logger.Error(fmt.Sprintf("%s - failed to get repeated systems: %v", app.debugType, err))
 		return
 	}
 
-	cleanupSystems, err := app.cleanupSchedules.GetSystemSets()
+	cleanupSystems, err := app.schedules[ScheduleTypeCleanup].GetSystemSets()
 	if err != nil {
-		app.logger.Error(fmt.Sprintf("failed to get cleanup systems: %v", err))
+		app.logger.Error(fmt.Sprintf("%s - failed to get cleanup systems: %v", app.debugType, err))
 		return
 	}
 
@@ -132,7 +138,11 @@ func (app *BasicSubApp) runSystemSet(systemSets []*SystemSet) {
 	for _, systemSet := range systemSets {
 		errors := systemSet.exec()
 		for _, err := range errors {
-			app.logger.Error(fmt.Sprintf("failed to run system: %v", err))
+			app.logger.Error(fmt.Sprintf("%s - system returned error: %v", app.debugType, err))
 		}
 	}
+}
+
+func (app *BasicSubApp) SetDebugType(debugType string) {
+	app.debugType = debugType
 }

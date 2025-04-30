@@ -10,30 +10,30 @@ import (
 type Schedule string
 
 type Scheduler struct {
-	schedules map[Schedule]*SystemSet
-	order     []Schedule
+	systems map[Schedule]*SystemSet
+	order   []Schedule
 }
 
 func NewScheduler() Scheduler {
 	return Scheduler{
-		schedules: map[Schedule]*SystemSet{},
-		order:     []Schedule{},
+		systems: map[Schedule]*SystemSet{},
+		order:   []Schedule{},
 	}
 }
 
 func (s *Scheduler) AddSchedule(schedule Schedule) error {
-	if _, exists := s.schedules[schedule]; exists {
+	if _, exists := s.systems[schedule]; exists {
 		return fmt.Errorf("schedule already exists")
 	}
 
-	s.schedules[schedule] = &SystemSet{}
+	s.systems[schedule] = &SystemSet{}
 	s.order = append(s.order, schedule)
 
 	return nil
 }
 
 func (s *Scheduler) AddSystem(schedule Schedule, system System, world *ecs.World, logger log.Logger, resources *resourceStorage) error {
-	systemSet, exists := s.schedules[schedule]
+	systemSet, exists := s.systems[schedule]
 	if !exists {
 		return fmt.Errorf("schedule %s does not exist", schedule)
 	}
@@ -42,14 +42,14 @@ func (s *Scheduler) AddSystem(schedule Schedule, system System, world *ecs.World
 }
 
 func (s *Scheduler) GetSystemSets() ([]*SystemSet, error) {
-	if len(s.order) != len(s.schedules) {
-		return nil, fmt.Errorf("order of length %d does not match schedules of length %d", len(s.order), len(s.schedules))
+	if len(s.order) != len(s.systems) {
+		return nil, fmt.Errorf("order of length %d does not match schedules of length %d", len(s.order), len(s.systems))
 	}
 
 	result := make([]*SystemSet, len(s.order))
 
 	for i, schedule := range s.order {
-		systemSet, ok := s.schedules[schedule]
+		systemSet, ok := s.systems[schedule]
 		if !ok {
 			return nil, fmt.Errorf("schedule %s from schedule order does not exist", schedule)
 		}

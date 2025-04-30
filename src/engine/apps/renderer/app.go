@@ -14,23 +14,23 @@ type RendererApp struct {
 }
 
 func New(logger log.Logger) RendererApp {
-	app := app.NewBasicSubApp(logger)
+	rendererApp := app.NewBasicSubApp(logger)
+	rendererApp.SetDebugType("Renderer")
 
-	app.AddStartupSchedule(schedule.Startup)
-	app.AddSchedule(schedule.PreUpdate)
-	app.AddSchedule(schedule.Update)
-	app.AddSchedule(schedule.PostUpdate)
+	rendererApp.AddSchedule(schedule.Startup, app.ScheduleTypeStartup)
+	rendererApp.AddSchedule(schedule.PreRender, app.ScheduleTypeRepeating)
+	rendererApp.AddSchedule(schedule.Render, app.ScheduleTypeRepeating)
+	rendererApp.AddSchedule(schedule.PostRender, app.ScheduleTypeRepeating)
+	rendererApp.AddSchedule(schedule.Cleanup, app.ScheduleTypeCleanup)
 
-	app.AddCleanupSchedule(schedule.Cleanup)
+	tick.Init(&rendererApp, schedule.PreRender)
 
-	tick.Init(&app)
-
-	app.AddStartupSystem(schedule.Startup, startup)
-	app.AddSystem(schedule.Update, printer)
-	app.AddCleanupSystem(schedule.Cleanup, cleanup)
+	rendererApp.AddSystem(schedule.Startup, startup)
+	rendererApp.AddSystem(schedule.Render, printer)
+	rendererApp.AddSystem(schedule.Cleanup, cleanup)
 
 	return RendererApp{
-		BasicSubApp: app,
+		BasicSubApp: rendererApp,
 	}
 }
 

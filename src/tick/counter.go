@@ -2,16 +2,15 @@ package tick
 
 import (
 	"github.com/lucdrenth/murph_engine/src/app"
-	"github.com/lucdrenth/murph_engine/src/engine/schedule"
 )
 
 type Counter struct {
 	Count uint
 }
 
-func Init(app *app.BasicSubApp) {
+func Init(app *app.BasicSubApp, schedule app.Schedule) {
 	app.AddResource(&Counter{})
-	app.AddSystem(schedule.PreUpdate, updateCounter)
+	app.AddSystem(schedule, updateCounter)
 }
 
 func updateCounter(counter *Counter) {

@@ -26,7 +26,7 @@ type velocity struct {
 func main() {
 	e := engine.Default()
 
-	e.App(engine.AppIDCore).AddStartupSystem(schedule.Startup, spawn)
+	e.App(engine.AppIDCore).AddSystem(schedule.Startup, spawn)
 	e.App(engine.AppIDCore).AddSystem(schedule.Update, updatePositions)
 	e.App(engine.AppIDCore).AddSystem(schedule.Update, logPositions)
 

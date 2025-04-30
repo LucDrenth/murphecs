@@ -14,22 +14,23 @@ type CoreApp struct {
 }
 
 func New(logger log.Logger) CoreApp {
-	app := app.NewBasicSubApp(logger)
+	coreApp := app.NewBasicSubApp(logger)
+	coreApp.SetDebugType("Core")
 
-	app.AddStartupSchedule(schedule.Startup)
-	app.AddSchedule(schedule.PreUpdate)
-	app.AddSchedule(schedule.Update)
-	app.AddSchedule(schedule.PostUpdate)
-	app.AddCleanupSchedule(schedule.Cleanup)
+	coreApp.AddSchedule(schedule.Startup, app.ScheduleTypeStartup)
+	coreApp.AddSchedule(schedule.PreUpdate, app.ScheduleTypeRepeating)
+	coreApp.AddSchedule(schedule.Update, app.ScheduleTypeRepeating)
+	coreApp.AddSchedule(schedule.PostUpdate, app.ScheduleTypeRepeating)
+	coreApp.AddSchedule(schedule.Cleanup, app.ScheduleTypeCleanup)
 
-	tick.Init(&app)
+	tick.Init(&coreApp, schedule.PreUpdate)
 
-	app.AddStartupSystem(schedule.Startup, startup)
-	app.AddSystem(schedule.Update, printer)
-	app.AddCleanupSystem(schedule.Cleanup, cleanup)
+	coreApp.AddSystem(schedule.Startup, startup)
+	coreApp.AddSystem(schedule.Update, printer)
+	coreApp.AddSystem(schedule.Cleanup, cleanup)
 
 	return CoreApp{
-		BasicSubApp: app,
+		BasicSubApp: coreApp,
 	}
 }
 
