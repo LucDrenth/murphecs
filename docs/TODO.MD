@@ -38,8 +38,7 @@
 
 # App
 **Must have**
-- [bug] Resource as value in system param always gets the initial value, even if another system updates its value. The system param probably needs to be a pointer to the resource, which we need to copy and deref before we execute the system.
-- [plugin] Plugins that encapsulate resources and systems to add. On running the engine, we first need to add all plugin resources and then all plugin systems. We need to have added all resources before we can validate system params, and plugins make this easy.
+- [plugin] Plugins that encapsulate resources and systems to add. On running the engine, we first need to add all plugin resources and then all plugin systems. We need to have added all resources before we can validate system params, and plugins make this easy. We could also call this a Feature.
 - [feature] Loop that can run at a fixed rate
 - [feature] Delta resource
 

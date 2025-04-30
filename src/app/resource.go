@@ -65,6 +65,7 @@ func getResourceFromStorage[T Resource](s *resourceStorage) (result T, err error
 	return result, nil
 }
 
+// getReflectResource returns a pointer to the resource, regardless if wether resourceType is a pointer or not.
 func (s *resourceStorage) getReflectResource(resourceType reflect.Type) (result reflect.Value, err error) {
 	resourceId := reflectTypeToComponentId(resourceType)
 
@@ -75,10 +76,6 @@ func (s *resourceStorage) getReflectResource(resourceType reflect.Type) (result 
 
 	if untypedResource == nil {
 		return result, ErrResourceTypeNotValid
-	}
-
-	if resourceType.Kind() != reflect.Pointer {
-		untypedResource = reflect.ValueOf(untypedResource).Elem().Interface()
 	}
 
 	result = reflect.ValueOf(untypedResource)

@@ -115,7 +115,7 @@ func TestGetReflectResource(t *testing.T) {
 		assert.ErrorIs(err, ErrResourceNotFound)
 	})
 
-	t.Run("successfully gets resource copy", func(t *testing.T) {
+	t.Run("successfully gets resource", func(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
@@ -124,48 +124,17 @@ func TestGetReflectResource(t *testing.T) {
 
 		reflectedResource, err := storage.getReflectResource(reflect.TypeFor[resourceA]())
 		assert.NoError(err)
-		resource, ok := reflectedResource.Interface().(resourceA)
-		assert.True(ok)
 
-		assert.Equal(10, resource.value)
+		resourceReference, ok := reflectedResource.Interface().(*resourceA)
+		assert.True(ok)
+		assert.Equal(10, resourceReference.value)
+
+		resourceCopy, ok := reflectedResource.Elem().Interface().(resourceA)
+		assert.True(ok)
+		assert.Equal(10, resourceCopy.value)
 	})
 
-	t.Run("resource copy can not be mutated", func(t *testing.T) {
-		assert := assert.New(t)
-
-		storage := newResourceStorage()
-		err := storage.add(&resourceA{value: 0})
-		assert.NoError(err)
-
-		reflectedResource, err := storage.getReflectResource(reflect.TypeFor[resourceA]())
-		assert.NoError(err)
-		resource, ok := reflectedResource.Interface().(resourceA)
-		assert.True(ok)
-		resource.value = 10
-
-		reflectedResource, err = storage.getReflectResource(reflect.TypeFor[resourceA]())
-		assert.NoError(err)
-		resource, ok = reflectedResource.Interface().(resourceA)
-		assert.True(ok)
-		assert.NotEqual(10, resource.value)
-	})
-
-	t.Run("successfully gets resource pointer", func(t *testing.T) {
-		assert := assert.New(t)
-
-		storage := newResourceStorage()
-		err := storage.add(&resourceA{value: 10})
-		assert.NoError(err)
-
-		reflectedResource, err := storage.getReflectResource(reflect.TypeFor[*resourceA]())
-		assert.NoError(err)
-		resource, ok := reflectedResource.Interface().(*resourceA)
-		assert.True(ok)
-
-		assert.Equal(10, resource.value)
-	})
-
-	t.Run("pointer resource can be mutated", func(t *testing.T) {
+	t.Run("resource can be mutated", func(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()

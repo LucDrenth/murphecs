@@ -73,11 +73,18 @@ func (s *SystemSet) add(sys System, world *ecs.World, logger log.Logger, resourc
 				return fmt.Errorf("received unexpected system parameter: %w", err)
 			}
 
-			params[i] = resource
+			if parameterType.Kind() == reflect.Pointer {
+				params[i] = resource
+			} else {
+				params[i] = resource.Elem()
+			}
 		}
 	}
 
-	entry := systemEntry{system: systemValue, params: params}
+	entry := systemEntry{
+		system: systemValue,
+		params: params,
+	}
 	s.systems = append(s.systems, entry)
 	return nil
 }

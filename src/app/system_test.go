@@ -196,6 +196,26 @@ func TestExecSystem(t *testing.T) {
 		// second system should have the updated resource value
 		err = systemSet.add(func(r resourceA) {
 			assert.Equal(20, r.value)
+			r.value = 30 // should not do anything
+		}, &world, &logger, &resourceStorage)
+		assert.NoError(err)
+
+		// third system should have the updated resource value from the first system
+		err = systemSet.add(func(r resourceA) {
+			assert.Equal(20, r.value)
+		}, &world, &logger, &resourceStorage)
+		assert.NoError(err)
+
+		// fourth system should also have the updated resource value from the first system
+		err = systemSet.add(func(r *resourceA) {
+			assert.Equal(20, r.value)
+			r.value = 40
+		}, &world, &logger, &resourceStorage)
+		assert.NoError(err)
+
+		// fifth system should have an updated value from the fourth system
+		err = systemSet.add(func(r resourceA) {
+			assert.Equal(40, r.value)
 		}, &world, &logger, &resourceStorage)
 		assert.NoError(err)
 
