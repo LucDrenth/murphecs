@@ -31,6 +31,12 @@ type SystemSet struct {
 	systems []systemEntry
 }
 
+func (s *SystemSet) exec(logger log.Logger) {
+	for i := range s.systems {
+		s.systems[i].exec(logger)
+	}
+}
+
 func (s *SystemSet) add(sys System, world *ecs.World, logger log.Logger, resources *resourceStorage) error {
 	systemValue := reflect.ValueOf(sys)
 	queryType := reflect.TypeOf((*ecs.Query)(nil)).Elem()

@@ -130,8 +130,6 @@ func (app *BasicSubApp) Logger() log.Logger {
 
 func (app *BasicSubApp) runSystemSet(systemSets []*SystemSet) {
 	for _, systemSet := range systemSets {
-		for i := range systemSet.systems {
-			systemSet.systems[i].exec(app.logger)
-		}
+		systemSet.exec(app.logger)
 	}
 }
