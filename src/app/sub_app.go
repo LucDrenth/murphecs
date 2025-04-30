@@ -9,7 +9,7 @@ type ID int
 type SubApp interface {
 	Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool)
 	Logger() log.Logger
-	AddSystem(Schedule, System)
-	AddSchedule(Schedule, ScheduleType)
-	AddResource(Resource)
+	AddSystem(Schedule, System) SubApp
+	AddSchedule(Schedule, ScheduleType) SubApp
+	AddResource(Resource) SubApp
 }

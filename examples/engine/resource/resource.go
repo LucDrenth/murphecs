@@ -18,10 +18,10 @@ func main() {
 
 	// We add the counter resource to the app.
 	// We have to pass it as a reference, or it will result in an error.
-	e.App(engine.AppIDCore).AddResource(&counter{value: 10})
-
-	e.App(engine.AppIDCore).AddSystem(schedule.Update, incrementCounter)
-	e.App(engine.AppIDCore).AddSystem(schedule.Update, logCounter)
+	e.App(engine.AppIDCore).
+		AddResource(&counter{value: 10}).
+		AddSystem(schedule.Update, incrementCounter).
+		AddSystem(schedule.Update, logCounter)
 
 	e.Run()
 }

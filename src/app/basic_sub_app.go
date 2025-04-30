@@ -41,7 +41,7 @@ func NewBasicSubApp(logger log.Logger) BasicSubApp {
 	}
 }
 
-func (app *BasicSubApp) AddSystem(schedule Schedule, system System) {
+func (app *BasicSubApp) AddSystem(schedule Schedule, system System) SubApp {
 	for _, scheduler := range app.schedules {
 		if slices.Contains(scheduler.order, schedule) {
 			err := scheduler.AddSystem(schedule, system, &app.world, app.logger, &app.resources)
@@ -53,7 +53,7 @@ func (app *BasicSubApp) AddSystem(schedule Schedule, system System) {
 				))
 			}
 
-			return
+			return app
 		}
 	}
 
@@ -62,27 +62,33 @@ func (app *BasicSubApp) AddSystem(schedule Schedule, system System) {
 		reflect.TypeOf(system).String(),
 		schedule,
 	))
+	return app
 }
 
-func (app *BasicSubApp) AddSchedule(schedule Schedule, scheduleType ScheduleType) {
+func (app *BasicSubApp) AddSchedule(schedule Schedule, scheduleType ScheduleType) SubApp {
 	scheduler, ok := app.schedules[scheduleType]
 	if !ok {
 		app.logger.Error(fmt.Sprintf("%s - failed to add schedule %s: invalid schedule type", app.debugType, schedule))
+		return app
 	}
 
 	err := scheduler.AddSchedule(schedule)
 	if err != nil {
 		app.logger.Error(fmt.Sprintf("%s - failed to add schedule %s: %v", app.debugType, schedule, err))
 	}
+
+	return app
 }
 
 // AddResource adds a new resource to the app. There can only exist 1 resource per type per app.
 // The resource can then by used as a system param, either by reference or by value.
-func (app *BasicSubApp) AddResource(resource Resource) {
+func (app *BasicSubApp) AddResource(resource Resource) SubApp {
 	err := app.resources.add(resource)
 	if err != nil {
 		app.logger.Error(fmt.Sprintf("%s - failed to add resource: %v", app.debugType, err))
 	}
+
+	return app
 }
 
 func (app *BasicSubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
