@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/lucdrenth/murph_engine/src/ecs"
@@ -113,6 +114,30 @@ func TestAddSystem(t *testing.T) {
 		err = systemSet.add(func(_ *resourceA) {}, &world, &logger, &resourceStorage)
 		assert.NoError(err)
 	})
+
+	t.Run("returns an error if the system returns something that is not an error", func(t *testing.T) {
+		assert := assert.New(t)
+
+		systemSet := SystemSet{}
+		world := ecs.NewWorld()
+		logger := log.NoOp()
+		resourceStorage := newResourceStorage()
+
+		err := systemSet.add(func() int { return 10 }, &world, &logger, &resourceStorage)
+		assert.Error(err)
+	})
+
+	t.Run("can add a system that returns an error", func(t *testing.T) {
+		assert := assert.New(t)
+
+		systemSet := SystemSet{}
+		world := ecs.NewWorld()
+		logger := log.NoOp()
+		resourceStorage := newResourceStorage()
+
+		err := systemSet.add(func() error { return nil }, &world, &logger, &resourceStorage)
+		assert.NoError(err)
+	})
 }
 
 func TestExecSystem(t *testing.T) {
@@ -128,7 +153,7 @@ func TestExecSystem(t *testing.T) {
 		err := systemSet.add(func() { didRun = true }, &world, &logger, &resourceStorage)
 		assert.NoError(err)
 
-		systemSet.exec(&logger)
+		systemSet.exec()
 		assert.True(didRun)
 	})
 
@@ -149,7 +174,7 @@ func TestExecSystem(t *testing.T) {
 
 		err = systemSet.add(func(r *resourceA) { r.value = 20 }, &world, &logger, &resourceStorage)
 		assert.NoError(err)
-		systemSet.exec(&logger)
+		systemSet.exec()
 		assert.Equal(20, resource.value)
 	})
 
@@ -170,7 +195,7 @@ func TestExecSystem(t *testing.T) {
 
 		err = systemSet.add(func(r resourceA) { r.value = 20 }, &world, &logger, &resourceStorage)
 		assert.NoError(err)
-		systemSet.exec(&logger)
+		systemSet.exec()
 		assert.Equal(10, resource.value)
 	})
 
@@ -219,6 +244,51 @@ func TestExecSystem(t *testing.T) {
 		}, &world, &logger, &resourceStorage)
 		assert.NoError(err)
 
-		systemSet.exec(&logger)
+		systemSet.exec()
+	})
+
+	t.Run("returns no errors if the system does not return anything", func(t *testing.T) {
+		assert := assert.New(t)
+
+		systemSet := SystemSet{}
+		world := ecs.NewWorld()
+		logger := log.NoOp()
+		resourceStorage := newResourceStorage()
+
+		err := systemSet.add(func() {}, &world, &logger, &resourceStorage)
+		assert.NoError(err)
+		errors := systemSet.exec()
+
+		assert.Empty(errors)
+	})
+
+	t.Run("returns no errors if the system does not return an error", func(t *testing.T) {
+		assert := assert.New(t)
+
+		systemSet := SystemSet{}
+		world := ecs.NewWorld()
+		logger := log.NoOp()
+		resourceStorage := newResourceStorage()
+
+		err := systemSet.add(func() error { return nil }, &world, &logger, &resourceStorage)
+		assert.NoError(err)
+		errors := systemSet.exec()
+
+		assert.Empty(errors)
+	})
+
+	t.Run("returns an error if the system returns an error", func(t *testing.T) {
+		assert := assert.New(t)
+
+		systemSet := SystemSet{}
+		world := ecs.NewWorld()
+		logger := log.NoOp()
+		resourceStorage := newResourceStorage()
+
+		err := systemSet.add(func() error { return errors.New("oops") }, &world, &logger, &resourceStorage)
+		assert.NoError(err)
+		errors := systemSet.exec()
+
+		assert.Len(errors, 1)
 	})
 }

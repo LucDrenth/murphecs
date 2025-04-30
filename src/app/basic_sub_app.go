@@ -130,6 +130,9 @@ func (app *BasicSubApp) Logger() log.Logger {
 
 func (app *BasicSubApp) runSystemSet(systemSets []*SystemSet) {
 	for _, systemSet := range systemSets {
-		systemSet.exec(app.logger)
+		errors := systemSet.exec()
+		for _, err := range errors {
+			app.logger.Error(fmt.Sprintf("failed to run system: %v", err))
+		}
 	}
 }

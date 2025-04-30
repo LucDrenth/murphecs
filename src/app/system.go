@@ -16,25 +16,34 @@ type systemEntry struct {
 	params []reflect.Value
 }
 
-func (s *systemEntry) exec(logger log.Logger) {
+func (s *systemEntry) exec() error {
 	result := s.system.Call(s.params)
 
 	if len(result) == 1 {
 		returnedError, isErr := result[0].Interface().(error)
 		if isErr {
-			logger.Error(fmt.Sprintf("system returned error: %v\n", returnedError))
+			return returnedError
 		}
 	}
+
+	return nil
 }
 
 type SystemSet struct {
 	systems []systemEntry
 }
 
-func (s *SystemSet) exec(logger log.Logger) {
+func (s *SystemSet) exec() []error {
+	errors := []error{}
+
 	for i := range s.systems {
-		s.systems[i].exec(logger)
+		err := s.systems[i].exec()
+		if err != nil {
+			errors = append(errors, err)
+		}
 	}
+
+	return errors
 }
 
 func (s *SystemSet) add(sys System, world *ecs.World, logger log.Logger, resources *resourceStorage) error {
