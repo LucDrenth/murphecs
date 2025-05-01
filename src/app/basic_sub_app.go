@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"reflect"
 	"slices"
 	"time"
 
@@ -48,7 +47,7 @@ func (app *BasicSubApp) AddSystem(schedule Schedule, system System) SubApp {
 			if err != nil {
 				app.logger.Error(fmt.Sprintf("%s - failed to add system %s: %v",
 					app.debugType,
-					reflect.TypeOf(system).String(),
+					systemToDebugString(system),
 					err,
 				))
 			}
@@ -59,7 +58,7 @@ func (app *BasicSubApp) AddSystem(schedule Schedule, system System) SubApp {
 
 	app.logger.Error(fmt.Sprintf("%s - failed to add system %s: schedule %s not found",
 		app.debugType,
-		reflect.TypeOf(system).String(),
+		systemToDebugString(system),
 		schedule,
 	))
 	return app

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/lucdrenth/murph_engine/src/ecs"
 	"github.com/lucdrenth/murph_engine/src/log"
@@ -169,4 +170,11 @@ func validateQueryParameter(_ reflect.Type) error {
 	// - Return error if there are any duplicate filters
 
 	return nil
+}
+
+// systemToDebugString returns a reflection string of the system but with shortened paths.
+func systemToDebugString(system System) string {
+	result := reflect.TypeOf(system).String()
+	result = strings.ReplaceAll(result, "github.com/lucdrenth/murph_engine/src/", "murph_engine/")
+	return result
 }
