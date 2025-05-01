@@ -135,10 +135,6 @@ func (app *BasicSubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bo
 	isDoneChannel <- true
 }
 
-func (app *BasicSubApp) Logger() log.Logger {
-	return app.logger
-}
-
 func (app *BasicSubApp) runSystemSet(systemSets []*SystemSet) {
 	for _, systemSet := range systemSets {
 		errors := systemSet.exec(&app.world)
