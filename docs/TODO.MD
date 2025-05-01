@@ -5,7 +5,6 @@
 - [quality-of-life] Automatically execute queries from system params before calling the system. We could then also have a LazyQuery that only gets called when getting query results. We need this because then we don't have to pass *ecs.World to systems to execute queries, which opens up running systems in parallel.
 
 **Nice-to-have**
-- [quality-of-life] Error when trying to add a system with a by-value Query as system parameter
 - [quality-of-life] Add Query structs to only get 1 or maybe 2 options, such as QueryWithOptional, QueryWithout, QueryReadOnly and such. This is so that we don't have to write out all query options in every query.
 - [quality-of-life] Easier world queries - easily create queries in a system body instead of as a system param. The system param can be hard to work with, so it would be nice to be able to do `ecs.NewQuery1[myComponent].withOptional(...).with(...).without(...).exec()`.
 - [code-cleanup] Check if files can be split up in to 3 packages: storage, actions, filter

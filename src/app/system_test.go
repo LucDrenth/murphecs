@@ -18,7 +18,7 @@ func TestAddSystem(t *testing.T) {
 		resourceStorage := newResourceStorage()
 
 		err := systemSet.add("not a func", &world, &logger, &resourceStorage)
-		assert.Error(err)
+		assert.ErrorIs(err, ErrSystemNotAFunction)
 	})
 
 	t.Run("can use empty function as system", func(t *testing.T) {
@@ -66,7 +66,7 @@ func TestAddSystem(t *testing.T) {
 		resourceStorage := newResourceStorage()
 
 		err := systemSet.add(func(_ ecs.Query1[componentA, ecs.NoFilter, ecs.NoOptional, ecs.NoReadOnly]) {}, &world, &logger, &resourceStorage)
-		assert.Error(err)
+		assert.ErrorIs(err, ErrSystemParamQueryNotAPointer)
 	})
 
 	t.Run("can use an ecs query as system param", func(t *testing.T) {
@@ -81,6 +81,19 @@ func TestAddSystem(t *testing.T) {
 
 		err := systemSet.add(func(_ *ecs.Query1[componentA, ecs.NoFilter, ecs.NoOptional, ecs.NoReadOnly]) {}, &world, &logger, &resourceStorage)
 		assert.NoError(err)
+	})
+
+	t.Run("returns an error if a system parameter is invalid", func(t *testing.T) {
+		type resourceA struct{}
+		assert := assert.New(t)
+
+		systemSet := SystemSet{}
+		world := ecs.NewWorld()
+		logger := log.NoOp()
+		resourceStorage := newResourceStorage()
+
+		err := systemSet.add(func(_ resourceA) {}, &world, &logger, &resourceStorage)
+		assert.ErrorIs(err, ErrSystemParamNotValid)
 	})
 
 	t.Run("can use a resource as system param by value", func(t *testing.T) {
@@ -124,7 +137,7 @@ func TestAddSystem(t *testing.T) {
 		resourceStorage := newResourceStorage()
 
 		err := systemSet.add(func() int { return 10 }, &world, &logger, &resourceStorage)
-		assert.Error(err)
+		assert.ErrorIs(err, ErrSystemInvalidReturnType)
 	})
 
 	t.Run("can add a system that returns an error", func(t *testing.T) {

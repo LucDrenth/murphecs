@@ -71,7 +71,7 @@ func (s *resourceStorage) getReflectResource(resourceType reflect.Type) (result 
 
 	untypedResource, exists := s.resources[resourceId]
 	if !exists {
-		return result, fmt.Errorf("%w: %s", ErrResourceNotFound, resourceId.String())
+		return result, ErrResourceNotFound
 	}
 
 	if untypedResource == nil {

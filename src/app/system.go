@@ -1,7 +1,6 @@
 package app
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -101,11 +100,11 @@ func (s *SystemSet) add(sys System, world *ecs.World, logger log.Logger, resourc
 
 func validateSystem(sys reflect.Value, queryType reflect.Type, resources *resourceStorage) error {
 	if sys.Kind() != reflect.Func {
-		return errors.New("not a function")
+		return ErrSystemNotAFunction
 	}
 
 	if err := validateSystemReturnTypes(sys); err != nil {
-		return fmt.Errorf("invalid return type(s): %w", err)
+		return fmt.Errorf("%w: %w", ErrSystemInvalidReturnType, err)
 	}
 
 	if err := validateSystemParameters(sys, queryType, resources); err != nil {
@@ -141,7 +140,7 @@ func validateSystemParameters(systemValue reflect.Value, queryType reflect.Type,
 
 		if parameterType.Implements(queryType) {
 			if err := validateQueryParameter(parameterType); err != nil {
-				return fmt.Errorf("query parameter %d of type %s is not valid: %w", i, parameterType.String(), err)
+				return fmt.Errorf("system parameter %d: %w: %w", i+1, ErrSystemParamQueryNotValid, err)
 			}
 		} else if parameterType == reflect.TypeFor[*ecs.World]() {
 			return nil
@@ -149,11 +148,15 @@ func validateSystemParameters(systemValue reflect.Value, queryType reflect.Type,
 			return nil
 		} else {
 			_, err := resources.getReflectResource(parameterType)
-			if err != nil {
-				return fmt.Errorf("system parameter %d of type %s is not valid: %w", i+1, parameterType.String(), err)
+			if err == nil {
+				return nil
 			}
 
-			return nil
+			if parameterType.Kind() != reflect.Pointer && reflect.PointerTo(parameterType).Implements(reflect.TypeFor[ecs.Query]()) {
+				return fmt.Errorf("system parameter %d: %w", i+1, ErrSystemParamQueryNotAPointer)
+			}
+
+			return fmt.Errorf("system parameter %d: %w", i+1, ErrSystemParamNotValid)
 		}
 	}
 
