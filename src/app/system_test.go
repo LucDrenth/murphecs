@@ -166,7 +166,7 @@ func TestExecSystem(t *testing.T) {
 		err := systemSet.add(func() { didRun = true }, &world, &logger, &resourceStorage)
 		assert.NoError(err)
 
-		systemSet.exec()
+		systemSet.exec(&world)
 		assert.True(didRun)
 	})
 
@@ -187,7 +187,7 @@ func TestExecSystem(t *testing.T) {
 
 		err = systemSet.add(func(r *resourceA) { r.value = 20 }, &world, &logger, &resourceStorage)
 		assert.NoError(err)
-		systemSet.exec()
+		systemSet.exec(&world)
 		assert.Equal(20, resource.value)
 	})
 
@@ -208,7 +208,7 @@ func TestExecSystem(t *testing.T) {
 
 		err = systemSet.add(func(r resourceA) { r.value = 20 }, &world, &logger, &resourceStorage)
 		assert.NoError(err)
-		systemSet.exec()
+		systemSet.exec(&world)
 		assert.Equal(10, resource.value)
 	})
 
@@ -257,7 +257,7 @@ func TestExecSystem(t *testing.T) {
 		}, &world, &logger, &resourceStorage)
 		assert.NoError(err)
 
-		systemSet.exec()
+		systemSet.exec(&world)
 	})
 
 	t.Run("returns no errors if the system does not return anything", func(t *testing.T) {
@@ -270,7 +270,7 @@ func TestExecSystem(t *testing.T) {
 
 		err := systemSet.add(func() {}, &world, &logger, &resourceStorage)
 		assert.NoError(err)
-		errors := systemSet.exec()
+		errors := systemSet.exec(&world)
 
 		assert.Empty(errors)
 	})
@@ -285,7 +285,7 @@ func TestExecSystem(t *testing.T) {
 
 		err := systemSet.add(func() error { return nil }, &world, &logger, &resourceStorage)
 		assert.NoError(err)
-		errors := systemSet.exec()
+		errors := systemSet.exec(&world)
 
 		assert.Empty(errors)
 	})
@@ -300,8 +300,33 @@ func TestExecSystem(t *testing.T) {
 
 		err := systemSet.add(func() error { return errors.New("oops") }, &world, &logger, &resourceStorage)
 		assert.NoError(err)
-		errors := systemSet.exec()
+		errors := systemSet.exec(&world)
 
 		assert.Len(errors, 1)
+	})
+
+	t.Run("automatically system param queries before executing systems", func(t *testing.T) {
+		type componentA struct{ ecs.Component }
+
+		assert := assert.New(t)
+
+		systemSet := SystemSet{}
+		world := ecs.NewWorld()
+		logger := log.NoOp()
+		resourceStorage := newResourceStorage()
+
+		_, err := ecs.Spawn(&world, &componentA{})
+		assert.NoError(err)
+
+		numberOfResults := 0
+		err = systemSet.add(func(q *ecs.Query1[componentA, ecs.NoFilter, ecs.NoOptional, ecs.AllReadOnly]) {
+			numberOfResults = int(q.Result().NumberOfResult())
+		}, &world, &logger, &resourceStorage)
+		assert.NoError(err)
+
+		errors := systemSet.exec(&world)
+		assert.Empty(errors)
+
+		assert.Equal(1, numberOfResults)
 	})
 }

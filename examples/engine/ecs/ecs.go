@@ -50,7 +50,6 @@ func spawn(world *ecs.World) {
 }
 
 func updatePositions(world *ecs.World, query *ecs.Query2[position, velocity, ecs.NoFilter, ecs.NoOptional, ecs.NoReadOnly]) {
-	query.Exec(world)
 	query.Result().Iter(func(_ ecs.EntityId, position *position, velocity *velocity) error {
 		position.x += velocity.x
 		position.y += velocity.y
@@ -60,7 +59,6 @@ func updatePositions(world *ecs.World, query *ecs.Query2[position, velocity, ecs
 
 // Get the position as read-only so that this system can be ran parallel with other systems.
 func logPositions(log log.Logger, world *ecs.World, query *ecs.Query1[position, ecs.NoFilter, ecs.NoOptional, ecs.ReadOnly1[position]]) {
-	query.Exec(world)
 	query.Result().Iter(func(entityId ecs.EntityId, position *position) error {
 		log.Info(fmt.Sprintf("%d: %.2f, %.2f", entityId, position.x, position.y))
 		return nil

@@ -2,7 +2,6 @@
 **Must have**
 - [feature] Implement query filters And / Or
 - [performance] Proper archetype ECS implementation. Once all of the above is implemented, the basic user facing API is there. But the implementation is its most basic form and is not efficient at all. [See this article from flecs ECS creator](https://ajmmertens.medium.com/building-an-ecs-1-where-are-my-entities-and-components-63d07c7da742).
-- [quality-of-life] Automatically execute queries from system params before calling the system. We could then also have a LazyQuery that only gets called when getting query results. We need this because then we don't have to pass *ecs.World to systems to execute queries, which opens up running systems in parallel.
 
 **Nice-to-have**
 - [quality-of-life] Add Query structs to only get 1 or maybe 2 options, such as QueryWithOptional, QueryWithout, QueryReadOnly and such. This is so that we don't have to write out all query options in every query.

@@ -30,10 +30,23 @@ func (s *systemEntry) exec() error {
 }
 
 type SystemSet struct {
-	systems []systemEntry
+	systems            []systemEntry
+	systemParamQueries []ecs.Query
 }
 
-func (s *SystemSet) exec() []error {
+func (s *SystemSet) exec(world *ecs.World) []error {
+	s.execSystemParamQueries(world)
+	return s.execSystems()
+
+}
+
+func (s *SystemSet) execSystemParamQueries(world *ecs.World) {
+	for i := range s.systemParamQueries {
+		s.systemParamQueries[i].Exec(world)
+	}
+}
+
+func (s *SystemSet) execSystems() []error {
 	errors := []error{}
 
 	for i := range s.systems {
@@ -71,6 +84,7 @@ func (s *SystemSet) add(sys System, world *ecs.World, logger log.Logger, resourc
 				return fmt.Errorf("failed to prepare query param: %w", err)
 			}
 
+			s.systemParamQueries = append(s.systemParamQueries, query)
 			params[i] = reflect.ValueOf(query)
 		} else if parameterType == reflect.TypeFor[*ecs.World]() {
 			params[i] = reflect.ValueOf(world)

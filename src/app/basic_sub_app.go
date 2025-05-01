@@ -141,7 +141,7 @@ func (app *BasicSubApp) Logger() log.Logger {
 
 func (app *BasicSubApp) runSystemSet(systemSets []*SystemSet) {
 	for _, systemSet := range systemSets {
-		errors := systemSet.exec()
+		errors := systemSet.exec(&app.world)
 		for _, err := range errors {
 			app.logger.Error(fmt.Sprintf("%s - system returned error: %v", app.debugType, err))
 		}
