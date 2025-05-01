@@ -37,6 +37,10 @@ func (q *Query1[ComponentA, Filters, OptionalComponents, ReadOnlyComponent]) Exe
 	q.results.Clear()
 
 	for entityId, entityData := range world.entities {
+		if !q.options.validateFilters(entityData) {
+			continue
+		}
+
 		a, match := getQueryComponent[ComponentA](world, entityData, &q.options)
 		if !match {
 			continue
@@ -50,6 +54,10 @@ func (q *Query2[ComponentA, ComponentB, Filters, OptionalComponents, ReadOnlyCom
 	q.results.Clear()
 
 	for entityId, entityData := range world.entities {
+		if !q.options.validateFilters(entityData) {
+			continue
+		}
+
 		a, match := getQueryComponent[ComponentA](world, entityData, &q.options)
 		if !match {
 			continue
@@ -69,6 +77,10 @@ func (q *Query3[ComponentA, ComponentB, ComponentC, Filters, OptionalComponents,
 	q.results.Clear()
 
 	for entityId, entityData := range world.entities {
+		if !q.options.validateFilters(entityData) {
+			continue
+		}
+
 		a, match := getQueryComponent[ComponentA](world, entityData, &q.options)
 		if !match {
 			continue
@@ -94,6 +106,10 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, Filters, Optiona
 	q.results.Clear()
 
 	for entityId, entityData := range world.entities {
+		if !q.options.validateFilters(entityData) {
+			continue
+		}
+
 		a, match := getQueryComponent[ComponentA](world, entityData, &q.options)
 		if !match {
 			continue

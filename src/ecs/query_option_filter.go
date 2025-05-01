@@ -1,14 +1,21 @@
 package ecs
 
+import (
+	"errors"
+
+	"github.com/lucdrenth/murph_engine/src/utils"
+)
+
 type QueryParamFilter interface {
 	getComponents() []ComponentType
 	getFilterType() filterType
+	getNestedFilters() (a QueryParamFilter, b QueryParamFilter, err error)
 }
 type NoFilter struct{}
 type With[A IComponent] struct{}
 type Without[A IComponent] struct{}
-type Or[A, B QueryParamFilter] struct{}
 type And[A, B QueryParamFilter] struct{}
+type Or[A, B QueryParamFilter] struct{}
 
 func (filter NoFilter) getComponents() []ComponentType {
 	return []ComponentType{}
@@ -48,6 +55,47 @@ func (filter And[A, B]) getFilterType() filterType {
 
 func (filter Or[A, B]) getFilterType() filterType {
 	return filterTypeOr
+}
+
+func (filter NoFilter) getNestedFilters() (a QueryParamFilter, b QueryParamFilter, err error) {
+	return nil, nil, errors.New("nested filters not supported for this type")
+}
+
+func (filter With[A]) getNestedFilters() (a QueryParamFilter, b QueryParamFilter, err error) {
+	return nil, nil, errors.New("nested filters not supported for this type")
+
+}
+
+func (filter Without[A]) getNestedFilters() (a QueryParamFilter, b QueryParamFilter, err error) {
+	return nil, nil, errors.New("nested filters not supported for this type")
+}
+
+func (filter And[A, B]) getNestedFilters() (a QueryParamFilter, b QueryParamFilter, err error) {
+	a, err = utils.ToConcrete[A]()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	b, err = utils.ToConcrete[B]()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return a, b, nil
+}
+
+func (filter Or[A, B]) getNestedFilters() (a QueryParamFilter, b QueryParamFilter, err error) {
+	a, err = utils.ToConcrete[A]()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	b, err = utils.ToConcrete[B]()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return a, b, nil
 }
 
 type QueryFilter interface {

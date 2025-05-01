@@ -27,6 +27,16 @@ type CombinedQueryOptions struct {
 	ReadOnlyComponents combinedReadOnlyComponent
 }
 
+func (o *CombinedQueryOptions) validateFilters(entityData *EntityData) bool {
+	for i := range o.Filters {
+		if !o.Filters[i].Validate(entityData) {
+			return false
+		}
+	}
+
+	return true
+}
+
 func getCombinedQueryOptions[filters QueryParamFilter, optionals OptionalComponents, readOnly ReadOnlyComponents]() (CombinedQueryOptions, error) {
 	result := CombinedQueryOptions{}
 
@@ -35,21 +45,12 @@ func getCombinedQueryOptions[filters QueryParamFilter, optionals OptionalCompone
 		return result, fmt.Errorf("failed to cast filter to concrete type: %w", err)
 	}
 
-	switch concreteFilterType := concreteFilters.getFilterType(); concreteFilterType {
-	case filterTypeWith:
-		result.Filters = append(result.Filters, queryFilterWith{c: concreteFilters.getComponents()})
-	case filterTypeWithout:
-		result.Filters = append(result.Filters, queryFilterWithout{c: concreteFilters.getComponents()})
-	case filterTypeNone:
-		break
-	case filterTypeAnd:
-		// TODO
-		return result, fmt.Errorf("filterTypeAnd not yet implemented")
-	case filterTypeOr:
-		// TODO
-		return result, fmt.Errorf("filterTypeOr not yet implemented")
-	default:
-		return result, fmt.Errorf("unhandled filter type: %d", concreteFilterType)
+	filter, err := getFilterFromQueryOption(concreteFilters)
+	if err != nil {
+		return result, fmt.Errorf("failed to create filter: %w", err)
+	}
+	if filter != nil {
+		result.Filters = append(result.Filters, filter)
 	}
 
 	concreteOptionals, err := utils.ToConcrete[optionals]()
@@ -66,4 +67,55 @@ func getCombinedQueryOptions[filters QueryParamFilter, optionals OptionalCompone
 	result.ReadOnlyComponents.ComponentTypes, result.ReadOnlyComponents.IsAllReadOnly = readOnlyComponents.getReadonlyComponentTypes()
 
 	return result, nil
+}
+
+func getFilterFromQueryOption(filters QueryParamFilter) (QueryFilter, error) {
+	switch concreteFilterType := filters.getFilterType(); concreteFilterType {
+	case filterTypeWith:
+		return queryFilterWith{c: filters.getComponents()}, nil
+	case filterTypeWithout:
+		return queryFilterWithout{c: filters.getComponents()}, nil
+	case filterTypeNone:
+		return nil, nil
+	case filterTypeAnd:
+		{
+			filterParamA, filterParamB, err := filters.getNestedFilters()
+			if err != nil {
+				return nil, fmt.Errorf("failed to create AND filter: %w", err)
+			}
+
+			filterA, err := getFilterFromQueryOption(filterParamA)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create AND filter for a: %w", err)
+			}
+
+			filterB, err := getFilterFromQueryOption(filterParamB)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create AND filter for b: %w", err)
+			}
+
+			return queryFilterAnd{a: filterA, b: filterB}, nil
+		}
+	case filterTypeOr:
+		{
+			filterParamA, filterParamB, err := filters.getNestedFilters()
+			if err != nil {
+				return nil, fmt.Errorf("failed to create OR filter: %w", err)
+			}
+
+			filterA, err := getFilterFromQueryOption(filterParamA)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create OR filter for a: %w", err)
+			}
+
+			filterB, err := getFilterFromQueryOption(filterParamB)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create OR filter for b: %w", err)
+			}
+
+			return queryFilterOr{a: filterA, b: filterB}, nil
+		}
+	}
+
+	return nil, fmt.Errorf("unhandled filter type: %d", filters.getFilterType())
 }

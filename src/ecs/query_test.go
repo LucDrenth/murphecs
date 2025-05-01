@@ -16,6 +16,7 @@ func TestQuery1(t *testing.T) {
 		Component
 		value int
 	}
+	type componentC struct{ Component }
 
 	t.Run("query with default options return the expected results", func(t *testing.T) {
 		assert := assert.New(t)
@@ -52,6 +53,135 @@ func TestQuery1(t *testing.T) {
 
 		query.Result().Clear()
 		assert.Equal(uint(0), query.results.NumberOfResult())
+	})
+
+	t.Run("query with With filter returns the expected results", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewWorld()
+		_, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentA{}, &componentB{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentA{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentB{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentC{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentB{}, &componentC{})
+		assert.NoError(err)
+
+		query := Query1[componentA, With[componentB], NoOptional, NoReadOnly]{}
+		err = query.PrepareOptions()
+		assert.NoError(err)
+		query.Exec(&world)
+
+		assert.Equal(uint(2), query.Result().NumberOfResult())
+	})
+
+	t.Run("query with Without filter returns the expected results", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewWorld()
+		_, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentA{}, &componentB{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentA{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentB{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentC{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentB{}, &componentC{})
+		assert.NoError(err)
+
+		query := Query1[componentA, Without[componentB], NoOptional, NoReadOnly]{}
+		err = query.PrepareOptions()
+		assert.NoError(err)
+		query.Exec(&world)
+
+		assert.Equal(uint(1), query.Result().NumberOfResult())
+	})
+
+	t.Run("query with AND filter returns the expected results", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewWorld()
+		expected, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentA{}, &componentB{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentA{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentB{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentC{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentB{}, &componentC{})
+		assert.NoError(err)
+
+		query := Query1[componentA, And[With[componentB], With[componentC]], NoOptional, NoReadOnly]{}
+		err = query.PrepareOptions()
+		assert.NoError(err)
+		query.Exec(&world)
+
+		assert.Equal(uint(1), query.Result().NumberOfResult())
+		query.results.Iter(func(entityId EntityId, _ *componentA) error {
+			assert.Equal(expected, entityId)
+			return nil
+		})
+	})
+
+	t.Run("query with OR filter returns the expected results", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewWorld()
+		_, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentA{}, &componentB{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentA{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentB{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentC{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentB{}, &componentC{})
+		assert.NoError(err)
+
+		query := Query1[componentA, Or[With[componentB], With[componentC]], NoOptional, NoReadOnly]{}
+		err = query.PrepareOptions()
+		assert.NoError(err)
+		query.Exec(&world)
+
+		assert.Equal(uint(2), query.Result().NumberOfResult())
+	})
+
+	t.Run("query with With filter and all optional components returns the expected results", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewWorld()
+		_, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentA{}, &componentB{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentA{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentB{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentC{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentB{}, &componentC{})
+		assert.NoError(err)
+
+		query := Query1[componentA, With[componentB], Optional1[componentA], NoReadOnly]{}
+		err = query.PrepareOptions()
+		assert.NoError(err)
+		query.Exec(&world)
+
+		assert.Equal(uint(4), query.Result().NumberOfResult())
 	})
 
 	t.Run("queried component can be mutated", func(t *testing.T) {
