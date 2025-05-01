@@ -2,6 +2,7 @@
 package ecs_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/lucdrenth/murph_engine/src/ecs"
@@ -11,6 +12,10 @@ type emptyComponentA struct{ ecs.Component }
 type emptyComponentB struct{ ecs.Component }
 type emptyComponentC struct{ ecs.Component }
 type emptyComponentD struct{ ecs.Component }
+type componentWithValue struct {
+	ecs.Component
+	value int
+}
 
 func BenchmarkSpawn(b *testing.B) {
 	b.Run("VariadicOneComponent", func(b *testing.B) {
@@ -156,4 +161,167 @@ func BenchmarkGet(b *testing.B) {
 			ecs.Get4[emptyComponentA, emptyComponentB, emptyComponentC, emptyComponentD](&world, target)
 		}
 	})
+}
+
+func BenchmarkQuery(b *testing.B) {
+	for _, size := range []int{10, 100, 1_000, 10_000, 100_000} {
+		world := ecs.NewWorld()
+
+		for range size {
+			if _, err := ecs.Spawn(&world, &emptyComponentA{}); err != nil {
+				b.FailNow()
+			}
+			if _, err := ecs.Spawn(&world, &emptyComponentB{}, &emptyComponentA{}); err != nil {
+				b.FailNow()
+			}
+			if _, err := ecs.Spawn(&world, &emptyComponentC{}); err != nil {
+				b.FailNow()
+			}
+			if _, err := ecs.Spawn(&world, &emptyComponentA{}); err != nil {
+				b.FailNow()
+			}
+			if _, err := ecs.Spawn(&world, &componentWithValue{value: size}, &emptyComponentA{}); err != nil {
+				b.FailNow()
+			}
+			if _, err := ecs.Spawn(&world, &emptyComponentC{}, &emptyComponentA{}, &emptyComponentB{}); err != nil {
+				b.FailNow()
+			}
+			if _, err := ecs.Spawn(&world, &emptyComponentD{}, &emptyComponentC{}); err != nil {
+				b.FailNow()
+			}
+			if _, err := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{}); err != nil {
+				b.FailNow()
+			}
+		}
+
+		b.Run(fmt.Sprintf("Query1-Basic-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query1[emptyComponentA, ecs.NoFilter, ecs.NoOptional, ecs.NoReadOnly]{}
+
+			err := query.PrepareOptions()
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query1-Optional-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query1[emptyComponentA, ecs.NoFilter, ecs.Optional1[emptyComponentA], ecs.NoReadOnly]{}
+
+			err := query.PrepareOptions()
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query1-ReadOnly-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query1[emptyComponentA, ecs.NoFilter, ecs.NoOptional, ecs.AllReadOnly]{}
+
+			err := query.PrepareOptions()
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query1-With1-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query1[emptyComponentA, ecs.With[emptyComponentC], ecs.NoOptional, ecs.AllReadOnly]{}
+
+			err := query.PrepareOptions()
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query1-Without1-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query1[emptyComponentA, ecs.Without[emptyComponentC], ecs.NoOptional, ecs.AllReadOnly]{}
+
+			err := query.PrepareOptions()
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query2-Basic-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.NoFilter, ecs.NoOptional, ecs.NoReadOnly]{}
+
+			err := query.PrepareOptions()
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query2-Optional-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.NoFilter, ecs.Optional1[emptyComponentA], ecs.NoReadOnly]{}
+
+			err := query.PrepareOptions()
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query2-ReadOnly-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.NoFilter, ecs.NoOptional, ecs.AllReadOnly]{}
+
+			err := query.PrepareOptions()
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query2-With1-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.With[emptyComponentC], ecs.NoOptional, ecs.AllReadOnly]{}
+
+			err := query.PrepareOptions()
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query2-Without1-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.Without[emptyComponentC], ecs.NoOptional, ecs.AllReadOnly]{}
+
+			err := query.PrepareOptions()
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+	}
 }
