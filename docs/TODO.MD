@@ -17,6 +17,7 @@
     - Return error if marking a component as optional while that component is not queried
     - Return error if there are any duplicate filters
 - [quality-of-life] Function to check if a specific entity has components. This is already possible by using Get1..Get8 and checking if the error is ErrComponentNotFound, but its not very user-friendly.
+- [quality-of-life] Add Query0 to only get entities. This is already possible be specifying some random component and marking it as optional, but this is not very user-friendly an not as performant as it could be. 
 - [tests] More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
 
 # Window
