@@ -12,5 +12,6 @@ var (
 	ErrSystemInvalidReturnType     error = errors.New("invalid return type(s)")
 	ErrSystemParamQueryNotAPointer error = errors.New("query must be a pointer")
 	ErrSystemParamQueryNotValid    error = errors.New("query not valid")
+	ErrSystemParamWorldNotAPointer error = errors.New("world must be a pointer")
 	ErrSystemParamNotValid         error = errors.New("not valid")
 )

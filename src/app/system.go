@@ -37,7 +37,6 @@ type SystemSet struct {
 func (s *SystemSet) exec(world *ecs.World) []error {
 	s.execSystemParamQueries(world)
 	return s.execSystems()
-
 }
 
 func (s *SystemSet) execSystemParamQueries(world *ecs.World) {
@@ -158,6 +157,11 @@ func validateSystemParameters(systemValue reflect.Value, queryType reflect.Type,
 			}
 		} else if parameterType == reflect.TypeFor[*ecs.World]() {
 			return nil
+		} else if parameterType == reflect.TypeFor[ecs.World]() {
+			// ecs.World may not be used by-value because:
+			//	1. it is a potentially big object and copying it could give bad performance
+			//	2. it is probably unintended and would cause unexpected behavior
+			return fmt.Errorf("system parameter %d: %w", i+1, ErrSystemParamWorldNotAPointer)
 		} else if parameterType == reflect.TypeFor[log.Logger]() {
 			return nil
 		} else {

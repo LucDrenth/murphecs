@@ -43,6 +43,17 @@ func TestAddSystem(t *testing.T) {
 		assert.NoError(err)
 	})
 
+	t.Run("returns an error when using non-pointer world as system param", func(t *testing.T) {
+		assert := assert.New(t)
+		systemSet := SystemSet{}
+		world := ecs.NewWorld()
+		logger := log.NoOp()
+		resourceStorage := newResourceStorage()
+
+		err := systemSet.add(func(world ecs.World) {}, &world, &logger, &resourceStorage)
+		assert.ErrorIs(err, ErrSystemParamWorldNotAPointer)
+	})
+
 	t.Run("can use logger as system param", func(t *testing.T) {
 		assert := assert.New(t)
 
