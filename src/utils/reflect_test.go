@@ -70,3 +70,74 @@ func TestAlignedSize(t *testing.T) {
 		}
 	})
 }
+
+type someInterface interface {
+	SomeMethod()
+	unexportedMethod()
+}
+
+type someStructA struct{}
+
+func (s someStructA) SomeMethod()       {}
+func (s someStructA) unexportedMethod() {}
+
+type someStructB struct{}
+
+func (s *someStructB) SomeMethod()       {}
+func (s *someStructB) unexportedMethod() {}
+
+func TestMethodHasPointerReceiver(t *testing.T) {
+	t.Run("returns error if interface is nil", func(t *testing.T) {
+		assert := assert.New(t)
+
+		_, err := MethodHasPointerReceiver(nil, "")
+		assert.Error(err)
+	})
+
+	t.Run("returns error if input is not a struct", func(t *testing.T) {
+		assert := assert.New(t)
+
+		_, err := MethodHasPointerReceiver(10, "")
+		assert.Error(err)
+	})
+
+	t.Run("returns error if method does not exist", func(t *testing.T) {
+		assert := assert.New(t)
+
+		_, err := MethodHasPointerReceiver(someStructA{}, "nonExisting")
+		assert.Error(err)
+	})
+
+	t.Run("returns error if trying to check for unexported method", func(t *testing.T) {
+		assert := assert.New(t)
+
+		_, err := MethodHasPointerReceiver(someStructA{}, "unexportedMethod")
+		assert.Error(err)
+	})
+
+	t.Run("returns false if method does not have pointer receiver", func(t *testing.T) {
+		assert := assert.New(t)
+
+		result, err := MethodHasPointerReceiver(someStructA{}, "SomeMethod")
+		assert.NoError(err)
+		assert.False(result)
+
+		var input someInterface = someStructA{}
+		result, err = MethodHasPointerReceiver(input, "SomeMethod")
+		assert.NoError(err)
+		assert.False(result)
+	})
+
+	t.Run("returns true if method has pointer receiver", func(t *testing.T) {
+		assert := assert.New(t)
+
+		result, err := MethodHasPointerReceiver(someStructB{}, "SomeMethod")
+		assert.NoError(err)
+		assert.True(result)
+
+		var input someInterface = &someStructB{}
+		result, err = MethodHasPointerReceiver(input, "SomeMethod")
+		assert.NoError(err)
+		assert.True(result)
+	})
+}

@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"reflect"
 	"slices"
 	"time"
 
@@ -22,6 +23,7 @@ type BasicSubApp struct {
 	world     ecs.World
 	schedules map[ScheduleType]*Scheduler
 	resources resourceStorage // resources that can be pulled by system params.
+	features  map[reflect.Type]IFeature
 	logger    log.Logger
 	debugType string
 }
@@ -35,6 +37,7 @@ func NewBasicSubApp(logger log.Logger) BasicSubApp {
 			ScheduleTypeCleanup:   utils.PointerTo(NewScheduler()),
 		},
 		resources: newResourceStorage(),
+		features:  map[reflect.Type]IFeature{},
 		logger:    logger,
 		debugType: "App",
 	}
@@ -79,8 +82,6 @@ func (app *BasicSubApp) AddSchedule(schedule Schedule, scheduleType ScheduleType
 	return app
 }
 
-// AddResource adds a new resource to the app. There can only exist 1 resource per type per app.
-// The resource can then by used as a system param, either by reference or by value.
 func (app *BasicSubApp) AddResource(resource Resource) SubApp {
 	err := app.resources.add(resource)
 	if err != nil {
@@ -90,7 +91,30 @@ func (app *BasicSubApp) AddResource(resource Resource) SubApp {
 	return app
 }
 
+func (app *BasicSubApp) AddFeature(feature IFeature) SubApp {
+	featureType := reflect.TypeOf(feature)
+	if _, exists := app.features[featureType]; exists {
+		app.logger.Error(fmt.Sprintf("%s - failed to add feature %s: already added", app.debugType, featureType.String()))
+		return app
+	}
+
+	initHasPointerReceiver, err := utils.MethodHasPointerReceiver(feature, "Init")
+	if err != nil {
+		app.logger.Error(fmt.Sprintf("%s - failed to add feature %s: failed to validate: %v", app.debugType, featureType.String(), err))
+		return app
+	}
+	if !initHasPointerReceiver {
+		app.logger.Error(fmt.Sprintf("%s - failed to add feature %s: Init must be pointer receiver", app.debugType, featureType.String()))
+		return app
+	}
+
+	app.features[featureType] = feature
+	return app
+}
+
 func (app *BasicSubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
+	app.processFeatures()
+
 	startupSystems, err := app.schedules[ScheduleTypeStartup].GetSystemSets()
 	if err != nil {
 		app.logger.Error(fmt.Sprintf("%s - failed to get startup systems: %v", app.debugType, err))
@@ -133,6 +157,28 @@ func (app *BasicSubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bo
 
 	app.runSystemSet(cleanupSystems)
 	isDoneChannel <- true
+}
+
+func (app *BasicSubApp) processFeatures() {
+	for _, feature := range app.features {
+		feature.Init()
+	}
+
+	for _, feature := range app.features {
+		resources := feature.getResources()
+		for i := range resources {
+			app.AddResource(resources[i])
+		}
+	}
+
+	for _, feature := range app.features {
+		systems := feature.getSystems()
+		for i := range systems {
+			app.AddSystem(systems[i].schedule, systems[i].system)
+		}
+	}
+
+	app.features = nil
 }
 
 func (app *BasicSubApp) runSystemSet(systemSets []*SystemSet) {
