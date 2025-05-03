@@ -108,6 +108,19 @@ func (filter Or[A, B]) getNestedFilters() (a QueryParamFilter, b QueryParamFilte
 	return a, b, nil
 }
 
+func (filter With[A]) getCombinedQueryOptions() (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[With[A], NoOptional, NoReadOnly]]()
+}
+func (filter Without[A]) getCombinedQueryOptions() (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[Without[A], NoOptional, NoReadOnly]]()
+}
+func (filter And[A, B]) getCombinedQueryOptions() (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[And[A, B], NoOptional, NoReadOnly]]()
+}
+func (filter Or[A, B]) getCombinedQueryOptions() (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[Or[A, B], NoOptional, NoReadOnly]]()
+}
+
 type QueryFilter interface {
 	// Validate that entityData satisfies the filter
 	Validate(*EntityData) bool

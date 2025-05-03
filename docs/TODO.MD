@@ -3,7 +3,7 @@
 - [performance] Proper archetype ECS implementation. Once all of the above is implemented, the basic user facing API is there. But the implementation is its most basic form and is not efficient at all. [See this article from flecs ECS creator](https://ajmmertens.medium.com/building-an-ecs-1-where-are-my-entities-and-components-63d07c7da742).
 
 **Nice-to-have**
-- [quality-of-life] Add Query structs to only get 1 or maybe 2 options, such as QueryWithOptional, QueryWithout, QueryReadOnly and such. This is so that we don't have to write out all query options in every query.
+- [quality-of-life] Define multiple query options like `[QueryOptions2[.., ..]]` etc.
 - [code-cleanup] Check if files can be split up in to 3 packages: storage, actions, filter
 - [performance] Generational entities
 - [performance] When removing component from entity, or deleting an entity, the place of the component(s) in the component registry are never reused. We could move the last componentRegistry component to the place of the removed component to reuse the memory and prevent memory from forever growing. When moving a component in componentRegistry, Don't forget to update the index in entityData

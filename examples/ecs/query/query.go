@@ -27,12 +27,17 @@ func main() {
 	queryWithGenerics(&world)
 	fmt.Println()
 	queryWithDirectQuery(&world)
-
 }
 
-// We can define queries as generics. This is harder to write than directly using a direct query because
-// you need to specify all query options but it has the benefit of being able to be defined as a system
-// parameter. This allows the system to be ran in parallel with other systems.
+// We can define queries as generics. This has both advantages and disadvantages over defining queries
+// with functions.
+//
+// Advantages:
+//   - When used in system params, they are executed automatically.
+//   - When used in system params, they are able to be executed in parallel with other systems
+//
+// Disadvantages:
+//   - When using multiple query options, you need to specify all of them, which is a bit more work.
 func queryWithGenerics(world *ecs.World) {
 	// Query all NPC components
 	query := ecs.Query1[NPC, ecs.DefaultQueryOptions]{}
@@ -43,8 +48,8 @@ func queryWithGenerics(world *ecs.World) {
 		return nil
 	})
 
-	// Query all NPC components of entities that hav the Friendly component
-	query2 := ecs.Query1[NPC, ecs.QueryOptions[ecs.With[Friendly], ecs.NoOptional, ecs.NoReadOnly]]{}
+	// Query all NPC components of entities that have the Friendly component
+	query2 := ecs.Query1[NPC, ecs.With[Friendly]]{}
 	query2.PrepareOptions()
 	query2.Exec(world)
 	query2.Result().Iter(func(entityId ecs.EntityId, npc *NPC) error {
@@ -53,23 +58,43 @@ func queryWithGenerics(world *ecs.World) {
 	})
 
 	// Query all NPC and Dialog components of entities that do not have the Friendly component
-	query3 := ecs.Query2[NPC, Dialog, ecs.QueryOptions[ecs.Without[Friendly], ecs.NoOptional, ecs.NoReadOnly]]{}
+	query3 := ecs.Query2[NPC, Dialog, ecs.Without[Friendly]]{}
 	query3.PrepareOptions()
 	query3.Exec(world)
 	query3.Result().Iter(func(entityId ecs.EntityId, npc *NPC, dialog *Dialog) error {
 		fmt.Printf("query without Friendly: %d: %s says %s \n", entityId, npc.name, dialog.text)
 		return nil
 	})
+
+	// You can write more complex queries like this:
+	_ = ecs.Query1[
+		NPC,
+		ecs.QueryOptions[
+			ecs.Or[
+				ecs.Without[Dialog],
+				ecs.And[
+					ecs.With[Dialog],
+					ecs.With[Friendly],
+				],
+			],
+			ecs.NoOptional,
+			ecs.AllReadOnly,
+		],
+	]{}
 }
 
-// We can compose queries using functions. This has both advantages and disadvantages over using a generics query.
+// We can compose queries using functions. This has both advantages and disadvantages over using a
+// generics query.
 //
 // Advantages:
-// - easier to write than generic queries because you don't have to specify each option
+//   - Easier to write than generic queries because you don't have to specify each option
+//   - In contrast to queries in system params, these queries are not automatically executed every
+//     system call.
 //
-// Disadvantages: but also has a big downside:
-// It is not possible to run a system that creates such a query in parallel because it needs to be
-// executed manually, which Run a system that creates such a query in parallel because the system would need the *ecs.World.
+// Disadvantages:
+//   - It is not possible to run a system that creates such a query in parallel because it needs to be
+//     executed manually, which Run a system that creates such a query in parallel because the system
+//     would need the *ecs.World.
 func queryWithDirectQuery(world *ecs.World) {
 	// Query all NPC components
 	query := ecs.NewQuery1[NPC]()
@@ -79,7 +104,7 @@ func queryWithDirectQuery(world *ecs.World) {
 		return nil
 	})
 
-	// Query all NPC components of entities that hav the Friendly component
+	// Query all NPC components of entities that have the Friendly component
 	// query2 := ecs.Query1[NPC, ecs.With[Friendly], ecs.NoOptional, ecs.NoReadOnly]{}
 	query2 := ecs.NewQuery1[NPC]()
 	ecs.QueryWith[Friendly](&query2)

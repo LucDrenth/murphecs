@@ -74,3 +74,19 @@ func (o ReadOnly4[A, B, C, D]) getReadonlyComponentTypes() (readOnlyComponentTyp
 		GetComponentType[D](),
 	}, false
 }
+
+func (readOnly AllReadOnly) getCombinedQueryOptions() (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, AllReadOnly]]()
+}
+func (readOnly ReadOnly1[A]) getCombinedQueryOptions() (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly1[A]]]()
+}
+func (readOnly ReadOnly2[A, B]) getCombinedQueryOptions() (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly2[A, B]]]()
+}
+func (readOnly ReadOnly3[A, B, C]) getCombinedQueryOptions() (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly3[A, B, C]]]()
+}
+func (readOnly ReadOnly4[A, B, C, D]) getCombinedQueryOptions() (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly4[A, B, C, D]]]()
+}
