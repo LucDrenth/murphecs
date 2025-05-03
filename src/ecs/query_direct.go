@@ -7,20 +7,21 @@ import (
 	"github.com/lucdrenth/murph_engine/src/utils"
 )
 
-// Queries that are created created within a system body. Compared to queries from [query_generic], These
-// are easier to use, but systems that use them can not be ran in parallel.
+// Queries that are created with functions. Compared to queries from [query_generic], these
+// are easier to use because you can specify 1 query param at a time, but systems that use them can
+// not be ran in parallel.
 
 type iDirectQuery interface {
-	getOptions() *CombinedQueryOptions
+	getOptions() *combinedQueryOptions
 	getComponentTypes() []ComponentType
 }
 
 type directQuery struct {
-	options        CombinedQueryOptions
+	options        combinedQueryOptions
 	componentTypes []ComponentType
 }
 
-func (q *directQuery) getOptions() *CombinedQueryOptions {
+func (q *directQuery) getOptions() *combinedQueryOptions {
 	return &q.options
 }
 
@@ -78,7 +79,7 @@ func QueryWithFilters[Filters QueryParamFilter](query iDirectQuery) error {
 		return fmt.Errorf("failed to cast filter to concrete type: %w", err)
 	}
 
-	filter, err := getFilterFromQueryOption(concreteFilters)
+	filter, err := getFilterFromConcreteQueryParamFilter(concreteFilters)
 	if err != nil {
 		return fmt.Errorf("failed to create filter: %w", err)
 	}
@@ -133,28 +134,28 @@ func NewQuery4[ComponentA, ComponentB, ComponentC, ComponentD IComponent]() dire
 }
 
 func (q *directQuery1[ComponentA]) Exec(world *World) Query1Result[ComponentA] {
-	query := Query1[ComponentA, NoFilter, NoOptional, NoReadOnly]{
+	query := Query1[ComponentA, DefaultQueryOptions]{
 		options: q.options,
 	}
 	query.Exec(world)
 	return query.results
 }
 func (q *directQuery2[ComponentA, ComponentB]) Exec(world *World) Query2Result[ComponentA, ComponentB] {
-	query := Query2[ComponentA, ComponentB, NoFilter, NoOptional, NoReadOnly]{
+	query := Query2[ComponentA, ComponentB, DefaultQueryOptions]{
 		options: q.options,
 	}
 	query.Exec(world)
 	return query.results
 }
 func (q *directQuery3[ComponentA, ComponentB, ComponentC]) Exec(world *World) Query3Result[ComponentA, ComponentB, ComponentC] {
-	query := Query3[ComponentA, ComponentB, ComponentC, NoFilter, NoOptional, NoReadOnly]{
+	query := Query3[ComponentA, ComponentB, ComponentC, DefaultQueryOptions]{
 		options: q.options,
 	}
 	query.Exec(world)
 	return query.results
 }
 func (q *directQuery4[ComponentA, ComponentB, ComponentC, ComponentD]) Exec(world *World) Query4Result[ComponentA, ComponentB, ComponentC, ComponentD] {
-	query := Query4[ComponentA, ComponentB, ComponentC, ComponentD, NoFilter, NoOptional, NoReadOnly]{
+	query := Query4[ComponentA, ComponentB, ComponentC, ComponentD, DefaultQueryOptions]{
 		options: q.options,
 	}
 	query.Exec(world)

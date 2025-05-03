@@ -1,14 +1,14 @@
 package ecs
 
-// Thus
-//
-
 import (
 	"fmt"
 	"slices"
 
 	"github.com/lucdrenth/murph_engine/src/utils"
 )
+
+// Queries that are created using generics. They can be used as system parameters which allows systems
+// to be executed in parallel.
 
 type Query interface {
 	Exec(world *World)
@@ -17,24 +17,24 @@ type Query interface {
 	// once, after which the query is ready to be used (e.g. Exec can be called).
 	PrepareOptions() error
 }
-type Query1[ComponentA IComponent, _ QueryParamFilter, _ OptionalComponents, _ ReadOnlyComponents] struct {
-	options CombinedQueryOptions
+type Query1[ComponentA IComponent, _ iQueryOptions] struct {
+	options combinedQueryOptions
 	results Query1Result[ComponentA]
 }
-type Query2[ComponentA, ComponentB IComponent, _ QueryParamFilter, _ OptionalComponents, _ ReadOnlyComponents] struct {
-	options CombinedQueryOptions
+type Query2[ComponentA, ComponentB IComponent, _ iQueryOptions] struct {
+	options combinedQueryOptions
 	results Query2Result[ComponentA, ComponentB]
 }
-type Query3[ComponentA, ComponentB, ComponentC IComponent, _ QueryParamFilter, _ OptionalComponents, _ ReadOnlyComponents] struct {
-	options CombinedQueryOptions
+type Query3[ComponentA, ComponentB, ComponentC IComponent, _ iQueryOptions] struct {
+	options combinedQueryOptions
 	results Query3Result[ComponentA, ComponentB, ComponentC]
 }
-type Query4[ComponentA, ComponentB, ComponentC, ComponentD IComponent, _ QueryParamFilter, _ OptionalComponents, _ ReadOnlyComponents] struct {
-	options CombinedQueryOptions
+type Query4[ComponentA, ComponentB, ComponentC, ComponentD IComponent, _ iQueryOptions] struct {
+	options combinedQueryOptions
 	results Query4Result[ComponentA, ComponentB, ComponentC, ComponentD]
 }
 
-func (q *Query1[ComponentA, Filters, OptionalComponents, ReadOnlyComponent]) Exec(world *World) {
+func (q *Query1[ComponentA, QueryOptions]) Exec(world *World) {
 	q.results.Clear()
 
 	for entityId, entityData := range world.entities {
@@ -51,7 +51,7 @@ func (q *Query1[ComponentA, Filters, OptionalComponents, ReadOnlyComponent]) Exe
 		q.results.entityIds = append(q.results.entityIds, entityId)
 	}
 }
-func (q *Query2[ComponentA, ComponentB, Filters, OptionalComponents, ReadOnlyComponent]) Exec(world *World) {
+func (q *Query2[ComponentA, ComponentB, QueryOptions]) Exec(world *World) {
 	q.results.Clear()
 
 	for entityId, entityData := range world.entities {
@@ -74,7 +74,7 @@ func (q *Query2[ComponentA, ComponentB, Filters, OptionalComponents, ReadOnlyCom
 		q.results.entityIds = append(q.results.entityIds, entityId)
 	}
 }
-func (q *Query3[ComponentA, ComponentB, ComponentC, Filters, OptionalComponents, ReadOnlyComponent]) Exec(world *World) {
+func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Exec(world *World) {
 	q.results.Clear()
 
 	for entityId, entityData := range world.entities {
@@ -103,7 +103,7 @@ func (q *Query3[ComponentA, ComponentB, ComponentC, Filters, OptionalComponents,
 		q.results.entityIds = append(q.results.entityIds, entityId)
 	}
 }
-func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, Filters, OptionalComponents, ReadOnlyComponent]) Exec(world *World) {
+func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) Exec(world *World) {
 	q.results.Clear()
 
 	for entityId, entityData := range world.entities {
@@ -139,33 +139,33 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, Filters, Optiona
 	}
 }
 
-func (q *Query1[A, Filters, OptionalComponents, ReadOnlyComponent]) PrepareOptions() (err error) {
-	q.options, err = getCombinedQueryOptions[Filters, OptionalComponents, ReadOnlyComponent]()
+func (q *Query1[A, QueryOptions]) PrepareOptions() (err error) {
+	q.options, err = toCombinedQueryOptions[QueryOptions]()
 	return err
 }
-func (q *Query2[A, B, Filters, OptionalComponents, ReadOnlyComponent]) PrepareOptions() (err error) {
-	q.options, err = getCombinedQueryOptions[Filters, OptionalComponents, ReadOnlyComponent]()
+func (q *Query2[A, B, QueryOptions]) PrepareOptions() (err error) {
+	q.options, err = toCombinedQueryOptions[QueryOptions]()
 	return err
 }
-func (q *Query3[A, B, C, Filters, OptionalComponents, ReadOnlyComponent]) PrepareOptions() (err error) {
-	q.options, err = getCombinedQueryOptions[Filters, OptionalComponents, ReadOnlyComponent]()
+func (q *Query3[A, B, C, QueryOptions]) PrepareOptions() (err error) {
+	q.options, err = toCombinedQueryOptions[QueryOptions]()
 	return err
 }
-func (q *Query4[A, B, C, D, Filters, OptionalComponents, ReadOnlyComponent]) PrepareOptions() (err error) {
-	q.options, err = getCombinedQueryOptions[Filters, OptionalComponents, ReadOnlyComponent]()
+func (q *Query4[A, B, C, D, QueryOptions]) PrepareOptions() (err error) {
+	q.options, err = toCombinedQueryOptions[QueryOptions]()
 	return err
 }
 
-func (q *Query1[ComponentA, Filters, OptionalComponents, ReadOnlyComponent]) Result() *Query1Result[ComponentA] {
+func (q *Query1[ComponentA, QueryOptions]) Result() *Query1Result[ComponentA] {
 	return &q.results
 }
-func (q *Query2[ComponentA, ComponentB, Filters, OptionalComponents, ReadOnlyComponent]) Result() *Query2Result[ComponentA, ComponentB] {
+func (q *Query2[ComponentA, ComponentB, QueryOptions]) Result() *Query2Result[ComponentA, ComponentB] {
 	return &q.results
 }
-func (q *Query3[ComponentA, ComponentB, ComponentC, Filters, OptionalComponents, ReadOnlyComponent]) Result() *Query3Result[ComponentA, ComponentB, ComponentC] {
+func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Result() *Query3Result[ComponentA, ComponentB, ComponentC] {
 	return &q.results
 }
-func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, Filters, OptionalComponents, ReadOnlyComponent]) Result() *Query4Result[ComponentA, ComponentB, ComponentC, ComponentD] {
+func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) Result() *Query4Result[ComponentA, ComponentB, ComponentC, ComponentD] {
 	return &q.results
 }
 
@@ -173,7 +173,7 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, Filters, Optiona
 //
 // match is true when the entity has the component or if the component is marked marked as optional.
 // When match is true, the entity should be present in the query results.
-func getQueryComponent[T IComponent](world *World, entityData *EntityData, queryOptions *CombinedQueryOptions) (result *T, match bool) {
+func getQueryComponent[T IComponent](world *World, entityData *EntityData, queryOptions *combinedQueryOptions) (result *T, match bool) {
 	componentType := GetComponentType[T]()
 
 	componentRegistryIndex, entityHasComponent := entityData.components[componentType]

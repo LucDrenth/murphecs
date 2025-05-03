@@ -195,7 +195,7 @@ func BenchmarkQuery(b *testing.B) {
 		}
 
 		b.Run(fmt.Sprintf("Query1-Basic-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query1[emptyComponentA, ecs.NoFilter, ecs.NoOptional, ecs.NoReadOnly]{}
+			query := ecs.Query1[emptyComponentA, ecs.DefaultQueryOptions]{}
 
 			err := query.PrepareOptions()
 			if err != nil {
@@ -208,7 +208,7 @@ func BenchmarkQuery(b *testing.B) {
 		})
 
 		b.Run(fmt.Sprintf("Query1-Optional-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query1[emptyComponentA, ecs.NoFilter, ecs.Optional1[emptyComponentA], ecs.NoReadOnly]{}
+			query := ecs.Query1[emptyComponentA, ecs.QueryOptions[ecs.NoFilter, ecs.Optional1[emptyComponentA], ecs.NoReadOnly]]{}
 
 			err := query.PrepareOptions()
 			if err != nil {
@@ -221,7 +221,7 @@ func BenchmarkQuery(b *testing.B) {
 		})
 
 		b.Run(fmt.Sprintf("Query1-ReadOnly-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query1[emptyComponentA, ecs.NoFilter, ecs.NoOptional, ecs.AllReadOnly]{}
+			query := ecs.Query1[emptyComponentA, ecs.QueryOptions[ecs.NoFilter, ecs.NoOptional, ecs.AllReadOnly]]{}
 
 			err := query.PrepareOptions()
 			if err != nil {
@@ -234,7 +234,7 @@ func BenchmarkQuery(b *testing.B) {
 		})
 
 		b.Run(fmt.Sprintf("Query1-With1-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query1[emptyComponentA, ecs.With[emptyComponentC], ecs.NoOptional, ecs.AllReadOnly]{}
+			query := ecs.Query1[emptyComponentA, ecs.QueryOptions[ecs.With[emptyComponentC], ecs.NoOptional, ecs.AllReadOnly]]{}
 
 			err := query.PrepareOptions()
 			if err != nil {
@@ -247,7 +247,7 @@ func BenchmarkQuery(b *testing.B) {
 		})
 
 		b.Run(fmt.Sprintf("Query1-Without1-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query1[emptyComponentA, ecs.Without[emptyComponentC], ecs.NoOptional, ecs.AllReadOnly]{}
+			query := ecs.Query1[emptyComponentA, ecs.QueryOptions[ecs.Without[emptyComponentC], ecs.NoOptional, ecs.AllReadOnly]]{}
 
 			err := query.PrepareOptions()
 			if err != nil {
@@ -260,7 +260,7 @@ func BenchmarkQuery(b *testing.B) {
 		})
 
 		b.Run(fmt.Sprintf("Query2-Basic-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.NoFilter, ecs.NoOptional, ecs.NoReadOnly]{}
+			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.QueryOptions[ecs.NoFilter, ecs.NoOptional, ecs.NoReadOnly]]{}
 
 			err := query.PrepareOptions()
 			if err != nil {
@@ -273,7 +273,7 @@ func BenchmarkQuery(b *testing.B) {
 		})
 
 		b.Run(fmt.Sprintf("Query2-Optional-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.NoFilter, ecs.Optional1[emptyComponentA], ecs.NoReadOnly]{}
+			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.QueryOptions[ecs.NoFilter, ecs.Optional1[emptyComponentA], ecs.NoReadOnly]]{}
 
 			err := query.PrepareOptions()
 			if err != nil {
@@ -286,7 +286,7 @@ func BenchmarkQuery(b *testing.B) {
 		})
 
 		b.Run(fmt.Sprintf("Query2-ReadOnly-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.NoFilter, ecs.NoOptional, ecs.AllReadOnly]{}
+			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.QueryOptions[ecs.NoFilter, ecs.NoOptional, ecs.AllReadOnly]]{}
 
 			err := query.PrepareOptions()
 			if err != nil {
@@ -299,7 +299,7 @@ func BenchmarkQuery(b *testing.B) {
 		})
 
 		b.Run(fmt.Sprintf("Query2-With1-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.With[emptyComponentC], ecs.NoOptional, ecs.AllReadOnly]{}
+			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.QueryOptions[ecs.With[emptyComponentC], ecs.NoOptional, ecs.AllReadOnly]]{}
 
 			err := query.PrepareOptions()
 			if err != nil {
@@ -312,7 +312,7 @@ func BenchmarkQuery(b *testing.B) {
 		})
 
 		b.Run(fmt.Sprintf("Query2-Without1-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.Without[emptyComponentC], ecs.NoOptional, ecs.AllReadOnly]{}
+			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.QueryOptions[ecs.Without[emptyComponentC], ecs.NoOptional, ecs.AllReadOnly]]{}
 
 			err := query.PrepareOptions()
 			if err != nil {

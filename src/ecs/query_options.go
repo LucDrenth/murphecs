@@ -6,28 +6,14 @@ import (
 	"github.com/lucdrenth/murph_engine/src/utils"
 )
 
-type filterType = int
-
-const (
-	filterTypeWith filterType = iota
-	filterTypeWithout
-	filterTypeAnd
-	filterTypeOr
-	filterTypeNone
-)
-
-type combinedReadOnlyComponent struct {
-	ComponentTypes []ComponentType
-	IsAllReadOnly  bool
-}
-
-type CombinedQueryOptions struct {
+// combinedQueryOptions is a combination of all possible all query options, parsed for easy use within queries.
+type combinedQueryOptions struct {
 	Filters            []QueryFilter
 	OptionalComponents []ComponentType
 	ReadOnlyComponents combinedReadOnlyComponent
 }
 
-func (o *CombinedQueryOptions) validateFilters(entityData *EntityData) bool {
+func (o *combinedQueryOptions) validateFilters(entityData *EntityData) bool {
 	for i := range o.Filters {
 		if !o.Filters[i].Validate(entityData) {
 			return false
@@ -37,15 +23,38 @@ func (o *CombinedQueryOptions) validateFilters(entityData *EntityData) bool {
 	return true
 }
 
-func getCombinedQueryOptions[filters QueryParamFilter, optionals OptionalComponents, readOnly ReadOnlyComponents]() (CombinedQueryOptions, error) {
-	result := CombinedQueryOptions{}
+type combinedReadOnlyComponent struct {
+	ComponentTypes []ComponentType
+	IsAllReadOnly  bool
+}
 
-	concreteFilters, err := utils.ToConcrete[filters]()
+type iQueryOptions interface {
+	getCombinedQueryOptions() (combinedQueryOptions, error)
+}
+
+type DefaultQueryOptions struct{}
+type QueryOptionsAllReadOnly struct{}
+type QueryOptions[_ QueryParamFilter, _ OptionalComponents, _ ReadOnlyComponents] struct{}
+
+func (o DefaultQueryOptions) getCombinedQueryOptions() (combinedQueryOptions, error) {
+	return combinedQueryOptions{}, nil
+}
+
+func (o QueryOptionsAllReadOnly) getCombinedQueryOptions() (combinedQueryOptions, error) {
+	return combinedQueryOptions{
+		ReadOnlyComponents: combinedReadOnlyComponent{IsAllReadOnly: true},
+	}, nil
+}
+
+func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents]) getCombinedQueryOptions() (combinedQueryOptions, error) {
+	result := combinedQueryOptions{}
+
+	concreteFilters, err := utils.ToConcrete[QueryParamFilter]()
 	if err != nil {
 		return result, fmt.Errorf("failed to cast filter to concrete type: %w", err)
 	}
 
-	filter, err := getFilterFromQueryOption(concreteFilters)
+	filter, err := getFilterFromConcreteQueryParamFilter(concreteFilters)
 	if err != nil {
 		return result, fmt.Errorf("failed to create filter: %w", err)
 	}
@@ -53,23 +62,22 @@ func getCombinedQueryOptions[filters QueryParamFilter, optionals OptionalCompone
 		result.Filters = append(result.Filters, filter)
 	}
 
-	concreteOptionals, err := utils.ToConcrete[optionals]()
+	concreteOptionals, err := utils.ToConcrete[OptionalComponents]()
 	if err != nil {
-		return result, fmt.Errorf("failed to cast optionals to concrete type: %w", err)
+		return result, fmt.Errorf("failed to cast optional components to concrete type: %w", err)
 	}
 	result.OptionalComponents = concreteOptionals.getOptionalComponentTypes()
 
-	readOnlyComponents, err := utils.ToConcrete[readOnly]()
+	readOnlyComponents, err := utils.ToConcrete[ReadOnlyComponents]()
 	if err != nil {
-		return result, fmt.Errorf("failed to cast optionals to concrete type: %w", err)
+		return result, fmt.Errorf("failed to cast read only components to concrete type: %w", err)
 	}
-
 	result.ReadOnlyComponents.ComponentTypes, result.ReadOnlyComponents.IsAllReadOnly = readOnlyComponents.getReadonlyComponentTypes()
 
 	return result, nil
 }
 
-func getFilterFromQueryOption(filters QueryParamFilter) (QueryFilter, error) {
+func getFilterFromConcreteQueryParamFilter(filters QueryParamFilter) (QueryFilter, error) {
 	switch concreteFilterType := filters.getFilterType(); concreteFilterType {
 	case filterTypeWith:
 		return queryFilterWith{c: filters.getComponents()}, nil
@@ -84,12 +92,12 @@ func getFilterFromQueryOption(filters QueryParamFilter) (QueryFilter, error) {
 				return nil, fmt.Errorf("failed to create AND filter: %w", err)
 			}
 
-			filterA, err := getFilterFromQueryOption(filterParamA)
+			filterA, err := getFilterFromConcreteQueryParamFilter(filterParamA)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create AND filter for a: %w", err)
 			}
 
-			filterB, err := getFilterFromQueryOption(filterParamB)
+			filterB, err := getFilterFromConcreteQueryParamFilter(filterParamB)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create AND filter for b: %w", err)
 			}
@@ -103,12 +111,12 @@ func getFilterFromQueryOption(filters QueryParamFilter) (QueryFilter, error) {
 				return nil, fmt.Errorf("failed to create OR filter: %w", err)
 			}
 
-			filterA, err := getFilterFromQueryOption(filterParamA)
+			filterA, err := getFilterFromConcreteQueryParamFilter(filterParamA)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create OR filter for a: %w", err)
 			}
 
-			filterB, err := getFilterFromQueryOption(filterParamB)
+			filterB, err := getFilterFromConcreteQueryParamFilter(filterParamB)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create OR filter for b: %w", err)
 			}
@@ -118,4 +126,15 @@ func getFilterFromQueryOption(filters QueryParamFilter) (QueryFilter, error) {
 	}
 
 	return nil, fmt.Errorf("unhandled filter type: %d", filters.getFilterType())
+}
+
+func toCombinedQueryOptions[QueryOptions iQueryOptions]() (combinedQueryOptions, error) {
+	result := combinedQueryOptions{}
+
+	concreteQueryOptions, err := utils.ToConcrete[QueryOptions]()
+	if err != nil {
+		return result, fmt.Errorf("failed to cast query options to concrete type: %w", err)
+	}
+
+	return concreteQueryOptions.getCombinedQueryOptions()
 }

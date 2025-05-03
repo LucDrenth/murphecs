@@ -35,7 +35,7 @@ func main() {
 // parameter. This allows the system to be ran in parallel with other systems.
 func queryWithGenerics(world *ecs.World) {
 	// Query all NPC components
-	query := ecs.Query1[NPC, ecs.NoFilter, ecs.NoOptional, ecs.NoReadOnly]{}
+	query := ecs.Query1[NPC, ecs.DefaultQueryOptions]{}
 	query.PrepareOptions()
 	query.Exec(world)
 	query.Result().Iter(func(entityId ecs.EntityId, npc *NPC) error {
@@ -44,7 +44,7 @@ func queryWithGenerics(world *ecs.World) {
 	})
 
 	// Query all NPC components of entities that hav the Friendly component
-	query2 := ecs.Query1[NPC, ecs.With[Friendly], ecs.NoOptional, ecs.NoReadOnly]{}
+	query2 := ecs.Query1[NPC, ecs.QueryOptions[ecs.With[Friendly], ecs.NoOptional, ecs.NoReadOnly]]{}
 	query2.PrepareOptions()
 	query2.Exec(world)
 	query2.Result().Iter(func(entityId ecs.EntityId, npc *NPC) error {
@@ -53,7 +53,7 @@ func queryWithGenerics(world *ecs.World) {
 	})
 
 	// Query all NPC and Dialog components of entities that do not have the Friendly component
-	query3 := ecs.Query2[NPC, Dialog, ecs.Without[Friendly], ecs.NoOptional, ecs.NoReadOnly]{}
+	query3 := ecs.Query2[NPC, Dialog, ecs.QueryOptions[ecs.Without[Friendly], ecs.NoOptional, ecs.NoReadOnly]]{}
 	query3.PrepareOptions()
 	query3.Exec(world)
 	query3.Result().Iter(func(entityId ecs.EntityId, npc *NPC, dialog *Dialog) error {

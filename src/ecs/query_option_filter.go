@@ -6,6 +6,16 @@ import (
 	"github.com/lucdrenth/murph_engine/src/utils"
 )
 
+type filterType = int
+
+const (
+	filterTypeWith filterType = iota
+	filterTypeWithout
+	filterTypeAnd
+	filterTypeOr
+	filterTypeNone
+)
+
 type QueryParamFilter interface {
 	getComponents() []ComponentType
 	getFilterType() filterType
