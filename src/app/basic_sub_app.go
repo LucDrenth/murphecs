@@ -29,6 +29,15 @@ type BasicSubApp struct {
 }
 
 func NewBasicSubApp(logger log.Logger) BasicSubApp {
+	resourceStorage := newResourceStorage()
+
+	// The following resources are reserved by this app. Even if a user would add them, it
+	// would not be possible to fetch them because the reserved resource would be returned
+	// instead. Thus we register them as blacklisted so that an error is logged when the user
+	// tries to add them.
+	registerBlacklistedResource[*ecs.World](&resourceStorage)
+	registerBlacklistedResourceType(reflect.TypeOf(logger), &resourceStorage)
+
 	return BasicSubApp{
 		world: ecs.NewWorld(),
 		schedules: map[ScheduleType]*Scheduler{
@@ -36,7 +45,7 @@ func NewBasicSubApp(logger log.Logger) BasicSubApp {
 			ScheduleTypeRepeating: utils.PointerTo(NewScheduler()),
 			ScheduleTypeCleanup:   utils.PointerTo(NewScheduler()),
 		},
-		resources: newResourceStorage(),
+		resources: resourceStorage,
 		features:  map[reflect.Type]IFeature{},
 		logger:    logger,
 		debugType: "App",

@@ -27,6 +27,48 @@ func TestAddToResourceStorage(t *testing.T) {
 		err := storage.add(resourceA{})
 		assert.ErrorIs(err, ErrResourceNotAPointer)
 	})
+
+	t.Run("fails to add resource if it is blacklisted", func(t *testing.T) {
+		assert := assert.New(t)
+
+		storage := newResourceStorage()
+		err := registerBlacklistedResource[*resourceA](&storage)
+		assert.NoError(err)
+		err = storage.add(&resourceA{})
+		assert.ErrorIs(err, ErrResourceTypeNotAllowed)
+	})
+}
+
+func TestRegisterBlacklistedResource(t *testing.T) {
+	type resourceA struct{}
+
+	t.Run("fails to blacklist resource if it is not passed by reference", func(t *testing.T) {
+		assert := assert.New(t)
+
+		storage := newResourceStorage()
+		err := registerBlacklistedResource[resourceA](&storage)
+		assert.ErrorIs(err, ErrResourceNotAPointer)
+	})
+
+	t.Run("fails to blacklist resource if it is already present", func(t *testing.T) {
+		assert := assert.New(t)
+
+		storage := newResourceStorage()
+		err := registerBlacklistedResource[*resourceA](&storage)
+		assert.NoError(err)
+		err = registerBlacklistedResource[*resourceA](&storage)
+		assert.ErrorIs(err, ErrResourceAlreadyPresent)
+		assert.Equal(1, len(storage.blacklistedResources))
+	})
+
+	t.Run("successfully registers blacklisted resource", func(t *testing.T) {
+		assert := assert.New(t)
+
+		storage := newResourceStorage()
+		err := registerBlacklistedResource[*resourceA](&storage)
+		assert.NoError(err)
+		assert.Equal(1, len(storage.blacklistedResources))
+	})
 }
 
 func TestGetResourceFromStorage(t *testing.T) {

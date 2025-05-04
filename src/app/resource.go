@@ -3,13 +3,15 @@ package app
 import (
 	"fmt"
 	"reflect"
+	"slices"
 )
 
 type resourceId reflect.Type
 type Resource any
 
 type resourceStorage struct {
-	resources map[resourceId]Resource
+	resources            map[resourceId]Resource
+	blacklistedResources []resourceId // resources that may not be added to this resourceStorage
 }
 
 func newResourceStorage() resourceStorage {
@@ -24,11 +26,16 @@ func newResourceStorage() resourceStorage {
 func (s *resourceStorage) add(resource Resource) error {
 	resourceType := reflect.TypeOf(resource)
 	if resourceType.Kind() != reflect.Pointer {
-		// resource must be passed by reference because if it is not, we can never get it by reference
+		// resource must be passed by reference because if it is not, we can never retrieve it by reference
 		return ErrResourceNotAPointer
 	}
 
 	resourceId := reflectTypeToComponentId(resourceType)
+
+	if slices.Contains(s.blacklistedResources, resourceId) {
+		return fmt.Errorf("%w: %s is blacklisted", ErrResourceTypeNotAllowed, resourceId.String())
+	}
+
 	if _, exists := s.resources[resourceId]; exists {
 		return fmt.Errorf("%w: %s", ErrResourceAlreadyPresent, resourceId.String())
 	}
@@ -36,6 +43,29 @@ func (s *resourceStorage) add(resource Resource) error {
 	s.resources[resourceId] = resource
 
 	return nil
+}
+
+func registerBlacklistedResource[T Resource](storage *resourceStorage) error {
+	resourceType := reflect.TypeFor[T]()
+	return registerBlacklistedResourceType(resourceType, storage)
+}
+
+func registerBlacklistedResourceType(resourceType reflect.Type, storage *resourceStorage) error {
+	if resourceType.Kind() != reflect.Pointer {
+		// resource must be passed by reference because if it is not, we can never retrieve it by reference
+		return ErrResourceNotAPointer
+	}
+
+	resourceId := reflectTypeToComponentId(resourceType)
+
+	if slices.Contains(storage.blacklistedResources, resourceId) {
+		return ErrResourceAlreadyPresent
+	}
+
+	storage.blacklistedResources = append(storage.blacklistedResources, resourceId)
+
+	return nil
+
 }
 
 func getResourceFromStorage[T Resource](s *resourceStorage) (result T, err error) {
