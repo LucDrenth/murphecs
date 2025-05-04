@@ -94,7 +94,7 @@ func (app *BasicSubApp) AddSchedule(schedule Schedule, scheduleType ScheduleType
 func (app *BasicSubApp) AddResource(resource Resource) SubApp {
 	err := app.resources.add(resource)
 	if err != nil {
-		app.logger.Error(fmt.Sprintf("%s - failed to add resource: %v", app.debugType, err))
+		app.logger.Error(fmt.Sprintf("%s - failed to add resource %s: %v", app.debugType, getResourceDebugType(resource), err))
 	}
 
 	return app

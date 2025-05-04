@@ -33,11 +33,11 @@ func (s *resourceStorage) add(resource Resource) error {
 	resourceId := reflectTypeToComponentId(resourceType)
 
 	if slices.Contains(s.blacklistedResources, resourceId) {
-		return fmt.Errorf("%w: %s is blacklisted", ErrResourceTypeNotAllowed, resourceId.String())
+		return fmt.Errorf("%w: blacklisted", ErrResourceTypeNotAllowed)
 	}
 
 	if _, exists := s.resources[resourceId]; exists {
-		return fmt.Errorf("%w: %s", ErrResourceAlreadyPresent, resourceId.String())
+		return ErrResourceAlreadyPresent
 	}
 
 	s.resources[resourceId] = resource
@@ -65,7 +65,6 @@ func registerBlacklistedResourceType(resourceType reflect.Type, storage *resourc
 	storage.blacklistedResources = append(storage.blacklistedResources, resourceId)
 
 	return nil
-
 }
 
 func getResourceFromStorage[T Resource](s *resourceStorage) (result T, err error) {
@@ -74,7 +73,7 @@ func getResourceFromStorage[T Resource](s *resourceStorage) (result T, err error
 
 	untypedResource, exists := s.resources[resourceId]
 	if !exists {
-		return result, fmt.Errorf("%w: %s", ErrResourceNotFound, resourceId.String())
+		return result, ErrResourceNotFound
 	}
 
 	if untypedResource == nil {
@@ -119,4 +118,8 @@ func reflectTypeToComponentId(resourceType reflect.Type) resourceId {
 	}
 
 	return resourceId(resourceType)
+}
+
+func getResourceDebugType(resource Resource) string {
+	return reflect.TypeOf(resource).String()
 }
