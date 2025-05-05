@@ -41,7 +41,7 @@ func main() {
 func queryWithGenerics(world *ecs.World) {
 	// Query all NPC components
 	query := ecs.Query1[NPC, ecs.DefaultQueryOptions]{}
-	query.PrepareOptions()
+	query.Prepare()
 	query.Exec(world)
 	query.Result().Iter(func(entityId ecs.EntityId, npc *NPC) error {
 		fmt.Printf("simple query: %d: %s \n", entityId, npc.name)
@@ -50,7 +50,7 @@ func queryWithGenerics(world *ecs.World) {
 
 	// Query all NPC components of entities that have the Friendly component
 	query2 := ecs.Query1[NPC, ecs.With[Friendly]]{}
-	query2.PrepareOptions()
+	query2.Prepare()
 	query2.Exec(world)
 	query2.Result().Iter(func(entityId ecs.EntityId, npc *NPC) error {
 		fmt.Printf("query with Friendly: %d: %s \n", entityId, npc.name)
@@ -59,12 +59,21 @@ func queryWithGenerics(world *ecs.World) {
 
 	// Query all NPC and Dialog components of entities that do not have the Friendly component
 	query3 := ecs.Query2[NPC, Dialog, ecs.Without[Friendly]]{}
-	query3.PrepareOptions()
+	query3.Prepare()
 	query3.Exec(world)
 	query3.Result().Iter(func(entityId ecs.EntityId, npc *NPC, dialog *Dialog) error {
 		fmt.Printf("query without Friendly: %d: %s says %s \n", entityId, npc.name, dialog.text)
 		return nil
 	})
+
+	// You can give multiple options like this:
+	_ = ecs.Query1[
+		NPC,
+		ecs.QueryOptions2[
+			ecs.With[Dialog],
+			ecs.AllReadOnly,
+		],
+	]{}
 
 	// You can write more complex queries like this:
 	_ = ecs.Query1[

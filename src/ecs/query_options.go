@@ -2,6 +2,7 @@ package ecs
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/lucdrenth/murph_engine/src/utils"
 )
@@ -13,14 +14,48 @@ type combinedQueryOptions struct {
 	ReadOnlyComponents combinedReadOnlyComponent
 }
 
-func (o *combinedQueryOptions) validateFilters(entityData *EntityData) bool {
+func (o *combinedQueryOptions) isFilteredOut(entityData *EntityData) bool {
 	for i := range o.Filters {
 		if !o.Filters[i].Validate(entityData) {
-			return false
+			return true
 		}
 	}
 
-	return true
+	return false
+}
+
+// validateOptions returns an error if there are any invalid or non-logical options.
+// If an error is returned, it does not mean that the combinedQueryOptions can not be
+// used in a query, thus the error should be treated as a warning.
+func (o *combinedQueryOptions) validateOptions(queryComponents []ComponentType) error {
+	if duplicate, _, _ := utils.GetFirstDuplicate(o.OptionalComponents); duplicate != nil {
+		return fmt.Errorf("optional component %s is given multiple times", (*duplicate).String())
+	}
+
+	for _, optional := range o.OptionalComponents {
+		if !slices.Contains(queryComponents, optional) {
+			return fmt.Errorf("optional component %s is not in query", optional.String())
+		}
+	}
+
+	if duplicate, _, _ := utils.GetFirstDuplicate(o.ReadOnlyComponents.ComponentTypes); duplicate != nil {
+		return fmt.Errorf("read-only component %s is given multiple times", (*duplicate).String())
+	}
+
+	for _, readOnly := range o.ReadOnlyComponents.ComponentTypes {
+		if !slices.Contains(queryComponents, readOnly) {
+			return fmt.Errorf("read-only component %s is not in query", readOnly.String())
+		}
+	}
+
+	// TODO
+	fmt.Println(o.ReadOnlyComponents.IsAllReadOnly, len(o.ReadOnlyComponents.ComponentTypes))
+
+	if o.ReadOnlyComponents.IsAllReadOnly && len(o.ReadOnlyComponents.ComponentTypes) > 0 {
+		return fmt.Errorf("can not have specific read-only components together with IsAllReadOnly")
+	}
+
+	return nil
 }
 
 type combinedReadOnlyComponent struct {
@@ -28,7 +63,7 @@ type combinedReadOnlyComponent struct {
 	IsAllReadOnly  bool
 }
 
-type iQueryOptions interface {
+type QueryOption interface {
 	getCombinedQueryOptions() (combinedQueryOptions, error)
 }
 
@@ -128,7 +163,7 @@ func getFilterFromConcreteQueryParamFilter(filters QueryParamFilter) (QueryFilte
 	return nil, fmt.Errorf("unhandled filter type: %d", filters.getFilterType())
 }
 
-func toCombinedQueryOptions[QueryOptions iQueryOptions]() (combinedQueryOptions, error) {
+func toCombinedQueryOptions[QueryOptions QueryOption]() (combinedQueryOptions, error) {
 	result := combinedQueryOptions{}
 
 	concreteQueryOptions, err := utils.ToConcrete[QueryOptions]()
@@ -137,4 +172,88 @@ func toCombinedQueryOptions[QueryOptions iQueryOptions]() (combinedQueryOptions,
 	}
 
 	return concreteQueryOptions.getCombinedQueryOptions()
+}
+
+// Multiple query options that will be combined. Multiple filters will result in them being used with an AND operator.
+type QueryOptions2[A, B QueryOption] struct{}
+
+// Multiple query options that will be combined. Multiple filters will result in them being used with an AND operator.
+type QueryOptions3[A, B, C QueryOption] struct{}
+
+// Multiple query options that will be combined. Multiple filters will result in them being used with an AND operator.
+type QueryOptions4[A, B, C, D QueryOption] struct{}
+
+func (o QueryOptions2[A, B]) getCombinedQueryOptions() (result combinedQueryOptions, err error) {
+	a, err := utils.ToConcrete[A]()
+	if err != nil {
+		return result, err
+	}
+
+	b, err := utils.ToConcrete[B]()
+	if err != nil {
+		return result, err
+	}
+
+	return mergeQueryOptions([]QueryOption{a, b})
+}
+func (o QueryOptions3[A, B, C]) getCombinedQueryOptions() (result combinedQueryOptions, err error) {
+	a, err := utils.ToConcrete[A]()
+	if err != nil {
+		return result, err
+	}
+
+	b, err := utils.ToConcrete[B]()
+	if err != nil {
+		return result, err
+	}
+
+	c, err := utils.ToConcrete[C]()
+	if err != nil {
+		return result, err
+	}
+
+	return mergeQueryOptions([]QueryOption{a, b, c})
+}
+func (o QueryOptions4[A, B, C, D]) getCombinedQueryOptions() (result combinedQueryOptions, err error) {
+	a, err := utils.ToConcrete[A]()
+	if err != nil {
+		return result, err
+	}
+
+	b, err := utils.ToConcrete[B]()
+	if err != nil {
+		return result, err
+	}
+
+	c, err := utils.ToConcrete[C]()
+	if err != nil {
+		return result, err
+	}
+
+	d, err := utils.ToConcrete[D]()
+	if err != nil {
+		return result, err
+	}
+
+	return mergeQueryOptions([]QueryOption{a, b, c, d})
+}
+
+func mergeQueryOptions(queryOptions []QueryOption) (result combinedQueryOptions, err error) {
+	for _, queryOption := range queryOptions {
+		options, err := queryOption.getCombinedQueryOptions()
+		if err != nil {
+			return result, err
+		}
+
+		result.Filters = append(result.Filters, options.Filters...)
+		result.OptionalComponents = append(result.OptionalComponents, result.OptionalComponents...)
+
+		result.ReadOnlyComponents.ComponentTypes = append(result.ReadOnlyComponents.ComponentTypes, options.ReadOnlyComponents.ComponentTypes...)
+
+		if !result.ReadOnlyComponents.IsAllReadOnly && options.ReadOnlyComponents.IsAllReadOnly {
+			result.ReadOnlyComponents.IsAllReadOnly = true
+		}
+	}
+
+	return result, nil
 }

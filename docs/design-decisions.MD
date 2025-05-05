@@ -40,3 +40,8 @@ I have not looked in to the performance difference of these two approaches yet. 
 Some world-related functions, like `Spawn`, could have been implemented as methods of `world`. However, some world-related functions can not be implemented as methods because they involve generics, and Go (1.24.2) does not support this methods with generics.
 
 To keep the ECS API consistent, all major user-facing ECS functionality is implemented with functions.
+
+## ECS - no subdirectories
+There are no subdirectories in the ECS package, and it has many files. I have decided on doing it this way so that the API is simple to use: the ECS API can only be used through `ecs.*`. 
+
+If we were to split the ecs package up in to multiple directories (something like ecs/storage, ecs/action, ecs/query etc.), the ECS functions would be scattered. This complicates the API. Users would have to remember which package contains which part, like `storage.World`, `query.Filter` and so on. We could get around this by exposing everything in the ecs package using type aliases, but then the API could still be used in two ways, and seeing what's underneath the exposed/aliased type would require an extra click.

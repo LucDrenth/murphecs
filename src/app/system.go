@@ -78,9 +78,14 @@ func (s *SystemSet) add(sys System, world *ecs.World, logger log.Logger, resourc
 				return fmt.Errorf("failed to cast param to query")
 			}
 
-			err := query.PrepareOptions()
+			err := query.Prepare()
 			if err != nil {
 				return fmt.Errorf("failed to prepare query param: %w", err)
+			}
+
+			warning := query.Validate()
+			if warning != nil {
+				logger.Warn(fmt.Sprintf("query %s is not optimized: %v", parameterType.String(), warning))
 			}
 
 			s.systemParamQueries = append(s.systemParamQueries, query)
@@ -152,9 +157,9 @@ func validateSystemParameters(systemValue reflect.Value, queryType reflect.Type,
 		parameterType := systemValue.Type().In(i)
 
 		if parameterType.Implements(queryType) {
-			if err := validateQueryParameter(parameterType); err != nil {
-				return fmt.Errorf("system parameter %d: %w: %w", i+1, ErrSystemParamQueryNotValid, err)
-			}
+			// query will be validated at a later step because it first needs to get prepared with `Query.Prepare` before
+			// it can be validated with `Query.Validate`.
+			return nil
 		} else if parameterType == reflect.TypeFor[*ecs.World]() {
 			return nil
 		} else if parameterType == reflect.TypeFor[ecs.World]() {
@@ -177,18 +182,6 @@ func validateSystemParameters(systemValue reflect.Value, queryType reflect.Type,
 			return fmt.Errorf("system parameter %d: %w", i+1, ErrSystemParamNotValid)
 		}
 	}
-
-	return nil
-}
-
-func validateQueryParameter(_ reflect.Type) error {
-	// Golang does not have reflect for generics (as of Go 1.24). Thus we can not really
-	// implement this yet.
-	//
-	// Once Golang gets generics reflection, here are some of the things we'd want to check:
-	// - Return error if duplicates in the components to query
-	// - Return error if marking a component as optional while that component is not queried
-	// - Return error if there are any duplicate filters
 
 	return nil
 }

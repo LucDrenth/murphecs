@@ -10,26 +10,20 @@ import (
 // Queries that are created using generics. They can be used as system parameters which allows systems
 // to be executed in parallel.
 
-type Query interface {
-	Exec(world *World)
-
-	// PrepareOptions extracts the query options and puts it in CombinedQueryOptions. This should be called
-	// once, after which the query is ready to be used (e.g. Exec can be called).
-	PrepareOptions() error
-}
-type Query1[ComponentA IComponent, _ iQueryOptions] struct {
+type Query1[ComponentA IComponent, _ QueryOption] struct {
 	options combinedQueryOptions
 	results Query1Result[ComponentA]
 }
-type Query2[ComponentA, ComponentB IComponent, _ iQueryOptions] struct {
+
+type Query2[ComponentA, ComponentB IComponent, _ QueryOption] struct {
 	options combinedQueryOptions
 	results Query2Result[ComponentA, ComponentB]
 }
-type Query3[ComponentA, ComponentB, ComponentC IComponent, _ iQueryOptions] struct {
+type Query3[ComponentA, ComponentB, ComponentC IComponent, _ QueryOption] struct {
 	options combinedQueryOptions
 	results Query3Result[ComponentA, ComponentB, ComponentC]
 }
-type Query4[ComponentA, ComponentB, ComponentC, ComponentD IComponent, _ iQueryOptions] struct {
+type Query4[ComponentA, ComponentB, ComponentC, ComponentD IComponent, _ QueryOption] struct {
 	options combinedQueryOptions
 	results Query4Result[ComponentA, ComponentB, ComponentC, ComponentD]
 }
@@ -38,7 +32,7 @@ func (q *Query1[ComponentA, QueryOptions]) Exec(world *World) {
 	q.results.Clear()
 
 	for entityId, entityData := range world.entities {
-		if !q.options.validateFilters(entityData) {
+		if q.options.isFilteredOut(entityData) {
 			continue
 		}
 
@@ -55,7 +49,7 @@ func (q *Query2[ComponentA, ComponentB, QueryOptions]) Exec(world *World) {
 	q.results.Clear()
 
 	for entityId, entityData := range world.entities {
-		if !q.options.validateFilters(entityData) {
+		if q.options.isFilteredOut(entityData) {
 			continue
 		}
 
@@ -78,7 +72,7 @@ func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Exec(world *W
 	q.results.Clear()
 
 	for entityId, entityData := range world.entities {
-		if !q.options.validateFilters(entityData) {
+		if q.options.isFilteredOut(entityData) {
 			continue
 		}
 
@@ -107,7 +101,7 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) E
 	q.results.Clear()
 
 	for entityId, entityData := range world.entities {
-		if !q.options.validateFilters(entityData) {
+		if q.options.isFilteredOut(entityData) {
 			continue
 		}
 
@@ -139,21 +133,48 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) E
 	}
 }
 
-func (q *Query1[A, QueryOptions]) PrepareOptions() (err error) {
+func (q *Query1[A, QueryOptions]) Prepare() (err error) {
 	q.options, err = toCombinedQueryOptions[QueryOptions]()
 	return err
 }
-func (q *Query2[A, B, QueryOptions]) PrepareOptions() (err error) {
+func (q *Query2[A, B, QueryOptions]) Prepare() (err error) {
 	q.options, err = toCombinedQueryOptions[QueryOptions]()
 	return err
 }
-func (q *Query3[A, B, C, QueryOptions]) PrepareOptions() (err error) {
+func (q *Query3[A, B, C, QueryOptions]) Prepare() (err error) {
 	q.options, err = toCombinedQueryOptions[QueryOptions]()
 	return err
 }
-func (q *Query4[A, B, C, D, QueryOptions]) PrepareOptions() (err error) {
+func (q *Query4[A, B, C, D, QueryOptions]) Prepare() (err error) {
 	q.options, err = toCombinedQueryOptions[QueryOptions]()
 	return err
+}
+
+func (q *Query1[ComponentA, _]) Validate() error {
+	return q.options.validateOptions([]ComponentType{
+		GetComponentType[ComponentA](),
+	})
+}
+func (q *Query2[ComponentA, ComponentB, _]) Validate() error {
+	return q.options.validateOptions([]ComponentType{
+		GetComponentType[ComponentA](),
+		GetComponentType[ComponentB](),
+	})
+}
+func (q *Query3[ComponentA, ComponentB, ComponentC, _]) Validate() error {
+	return q.options.validateOptions([]ComponentType{
+		GetComponentType[ComponentA](),
+		GetComponentType[ComponentB](),
+		GetComponentType[ComponentC](),
+	})
+}
+func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, _]) Validate() error {
+	return q.options.validateOptions([]ComponentType{
+		GetComponentType[ComponentA](),
+		GetComponentType[ComponentB](),
+		GetComponentType[ComponentC](),
+		GetComponentType[ComponentD](),
+	})
 }
 
 func (q *Query1[ComponentA, QueryOptions]) Result() *Query1Result[ComponentA] {
