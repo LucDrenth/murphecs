@@ -48,9 +48,6 @@ func (o *combinedQueryOptions) validateOptions(queryComponents []ComponentType) 
 		}
 	}
 
-	// TODO
-	fmt.Println(o.ReadOnlyComponents.IsAllReadOnly, len(o.ReadOnlyComponents.ComponentTypes))
-
 	if o.ReadOnlyComponents.IsAllReadOnly && len(o.ReadOnlyComponents.ComponentTypes) > 0 {
 		return fmt.Errorf("can not have specific read-only components together with IsAllReadOnly")
 	}
