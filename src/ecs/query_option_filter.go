@@ -109,16 +109,16 @@ func (filter Or[A, B]) getNestedFilters() (a QueryParamFilter, b QueryParamFilte
 }
 
 func (filter With[A]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[With[A], NoOptional, NoReadOnly]]()
+	return toCombinedQueryOptions[QueryOptions[With[A], NotAllReadOnly]]()
 }
 func (filter Without[A]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[Without[A], NoOptional, NoReadOnly]]()
+	return toCombinedQueryOptions[QueryOptions[Without[A], NotAllReadOnly]]()
 }
 func (filter And[A, B]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[And[A, B], NoOptional, NoReadOnly]]()
+	return toCombinedQueryOptions[QueryOptions[And[A, B], NotAllReadOnly]]()
 }
 func (filter Or[A, B]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[Or[A, B], NoOptional, NoReadOnly]]()
+	return toCombinedQueryOptions[QueryOptions[Or[A, B], NotAllReadOnly]]()
 }
 
 type QueryFilter interface {

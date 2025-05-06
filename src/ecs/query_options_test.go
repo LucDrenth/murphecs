@@ -13,7 +13,7 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("returns an error when passing an incorrect query param filter", func(t *testing.T) {
 		assert := assert.New(t)
 
-		queryOptions := QueryOptions[QueryParamFilter, NoOptional, NoReadOnly]{}
+		queryOptions := QueryOptions[QueryParamFilter, NotAllReadOnly]{}
 		_, err := queryOptions.getCombinedQueryOptions()
 		assert.Error(err)
 	})
@@ -21,15 +21,7 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("returns an error when passing an incorrect read-only option", func(t *testing.T) {
 		assert := assert.New(t)
 
-		queryOptions := QueryOptions[QueryParamFilter, NoOptional, ReadOnlyComponents]{}
-		_, err := queryOptions.getCombinedQueryOptions()
-		assert.Error(err)
-	})
-
-	t.Run("returns an error when passing incorrect optional components", func(t *testing.T) {
-		assert := assert.New(t)
-
-		queryOptions := QueryOptions[NoFilter, OptionalComponents, NoReadOnly]{}
+		queryOptions := QueryOptions[QueryParamFilter, ReadOnlyComponents]{}
 		_, err := queryOptions.getCombinedQueryOptions()
 		assert.Error(err)
 	})
@@ -37,91 +29,49 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("successfully creates the combined query options with default options", func(t *testing.T) {
 		assert := assert.New(t)
 
-		queryOptions := QueryOptions[NoFilter, NoOptional, NoReadOnly]{}
+		queryOptions := Default{}
 		result, err := queryOptions.getCombinedQueryOptions()
 		assert.NoError(err)
 		assert.Equal(0, len(result.Filters))
-		assert.Equal(0, len(result.OptionalComponents))
+		assert.False(result.IsAllReadOnly)
 	})
 
 	t.Run("successfully creates the combined query options with the right amount of filters", func(t *testing.T) {
 		assert := assert.New(t)
 
-		queryOptions := QueryOptions[With[componentA], NoOptional, NoReadOnly]{}
+		queryOptions := With[componentA]{}
 		result, err := queryOptions.getCombinedQueryOptions()
 		assert.NoError(err)
 		assert.Equal(1, len(result.Filters))
-		assert.Equal(0, len(result.OptionalComponents))
 	})
 
-	t.Run("successfully creates the combined query options with the right amount of optional components", func(t *testing.T) {
+	t.Run("successfully creates the combined query options with all read-only", func(t *testing.T) {
 		assert := assert.New(t)
 
-		var queryOptions QueryOption = &QueryOptions[NoFilter, Optional1[componentA], NoReadOnly]{}
+		var queryOptions QueryOption = &AllReadOnly{}
 		result, err := queryOptions.getCombinedQueryOptions()
 		assert.NoError(err)
-		assert.Equal(0, len(result.Filters))
-		assert.Equal(1, len(result.OptionalComponents))
-
-		queryOptions = &QueryOptions[NoFilter, Optional2[componentA, componentB], NoReadOnly]{}
-		result, err = queryOptions.getCombinedQueryOptions()
-		assert.NoError(err)
-		assert.Equal(0, len(result.Filters))
-		assert.Equal(2, len(result.OptionalComponents))
+		assert.True(result.IsAllReadOnly)
 	})
 
-	t.Run("successfully creates combined query options with the right amount of read-only components", func(t *testing.T) {
+	t.Run("successfully creates the combined query options with an AND filter", func(t *testing.T) {
 		assert := assert.New(t)
 
-		var queryOptions QueryOption = &QueryOptions[NoFilter, NoOptional, NoReadOnly]{}
-		result, err := queryOptions.getCombinedQueryOptions()
-		assert.NoError(err)
-		assert.Equal(0, len(result.ReadOnlyComponents.ComponentTypes))
-		assert.False(result.ReadOnlyComponents.IsAllReadOnly)
-
-		queryOptions = &QueryOptions[NoFilter, NoOptional, AllReadOnly]{}
-		result, err = queryOptions.getCombinedQueryOptions()
-		assert.NoError(err)
-		assert.True(result.ReadOnlyComponents.IsAllReadOnly)
-
-		queryOptions = &QueryOptions[NoFilter, NoOptional, ReadOnly1[componentA]]{}
-		result, err = queryOptions.getCombinedQueryOptions()
-		assert.NoError(err)
-		assert.Equal(1, len(result.ReadOnlyComponents.ComponentTypes))
-		assert.False(result.ReadOnlyComponents.IsAllReadOnly)
-	})
-
-	t.Run("successfully creates the combined query options with all options applied", func(t *testing.T) {
-		assert := assert.New(t)
-
-		queryOptions := QueryOptions[Without[componentB], Optional1[componentA], ReadOnly1[componentA]]{}
+		queryOptions := And[With[componentA], With[componentB]]{}
 		result, err := queryOptions.getCombinedQueryOptions()
 		assert.NoError(err)
 		assert.Equal(1, len(result.Filters))
-		assert.Equal(1, len(result.OptionalComponents))
-		assert.Equal(1, len(result.ReadOnlyComponents.ComponentTypes))
+		assert.False(result.IsAllReadOnly)
 	})
 
-	t.Run("successfully creates the combined query options with an and filter", func(t *testing.T) {
+	t.Run("successfully creates the combined query options with an OR filter", func(t *testing.T) {
 		assert := assert.New(t)
 
-		queryOptions := QueryOptions[And[With[componentA], With[componentB]], NoOptional, NoReadOnly]{}
+		queryOptions := Or[With[componentA], With[componentB]]{}
 		result, err := queryOptions.getCombinedQueryOptions()
 		assert.NoError(err)
 		assert.Equal(1, len(result.Filters))
-		assert.Equal(0, len(result.OptionalComponents))
-		assert.Equal(0, len(result.ReadOnlyComponents.ComponentTypes))
-	})
-
-	t.Run("successfully creates the combined query options with an or filter", func(t *testing.T) {
-		assert := assert.New(t)
-
-		queryOptions := QueryOptions[Or[With[componentA], With[componentB]], NoOptional, NoReadOnly]{}
-		result, err := queryOptions.getCombinedQueryOptions()
-		assert.NoError(err)
-		assert.Equal(1, len(result.Filters))
-		assert.Equal(0, len(result.OptionalComponents))
-		assert.Equal(0, len(result.ReadOnlyComponents.ComponentTypes))
+		assert.False(result.IsAllReadOnly)
 	})
 }
 
@@ -129,104 +79,80 @@ func TestValidateCombinedQueryOptions(t *testing.T) {
 	type componentA struct{ Component }
 	type componentB struct{ Component }
 
-	t.Run("returns an error if the same component is given multiple times as optional component", func(t *testing.T) {
-		assert := assert.New(t)
-
-		options := combinedQueryOptions{
-			Filters:            []QueryFilter{},
-			OptionalComponents: []ComponentType{GetComponentType[componentA](), GetComponentType[componentA]()},
-			ReadOnlyComponents: combinedReadOnlyComponent{},
-		}
-		assert.Error(options.validateOptions([]ComponentType{}))
-	})
-
-	t.Run("returns an error if the same component is given multiple times as read-only component", func(t *testing.T) {
-		assert := assert.New(t)
-
-		options := combinedQueryOptions{
-			Filters:            []QueryFilter{},
-			OptionalComponents: []ComponentType{},
-			ReadOnlyComponents: combinedReadOnlyComponent{
-				ComponentTypes: []ComponentType{GetComponentType[componentA](), GetComponentType[componentA]()},
-			},
-		}
-		assert.Error(options.validateOptions([]ComponentType{}))
-	})
-
-	t.Run("returns an error if there are read-only components while AllReadOnly is set to true", func(t *testing.T) {
-		assert := assert.New(t)
-
-		options := combinedQueryOptions{
-			Filters:            []QueryFilter{},
-			OptionalComponents: []ComponentType{},
-			ReadOnlyComponents: combinedReadOnlyComponent{
-				ComponentTypes: []ComponentType{GetComponentType[componentA]()},
-				IsAllReadOnly:  true,
-			},
-		}
-		assert.Error(options.validateOptions([]ComponentType{}))
-	})
-
-	t.Run("returns an error if any read-only component is not in the query components", func(t *testing.T) {
-		assert := assert.New(t)
-
-		options := combinedQueryOptions{
-			Filters:            []QueryFilter{},
-			OptionalComponents: []ComponentType{},
-			ReadOnlyComponents: combinedReadOnlyComponent{
-				ComponentTypes: []ComponentType{GetComponentType[componentA]()},
-			},
-		}
-		assert.Error(options.validateOptions([]ComponentType{}))
-	})
-
-	t.Run("returns an error if any optional component is not in the query components", func(t *testing.T) {
-		assert := assert.New(t)
-
-		options := combinedQueryOptions{
-			Filters:            []QueryFilter{},
-			OptionalComponents: []ComponentType{GetComponentType[componentA]()},
-			ReadOnlyComponents: combinedReadOnlyComponent{
-				ComponentTypes: []ComponentType{},
-			},
-		}
-		assert.Error(options.validateOptions([]ComponentType{}))
-	})
-
 	t.Run("returns no error for default query options", func(t *testing.T) {
 		assert := assert.New(t)
 
 		options := combinedQueryOptions{}
-		assert.NoError(options.validateOptions([]ComponentType{GetComponentType[componentA](), GetComponentType[componentB]()}))
+		assert.NoError(options.validateOptions([]QueryComponent{componentA{}, componentB{}}))
 	})
 
-	t.Run("returns no error if there is nothing wrong", func(t *testing.T) {
+	t.Run("returns no error if there is nothing wrong with the query options", func(t *testing.T) {
 		assert := assert.New(t)
 
 		options := combinedQueryOptions{
-			Filters:            []QueryFilter{},
-			OptionalComponents: []ComponentType{GetComponentType[componentB]()},
-			ReadOnlyComponents: combinedReadOnlyComponent{
-				IsAllReadOnly: true,
-			},
+			Filters:       []QueryFilter{queryFilterWith{c: []ComponentType{GetComponentType[componentB]()}}},
+			IsAllReadOnly: true,
 		}
-		assert.NoError(options.validateOptions([]ComponentType{GetComponentType[componentA](), GetComponentType[componentB]()}))
+		assert.NoError(options.validateOptions([]QueryComponent{componentA{}}))
 	})
 }
 
 func TestMergeQueryOptions(t *testing.T) {
-	type componentA struct{ Component }
-	type componentB struct{ Component }
-
 	t.Run("has IsAllReadOnly set to true if there is any AllReadOnly option", func(t *testing.T) {
 		assert := assert.New(t)
 
 		result, err := mergeQueryOptions([]QueryOption{
-			ReadOnly1[componentA]{},
 			AllReadOnly{},
-			ReadOnly1[componentB]{},
 		})
 		assert.NoError(err)
-		assert.True(result.ReadOnlyComponents.IsAllReadOnly)
+		assert.True(result.IsAllReadOnly)
+	})
+}
+
+func TestGetInnerQueryComponent(t *testing.T) {
+	type componentA struct{ Component }
+
+	t.Run("component returns itself", func(t *testing.T) {
+		assert := assert.New(t)
+
+		result := getInnerQueryComponent(componentA{})
+		assert.NotNil(result)
+		assert.Equal(
+			GetComponentType[componentA](),
+			toComponentType(result),
+		)
+	})
+
+	t.Run("read-only component returns the inner type", func(t *testing.T) {
+		assert := assert.New(t)
+
+		result := getInnerQueryComponent(ReadOnly[componentA]{})
+		assert.NotNil(result)
+		assert.Equal(
+			GetComponentType[componentA](),
+			toComponentType(result),
+		)
+	})
+
+	t.Run("optional component returns the inner type", func(t *testing.T) {
+		assert := assert.New(t)
+
+		result := getInnerQueryComponent(Optional[componentA]{})
+		assert.NotNil(result)
+		assert.Equal(
+			GetComponentType[componentA](),
+			toComponentType(result),
+		)
+	})
+
+	t.Run("nested read-only + optional component returns the correct type", func(t *testing.T) {
+		assert := assert.New(t)
+
+		result := getInnerQueryComponent(ReadOnly[Optional[componentA]]{})
+		assert.NotNil(result)
+		assert.Equal(
+			GetComponentType[componentA](),
+			toComponentType(result),
+		)
 	})
 }

@@ -12,6 +12,18 @@ type IComponent interface {
 
 type Component struct{}
 
+func (c Component) isOptional() bool {
+	return false
+}
+
+func (c Component) isReadOnly() bool {
+	return false
+}
+
+func (Component) innerQueryComponent() QueryComponent {
+	return nil
+}
+
 func (Component) RequiredComponents() []IComponent {
 	return []IComponent{}
 }

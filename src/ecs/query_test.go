@@ -24,7 +24,7 @@ func TestQuery1(t *testing.T) {
 		expectedValue1 := 10
 		expectedValue2 := 20
 		world := NewWorld()
-		query := Query1[componentA, DefaultQueryOptions]{}
+		query := Query1[componentA, Default]{}
 		err := query.Prepare()
 		assert.NoError(err)
 
@@ -56,7 +56,7 @@ func TestQuery1(t *testing.T) {
 	})
 
 	t.Run("Query1 satisfies Query", func(t *testing.T) {
-		var _ Query = &Query1[componentA, DefaultQueryOptions]{}
+		var _ Query = &Query1[componentA, Default]{}
 	})
 
 	t.Run("query with With filter returns the expected results", func(t *testing.T) {
@@ -180,7 +180,7 @@ func TestQuery1(t *testing.T) {
 		_, err = Spawn(&world, &componentB{}, &componentC{})
 		assert.NoError(err)
 
-		query := Query1[componentA, QueryOptions[With[componentB], Optional1[componentA], NoReadOnly]]{}
+		query := Query1[Optional[componentA], With[componentB]]{}
 		err = query.Prepare()
 		assert.NoError(err)
 		query.Exec(&world)
@@ -193,7 +193,7 @@ func TestQuery1(t *testing.T) {
 
 		expectedValue := 10
 		world := NewWorld()
-		query := Query1[componentA, QueryOptions[NoFilter, NoOptional, NoReadOnly]]{}
+		query := Query1[componentA, Default]{}
 		err := query.Prepare()
 		assert.NoError(err)
 		_, err = Spawn(&world, &componentA{value: 0}, &componentB{})
@@ -202,10 +202,14 @@ func TestQuery1(t *testing.T) {
 		assert.NoError(err)
 
 		query.Exec(&world)
+
+		numberOfResults := 0
 		query.results.Iter(func(entityId EntityId, a *componentA) error {
 			a.value = expectedValue
+			numberOfResults++
 			return nil
 		})
+		assert.Equal(1, numberOfResults)
 
 		query.Exec(&world)
 		query.results.Iter(func(entityId EntityId, a *componentA) error {
@@ -214,7 +218,43 @@ func TestQuery1(t *testing.T) {
 		})
 	})
 
-	t.Run("queried component can not be mutated if is specified as read-only", func(t *testing.T) {
+	t.Run("queried component can be mutated if it is specified as optional", func(t *testing.T) {
+		assert := assert.New(t)
+
+		expectedValue := 10
+		world := NewWorld()
+		query := Query1[Optional[componentA], Default]{}
+		err := query.Prepare()
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentA{value: 0}, &componentB{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentB{})
+		assert.NoError(err)
+
+		query.Exec(&world)
+
+		numberOfResults := 0
+		query.results.Iter(func(entityId EntityId, a *Optional[componentA]) error {
+			if a != nil {
+				a.Inner.value = expectedValue
+				numberOfResults++
+			}
+
+			return nil
+		})
+		assert.Equal(1, numberOfResults)
+
+		query.Exec(&world)
+		query.results.Iter(func(entityId EntityId, a *Optional[componentA]) error {
+			if a != nil {
+				assert.Equal(expectedValue, a.Inner.value)
+			}
+
+			return nil
+		})
+	})
+
+	t.Run("queried component can not be mutated if is specified as read-only using AllReadOnly", func(t *testing.T) {
 		assert := assert.New(t)
 
 		expectedValue := 0
@@ -228,14 +268,85 @@ func TestQuery1(t *testing.T) {
 		assert.NoError(err)
 
 		query.Exec(&world)
+
+		numberOfResults := 0
 		query.results.Iter(func(entityId EntityId, a *componentA) error {
 			a.value = 10
+			numberOfResults++
 			return nil
 		})
+		assert.Equal(1, numberOfResults)
 
 		query.Exec(&world)
+
 		query.results.Iter(func(entityId EntityId, a *componentA) error {
 			assert.Equal(expectedValue, a.value)
+			return nil
+		})
+	})
+
+	t.Run("queried component can not be mutated if is specified as read-only using ReadOnly", func(t *testing.T) {
+		assert := assert.New(t)
+
+		expectedValue := 0
+		world := NewWorld()
+		query := Query1[ReadOnly[componentA], Default]{}
+		err := query.Prepare()
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentA{value: 0}, &componentB{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentB{})
+		assert.NoError(err)
+
+		query.Exec(&world)
+
+		numberOfResults := 0
+		query.results.Iter(func(entityId EntityId, a *ReadOnly[componentA]) error {
+			a.Inner.value = 10
+			numberOfResults++
+			return nil
+		})
+		assert.Equal(1, numberOfResults)
+
+		query.Exec(&world)
+		query.results.Iter(func(entityId EntityId, a *ReadOnly[componentA]) error {
+			assert.Equal(expectedValue, a.Inner.value)
+			return nil
+		})
+	})
+
+	t.Run("optional component can not be mutated if is specified as read-only using ReadOnly", func(t *testing.T) {
+		assert := assert.New(t)
+
+		expectedValue := 0
+		world := NewWorld()
+		query := Query1[Optional[ReadOnly[componentA]], Default]{}
+		err := query.Prepare()
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentA{value: 0}, &componentB{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentB{})
+		assert.NoError(err)
+
+		query.Exec(&world)
+
+		numberOfResults := 0
+		query.results.Iter(func(entityId EntityId, a *Optional[ReadOnly[componentA]]) error {
+			if a != nil {
+				a.Inner.Inner.value = 10
+				numberOfResults++
+			}
+
+			return nil
+		})
+		assert.Equal(1, numberOfResults)
+
+		query.Exec(&world)
+		query.results.Iter(func(entityId EntityId, a *Optional[ReadOnly[componentA]]) error {
+			if a != nil {
+				assert.Equal(expectedValue, a.Inner.Inner.value)
+			}
+
 			return nil
 		})
 	})
@@ -248,7 +359,7 @@ func TestQuery1(t *testing.T) {
 		assert.NoError(err)
 		_, err = Spawn(&world, &componentA{})
 		assert.NoError(err)
-		query := Query1[componentA, DefaultQueryOptions]{}
+		query := Query1[componentA, Default]{}
 		err = query.Prepare()
 		assert.NoError(err)
 		query.Exec(&world)
@@ -269,7 +380,7 @@ func TestQuery2(t *testing.T) {
 	type componentB struct{ Component }
 
 	t.Run("Query2 satisfies Query", func(t *testing.T) {
-		var _ Query = &Query2[componentA, componentB, DefaultQueryOptions]{}
+		var _ Query = &Query2[componentA, componentB, Default]{}
 	})
 }
 
@@ -279,7 +390,7 @@ func TestQuery3(t *testing.T) {
 	type componentC struct{ Component }
 
 	t.Run("Query3 satisfies Query", func(t *testing.T) {
-		var _ Query = &Query3[componentA, componentB, componentC, DefaultQueryOptions]{}
+		var _ Query = &Query3[componentA, componentB, componentC, Default]{}
 	})
 }
 
@@ -290,6 +401,6 @@ func TestQuery4(t *testing.T) {
 	type componentD struct{ Component }
 
 	t.Run("Query4 satisfies Query", func(t *testing.T) {
-		var _ Query = &Query4[componentA, componentB, componentC, componentD, DefaultQueryOptions]{}
+		var _ Query = &Query4[componentA, componentB, componentC, componentD, Default]{}
 	})
 }

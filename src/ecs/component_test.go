@@ -9,6 +9,9 @@ import (
 // Compiler check to verify that `Component` satisfies `IComponent`
 var _ IComponent = Component{}
 
+// Compiler check to verify that `Component` satisfies `IComponent`
+var _ QueryComponent = Component{}
+
 /*****************************
  * Component without require *
  *****************************/
