@@ -208,7 +208,7 @@ func getQueryComponent[T IComponent](world *World, entityData *EntityData, query
 		return nil, false
 	}
 
-	if result != nil && queryOptions.ReadOnlyComponents.IsAllReadOnly || slices.Contains(queryOptions.ReadOnlyComponents.ComponentTypes, componentType) {
+	if result != nil && (queryOptions.ReadOnlyComponents.IsAllReadOnly || slices.Contains(queryOptions.ReadOnlyComponents.ComponentTypes, componentType)) {
 		result = utils.ClonePointerValue(result)
 	}
 
