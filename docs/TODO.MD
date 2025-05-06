@@ -15,7 +15,6 @@
 - [quality-of-life] Set function to either overwrite or insert a component. It is already possible by removing and then inserting a component but its not very user friendly.
 - [tests] More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
 - [tests] Add tests for `DirectQuery`. Maybe automatically call `Prepare` before running Exec? 
-- [documentation] Add comments to query_generic structs/functions. For example, mention that Prepare must be called before running exec.
 
 # Window
 - [feature] Be able to create a window

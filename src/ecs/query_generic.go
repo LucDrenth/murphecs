@@ -10,19 +10,81 @@ import (
 // Queries that are created using generics. They can be used as system parameters which allows systems
 // to be executed in parallel.
 
+// Query1 queries 1 component.
+//
+// Prepare must be called once before calling Execute.
+//
+// The following query options are available:
+//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
+//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
+//     parallel with other systems.
+//   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
+//     component is optional, entities do not have to have that component in order for it to return a result,
+//     as long as it has the other (not-optional) components.
+//   - use [NoFilter] to not use any filters
+//   - use [With] to make the results only include entities that has a specific component.
+//   - use [Without] to make the results only include entities that do not have a specific component.
+//   - use [And] and [Or] to combine filters.
 type Query1[ComponentA IComponent, _ QueryOption] struct {
 	options combinedQueryOptions
 	results Query1Result[ComponentA]
 }
 
+// Query2 queries 2 components.
+//
+// Prepare must be called once before calling Execute.
+//
+// The following query options are available:
+//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
+//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
+//     parallel with other systems.
+//   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
+//     component is optional, entities do not have to have that component in order for it to return a result,
+//     as long as it has the other (not-optional) components.
+//   - use [NoFilter] to not use any filters
+//   - use [With] to make the results only include entities that has a specific component.
+//   - use [Without] to make the results only include entities that do not have a specific component.
+//   - use [And] and [Or] to combine filters.
 type Query2[ComponentA, ComponentB IComponent, _ QueryOption] struct {
 	options combinedQueryOptions
 	results Query2Result[ComponentA, ComponentB]
 }
+
+// Query3 queries 3 components.
+//
+// Prepare must be called once before calling Execute.
+//
+// The following query options are available:
+//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
+//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
+//     parallel with other systems.
+//   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
+//     component is optional, entities do not have to have that component in order for it to return a result,
+//     as long as it has the other (not-optional) components.
+//   - use [NoFilter] to not use any filters
+//   - use [With] to make the results only include entities that has a specific component.
+//   - use [Without] to make the results only include entities that do not have a specific component.
+//   - use [And] and [Or] to combine filters.
 type Query3[ComponentA, ComponentB, ComponentC IComponent, _ QueryOption] struct {
 	options combinedQueryOptions
 	results Query3Result[ComponentA, ComponentB, ComponentC]
 }
+
+// Query4 queries 4 components.
+//
+// Prepare must be called once before calling Execute.
+//
+// The following query options are available:
+//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
+//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
+//     parallel with other systems.
+//   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
+//     component is optional, entities do not have to have that component in order for it to return a result,
+//     as long as it has the other (not-optional) components.
+//   - use [NoFilter] to not use any filters
+//   - use [With] to make the results only include entities that has a specific component.
+//   - use [Without] to make the results only include entities that do not have a specific component.
+//   - use [And] and [Or] to combine filters.
 type Query4[ComponentA, ComponentB, ComponentC, ComponentD IComponent, _ QueryOption] struct {
 	options combinedQueryOptions
 	results Query4Result[ComponentA, ComponentB, ComponentC, ComponentD]
