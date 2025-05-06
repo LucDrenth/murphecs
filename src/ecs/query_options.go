@@ -64,11 +64,12 @@ type QueryOption interface {
 	getCombinedQueryOptions() (combinedQueryOptions, error)
 }
 
-type DefaultQueryOptions struct{}
+// default query options
+type Default struct{}
 type QueryOptionsAllReadOnly struct{}
 type QueryOptions[_ QueryParamFilter, _ OptionalComponents, _ ReadOnlyComponents] struct{}
 
-func (o DefaultQueryOptions) getCombinedQueryOptions() (combinedQueryOptions, error) {
+func (o Default) getCombinedQueryOptions() (combinedQueryOptions, error) {
 	return combinedQueryOptions{}, nil
 }
 

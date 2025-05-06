@@ -49,7 +49,7 @@ func spawn(world *ecs.World) {
 	}
 }
 
-func updatePositions(world *ecs.World, query *ecs.Query2[position, velocity, ecs.DefaultQueryOptions]) {
+func updatePositions(world *ecs.World, query *ecs.Query2[position, velocity, ecs.Default]) {
 	query.Result().Iter(func(_ ecs.EntityId, position *position, velocity *velocity) error {
 		position.x += velocity.x
 		position.y += velocity.y

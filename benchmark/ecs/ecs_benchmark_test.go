@@ -195,7 +195,7 @@ func BenchmarkQuery(b *testing.B) {
 		}
 
 		b.Run(fmt.Sprintf("Query1-Basic-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query1[emptyComponentA, ecs.DefaultQueryOptions]{}
+			query := ecs.Query1[emptyComponentA, ecs.Default]{}
 
 			err := query.Prepare()
 			if err != nil {

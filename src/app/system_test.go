@@ -76,7 +76,7 @@ func TestAddSystem(t *testing.T) {
 		logger := log.NoOp()
 		resourceStorage := newResourceStorage()
 
-		err := systemSet.add(func(_ ecs.Query1[componentA, ecs.DefaultQueryOptions]) {}, &world, &logger, &resourceStorage)
+		err := systemSet.add(func(_ ecs.Query1[componentA, ecs.Default]) {}, &world, &logger, &resourceStorage)
 		assert.ErrorIs(err, ErrSystemParamQueryNotAPointer)
 	})
 
@@ -90,7 +90,7 @@ func TestAddSystem(t *testing.T) {
 		logger := log.NoOp()
 		resourceStorage := newResourceStorage()
 
-		err := systemSet.add(func(_ *ecs.Query1[componentA, ecs.DefaultQueryOptions]) {}, &world, &logger, &resourceStorage)
+		err := systemSet.add(func(_ *ecs.Query1[componentA, ecs.Default]) {}, &world, &logger, &resourceStorage)
 		assert.NoError(err)
 	})
 

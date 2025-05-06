@@ -24,7 +24,7 @@ func TestQuery1(t *testing.T) {
 		expectedValue1 := 10
 		expectedValue2 := 20
 		world := NewWorld()
-		query := Query1[componentA, DefaultQueryOptions]{}
+		query := Query1[componentA, Default]{}
 		err := query.Prepare()
 		assert.NoError(err)
 
@@ -56,7 +56,7 @@ func TestQuery1(t *testing.T) {
 	})
 
 	t.Run("Query1 satisfies Query", func(t *testing.T) {
-		var _ Query = &Query1[componentA, DefaultQueryOptions]{}
+		var _ Query = &Query1[componentA, Default]{}
 	})
 
 	t.Run("query with With filter returns the expected results", func(t *testing.T) {
@@ -248,7 +248,7 @@ func TestQuery1(t *testing.T) {
 		assert.NoError(err)
 		_, err = Spawn(&world, &componentA{})
 		assert.NoError(err)
-		query := Query1[componentA, DefaultQueryOptions]{}
+		query := Query1[componentA, Default]{}
 		err = query.Prepare()
 		assert.NoError(err)
 		query.Exec(&world)
@@ -269,7 +269,7 @@ func TestQuery2(t *testing.T) {
 	type componentB struct{ Component }
 
 	t.Run("Query2 satisfies Query", func(t *testing.T) {
-		var _ Query = &Query2[componentA, componentB, DefaultQueryOptions]{}
+		var _ Query = &Query2[componentA, componentB, Default]{}
 	})
 }
 
@@ -279,7 +279,7 @@ func TestQuery3(t *testing.T) {
 	type componentC struct{ Component }
 
 	t.Run("Query3 satisfies Query", func(t *testing.T) {
-		var _ Query = &Query3[componentA, componentB, componentC, DefaultQueryOptions]{}
+		var _ Query = &Query3[componentA, componentB, componentC, Default]{}
 	})
 }
 
@@ -290,6 +290,6 @@ func TestQuery4(t *testing.T) {
 	type componentD struct{ Component }
 
 	t.Run("Query4 satisfies Query", func(t *testing.T) {
-		var _ Query = &Query4[componentA, componentB, componentC, componentD, DefaultQueryOptions]{}
+		var _ Query = &Query4[componentA, componentB, componentC, componentD, Default]{}
 	})
 }

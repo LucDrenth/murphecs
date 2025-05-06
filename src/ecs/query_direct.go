@@ -134,28 +134,28 @@ func NewQuery4[ComponentA, ComponentB, ComponentC, ComponentD IComponent]() dire
 }
 
 func (q *directQuery1[ComponentA]) Exec(world *World) Query1Result[ComponentA] {
-	query := Query1[ComponentA, DefaultQueryOptions]{
+	query := Query1[ComponentA, Default]{
 		options: q.options,
 	}
 	query.Exec(world)
 	return query.results
 }
 func (q *directQuery2[ComponentA, ComponentB]) Exec(world *World) Query2Result[ComponentA, ComponentB] {
-	query := Query2[ComponentA, ComponentB, DefaultQueryOptions]{
+	query := Query2[ComponentA, ComponentB, Default]{
 		options: q.options,
 	}
 	query.Exec(world)
 	return query.results
 }
 func (q *directQuery3[ComponentA, ComponentB, ComponentC]) Exec(world *World) Query3Result[ComponentA, ComponentB, ComponentC] {
-	query := Query3[ComponentA, ComponentB, ComponentC, DefaultQueryOptions]{
+	query := Query3[ComponentA, ComponentB, ComponentC, Default]{
 		options: q.options,
 	}
 	query.Exec(world)
 	return query.results
 }
 func (q *directQuery4[ComponentA, ComponentB, ComponentC, ComponentD]) Exec(world *World) Query4Result[ComponentA, ComponentB, ComponentC, ComponentD] {
-	query := Query4[ComponentA, ComponentB, ComponentC, ComponentD, DefaultQueryOptions]{
+	query := Query4[ComponentA, ComponentB, ComponentC, ComponentD, Default]{
 		options: q.options,
 	}
 	query.Exec(world)

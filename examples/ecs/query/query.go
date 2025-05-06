@@ -40,7 +40,7 @@ func main() {
 //   - When using multiple query options, you need to specify all of them, which is a bit more work.
 func queryWithGenerics(world *ecs.World) {
 	// Query all NPC components
-	query := ecs.Query1[NPC, ecs.DefaultQueryOptions]{}
+	query := ecs.Query1[NPC, ecs.Default]{}
 	query.Prepare()
 	query.Exec(world)
 	query.Result().Iter(func(entityId ecs.EntityId, npc *NPC) error {
