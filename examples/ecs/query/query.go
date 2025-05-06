@@ -66,7 +66,7 @@ func queryWithGenerics(world *ecs.World) {
 		return nil
 	})
 
-	// You can give multiple options like this:
+	// You can specify multiple query options with ecs.QueryOptions2, ecs.QueryOptions3 ...
 	_ = ecs.Query1[
 		NPC,
 		ecs.QueryOptions2[
@@ -75,7 +75,7 @@ func queryWithGenerics(world *ecs.World) {
 		],
 	]{}
 
-	// You can write more complex queries like this:
+	// You can specify all possible query options with ecs.QueryOptions
 	_ = ecs.Query1[
 		NPC,
 		ecs.QueryOptions[
@@ -114,7 +114,6 @@ func queryWithDirectQuery(world *ecs.World) {
 	})
 
 	// Query all NPC components of entities that have the Friendly component
-	// query2 := ecs.Query1[NPC, ecs.With[Friendly], ecs.NoOptional, ecs.NoReadOnly]{}
 	query2 := ecs.NewQuery1[NPC]()
 	ecs.QueryWith[Friendly](&query2)
 	result2 := query2.Exec(world)

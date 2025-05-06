@@ -64,7 +64,7 @@ type QueryOption interface {
 	getCombinedQueryOptions() (combinedQueryOptions, error)
 }
 
-// default query options
+// default query options: NoFilter, NoOptional, NoReadonly
 type Default struct{}
 type QueryOptionsAllReadOnly struct{}
 type QueryOptions[_ QueryParamFilter, _ OptionalComponents, _ ReadOnlyComponents] struct{}

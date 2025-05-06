@@ -193,7 +193,7 @@ func TestQuery1(t *testing.T) {
 
 		expectedValue := 10
 		world := NewWorld()
-		query := Query1[componentA, QueryOptions[NoFilter, NoOptional, NoReadOnly]]{}
+		query := Query1[componentA, Default]{}
 		err := query.Prepare()
 		assert.NoError(err)
 		_, err = Spawn(&world, &componentA{value: 0}, &componentB{})

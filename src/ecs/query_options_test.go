@@ -37,7 +37,7 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("successfully creates the combined query options with default options", func(t *testing.T) {
 		assert := assert.New(t)
 
-		queryOptions := QueryOptions[NoFilter, NoOptional, NoReadOnly]{}
+		queryOptions := Default{}
 		result, err := queryOptions.getCombinedQueryOptions()
 		assert.NoError(err)
 		assert.Equal(0, len(result.Filters))
@@ -73,7 +73,7 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("successfully creates combined query options with the right amount of read-only components", func(t *testing.T) {
 		assert := assert.New(t)
 
-		var queryOptions QueryOption = &QueryOptions[NoFilter, NoOptional, NoReadOnly]{}
+		var queryOptions QueryOption = &Default{}
 		result, err := queryOptions.getCombinedQueryOptions()
 		assert.NoError(err)
 		assert.Equal(0, len(result.ReadOnlyComponents.ComponentTypes))
