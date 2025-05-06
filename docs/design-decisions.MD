@@ -45,3 +45,31 @@ To keep the ECS API consistent, all major user-facing ECS functionality is imple
 There are no subdirectories in the ECS package, and it has many files. I have decided on doing it this way so that the API is simple to use: the ECS API can only be used through `ecs.*`. 
 
 If we were to split the ecs package up in to multiple directories (something like ecs/storage, ecs/action, ecs/query etc.), the ECS functions would be scattered. This complicates the API. Users would have to remember which package contains which part, like `storage.World`, `query.Filter` and so on. We could get around this by exposing everything in the ecs package using type aliases, but then the API could still be used in two ways, and seeing what's underneath the exposed/aliased type would require an extra click.
+
+## ECS - query options
+The query options ReadOnly and Optional are separately specified in a query. This has some downsides: 
+1. It allows for specifying options for component that are not even queried. There is a run-time validation step that will warn users about this though.
+2. You have to specify component names multiple times
+3. It may not be easy to directly see what components are optional/
+
+### Possible improvement 1 - wrapping query components with options
+I did some experimentation to make ReadOnly and Optional a wrapper around the components. This experiment is in branch `wrap-query-components-with-component-query-options`. It doesn't compile, but its (probably) close to complete and gives a good overview of how to API would look.
+
+Queries would look something like this:
+```go 
+Query2[
+    ReadOnly[ComponentA], 
+    Optional[ReadOnly[ComponentB]]
+]
+```
+**Advantages**
+- Not possible to specify read-only or optional components that are not queried
+- Remove the need to specify components multiple times (less error prone)
+- Easier to directly read what components are read-only or optional
+- Simplify query options, removing the need for DirectQuery
+
+**Disadvantages**
+- When looping over the query results, we can not directly use the component. Instead we'd have to use `componentA.Inner.value` and `componentA.Inner.Inner.value`. This (a) adds more boilerplate and (b) requires users to change the system body that uses this query when marking components as ReadOnly at a later stage in development (which is expected to be done for optimization purposes).
+
+**Blockers**
+- I encountered an issue that I couldn't get around: we can not directly use the underlying component type of the QueryComponent to cast query results to a component type, because the QueryComponent could be nested (direct component, ReadOnly with an inner component and such). I did not fully explore all solutions to this problem. Their might be a way around this by not having to use the component its generic type when casting raw component data to its component type.
