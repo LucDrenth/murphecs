@@ -231,7 +231,8 @@ func getQueryComponent[T QueryComponent](world *World, entityData *EntityData, q
 		return nil, queryComponent.isOptional()
 	}
 
-	result, err := getComponentFromComponentRegistry[T](world.components[componentType], componentRegistryIndex)
+	// TODO we do not want to cast to T, but instead to the underlying component type (componentType)
+	result, err = getComponentFromComponentRegistry[T](world.components[componentType], componentRegistryIndex)
 	if err != nil {
 		world.logger.Error(fmt.Sprintf("getQueryComponent encountered unexpected error: %v", err))
 		return nil, false
