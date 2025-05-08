@@ -266,3 +266,62 @@ func mergeQueryOptions(queryOptions []QueryOption) (result combinedQueryOptions,
 
 	return result, nil
 }
+
+func QueryWithOptional[C IComponent](query Query) error {
+	options := query.getOptions()
+
+	componentType := GetComponentType[C]()
+	options.OptionalComponents = append(options.OptionalComponents, componentType)
+
+	return query.Validate()
+}
+
+func QueryWithReadOnly[C IComponent](query Query) error {
+	options := query.getOptions()
+
+	componentType := GetComponentType[C]()
+	options.ReadOnlyComponents.ComponentTypes = append(options.ReadOnlyComponents.ComponentTypes, componentType)
+
+	return query.Validate()
+}
+
+func QueryWithAllReadOnly(query Query) {
+	query.getOptions().ReadOnlyComponents.IsAllReadOnly = true
+}
+
+func QueryWith[C IComponent](query Query) error {
+	componentType := GetComponentType[C]()
+	options := query.getOptions()
+	options.Filters = append(options.Filters, queryFilterWith{c: []ComponentType{componentType}})
+
+	return query.Validate()
+}
+
+func QueryWithout[C IComponent](query Query) error {
+	componentType := GetComponentType[C]()
+	options := query.getOptions()
+	options.Filters = append(options.Filters, queryFilterWithout{c: []ComponentType{componentType}})
+
+	return query.Validate()
+}
+
+func QueryWithFilters[Filters QueryParamFilter](query Query) error {
+	concreteFilters, err := utils.ToConcrete[Filters]()
+	if err != nil {
+		return fmt.Errorf("failed to cast filter to concrete type: %w", err)
+	}
+
+	filter, err := getFilterFromConcreteQueryParamFilter(concreteFilters)
+	if err != nil {
+		return fmt.Errorf("failed to create filter: %w", err)
+	}
+
+	if filter == nil {
+		return nil
+	}
+
+	options := query.getOptions()
+	options.Filters = append(options.Filters, filter)
+
+	return query.Validate()
+}
