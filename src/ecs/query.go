@@ -34,6 +34,18 @@ type Query interface {
 	getOptions() *combinedQueryOptions
 }
 
+type queryOptions struct {
+	options combinedQueryOptions
+}
+
+func (o *queryOptions) getOptions() *combinedQueryOptions {
+	return &o.options
+}
+
+func (o *queryOptions) IsLazy() bool {
+	return o.options.isLazy
+}
+
 // Query1 queries 1 component.
 //
 // Prepare must be called once before calling Execute.
@@ -50,7 +62,7 @@ type Query interface {
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query1[ComponentA IComponent, _ QueryOption] struct {
-	options combinedQueryOptions
+	queryOptions
 	results Query1Result[ComponentA]
 }
 
@@ -70,7 +82,7 @@ type Query1[ComponentA IComponent, _ QueryOption] struct {
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query2[ComponentA, ComponentB IComponent, _ QueryOption] struct {
-	options combinedQueryOptions
+	queryOptions
 	results Query2Result[ComponentA, ComponentB]
 }
 
@@ -90,7 +102,7 @@ type Query2[ComponentA, ComponentB IComponent, _ QueryOption] struct {
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query3[ComponentA, ComponentB, ComponentC IComponent, _ QueryOption] struct {
-	options combinedQueryOptions
+	queryOptions
 	results Query3Result[ComponentA, ComponentB, ComponentC]
 }
 
@@ -110,7 +122,7 @@ type Query3[ComponentA, ComponentB, ComponentC IComponent, _ QueryOption] struct
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query4[ComponentA, ComponentB, ComponentC, ComponentD IComponent, _ QueryOption] struct {
-	options combinedQueryOptions
+	queryOptions
 	results Query4Result[ComponentA, ComponentB, ComponentC, ComponentD]
 }
 
@@ -287,32 +299,6 @@ func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) ClearResults(
 }
 func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) ClearResults() {
 	q.results.Clear()
-}
-
-func (q *Query1[ComponentA, QueryOptions]) IsLazy() bool {
-	return q.options.isLazy
-}
-func (q *Query2[ComponentA, ComponentB, QueryOptions]) IsLazy() bool {
-	return q.options.isLazy
-}
-func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) IsLazy() bool {
-	return q.options.isLazy
-}
-func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) IsLazy() bool {
-	return q.options.isLazy
-}
-
-func (q *Query1[ComponentA, QueryOptions]) getOptions() *combinedQueryOptions {
-	return &q.options
-}
-func (q *Query2[ComponentA, ComponentB, QueryOptions]) getOptions() *combinedQueryOptions {
-	return &q.options
-}
-func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) getOptions() *combinedQueryOptions {
-	return &q.options
-}
-func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) getOptions() *combinedQueryOptions {
-	return &q.options
 }
 
 // getQueryComponent returns a pointer to T if the component is found on the entity.
