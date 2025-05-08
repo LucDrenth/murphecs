@@ -12,6 +12,7 @@ type combinedQueryOptions struct {
 	Filters            []QueryFilter
 	OptionalComponents []ComponentType
 	ReadOnlyComponents combinedReadOnlyComponent
+	isLazy             bool
 }
 
 func (o *combinedQueryOptions) isFilteredOut(entityData *EntityData) bool {
@@ -67,9 +68,9 @@ type QueryOption interface {
 // default query options: NoFilter, NoOptional, NoReadonly
 type Default struct{}
 type QueryOptionsAllReadOnly struct{}
-type QueryOptions[_ QueryParamFilter, _ OptionalComponents, _ ReadOnlyComponents] struct{}
+type QueryOptions[_ QueryParamFilter, _ OptionalComponents, _ ReadOnlyComponents, _ IsQueryLazy] struct{}
 
-func (o Default) getCombinedQueryOptions() (combinedQueryOptions, error) {
+func (Default) getCombinedQueryOptions() (combinedQueryOptions, error) {
 	return combinedQueryOptions{}, nil
 }
 
@@ -79,7 +80,7 @@ func (o QueryOptionsAllReadOnly) getCombinedQueryOptions() (combinedQueryOptions
 	}, nil
 }
 
-func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents]) getCombinedQueryOptions() (combinedQueryOptions, error) {
+func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents, IsQueryLazy]) getCombinedQueryOptions() (combinedQueryOptions, error) {
 	result := combinedQueryOptions{}
 
 	concreteFilters, err := utils.ToConcrete[QueryParamFilter]()
@@ -106,6 +107,12 @@ func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents]) 
 		return result, fmt.Errorf("failed to cast read only components to concrete type: %w", err)
 	}
 	result.ReadOnlyComponents.ComponentTypes, result.ReadOnlyComponents.IsAllReadOnly = readOnlyComponents.getReadonlyComponentTypes()
+
+	queryOptionLazy, err := utils.ToConcrete[IsQueryLazy]()
+	if err != nil {
+		return result, fmt.Errorf("failed to cast IsQueryLazy to concrete type: %w", err)
+	}
+	result.isLazy = queryOptionLazy.isLazy()
 
 	return result, nil
 }
@@ -250,6 +257,10 @@ func mergeQueryOptions(queryOptions []QueryOption) (result combinedQueryOptions,
 
 		if !result.ReadOnlyComponents.IsAllReadOnly && options.ReadOnlyComponents.IsAllReadOnly {
 			result.ReadOnlyComponents.IsAllReadOnly = true
+		}
+
+		if !result.isLazy && options.isLazy {
+			result.isLazy = true
 		}
 	}
 

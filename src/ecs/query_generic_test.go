@@ -180,7 +180,7 @@ func TestQuery1(t *testing.T) {
 		_, err = Spawn(&world, &componentB{}, &componentC{})
 		assert.NoError(err)
 
-		query := Query1[componentA, QueryOptions[With[componentB], Optional1[componentA], NoReadOnly]]{}
+		query := Query1[componentA, QueryOptions[With[componentB], Optional1[componentA], NoReadOnly, NotLazy]]{}
 		err = query.Prepare()
 		assert.NoError(err)
 		query.Exec(&world)

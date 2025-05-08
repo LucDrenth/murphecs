@@ -35,13 +35,18 @@ type SystemSet struct {
 }
 
 func (s *SystemSet) exec(world *ecs.World) []error {
-	s.execSystemParamQueries(world)
+	s.handleSystemParamQueries(world)
 	return s.execSystems()
 }
 
-func (s *SystemSet) execSystemParamQueries(world *ecs.World) {
+func (s *SystemSet) handleSystemParamQueries(world *ecs.World) {
 	for i := range s.systemParamQueries {
-		s.systemParamQueries[i].Exec(world)
+		query := s.systemParamQueries[i]
+		if query.IsLazy() {
+			query.ClearResults()
+		} else {
+			query.Exec(world)
+		}
 	}
 }
 

@@ -88,6 +88,7 @@ func queryWithGenerics(world *ecs.World) {
 			],
 			ecs.NoOptional,
 			ecs.AllReadOnly,
+			ecs.Lazy,
 		],
 	]{}
 }

@@ -16,4 +16,11 @@ type Query interface {
 	//
 	// Prepare must be called without returning any errors before calling this method.
 	Validate() error
+
+	// Clear the query results that got filled when last running Exec.
+	ClearResults()
+
+	// IsLazy returns wether this query should be treated as lazy or not. Being lazy means that it should
+	// not get executed automatically, and should be done by the user.
+	IsLazy() bool
 }

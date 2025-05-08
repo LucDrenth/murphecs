@@ -58,14 +58,14 @@ func (o Optional4[A, B, C, D]) getOptionalComponentTypes() []ComponentType {
 }
 
 func (optional Optional1[A]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional1[A], NoReadOnly]]()
+	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional1[A], NoReadOnly, NotLazy]]()
 }
 func (optional Optional2[A, B]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional2[A, B], NoReadOnly]]()
+	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional2[A, B], NoReadOnly, NotLazy]]()
 }
 func (optional Optional3[A, B, C]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional3[A, B, C], NoReadOnly]]()
+	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional3[A, B, C], NoReadOnly, NotLazy]]()
 }
 func (optional Optional4[A, B, C, D]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional4[A, B, C, D], NoReadOnly]]()
+	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional4[A, B, C, D], NoReadOnly, NotLazy]]()
 }

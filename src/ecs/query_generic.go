@@ -91,7 +91,7 @@ type Query4[ComponentA, ComponentB, ComponentC, ComponentD IComponent, _ QueryOp
 }
 
 func (q *Query1[ComponentA, QueryOptions]) Exec(world *World) {
-	q.results.Clear()
+	q.ClearResults()
 
 	for entityId, entityData := range world.entities {
 		if q.options.isFilteredOut(entityData) {
@@ -108,7 +108,7 @@ func (q *Query1[ComponentA, QueryOptions]) Exec(world *World) {
 	}
 }
 func (q *Query2[ComponentA, ComponentB, QueryOptions]) Exec(world *World) {
-	q.results.Clear()
+	q.ClearResults()
 
 	for entityId, entityData := range world.entities {
 		if q.options.isFilteredOut(entityData) {
@@ -131,7 +131,7 @@ func (q *Query2[ComponentA, ComponentB, QueryOptions]) Exec(world *World) {
 	}
 }
 func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Exec(world *World) {
-	q.results.Clear()
+	q.ClearResults()
 
 	for entityId, entityData := range world.entities {
 		if q.options.isFilteredOut(entityData) {
@@ -160,7 +160,7 @@ func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Exec(world *W
 	}
 }
 func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) Exec(world *World) {
-	q.results.Clear()
+	q.ClearResults()
 
 	for entityId, entityData := range world.entities {
 		if q.options.isFilteredOut(entityData) {
@@ -250,6 +250,32 @@ func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Result() *Que
 }
 func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) Result() *Query4Result[ComponentA, ComponentB, ComponentC, ComponentD] {
 	return &q.results
+}
+
+func (q *Query1[ComponentA, QueryOptions]) ClearResults() {
+	q.results.Clear()
+}
+func (q *Query2[ComponentA, ComponentB, QueryOptions]) ClearResults() {
+	q.results.Clear()
+}
+func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) ClearResults() {
+	q.results.Clear()
+}
+func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) ClearResults() {
+	q.results.Clear()
+}
+
+func (q *Query1[ComponentA, QueryOptions]) IsLazy() bool {
+	return q.options.isLazy
+}
+func (q *Query2[ComponentA, ComponentB, QueryOptions]) IsLazy() bool {
+	return q.options.isLazy
+}
+func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) IsLazy() bool {
+	return q.options.isLazy
+}
+func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) IsLazy() bool {
+	return q.options.isLazy
 }
 
 // getQueryComponent returns a pointer to T if the component is found on the entity.

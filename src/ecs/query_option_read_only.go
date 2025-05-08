@@ -76,17 +76,17 @@ func (o ReadOnly4[A, B, C, D]) getReadonlyComponentTypes() (readOnlyComponentTyp
 }
 
 func (readOnly AllReadOnly) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, AllReadOnly]]()
+	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, AllReadOnly, NotLazy]]()
 }
 func (readOnly ReadOnly1[A]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly1[A]]]()
+	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly1[A], NotLazy]]()
 }
 func (readOnly ReadOnly2[A, B]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly2[A, B]]]()
+	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly2[A, B], NotLazy]]()
 }
 func (readOnly ReadOnly3[A, B, C]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly3[A, B, C]]]()
+	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly3[A, B, C], NotLazy]]()
 }
 func (readOnly ReadOnly4[A, B, C, D]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly4[A, B, C, D]]]()
+	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly4[A, B, C, D], NotLazy]]()
 }
