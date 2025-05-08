@@ -24,7 +24,10 @@ type velocity struct {
 }
 
 func main() {
-	e := engine.Default()
+	e, err := engine.Default()
+	if err != nil {
+		panic(err)
+	}
 
 	e.App(engine.AppIDCore).
 		AddSystem(schedule.Startup, spawn).

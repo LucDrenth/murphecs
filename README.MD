@@ -35,7 +35,7 @@ type Velocity struct {
 }
 
 func main() {
-	world := ecs.NewWorld()
+	world := ecs.DefaultWorld()
 	fmt.Printf("Hello %T! \n", world)
 
 	for range 3 {

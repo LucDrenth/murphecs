@@ -36,11 +36,15 @@ func Spawn(world *World, components ...IComponent) (EntityId, error) {
 
 	for _, component := range components {
 		componentType := toComponentType(component)
-		componentRegistry := world.getComponentRegistry(componentType)
+		componentRegistry, err := world.getComponentRegistry(componentType)
+		if err != nil {
+			returnedErr = fmt.Errorf("failed to get component registry: %w", err)
+			continue
+		}
 
 		componentIndex, err := componentRegistry.insert(component)
 		if err != nil {
-			returnedErr = err
+			returnedErr = fmt.Errorf("failed to insert component in to component registry: %w", err)
 			continue
 		}
 

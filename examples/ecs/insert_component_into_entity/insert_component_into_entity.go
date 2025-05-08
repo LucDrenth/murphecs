@@ -19,7 +19,7 @@ type Friendly struct {
 }
 
 func main() {
-	world := ecs.NewWorld()
+	world := ecs.DefaultWorld()
 
 	entity, _ := ecs.Spawn(&world, &NPC{name: "Murphy"})
 

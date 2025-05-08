@@ -14,7 +14,10 @@ type counter struct {
 }
 
 func main() {
-	e := engine.Default()
+	e, err := engine.Default()
+	if err != nil {
+		panic(err)
+	}
 
 	// We add the counter resource to the app.
 	// We have to pass it as a reference, or it will result in an error.

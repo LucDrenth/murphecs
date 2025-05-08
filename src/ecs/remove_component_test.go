@@ -12,7 +12,7 @@ func TestRemove(t *testing.T) {
 
 	t.Run("return an error if the entity does not exist", func(t *testing.T) {
 		assert := assert.New(t)
-		world := NewWorld()
+		world := DefaultWorld()
 
 		err := Remove[componentB](&world, nonExistingEntity)
 		assert.ErrorIs(err, ErrEntityNotFound)
@@ -21,7 +21,7 @@ func TestRemove(t *testing.T) {
 	t.Run("return an error if the entity does not contain the component", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := NewWorld()
+		world := DefaultWorld()
 		entity, err := Spawn(&world, &componentA{})
 		assert.NoError(err)
 
@@ -32,7 +32,7 @@ func TestRemove(t *testing.T) {
 	t.Run("successfully removes a component", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := NewWorld()
+		world := DefaultWorld()
 		entity, err := Spawn(&world, &componentA{}, &componentB{})
 		assert.NoError(err)
 
@@ -56,7 +56,7 @@ func TestRemove(t *testing.T) {
 	t.Run("successfully removes a component, no matter which one", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := NewWorld()
+		world := DefaultWorld()
 		entity, err := Spawn(&world, &componentA{}, &componentB{})
 		assert.NoError(err)
 
@@ -85,7 +85,7 @@ func TestRemove2(t *testing.T) {
 
 	t.Run("return an error if the entity does not exist", func(t *testing.T) {
 		assert := assert.New(t)
-		world := NewWorld()
+		world := DefaultWorld()
 
 		err := Remove2[componentA, componentB](&world, nonExistingEntity)
 		assert.ErrorIs(err, ErrEntityNotFound)
@@ -93,7 +93,7 @@ func TestRemove2(t *testing.T) {
 
 	t.Run("returns an error if any of the components is not present in the entity, but still removes the other one", func(t *testing.T) {
 		assert := assert.New(t)
-		world := NewWorld()
+		world := DefaultWorld()
 
 		entity, err := Spawn(&world, &componentA{}, &componentB{})
 		assert.NoError(err)
@@ -134,7 +134,7 @@ func TestRemove2(t *testing.T) {
 
 	t.Run("successfully removes the right components, no matter the order of the given components", func(t *testing.T) {
 		assert := assert.New(t)
-		world := NewWorld()
+		world := DefaultWorld()
 
 		entity, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{})
 		assert.NoError(err)
@@ -212,7 +212,7 @@ func TestRemove3(t *testing.T) {
 
 	t.Run("return an error if the entity does not exist", func(t *testing.T) {
 		assert := assert.New(t)
-		world := NewWorld()
+		world := DefaultWorld()
 
 		err := Remove3[componentA, componentB, componentC](&world, nonExistingEntity)
 		assert.ErrorIs(err, ErrEntityNotFound)
@@ -220,7 +220,7 @@ func TestRemove3(t *testing.T) {
 
 	t.Run("successfully removes the right components", func(t *testing.T) {
 		assert := assert.New(t)
-		world := NewWorld()
+		world := DefaultWorld()
 
 		entity, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{}, &componentD{})
 		assert.NoError(err)
@@ -246,7 +246,7 @@ func TestRemove4(t *testing.T) {
 
 	t.Run("return an error if the entity does not exist", func(t *testing.T) {
 		assert := assert.New(t)
-		world := NewWorld()
+		world := DefaultWorld()
 
 		err := Remove4[componentA, componentB, componentC, componentD](&world, nonExistingEntity)
 		assert.ErrorIs(err, ErrEntityNotFound)
@@ -254,7 +254,7 @@ func TestRemove4(t *testing.T) {
 
 	t.Run("successfully removes the right components", func(t *testing.T) {
 		assert := assert.New(t)
-		world := NewWorld()
+		world := DefaultWorld()
 
 		entity, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{}, &componentD{}, &componentE{})
 		assert.NoError(err)

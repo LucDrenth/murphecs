@@ -28,7 +28,17 @@ type BasicSubApp struct {
 	debugType string
 }
 
-func NewBasicSubApp(logger log.Logger) BasicSubApp {
+func NewBasicSubApp(logger log.Logger, worldConfigs ecs.WorldConfigs) (BasicSubApp, error) {
+	if logger == nil {
+		noOpLogger := log.NoOp()
+		logger = &noOpLogger
+	}
+
+	world, err := ecs.NewWorld(worldConfigs)
+	if err != nil {
+		return BasicSubApp{}, fmt.Errorf("failed to create world: %w", err)
+	}
+
 	resourceStorage := newResourceStorage()
 
 	// The following resources are reserved by this app. Even if a user would add them, it
@@ -39,7 +49,7 @@ func NewBasicSubApp(logger log.Logger) BasicSubApp {
 	registerBlacklistedResourceType(reflect.TypeOf(logger), &resourceStorage)
 
 	return BasicSubApp{
-		world: ecs.NewWorld(),
+		world: world,
 		schedules: map[ScheduleType]*Scheduler{
 			ScheduleTypeStartup:   utils.PointerTo(NewScheduler()),
 			ScheduleTypeRepeating: utils.PointerTo(NewScheduler()),
@@ -49,7 +59,7 @@ func NewBasicSubApp(logger log.Logger) BasicSubApp {
 		features:  map[reflect.Type]IFeature{},
 		logger:    logger,
 		debugType: "App",
-	}
+	}, nil
 }
 
 func (app *BasicSubApp) AddSystem(schedule Schedule, system System) SubApp {

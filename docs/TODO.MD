@@ -8,7 +8,6 @@
 - [feature] Relationships (like parent/child)
 - [feature] Events
 - [feature] Observers
-- [feature] World configs (logger, default componentEntry size)
 - [feature] Add Query5..Query16 and Optional5..Optional16
 - [quality-of-life] Function to check if a specific entity has components. This is already possible by using Get1..Get8 and checking if the error is ErrComponentNotFound, but its not very user-friendly.
 - [quality-of-life] Add Query0 to only get entities. This is already possible be specifying some random component and marking it as optional, but this is not very user-friendly an not as performant as it could be. 

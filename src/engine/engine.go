@@ -37,16 +37,24 @@ func Empty() Engine {
 	}
 }
 
-func Default() Engine {
+func Default() (Engine, error) {
 	logger := log.Console()
-	coreApp := core.New(&logger)
-	renderApp := renderer.New(&logger)
+
+	coreApp, err := core.New(&logger)
+	if err != nil {
+		return Engine{}, fmt.Errorf("failed to create core app: %w", err)
+	}
+
+	renderApp, err := renderer.New(&logger)
+	if err != nil {
+		return Engine{}, fmt.Errorf("failed to create renderer app: %w", err)
+	}
 
 	engine := Empty()
 	engine.SetLogger(&logger)
 	engine.AddSubApp(&coreApp, AppIDCore)
 	engine.AddSubApp(&renderApp, AppIDRenderer)
-	return engine
+	return engine, nil
 }
 
 func (e *Engine) AddSubApp(app app.SubApp, id app.ID) {
@@ -58,8 +66,12 @@ func (e *Engine) AddSubApp(app app.SubApp, id app.ID) {
 	e.apps[id] = app
 }
 
+// SetLogger either sets a new logger. Uses log.NoOp when logger is nil to prevent crashes.
 func (e *Engine) SetLogger(logger log.Logger) {
-	if logger != nil {
+	if logger == nil {
+		noOpLogger := log.NoOp()
+		e.logger = &noOpLogger
+	} else {
 		e.logger = logger
 	}
 }

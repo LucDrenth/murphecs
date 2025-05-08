@@ -1,26 +1,39 @@
 package ecs
 
 import (
-	"github.com/lucdrenth/murph_engine/src/log"
+	"errors"
 )
 
 // World contains all of the entities and their components.
 type World struct {
-	entityIdCounter uint
-	entities        map[EntityId]*EntityData
-	components      map[ComponentType]*componentRegistry
-	logger          log.Logger
+	entityIdCounter          uint
+	entities                 map[EntityId]*EntityData
+	components               map[ComponentType]*componentRegistry
+	initialComponentCapacity initialComponentCapacityStrategy
+}
+
+// DefaultWorld returns a default world.
+func DefaultWorld() World {
+	world, err := NewWorld(DefaultWorldConfigs())
+	if err != nil {
+		// default configs should not result in an error
+		panic(err)
+	}
+
+	return world
 }
 
 // NewWorld returns a world that can contain entities and components.
-func NewWorld() World {
-	logger := log.Console()
+func NewWorld(configs WorldConfigs) (World, error) {
+	if configs.ComponentCapacityStrategy == nil {
+		return World{}, errors.New("component capacity strategy can not be nil")
+	}
 
 	return World{
-		entities:   map[EntityId]*EntityData{},
-		components: map[ComponentType]*componentRegistry{},
-		logger:     &logger,
-	}
+		entities:                 map[EntityId]*EntityData{},
+		components:               map[ComponentType]*componentRegistry{},
+		initialComponentCapacity: configs.ComponentCapacityStrategy,
+	}, nil
 }
 
 func (world *World) CountEntities() int {
@@ -45,13 +58,21 @@ func (world *World) createEntity() EntityId {
 }
 
 // getComponentRegistry creates a new component registry if it doesn't exist yet.
-func (world *World) getComponentRegistry(componentType ComponentType) *componentRegistry {
+func (world *World) getComponentRegistry(componentType ComponentType) (*componentRegistry, error) {
 	componentRegistry, ok := world.components[componentType]
 	if !ok {
-		newComponentRegistry := createComponentRegistry(1024, componentType)
+		newComponentRegistry, err := createComponentRegistry(
+			world.initialComponentCapacity.GetDefaultComponentCapacity(componentType),
+			componentType,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
 		world.components[componentType] = &newComponentRegistry
-		return &newComponentRegistry
+		return &newComponentRegistry, nil
 	}
 
-	return componentRegistry
+	return componentRegistry, nil
 }

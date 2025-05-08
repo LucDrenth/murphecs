@@ -39,7 +39,7 @@ func TestInsert(t *testing.T) {
 	t.Run("no error when passing an empty list of components", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := NewWorld()
+		world := DefaultWorld()
 		entity, err := Spawn(&world)
 		assert.NoError(err)
 
@@ -49,7 +49,7 @@ func TestInsert(t *testing.T) {
 
 	t.Run("returns an error if the entity is not found", func(t *testing.T) {
 		assert := assert.New(t)
-		world := NewWorld()
+		world := DefaultWorld()
 
 		err := Insert(&world, nonExistingEntity)
 		assert.ErrorIs(err, ErrEntityNotFound)
@@ -58,7 +58,7 @@ func TestInsert(t *testing.T) {
 	t.Run("returns an error if any of the components are already present", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := NewWorld()
+		world := DefaultWorld()
 		entity, err := Spawn(&world, &componentA{}, &componentB{})
 		assert.NoError(err)
 
@@ -90,7 +90,7 @@ func TestInsert(t *testing.T) {
 	t.Run("if any component is already present, still inserts the other components that are not present", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := NewWorld()
+		world := DefaultWorld()
 		entity, err := Spawn(&world, &componentB{})
 		assert.NoError(err)
 
@@ -103,7 +103,7 @@ func TestInsert(t *testing.T) {
 	t.Run("if any component is not passed by reference, still inserts the other components that are passed by reference", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := NewWorld()
+		world := DefaultWorld()
 		entity, err := Spawn(&world, &componentA{})
 		assert.NoError(err)
 
@@ -116,7 +116,7 @@ func TestInsert(t *testing.T) {
 	t.Run("correctly inserts the components, and only to the given entity", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := NewWorld()
+		world := DefaultWorld()
 		entityA, err := Spawn(&world)
 		assert.NoError(err)
 		entityB, err := Spawn(&world, &componentB{})
@@ -138,7 +138,7 @@ func TestInsert(t *testing.T) {
 	t.Run("correctly inserts component and their required components", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := NewWorld()
+		world := DefaultWorld()
 		entity, err := Spawn(&world, &testInsertComponentA{})
 		assert.NoError(err)
 
@@ -151,7 +151,7 @@ func TestInsert(t *testing.T) {
 	t.Run("returns an error if any of the required components is not passed by reference, while still inserting the correctly passed required components", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := NewWorld()
+		world := DefaultWorld()
 		entity, err := Spawn(&world)
 		assert.NoError(err)
 

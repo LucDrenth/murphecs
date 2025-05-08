@@ -2,6 +2,7 @@ package renderer
 
 import (
 	"github.com/lucdrenth/murph_engine/src/app"
+	"github.com/lucdrenth/murph_engine/src/ecs"
 	"github.com/lucdrenth/murph_engine/src/engine/features"
 	"github.com/lucdrenth/murph_engine/src/engine/schedule"
 	"github.com/lucdrenth/murph_engine/src/log"
@@ -11,8 +12,12 @@ type RendererApp struct {
 	app.BasicSubApp
 }
 
-func New(logger log.Logger) RendererApp {
-	rendererApp := app.NewBasicSubApp(logger)
+func New(logger log.Logger) (RendererApp, error) {
+	rendererApp, err := app.NewBasicSubApp(logger, ecs.DefaultWorldConfigs())
+	if err != nil {
+		return RendererApp{}, err
+	}
+
 	rendererApp.SetDebugType("Renderer")
 
 	rendererApp.AddSchedule(schedule.Startup, app.ScheduleTypeStartup)
@@ -29,5 +34,5 @@ func New(logger log.Logger) RendererApp {
 
 	return RendererApp{
 		BasicSubApp: rendererApp,
-	}
+	}, nil
 }

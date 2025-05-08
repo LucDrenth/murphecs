@@ -18,7 +18,7 @@ type Dialog struct {
 }
 
 func main() {
-	world := ecs.NewWorld()
+	world := ecs.DefaultWorld()
 	ecs.Spawn(&world, &NPC{name: "Murphy"}, &Friendly{}, &Dialog{text: "hi my name is Murphy"})
 	ecs.Spawn(&world, &NPC{name: "Yuki"}, &Dialog{text: "my name is Yuki"})
 	ecs.Spawn(&world, &NPC{name: "Fiona"}, &Friendly{}, &Dialog{text: "hi my name is Fiona"})

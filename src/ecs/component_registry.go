@@ -8,7 +8,7 @@ import (
 	"github.com/lucdrenth/murph_engine/src/utils"
 )
 
-// componentRegistry stores components of 1 specific type.
+// componentRegistry stores instances one type of component
 type componentRegistry struct {
 	pointerToStart unsafe.Pointer // points to the start of data
 	data           reflect.Value  // buffer for storing components
@@ -19,7 +19,11 @@ type componentRegistry struct {
 }
 
 // createComponentRegistry creates a new instance of createComponentRegistry that can hold [capacity] components of type [componentType].
-func createComponentRegistry(capacity uint, componentType reflect.Type) componentRegistry {
+func createComponentRegistry(capacity uint, componentType reflect.Type) (componentRegistry, error) {
+	if capacity == 0 {
+		return componentRegistry{}, fmt.Errorf("%w: capacity may not be 0", ErrInvalidComponentStorageCapacity)
+	}
+
 	data := reflect.New(reflect.ArrayOf(int(capacity), componentType)).Elem()
 
 	return componentRegistry{
@@ -29,7 +33,7 @@ func createComponentRegistry(capacity uint, componentType reflect.Type) componen
 		componentType:  componentType,
 		nextItemIndex:  0,
 		capacity:       capacity,
-	}
+	}, nil
 }
 
 // increaseCapacity creates a new component buffer with more capacity

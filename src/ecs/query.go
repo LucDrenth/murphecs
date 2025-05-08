@@ -8,7 +8,7 @@ import (
 )
 
 type Query interface {
-	Exec(world *World)
+	Exec(world *World) error
 
 	// Prepare extracts the query options and puts it in CombinedQueryOptions. This should be called
 	// once, after which the query is ready to be used (e.g. Exec can be called).
@@ -126,7 +126,7 @@ type Query4[ComponentA, ComponentB, ComponentC, ComponentD IComponent, _ QueryOp
 	results Query4Result[ComponentA, ComponentB, ComponentC, ComponentD]
 }
 
-func (q *Query1[ComponentA, QueryOptions]) Exec(world *World) {
+func (q *Query1[ComponentA, QueryOptions]) Exec(world *World) error {
 	q.ClearResults()
 
 	for entityId, entityData := range world.entities {
@@ -134,7 +134,10 @@ func (q *Query1[ComponentA, QueryOptions]) Exec(world *World) {
 			continue
 		}
 
-		a, match := getQueryComponent[ComponentA](world, entityData, &q.options)
+		a, match, err := getQueryComponent[ComponentA](world, entityData, &q.options)
+		if err != nil {
+			return err
+		}
 		if !match {
 			continue
 		}
@@ -142,8 +145,10 @@ func (q *Query1[ComponentA, QueryOptions]) Exec(world *World) {
 		q.results.componentsA = append(q.results.componentsA, a)
 		q.results.entityIds = append(q.results.entityIds, entityId)
 	}
+
+	return nil
 }
-func (q *Query2[ComponentA, ComponentB, QueryOptions]) Exec(world *World) {
+func (q *Query2[ComponentA, ComponentB, QueryOptions]) Exec(world *World) error {
 	q.ClearResults()
 
 	for entityId, entityData := range world.entities {
@@ -151,12 +156,18 @@ func (q *Query2[ComponentA, ComponentB, QueryOptions]) Exec(world *World) {
 			continue
 		}
 
-		a, match := getQueryComponent[ComponentA](world, entityData, &q.options)
+		a, match, err := getQueryComponent[ComponentA](world, entityData, &q.options)
+		if err != nil {
+			return err
+		}
 		if !match {
 			continue
 		}
 
-		b, match := getQueryComponent[ComponentB](world, entityData, &q.options)
+		b, match, err := getQueryComponent[ComponentB](world, entityData, &q.options)
+		if err != nil {
+			return err
+		}
 		if !match {
 			continue
 		}
@@ -165,8 +176,10 @@ func (q *Query2[ComponentA, ComponentB, QueryOptions]) Exec(world *World) {
 		q.results.componentsB = append(q.results.componentsB, b)
 		q.results.entityIds = append(q.results.entityIds, entityId)
 	}
+
+	return nil
 }
-func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Exec(world *World) {
+func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Exec(world *World) error {
 	q.ClearResults()
 
 	for entityId, entityData := range world.entities {
@@ -174,17 +187,26 @@ func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Exec(world *W
 			continue
 		}
 
-		a, match := getQueryComponent[ComponentA](world, entityData, &q.options)
+		a, match, err := getQueryComponent[ComponentA](world, entityData, &q.options)
+		if err != nil {
+			return err
+		}
 		if !match {
 			continue
 		}
 
-		b, match := getQueryComponent[ComponentB](world, entityData, &q.options)
+		b, match, err := getQueryComponent[ComponentB](world, entityData, &q.options)
+		if err != nil {
+			return err
+		}
 		if !match {
 			continue
 		}
 
-		c, match := getQueryComponent[ComponentC](world, entityData, &q.options)
+		c, match, err := getQueryComponent[ComponentC](world, entityData, &q.options)
+		if err != nil {
+			return err
+		}
 		if !match {
 			continue
 		}
@@ -194,8 +216,10 @@ func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Exec(world *W
 		q.results.componentsC = append(q.results.componentsC, c)
 		q.results.entityIds = append(q.results.entityIds, entityId)
 	}
+
+	return nil
 }
-func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) Exec(world *World) {
+func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) Exec(world *World) error {
 	q.ClearResults()
 
 	for entityId, entityData := range world.entities {
@@ -203,22 +227,34 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) E
 			continue
 		}
 
-		a, match := getQueryComponent[ComponentA](world, entityData, &q.options)
+		a, match, err := getQueryComponent[ComponentA](world, entityData, &q.options)
+		if err != nil {
+			return err
+		}
 		if !match {
 			continue
 		}
 
-		b, match := getQueryComponent[ComponentB](world, entityData, &q.options)
+		b, match, err := getQueryComponent[ComponentB](world, entityData, &q.options)
+		if err != nil {
+			return err
+		}
 		if !match {
 			continue
 		}
 
-		c, match := getQueryComponent[ComponentC](world, entityData, &q.options)
+		c, match, err := getQueryComponent[ComponentC](world, entityData, &q.options)
+		if err != nil {
+			return err
+		}
 		if !match {
 			continue
 		}
 
-		d, match := getQueryComponent[ComponentD](world, entityData, &q.options)
+		d, match, err := getQueryComponent[ComponentD](world, entityData, &q.options)
+		if err != nil {
+			return err
+		}
 		if !match {
 			continue
 		}
@@ -229,6 +265,8 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) E
 		q.results.componentsD = append(q.results.componentsD, d)
 		q.results.entityIds = append(q.results.entityIds, entityId)
 	}
+
+	return nil
 }
 
 func (q *Query1[A, QueryOptions]) Prepare() (err error) {
@@ -305,23 +343,22 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) C
 //
 // match is true when the entity has the component or if the component is marked marked as optional.
 // When match is true, the entity should be present in the query results.
-func getQueryComponent[T IComponent](world *World, entityData *EntityData, queryOptions *combinedQueryOptions) (result *T, match bool) {
+func getQueryComponent[T IComponent](world *World, entityData *EntityData, queryOptions *combinedQueryOptions) (result *T, match bool, err error) {
 	componentType := GetComponentType[T]()
 
 	componentRegistryIndex, entityHasComponent := entityData.components[componentType]
 	if !entityHasComponent {
-		return nil, slices.Contains(queryOptions.OptionalComponents, componentType)
+		return nil, slices.Contains(queryOptions.OptionalComponents, componentType), nil
 	}
 
-	result, err := getComponentFromComponentRegistry[T](world.components[componentType], componentRegistryIndex)
+	result, err = getComponentFromComponentRegistry[T](world.components[componentType], componentRegistryIndex)
 	if err != nil {
-		world.logger.Error(fmt.Sprintf("getQueryComponent encountered unexpected error: %v", err))
-		return nil, false
+		return nil, false, fmt.Errorf("getQueryComponent encountered unexpected error: %v", err)
 	}
 
 	if result != nil && (queryOptions.ReadOnlyComponents.IsAllReadOnly || slices.Contains(queryOptions.ReadOnlyComponents.ComponentTypes, componentType)) {
 		result = utils.ClonePointerValue(result)
 	}
 
-	return result, true
+	return result, true, nil
 }

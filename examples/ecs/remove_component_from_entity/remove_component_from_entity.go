@@ -17,7 +17,7 @@ type Dialog struct {
 }
 
 func main() {
-	world := ecs.NewWorld()
+	world := ecs.DefaultWorld()
 
 	// Spawn an entity with two components: NPC and Dialog
 	entity, _ := ecs.Spawn(&world, &NPC{name: "Murphy"}, &Dialog{text: "Hello!"})

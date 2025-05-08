@@ -23,7 +23,7 @@ type NPC struct {
 }
 
 func main() {
-	world := ecs.NewWorld()
+	world := ecs.DefaultWorld()
 
 	// You can spawn any amount of unique components!
 	entity, err := ecs.Spawn(&world,

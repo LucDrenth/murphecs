@@ -32,7 +32,7 @@ func (NPC) RequiredComponents() []ecs.IComponent {
 }
 
 func main() {
-	world := ecs.NewWorld()
+	world := ecs.DefaultWorld()
 
 	// because NPC requires Health and Dialog, they will also be added to the entity.
 	entity, _ := ecs.Spawn(&world, &NPC{})

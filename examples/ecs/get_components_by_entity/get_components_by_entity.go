@@ -22,7 +22,7 @@ type NPC struct {
 }
 
 func main() {
-	world := ecs.NewWorld()
+	world := ecs.DefaultWorld()
 
 	entity, _ := ecs.Spawn(&world, &Friendly{}, &Health{max: 100, current: 80}, &NPC{name: "Murphy"})
 

@@ -15,6 +15,8 @@ import (
 //     the components that are not yet present.
 //   - Returns an ErrComponentIsNotAPointer error if any of the given components, or their required components, are not
 //     passed as a reference (e.g. componentA{} instead of &componentA{})
+//   - Returns an ErrInvalidComponentStorageCapacity if the component storage capacity, that is decided through World
+//     configs, is not valid
 func Insert(world *World, entity EntityId, components ...IComponent) (resultErr error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
@@ -36,7 +38,11 @@ func Insert(world *World, entity EntityId, components ...IComponent) (resultErr 
 			continue
 		}
 
-		componentRegistry := world.getComponentRegistry(componentTypes[i])
+		componentRegistry, err := world.getComponentRegistry(componentTypes[i])
+		if err != nil {
+			resultErr = fmt.Errorf("failed to get component registry: %w", err)
+			continue
+		}
 
 		componentIndex, err := componentRegistry.insert(component)
 		if err != nil {
@@ -55,7 +61,11 @@ func Insert(world *World, entity EntityId, components ...IComponent) (resultErr 
 			continue
 		}
 
-		componentRegistry := world.getComponentRegistry(componentTypes[i])
+		componentRegistry, err := world.getComponentRegistry(componentTypes[i])
+		if err != nil {
+			resultErr = fmt.Errorf("failed to get component registry: %w", err)
+			continue
+		}
 
 		componentIndex, err := componentRegistry.insert(component)
 		if err != nil {

@@ -20,28 +20,28 @@ type componentWithValue struct {
 func BenchmarkSpawn(b *testing.B) {
 	b.Run("VariadicOneComponent", func(b *testing.B) {
 		for b.Loop() {
-			world := ecs.NewWorld()
+			world := ecs.DefaultWorld()
 			ecs.Spawn(&world, &emptyComponentA{})
 		}
 	})
 
 	b.Run("VariadicTwoComponents", func(b *testing.B) {
 		for b.Loop() {
-			world := ecs.NewWorld()
+			world := ecs.DefaultWorld()
 			ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{})
 		}
 	})
 
 	b.Run("VariadicThreeComponents", func(b *testing.B) {
 		for b.Loop() {
-			world := ecs.NewWorld()
+			world := ecs.DefaultWorld()
 			ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{})
 		}
 	})
 
 	b.Run("VariadicFourComponents", func(b *testing.B) {
 		for b.Loop() {
-			world := ecs.NewWorld()
+			world := ecs.DefaultWorld()
 			ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 		}
 	})
@@ -50,7 +50,7 @@ func BenchmarkSpawn(b *testing.B) {
 func BenchmarkInsert(b *testing.B) {
 	b.Run("VariadicOneComponent", func(b *testing.B) {
 		for b.Loop() {
-			world := ecs.NewWorld()
+			world := ecs.DefaultWorld()
 			entity, _ := ecs.Spawn(&world)
 
 			ecs.Insert(&world, entity, &emptyComponentA{})
@@ -59,7 +59,7 @@ func BenchmarkInsert(b *testing.B) {
 
 	b.Run("VariadicTwoComponents", func(b *testing.B) {
 		for b.Loop() {
-			world := ecs.NewWorld()
+			world := ecs.DefaultWorld()
 			entity, _ := ecs.Spawn(&world)
 
 			ecs.Insert(&world, entity, &emptyComponentA{}, &emptyComponentB{})
@@ -68,7 +68,7 @@ func BenchmarkInsert(b *testing.B) {
 
 	b.Run("VariadicThreeComponents", func(b *testing.B) {
 		for b.Loop() {
-			world := ecs.NewWorld()
+			world := ecs.DefaultWorld()
 			entity, _ := ecs.Spawn(&world)
 
 			ecs.Insert(&world, entity, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{})
@@ -77,7 +77,7 @@ func BenchmarkInsert(b *testing.B) {
 
 	b.Run("VariadicFourComponents", func(b *testing.B) {
 		for b.Loop() {
-			world := ecs.NewWorld()
+			world := ecs.DefaultWorld()
 			entity, _ := ecs.Spawn(&world)
 
 			ecs.Insert(&world, entity, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
@@ -88,7 +88,7 @@ func BenchmarkInsert(b *testing.B) {
 func BenchmarkRemove(b *testing.B) {
 	b.Run("OneComponent", func(b *testing.B) {
 		for b.Loop() {
-			world := ecs.NewWorld()
+			world := ecs.DefaultWorld()
 			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 
 			ecs.Remove[emptyComponentA](&world, entity)
@@ -97,7 +97,7 @@ func BenchmarkRemove(b *testing.B) {
 
 	b.Run("TwoComponents", func(b *testing.B) {
 		for b.Loop() {
-			world := ecs.NewWorld()
+			world := ecs.DefaultWorld()
 			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 
 			ecs.Remove2[emptyComponentA, emptyComponentB](&world, entity)
@@ -106,7 +106,7 @@ func BenchmarkRemove(b *testing.B) {
 
 	b.Run("ThreeComponents", func(b *testing.B) {
 		for b.Loop() {
-			world := ecs.NewWorld()
+			world := ecs.DefaultWorld()
 			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 
 			ecs.Remove3[emptyComponentA, emptyComponentB, emptyComponentC](&world, entity)
@@ -115,7 +115,7 @@ func BenchmarkRemove(b *testing.B) {
 
 	b.Run("FourComponents", func(b *testing.B) {
 		for b.Loop() {
-			world := ecs.NewWorld()
+			world := ecs.DefaultWorld()
 			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 
 			ecs.Remove4[emptyComponentA, emptyComponentB, emptyComponentC, emptyComponentD](&world, entity)
@@ -124,7 +124,7 @@ func BenchmarkRemove(b *testing.B) {
 }
 
 func BenchmarkDelete(b *testing.B) {
-	world := ecs.NewWorld()
+	world := ecs.DefaultWorld()
 
 	for b.Loop() {
 		entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
@@ -133,7 +133,7 @@ func BenchmarkDelete(b *testing.B) {
 }
 
 func BenchmarkGet(b *testing.B) {
-	world := ecs.NewWorld()
+	world := ecs.DefaultWorld()
 	ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 	target, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 	ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
@@ -165,7 +165,7 @@ func BenchmarkGet(b *testing.B) {
 
 func BenchmarkQuery(b *testing.B) {
 	for _, size := range []int{10, 100, 1_000, 10_000, 100_000} {
-		world := ecs.NewWorld()
+		world := ecs.DefaultWorld()
 
 		for range size {
 			if _, err := ecs.Spawn(&world, &emptyComponentA{}); err != nil {
