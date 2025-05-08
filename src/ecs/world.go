@@ -12,11 +12,13 @@ type World struct {
 	initialComponentCapacity initialComponentCapacityStrategy
 }
 
-// DefaultWorld returns a default world.
+// DefaultWorld returns a World with default configs.
 func DefaultWorld() World {
 	world, err := NewWorld(DefaultWorldConfigs())
 	if err != nil {
-		// default configs should not result in an error
+		// Creating a world with default configs should never result in an error.
+		// This is confirmed by a unit test, so we can 'safely' panic just in case
+		// it happens.
 		panic(err)
 	}
 
