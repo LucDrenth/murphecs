@@ -89,19 +89,9 @@ func (s *SystemSet) add(sys System, world *ecs.World, logger log.Logger, resourc
 		parameterType := systemValue.Type().In(i)
 
 		if parameterType.Implements(queryType) {
-			query, ok := reflect.New(parameterType.Elem()).Interface().(ecs.Query)
-			if !ok {
-				return fmt.Errorf("failed to cast param to query")
-			}
-
-			err := query.Prepare()
+			query, err := parseQueryParam(parameterType, logger)
 			if err != nil {
-				return fmt.Errorf("failed to prepare query param: %w", err)
-			}
-
-			warning := query.Validate()
-			if warning != nil {
-				logger.Warn(fmt.Sprintf("query %s is not optimized: %v", parameterType.String(), warning))
+				return fmt.Errorf("%w: %w", ErrSystemParamQueryNotValid, err)
 			}
 
 			s.systemParamQueries = append(s.systemParamQueries, query)
@@ -130,6 +120,29 @@ func (s *SystemSet) add(sys System, world *ecs.World, logger log.Logger, resourc
 	}
 	s.systems = append(s.systems, entry)
 	return nil
+}
+
+func parseQueryParam(parameterType reflect.Type, logger log.Logger) (ecs.Query, error) {
+	if parameterType.Kind() == reflect.Interface {
+		return nil, fmt.Errorf("can not be an interface")
+	}
+
+	query, ok := reflect.New(parameterType.Elem()).Interface().(ecs.Query)
+	if !ok {
+		return nil, fmt.Errorf("failed to cast param to query")
+	}
+
+	err := query.Prepare()
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare query param: %w", err)
+	}
+
+	warning := query.Validate()
+	if warning != nil {
+		logger.Warn(fmt.Sprintf("query %s is not optimized: %v", parameterType.String(), warning))
+	}
+
+	return query, nil
 }
 
 func validateSystem(sys reflect.Value, queryType reflect.Type, resources *resourceStorage) error {

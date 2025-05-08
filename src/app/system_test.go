@@ -80,6 +80,18 @@ func TestAddSystem(t *testing.T) {
 		assert.ErrorIs(err, ErrSystemParamQueryNotAPointer)
 	})
 
+	t.Run("returns an error when using Query interface as system parameter", func(t *testing.T) {
+		assert := assert.New(t)
+
+		systemSet := SystemSet{}
+		world := ecs.DefaultWorld()
+		logger := log.NoOp()
+		resourceStorage := newResourceStorage()
+
+		err := systemSet.add(func(_ ecs.Query) {}, &world, &logger, &resourceStorage)
+		assert.ErrorIs(err, ErrSystemParamQueryNotValid)
+	})
+
 	t.Run("can use an ecs query as system param", func(t *testing.T) {
 		type componentA struct{ ecs.Component }
 
