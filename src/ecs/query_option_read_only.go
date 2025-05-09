@@ -1,7 +1,7 @@
 package ecs
 
 type ReadOnlyComponents interface {
-	getReadonlyComponentTypes() (readOnlyComponentTypes []ComponentType, isAllReadyOnly bool)
+	getReadonlyComponentIds() (readOnlyComponentIds []ComponentId, isAllReadyOnly bool)
 }
 
 // All components in the query results are mutable.
@@ -37,41 +37,41 @@ type ReadOnly3[A, B, C IComponent] struct{}
 // This allows parallelization of systems that use this query as a system parameter.
 type ReadOnly4[A, B, C, D IComponent] struct{}
 
-func (o NoReadOnly) getReadonlyComponentTypes() (readOnlyComponentTypes []ComponentType, isAllReadyOnly bool) {
-	return []ComponentType{}, false
+func (o NoReadOnly) getReadonlyComponentIds() (readOnlyComponentIds []ComponentId, isAllReadyOnly bool) {
+	return []ComponentId{}, false
 }
 
-func (o AllReadOnly) getReadonlyComponentTypes() (readOnlyComponentTypes []ComponentType, isAllReadyOnly bool) {
-	return []ComponentType{}, true
+func (o AllReadOnly) getReadonlyComponentIds() (readOnlyComponentIds []ComponentId, isAllReadyOnly bool) {
+	return []ComponentId{}, true
 }
 
-func (o ReadOnly1[A]) getReadonlyComponentTypes() (readOnlyComponentTypes []ComponentType, isAllReadyOnly bool) {
-	return []ComponentType{
-		GetComponentType[A](),
+func (o ReadOnly1[A]) getReadonlyComponentIds() (readOnlyComponentIds []ComponentId, isAllReadyOnly bool) {
+	return []ComponentId{
+		ComponentIdFor[A](),
 	}, false
 }
 
-func (o ReadOnly2[A, B]) getReadonlyComponentTypes() (readOnlyComponentTypes []ComponentType, isAllReadyOnly bool) {
-	return []ComponentType{
-		GetComponentType[A](),
-		GetComponentType[B](),
+func (o ReadOnly2[A, B]) getReadonlyComponentIds() (readOnlyComponentIds []ComponentId, isAllReadyOnly bool) {
+	return []ComponentId{
+		ComponentIdFor[A](),
+		ComponentIdFor[B](),
 	}, false
 }
 
-func (o ReadOnly3[A, B, C]) getReadonlyComponentTypes() (readOnlyComponentTypes []ComponentType, isAllReadyOnly bool) {
-	return []ComponentType{
-		GetComponentType[A](),
-		GetComponentType[B](),
-		GetComponentType[C](),
+func (o ReadOnly3[A, B, C]) getReadonlyComponentIds() (readOnlyComponentIds []ComponentId, isAllReadyOnly bool) {
+	return []ComponentId{
+		ComponentIdFor[A](),
+		ComponentIdFor[B](),
+		ComponentIdFor[C](),
 	}, false
 }
 
-func (o ReadOnly4[A, B, C, D]) getReadonlyComponentTypes() (readOnlyComponentTypes []ComponentType, isAllReadyOnly bool) {
-	return []ComponentType{
-		GetComponentType[A](),
-		GetComponentType[B](),
-		GetComponentType[C](),
-		GetComponentType[D](),
+func (o ReadOnly4[A, B, C, D]) getReadonlyComponentIds() (readOnlyComponentIds []ComponentId, isAllReadyOnly bool) {
+	return []ComponentId{
+		ComponentIdFor[A](),
+		ComponentIdFor[B](),
+		ComponentIdFor[C](),
+		ComponentIdFor[D](),
 	}, false
 }
 

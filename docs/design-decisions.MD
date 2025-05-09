@@ -30,8 +30,8 @@ ecs.Spawn3[Position, Velocity, Color](&world, Position{...}, Velocity{...}, Colo
 ```
 
 Comparing this to the variadic approach, the generic approach has a couple of major downsides:
-1. We have to pass both the component type (as generic) and the component itself. With the variadic approach, we only have to add the component.
-2. If we'd want to add another component (which is frequently needed during development), we'd have to update 3 things: the function name, the component types (as generics) and finally adding the actual component. With the variadic implementation, we can simply add the component.
+1. We have to pass both the component ID (as generic) and the component itself. With the variadic approach, we only have to add the component.
+2. If we'd want to add another component (which is frequently needed during development), we'd have to update 3 things: the function name, the component IDs (as generics) and finally adding the actual component. With the variadic implementation, we can simply add the component.
 3. We'd have to create a separate spawn function for each number of components we might possibly add. Go does not currently implement variadic generics.
 
 I have not looked in to the performance difference of these two approaches yet. But in my opinion, the much cleaner API makes up for any possible performance improvement that the generics approach might have.
@@ -72,4 +72,4 @@ Query2[
 - When looping over the query results, we can not directly use the component. Instead we'd have to use `componentA.Inner.value` and `componentA.Inner.Inner.value`. This (a) adds more boilerplate and (b) requires users to change the system body that uses this query when marking components as ReadOnly at a later stage in development (which is expected to be done for optimization purposes).
 
 **Blockers**
-- I encountered an issue that I couldn't get around: we can not directly use the underlying component type of the QueryComponent to cast query results to a component type, because the QueryComponent could be nested (direct component, ReadOnly with an inner component and such). I did not fully explore all solutions to this problem. Their might be a way around this by not having to use the component its generic type when casting raw component data to its component type.
+- I encountered an issue that I couldn't get around: we can not directly use the underlying component ID of the QueryComponent to cast query results to a component ID, because the QueryComponent could be nested (direct component, ReadOnly with an inner component and such). I did not fully explore all solutions to this problem. Their might be a way around this by not having to use the component its generic type when casting raw component data to its component ID.

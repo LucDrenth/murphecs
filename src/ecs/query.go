@@ -287,29 +287,29 @@ func (q *Query4[A, B, C, D, QueryOptions]) Prepare() (err error) {
 }
 
 func (q *Query1[ComponentA, _]) Validate() error {
-	return q.options.validateOptions([]ComponentType{
-		GetComponentType[ComponentA](),
+	return q.options.validateOptions([]ComponentId{
+		ComponentIdFor[ComponentA](),
 	})
 }
 func (q *Query2[ComponentA, ComponentB, _]) Validate() error {
-	return q.options.validateOptions([]ComponentType{
-		GetComponentType[ComponentA](),
-		GetComponentType[ComponentB](),
+	return q.options.validateOptions([]ComponentId{
+		ComponentIdFor[ComponentA](),
+		ComponentIdFor[ComponentB](),
 	})
 }
 func (q *Query3[ComponentA, ComponentB, ComponentC, _]) Validate() error {
-	return q.options.validateOptions([]ComponentType{
-		GetComponentType[ComponentA](),
-		GetComponentType[ComponentB](),
-		GetComponentType[ComponentC](),
+	return q.options.validateOptions([]ComponentId{
+		ComponentIdFor[ComponentA](),
+		ComponentIdFor[ComponentB](),
+		ComponentIdFor[ComponentC](),
 	})
 }
 func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, _]) Validate() error {
-	return q.options.validateOptions([]ComponentType{
-		GetComponentType[ComponentA](),
-		GetComponentType[ComponentB](),
-		GetComponentType[ComponentC](),
-		GetComponentType[ComponentD](),
+	return q.options.validateOptions([]ComponentId{
+		ComponentIdFor[ComponentA](),
+		ComponentIdFor[ComponentB](),
+		ComponentIdFor[ComponentC](),
+		ComponentIdFor[ComponentD](),
 	})
 }
 
@@ -344,19 +344,19 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) C
 // match is true when the entity has the component or if the component is marked marked as optional.
 // When match is true, the entity should be present in the query results.
 func getQueryComponent[T IComponent](world *World, entityData *EntityData, queryOptions *combinedQueryOptions) (result *T, match bool, err error) {
-	componentType := GetComponentType[T]()
+	componentId := ComponentIdFor[T]()
 
-	componentRegistryIndex, entityHasComponent := entityData.components[componentType]
+	componentRegistryIndex, entityHasComponent := entityData.components[componentId]
 	if !entityHasComponent {
-		return nil, slices.Contains(queryOptions.OptionalComponents, componentType), nil
+		return nil, slices.Contains(queryOptions.OptionalComponents, componentId), nil
 	}
 
-	result, err = getComponentFromComponentRegistry[T](world.components[componentType], componentRegistryIndex)
+	result, err = getComponentFromComponentRegistry[T](world.components[componentId], componentRegistryIndex)
 	if err != nil {
 		return nil, false, fmt.Errorf("getQueryComponent encountered unexpected error: %v", err)
 	}
 
-	if result != nil && (queryOptions.ReadOnlyComponents.IsAllReadOnly || slices.Contains(queryOptions.ReadOnlyComponents.ComponentTypes, componentType)) {
+	if result != nil && (queryOptions.ReadOnlyComponents.IsAllReadOnly || slices.Contains(queryOptions.ReadOnlyComponents.ComponentIds, componentId)) {
 		result = utils.ClonePointerValue(result)
 	}
 

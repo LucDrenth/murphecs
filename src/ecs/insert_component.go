@@ -23,22 +23,22 @@ func Insert(world *World, entity EntityId, components ...IComponent) (resultErr 
 		return ErrEntityNotFound
 	}
 
-	componentTypes := toComponentTypes(components)
+	componentIds := toComponentIds(components)
 
 	// check for duplicates
-	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(componentTypes)
+	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(componentIds)
 	if duplicate != nil {
-		debugType := toComponentDebugType(components[duplicateIndexA])
+		debugType := ComponentDebugStringOf(components[duplicateIndexA])
 		return fmt.Errorf("%w: %s at positions %d and %d", ErrDuplicateComponent, debugType, duplicateIndexA, duplicateIndexB)
 	}
 
 	for i, component := range components {
-		if _, componentExists := entityData.components[componentTypes[i]]; componentExists {
-			resultErr = fmt.Errorf("%w: %s", ErrComponentAlreadyPresent, toComponentDebugType(component))
+		if _, componentExists := entityData.components[componentIds[i]]; componentExists {
+			resultErr = fmt.Errorf("%w: %s", ErrComponentAlreadyPresent, ComponentDebugStringOf(component))
 			continue
 		}
 
-		componentRegistry, err := world.getComponentRegistry(componentTypes[i])
+		componentRegistry, err := world.getComponentRegistry(componentIds[i])
 		if err != nil {
 			resultErr = fmt.Errorf("failed to get component registry: %w", err)
 			continue
@@ -50,18 +50,18 @@ func Insert(world *World, entity EntityId, components ...IComponent) (resultErr 
 			continue
 		}
 
-		world.entities[entity].components[componentTypes[i]] = componentIndex
+		world.entities[entity].components[componentIds[i]] = componentIndex
 	}
 
-	requiredComponents := getAllRequiredComponents(&componentTypes, components)
-	componentTypes = toComponentTypes(requiredComponents)
+	requiredComponents := getAllRequiredComponents(&componentIds, components)
+	componentIds = toComponentIds(requiredComponents)
 
 	for i, component := range requiredComponents {
-		if _, componentExists := entityData.components[componentTypes[i]]; componentExists {
+		if _, componentExists := entityData.components[componentIds[i]]; componentExists {
 			continue
 		}
 
-		componentRegistry, err := world.getComponentRegistry(componentTypes[i])
+		componentRegistry, err := world.getComponentRegistry(componentIds[i])
 		if err != nil {
 			resultErr = fmt.Errorf("failed to get component registry: %w", err)
 			continue
@@ -73,7 +73,7 @@ func Insert(world *World, entity EntityId, components ...IComponent) (resultErr 
 			continue
 		}
 
-		world.entities[entity].components[componentTypes[i]] = componentIndex
+		world.entities[entity].components[componentIds[i]] = componentIndex
 	}
 
 	return resultErr

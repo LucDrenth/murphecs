@@ -16,17 +16,17 @@ import (
 //
 // Calling Spawn without any components to generate an entityId is allowed.
 func Spawn(world *World, components ...IComponent) (EntityId, error) {
-	componentTypes := toComponentTypes(components)
+	componentIds := toComponentIds(components)
 
 	// check for duplicates
-	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(componentTypes)
+	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(componentIds)
 	if duplicate != nil {
-		debugType := toComponentDebugType(components[duplicateIndexA])
+		debugType := ComponentDebugStringOf(components[duplicateIndexA])
 		return 0, fmt.Errorf("%w: %s at positions %d and %d", ErrDuplicateComponent, debugType, duplicateIndexA, duplicateIndexB)
 	}
 
 	// get required components
-	requiredComponents := getAllRequiredComponents(&componentTypes, components)
+	requiredComponents := getAllRequiredComponents(&componentIds, components)
 	components = append(components, requiredComponents...)
 
 	// spawn components
@@ -35,8 +35,8 @@ func Spawn(world *World, components ...IComponent) (EntityId, error) {
 	var returnedErr error = nil
 
 	for _, component := range components {
-		componentType := toComponentType(component)
-		componentRegistry, err := world.getComponentRegistry(componentType)
+		componentId := ComponentIdOf(component)
+		componentRegistry, err := world.getComponentRegistry(componentId)
 		if err != nil {
 			returnedErr = fmt.Errorf("failed to get component registry: %w", err)
 			continue
@@ -48,7 +48,7 @@ func Spawn(world *World, components ...IComponent) (EntityId, error) {
 			continue
 		}
 
-		world.entities[entity].components[componentType] = componentIndex
+		world.entities[entity].components[componentId] = componentIndex
 	}
 
 	return entity, returnedErr

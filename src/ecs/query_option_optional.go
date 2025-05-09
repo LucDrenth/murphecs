@@ -1,7 +1,7 @@
 package ecs
 
 type OptionalComponents interface {
-	getOptionalComponentTypes() []ComponentType
+	getOptionalComponentIds() []ComponentId
 }
 
 // Entities have to have all components in order to be in the query result
@@ -23,37 +23,37 @@ type Optional3[A, B, C IComponent] struct{}
 // not present will be nil in the query result.
 type Optional4[A, B, C, D IComponent] struct{}
 
-func (o NoOptional) getOptionalComponentTypes() []ComponentType {
-	return []ComponentType{}
+func (o NoOptional) getOptionalComponentIds() []ComponentId {
+	return []ComponentId{}
 }
 
-func (o Optional1[A]) getOptionalComponentTypes() []ComponentType {
-	return []ComponentType{
-		GetComponentType[A](),
+func (o Optional1[A]) getOptionalComponentIds() []ComponentId {
+	return []ComponentId{
+		ComponentIdFor[A](),
 	}
 }
 
-func (o Optional2[A, B]) getOptionalComponentTypes() []ComponentType {
-	return []ComponentType{
-		GetComponentType[A](),
-		GetComponentType[B](),
+func (o Optional2[A, B]) getOptionalComponentIds() []ComponentId {
+	return []ComponentId{
+		ComponentIdFor[A](),
+		ComponentIdFor[B](),
 	}
 }
 
-func (o Optional3[A, B, C]) getOptionalComponentTypes() []ComponentType {
-	return []ComponentType{
-		GetComponentType[A](),
-		GetComponentType[B](),
-		GetComponentType[C](),
+func (o Optional3[A, B, C]) getOptionalComponentIds() []ComponentId {
+	return []ComponentId{
+		ComponentIdFor[A](),
+		ComponentIdFor[B](),
+		ComponentIdFor[C](),
 	}
 }
 
-func (o Optional4[A, B, C, D]) getOptionalComponentTypes() []ComponentType {
-	return []ComponentType{
-		GetComponentType[A](),
-		GetComponentType[B](),
-		GetComponentType[C](),
-		GetComponentType[D](),
+func (o Optional4[A, B, C, D]) getOptionalComponentIds() []ComponentId {
+	return []ComponentId{
+		ComponentIdFor[A](),
+		ComponentIdFor[B](),
+		ComponentIdFor[C](),
+		ComponentIdFor[D](),
 	}
 }
 

@@ -197,7 +197,7 @@ func TestGetReflectResource(t *testing.T) {
 	})
 }
 
-func TestComponentType(t *testing.T) {
+func TestComponentId(t *testing.T) {
 	type resourceA struct{}
 	type resourceB struct{}
 

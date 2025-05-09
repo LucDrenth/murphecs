@@ -7,10 +7,10 @@ type EntityId = uint
 const nonExistingEntity = EntityId(0)
 
 type EntityData struct {
-	components map[ComponentType]uint // componentType --> componentRegistry index
+	components map[ComponentId]uint // ComponentId --> componentRegistry index
 }
 
-func (e *EntityData) hasComponent(c ComponentType) bool {
+func (e *EntityData) hasComponent(c ComponentId) bool {
 	_, ok := e.components[c]
 	return ok
 }

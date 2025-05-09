@@ -77,7 +77,7 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 		var queryOptions QueryOption = &Default{}
 		result, err := queryOptions.getCombinedQueryOptions()
 		assert.NoError(err)
-		assert.Equal(0, len(result.ReadOnlyComponents.ComponentTypes))
+		assert.Equal(0, len(result.ReadOnlyComponents.ComponentIds))
 		assert.False(result.ReadOnlyComponents.IsAllReadOnly)
 
 		queryOptions = &QueryOptions[NoFilter, NoOptional, AllReadOnly, NotLazy]{}
@@ -88,7 +88,7 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 		queryOptions = &QueryOptions[NoFilter, NoOptional, ReadOnly1[componentA], NotLazy]{}
 		result, err = queryOptions.getCombinedQueryOptions()
 		assert.NoError(err)
-		assert.Equal(1, len(result.ReadOnlyComponents.ComponentTypes))
+		assert.Equal(1, len(result.ReadOnlyComponents.ComponentIds))
 		assert.False(result.ReadOnlyComponents.IsAllReadOnly)
 	})
 
@@ -100,7 +100,7 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 		assert.NoError(err)
 		assert.Equal(1, len(result.Filters))
 		assert.Equal(1, len(result.OptionalComponents))
-		assert.Equal(1, len(result.ReadOnlyComponents.ComponentTypes))
+		assert.Equal(1, len(result.ReadOnlyComponents.ComponentIds))
 	})
 
 	t.Run("successfully creates the combined query options with an and filter", func(t *testing.T) {
@@ -111,7 +111,7 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 		assert.NoError(err)
 		assert.Equal(1, len(result.Filters))
 		assert.Equal(0, len(result.OptionalComponents))
-		assert.Equal(0, len(result.ReadOnlyComponents.ComponentTypes))
+		assert.Equal(0, len(result.ReadOnlyComponents.ComponentIds))
 	})
 
 	t.Run("successfully creates the combined query options with an or filter", func(t *testing.T) {
@@ -122,7 +122,7 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 		assert.NoError(err)
 		assert.Equal(1, len(result.Filters))
 		assert.Equal(0, len(result.OptionalComponents))
-		assert.Equal(0, len(result.ReadOnlyComponents.ComponentTypes))
+		assert.Equal(0, len(result.ReadOnlyComponents.ComponentIds))
 	})
 
 	t.Run("creates a lazy query", func(t *testing.T) {
@@ -144,10 +144,10 @@ func TestValidateCombinedQueryOptions(t *testing.T) {
 
 		options := combinedQueryOptions{
 			Filters:            []QueryFilter{},
-			OptionalComponents: []ComponentType{GetComponentType[componentA](), GetComponentType[componentA]()},
+			OptionalComponents: []ComponentId{ComponentIdFor[componentA](), ComponentIdFor[componentA]()},
 			ReadOnlyComponents: combinedReadOnlyComponent{},
 		}
-		assert.Error(options.validateOptions([]ComponentType{}))
+		assert.Error(options.validateOptions([]ComponentId{}))
 	})
 
 	t.Run("returns an error if the same component is given multiple times as read-only component", func(t *testing.T) {
@@ -155,12 +155,12 @@ func TestValidateCombinedQueryOptions(t *testing.T) {
 
 		options := combinedQueryOptions{
 			Filters:            []QueryFilter{},
-			OptionalComponents: []ComponentType{},
+			OptionalComponents: []ComponentId{},
 			ReadOnlyComponents: combinedReadOnlyComponent{
-				ComponentTypes: []ComponentType{GetComponentType[componentA](), GetComponentType[componentA]()},
+				ComponentIds: []ComponentId{ComponentIdFor[componentA](), ComponentIdFor[componentA]()},
 			},
 		}
-		assert.Error(options.validateOptions([]ComponentType{}))
+		assert.Error(options.validateOptions([]ComponentId{}))
 	})
 
 	t.Run("returns an error if there are read-only components while AllReadOnly is set to true", func(t *testing.T) {
@@ -168,13 +168,13 @@ func TestValidateCombinedQueryOptions(t *testing.T) {
 
 		options := combinedQueryOptions{
 			Filters:            []QueryFilter{},
-			OptionalComponents: []ComponentType{},
+			OptionalComponents: []ComponentId{},
 			ReadOnlyComponents: combinedReadOnlyComponent{
-				ComponentTypes: []ComponentType{GetComponentType[componentA]()},
-				IsAllReadOnly:  true,
+				ComponentIds:  []ComponentId{ComponentIdFor[componentA]()},
+				IsAllReadOnly: true,
 			},
 		}
-		assert.Error(options.validateOptions([]ComponentType{}))
+		assert.Error(options.validateOptions([]ComponentId{}))
 	})
 
 	t.Run("returns an error if any read-only component is not in the query components", func(t *testing.T) {
@@ -182,12 +182,12 @@ func TestValidateCombinedQueryOptions(t *testing.T) {
 
 		options := combinedQueryOptions{
 			Filters:            []QueryFilter{},
-			OptionalComponents: []ComponentType{},
+			OptionalComponents: []ComponentId{},
 			ReadOnlyComponents: combinedReadOnlyComponent{
-				ComponentTypes: []ComponentType{GetComponentType[componentA]()},
+				ComponentIds: []ComponentId{ComponentIdFor[componentA]()},
 			},
 		}
-		assert.Error(options.validateOptions([]ComponentType{}))
+		assert.Error(options.validateOptions([]ComponentId{}))
 	})
 
 	t.Run("returns an error if any optional component is not in the query components", func(t *testing.T) {
@@ -195,19 +195,19 @@ func TestValidateCombinedQueryOptions(t *testing.T) {
 
 		options := combinedQueryOptions{
 			Filters:            []QueryFilter{},
-			OptionalComponents: []ComponentType{GetComponentType[componentA]()},
+			OptionalComponents: []ComponentId{ComponentIdFor[componentA]()},
 			ReadOnlyComponents: combinedReadOnlyComponent{
-				ComponentTypes: []ComponentType{},
+				ComponentIds: []ComponentId{},
 			},
 		}
-		assert.Error(options.validateOptions([]ComponentType{}))
+		assert.Error(options.validateOptions([]ComponentId{}))
 	})
 
 	t.Run("returns no error for default query options", func(t *testing.T) {
 		assert := assert.New(t)
 
 		options := combinedQueryOptions{}
-		assert.NoError(options.validateOptions([]ComponentType{GetComponentType[componentA](), GetComponentType[componentB]()}))
+		assert.NoError(options.validateOptions([]ComponentId{ComponentIdFor[componentA](), ComponentIdFor[componentB]()}))
 	})
 
 	t.Run("returns no error if there is nothing wrong", func(t *testing.T) {
@@ -215,12 +215,12 @@ func TestValidateCombinedQueryOptions(t *testing.T) {
 
 		options := combinedQueryOptions{
 			Filters:            []QueryFilter{},
-			OptionalComponents: []ComponentType{GetComponentType[componentB]()},
+			OptionalComponents: []ComponentId{ComponentIdFor[componentB]()},
 			ReadOnlyComponents: combinedReadOnlyComponent{
 				IsAllReadOnly: true,
 			},
 		}
-		assert.NoError(options.validateOptions([]ComponentType{GetComponentType[componentA](), GetComponentType[componentB]()}))
+		assert.NoError(options.validateOptions([]ComponentId{ComponentIdFor[componentA](), ComponentIdFor[componentB]()}))
 	})
 }
 

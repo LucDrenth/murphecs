@@ -12,14 +12,14 @@ func DefaultWorldConfigs() WorldConfigs {
 }
 
 type initialComponentCapacityStrategy interface {
-	GetDefaultComponentCapacity(ComponentType) uint
+	GetDefaultComponentCapacity(ComponentId) uint
 }
 
 type StaticDefaultComponentCapacity struct {
 	Capacity uint
 }
 
-func (s *StaticDefaultComponentCapacity) GetDefaultComponentCapacity(ComponentType) uint {
+func (s *StaticDefaultComponentCapacity) GetDefaultComponentCapacity(ComponentId) uint {
 	return s.Capacity
 }
 
@@ -29,11 +29,11 @@ func (s *StaticDefaultComponentCapacity) GetDefaultComponentCapacity(ComponentTy
 // It is useful to reduce memory usage for components that you do not expect to make a lot of.
 // It is also useful to prevent increasing capacity for component when you expect a lot of them to be made.
 type ComponentSpecificDefaultComponentCapacity struct {
-	ComponentCapacities map[ComponentType]uint
+	ComponentCapacities map[ComponentId]uint
 	Default             uint
 }
 
-func (s *ComponentSpecificDefaultComponentCapacity) GetDefaultComponentCapacity(component ComponentType) uint {
+func (s *ComponentSpecificDefaultComponentCapacity) GetDefaultComponentCapacity(component ComponentId) uint {
 	if capacity, ok := s.ComponentCapacities[component]; ok {
 		return capacity
 	}

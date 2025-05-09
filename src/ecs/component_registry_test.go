@@ -12,16 +12,16 @@ func TestNewComponentRegistry(t *testing.T) {
 	t.Run("returns an error when using capacity of 0", func(t *testing.T) {
 		assert := assert.New(t)
 
-		_, err := createComponentRegistry(0, GetComponentType[componentA]())
+		_, err := createComponentRegistry(0, ComponentIdFor[componentA]())
 		assert.ErrorIs(err, ErrInvalidComponentStorageCapacity)
 	})
 
 	t.Run("does not return an error", func(t *testing.T) {
 		assert := assert.New(t)
 
-		_, err := createComponentRegistry(1, GetComponentType[componentA]())
+		_, err := createComponentRegistry(1, ComponentIdFor[componentA]())
 		assert.NoError(err)
-		_, err = createComponentRegistry(1024, GetComponentType[componentA]())
+		_, err = createComponentRegistry(1024, ComponentIdFor[componentA]())
 		assert.NoError(err)
 	})
 }
@@ -32,7 +32,7 @@ func TestComponentRegistryInsert(t *testing.T) {
 	t.Run("fails when component is not a pointer", func(t *testing.T) {
 		assert := assert.New(t)
 
-		componentRegistry, err := createComponentRegistry(4, GetComponentType[componentA]())
+		componentRegistry, err := createComponentRegistry(4, ComponentIdFor[componentA]())
 		assert.NoError(err)
 		_, err = componentRegistry.insert(componentA{})
 		assert.ErrorIs(err, ErrComponentIsNotAPointer)
@@ -41,7 +41,7 @@ func TestComponentRegistryInsert(t *testing.T) {
 	t.Run("successfully inserts when there is enough capacity", func(t *testing.T) {
 		assert := assert.New(t)
 
-		componentRegistry, err := createComponentRegistry(4, GetComponentType[componentA]())
+		componentRegistry, err := createComponentRegistry(4, ComponentIdFor[componentA]())
 		assert.NoError(err)
 		_, err = componentRegistry.insert(&componentA{})
 		assert.NoError(err)
@@ -50,7 +50,7 @@ func TestComponentRegistryInsert(t *testing.T) {
 	t.Run("increases capacity and inserts the component when overstepping capacity", func(t *testing.T) {
 		assert := assert.New(t)
 
-		componentRegistry, err := createComponentRegistry(4, GetComponentType[componentA]())
+		componentRegistry, err := createComponentRegistry(4, ComponentIdFor[componentA]())
 		assert.NoError(err)
 
 		for range 10 {
@@ -69,7 +69,7 @@ func TestGetComponentFromComponentRegistry(t *testing.T) {
 	t.Run("returns an error if index out of bounds", func(t *testing.T) {
 		assert := assert.New(t)
 
-		componentRegistry, err := createComponentRegistry(4, GetComponentType[componentA]())
+		componentRegistry, err := createComponentRegistry(4, ComponentIdFor[componentA]())
 		assert.NoError(err)
 		component, err := getComponentFromComponentRegistry[componentA](&componentRegistry, 5)
 		assert.Error(err)
@@ -81,7 +81,7 @@ func TestGetComponentFromComponentRegistry(t *testing.T) {
 
 		capacity := 4
 
-		componentRegistry, err := createComponentRegistry(uint(capacity), GetComponentType[componentA]())
+		componentRegistry, err := createComponentRegistry(uint(capacity), ComponentIdFor[componentA]())
 		assert.NoError(err)
 
 		for i := range capacity {
@@ -105,7 +105,7 @@ func TestGetComponentFromComponentRegistry(t *testing.T) {
 		capacity := 4
 		numberOfInserts := 15
 
-		componentRegistry, err := createComponentRegistry(uint(capacity), GetComponentType[componentA]())
+		componentRegistry, err := createComponentRegistry(uint(capacity), ComponentIdFor[componentA]())
 		assert.NoError(err)
 
 		for i := range numberOfInserts {

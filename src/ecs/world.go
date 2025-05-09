@@ -8,7 +8,7 @@ import (
 type World struct {
 	entityIdCounter          uint
 	entities                 map[EntityId]*EntityData
-	components               map[ComponentType]*componentRegistry
+	components               map[ComponentId]*componentRegistry
 	initialComponentCapacity initialComponentCapacityStrategy
 }
 
@@ -33,7 +33,7 @@ func NewWorld(configs WorldConfigs) (World, error) {
 
 	return World{
 		entities:                 map[EntityId]*EntityData{},
-		components:               map[ComponentType]*componentRegistry{},
+		components:               map[ComponentId]*componentRegistry{},
 		initialComponentCapacity: configs.ComponentCapacityStrategy,
 	}, nil
 }
@@ -55,24 +55,24 @@ func (world *World) CountComponents() int {
 func (world *World) createEntity() EntityId {
 	world.entityIdCounter++
 	entity := EntityId(world.entityIdCounter)
-	world.entities[entity] = &EntityData{components: map[ComponentType]uint{}}
+	world.entities[entity] = &EntityData{components: map[ComponentId]uint{}}
 	return entity
 }
 
 // getComponentRegistry creates a new component registry if it doesn't exist yet.
-func (world *World) getComponentRegistry(componentType ComponentType) (*componentRegistry, error) {
-	componentRegistry, ok := world.components[componentType]
+func (world *World) getComponentRegistry(ComponentId ComponentId) (*componentRegistry, error) {
+	componentRegistry, ok := world.components[ComponentId]
 	if !ok {
 		newComponentRegistry, err := createComponentRegistry(
-			world.initialComponentCapacity.GetDefaultComponentCapacity(componentType),
-			componentType,
+			world.initialComponentCapacity.GetDefaultComponentCapacity(ComponentId),
+			ComponentId,
 		)
 
 		if err != nil {
 			return nil, err
 		}
 
-		world.components[componentType] = &newComponentRegistry
+		world.components[ComponentId] = &newComponentRegistry
 		return &newComponentRegistry, nil
 	}
 

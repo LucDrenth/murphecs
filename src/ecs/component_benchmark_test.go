@@ -4,20 +4,20 @@ import (
 	"testing"
 )
 
-func BenchmarkToComponentType(b *testing.B) {
+func BenchmarkToComponentId(b *testing.B) {
 	type aComponent struct{ Component }
 	component := aComponent{}
 
 	for b.Loop() {
-		toComponentType(component)
+		ComponentIdOf(component)
 	}
 }
 
-func BenchmarkGetComponentType(b *testing.B) {
+func BenchmarkGetComponentId(b *testing.B) {
 	type aComponent struct{ Component }
 
 	for b.Loop() {
-		GetComponentType[aComponent]()
-		GetComponentType[*aComponent]()
+		ComponentIdFor[aComponent]()
+		ComponentIdFor[*aComponent]()
 	}
 }

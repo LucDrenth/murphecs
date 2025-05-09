@@ -13,24 +13,24 @@ type componentRegistry struct {
 	pointerToStart unsafe.Pointer // points to the start of data
 	data           reflect.Value  // buffer for storing components
 	componentSize  uintptr        // the amount of memory that each component takes up in data
-	componentType  reflect.Type
+	ComponentId    reflect.Type
 	nextItemIndex  uint // the next inserted component will be inserted at this index
 	capacity       uint // the number of components that can be stored with the current size of data
 }
 
-// createComponentRegistry creates a new instance of createComponentRegistry that can hold [capacity] components of type [componentType].
-func createComponentRegistry(capacity uint, componentType reflect.Type) (componentRegistry, error) {
+// createComponentRegistry creates a new instance of createComponentRegistry that can hold [capacity] components of type [ComponentId].
+func createComponentRegistry(capacity uint, ComponentId reflect.Type) (componentRegistry, error) {
 	if capacity == 0 {
 		return componentRegistry{}, fmt.Errorf("%w: capacity may not be 0", ErrInvalidComponentStorageCapacity)
 	}
 
-	data := reflect.New(reflect.ArrayOf(int(capacity), componentType)).Elem()
+	data := reflect.New(reflect.ArrayOf(int(capacity), ComponentId)).Elem()
 
 	return componentRegistry{
 		pointerToStart: data.Addr().UnsafePointer(),
 		data:           data,
-		componentSize:  utils.AlignedSize(componentType),
-		componentType:  componentType,
+		componentSize:  utils.AlignedSize(ComponentId),
+		ComponentId:    ComponentId,
 		nextItemIndex:  0,
 		capacity:       capacity,
 	}, nil
@@ -39,7 +39,7 @@ func createComponentRegistry(capacity uint, componentType reflect.Type) (compone
 // increaseCapacity creates a new component buffer with more capacity
 func (c *componentRegistry) increaseCapacity(extraCapacity uint) {
 	newCapacity := c.capacity + extraCapacity
-	newData := reflect.New(reflect.ArrayOf(int(newCapacity), c.componentType)).Elem()
+	newData := reflect.New(reflect.ArrayOf(int(newCapacity), c.ComponentId)).Elem()
 	reflect.Copy(newData, c.data)
 
 	c.data = newData
@@ -54,7 +54,7 @@ func (c *componentRegistry) insert(component IComponent) (uint, error) {
 	componentValue := reflect.ValueOf(component)
 
 	if componentValue.Kind() != reflect.Ptr {
-		return 0, fmt.Errorf("%w: component %s must be a pointer", ErrComponentIsNotAPointer, toComponentDebugType(component))
+		return 0, fmt.Errorf("%w: component %s must be a pointer", ErrComponentIsNotAPointer, ComponentDebugStringOf(component))
 	}
 
 	componentPointer := componentValue.UnsafePointer()

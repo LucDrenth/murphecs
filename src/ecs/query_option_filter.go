@@ -17,7 +17,7 @@ const (
 )
 
 type QueryParamFilter interface {
-	getComponents() []ComponentType
+	getComponents() []ComponentId
 	getFilterType() filterType
 	getNestedFilters() (a QueryParamFilter, b QueryParamFilter, err error)
 }
@@ -27,24 +27,24 @@ type Without[A IComponent] struct{}
 type And[A, B QueryParamFilter] struct{}
 type Or[A, B QueryParamFilter] struct{}
 
-func (filter NoFilter) getComponents() []ComponentType {
-	return []ComponentType{}
+func (filter NoFilter) getComponents() []ComponentId {
+	return []ComponentId{}
 }
 
-func (filter And[A, B]) getComponents() []ComponentType {
-	return []ComponentType{}
+func (filter And[A, B]) getComponents() []ComponentId {
+	return []ComponentId{}
 }
 
-func (filter Or[A, B]) getComponents() []ComponentType {
-	return []ComponentType{}
+func (filter Or[A, B]) getComponents() []ComponentId {
+	return []ComponentId{}
 }
 
-func (filter With[A]) getComponents() []ComponentType {
-	return []ComponentType{GetComponentType[A]()}
+func (filter With[A]) getComponents() []ComponentId {
+	return []ComponentId{ComponentIdFor[A]()}
 }
 
-func (filter Without[A]) getComponents() []ComponentType {
-	return []ComponentType{GetComponentType[A]()}
+func (filter Without[A]) getComponents() []ComponentId {
+	return []ComponentId{ComponentIdFor[A]()}
 }
 
 func (filter NoFilter) getFilterType() filterType {
@@ -134,10 +134,10 @@ type queryFilterOr struct {
 	b QueryFilter
 }
 type queryFilterWith struct {
-	c []ComponentType
+	c []ComponentId
 }
 type queryFilterWithout struct {
-	c []ComponentType
+	c []ComponentId
 }
 
 func (filter queryFilterAnd) Validate(e *EntityData) bool {

@@ -124,27 +124,27 @@ func TestGetAllRequiredComponents(t *testing.T) {
 
 	for _, scenario := range scenarios {
 		t.Run(scenario.description, func(t *testing.T) {
-			typesToExclude := toComponentTypes(scenario.components)
+			typesToExclude := toComponentIds(scenario.components)
 			result := getAllRequiredComponents(&typesToExclude, scenario.components)
 			assert.Equal(t, scenario.nrExpectedResults, len(result))
 		})
 	}
 }
 
-func TestComponentTypeConversions(t *testing.T) {
+func TestComponentIdConversions(t *testing.T) {
 	type componentA struct{ Component }
 	type componentB struct{ Component }
 
-	t.Run("test that component types differ", func(t *testing.T) {
+	t.Run("test that component IDs differ", func(t *testing.T) {
 		assert := assert.New(t)
 
 		assert.NotEqual(
-			toComponentType(componentA{}),
-			toComponentType(componentB{}),
+			ComponentIdOf(componentA{}),
+			ComponentIdOf(componentB{}),
 		)
 		assert.NotEqual(
-			GetComponentType[componentA](),
-			GetComponentType[componentB](),
+			ComponentIdFor[componentA](),
+			ComponentIdFor[componentB](),
 		)
 	})
 
@@ -152,25 +152,25 @@ func TestComponentTypeConversions(t *testing.T) {
 		assert := assert.New(t)
 
 		assert.Equal(
-			toComponentDebugType(componentA{}),
-			getComponentDebugType[componentA](),
+			ComponentDebugStringOf(componentA{}),
+			ComponentDebugStringFor[componentA](),
 		)
 		assert.NotEqual(
-			getComponentDebugType[componentA](),
-			getComponentDebugType[componentB](),
+			ComponentDebugStringFor[componentA](),
+			ComponentDebugStringFor[componentB](),
 		)
 	})
 
-	t.Run("toComponentType and getComponentType result in the same type", func(t *testing.T) {
+	t.Run("toComponentId and getComponentId result in the same type", func(t *testing.T) {
 		assert := assert.New(t)
 
 		assert.Equal(
-			toComponentType(componentA{}),
-			GetComponentType[componentA](),
+			ComponentIdOf(componentA{}),
+			ComponentIdFor[componentA](),
 		)
 		assert.NotEqual(
-			GetComponentType[componentA](),
-			GetComponentType[componentB](),
+			ComponentIdFor[componentA](),
+			ComponentIdFor[componentB](),
 		)
 	})
 
@@ -180,8 +180,8 @@ func TestComponentTypeConversions(t *testing.T) {
 		var iComponent IComponent = componentA{}
 
 		assert.Equal(
-			toComponentType(iComponent).String(),
-			GetComponentType[componentA]().String(),
+			ComponentIdOf(iComponent).String(),
+			ComponentIdFor[componentA]().String(),
 		)
 	})
 
@@ -189,12 +189,12 @@ func TestComponentTypeConversions(t *testing.T) {
 		assert := assert.New(t)
 
 		assert.Equal(
-			toComponentType(&componentA{}),
-			toComponentType(componentA{}),
+			ComponentIdOf(&componentA{}),
+			ComponentIdOf(componentA{}),
 		)
 		assert.Equal(
-			GetComponentType[componentA](),
-			GetComponentType[*componentA](),
+			ComponentIdFor[componentA](),
+			ComponentIdFor[*componentA](),
 		)
 	})
 }

@@ -16,10 +16,10 @@ func (Component) RequiredComponents() []IComponent {
 	return []IComponent{}
 }
 
-type ComponentType = reflect.Type
+type ComponentId = reflect.Type
 
-// toComponentType returns a unique representation of the component type
-func toComponentType(component IComponent) ComponentType {
+// ComponentIdOf returns a unique representation of the component ID
+func ComponentIdOf(component IComponent) ComponentId {
 	result := reflect.TypeOf(component)
 
 	if result.Kind() == reflect.Pointer {
@@ -29,8 +29,8 @@ func toComponentType(component IComponent) ComponentType {
 	return result
 }
 
-// GetComponentType returns a unique representation of the component type
-func GetComponentType[T IComponent]() ComponentType {
+// ComponentIdFor returns a unique representation of the component ID
+func ComponentIdFor[T IComponent]() ComponentId {
 	result := reflect.TypeFor[T]()
 
 	if result.Kind() == reflect.Pointer {
@@ -40,42 +40,42 @@ func GetComponentType[T IComponent]() ComponentType {
 	return result
 }
 
-// toComponentDebugType returns a string reflection of the component type such as "ecs.Entity"
-func toComponentDebugType(component IComponent) string {
+// ComponentDebugStringOf returns a string reflection of a component id such as "ecs.Entity"
+func ComponentDebugStringOf(component IComponent) string {
 	return reflect.TypeOf(component).String()
 }
 
-// getComponentDebugType returns a string reflection of the component type such as "ecs.Entity"
-func getComponentDebugType[T IComponent]() string {
+// ComponentDebugStringFor returns a string reflection of a component id such as "ecs.Entity"
+func ComponentDebugStringFor[T IComponent]() string {
 	result := reflect.TypeFor[T]().String()
 	result, _ = strings.CutPrefix(result, "*")
 	return result
 }
 
-func toComponentTypes(components []IComponent) []ComponentType {
-	componentTypes := make([]ComponentType, len(components))
+func toComponentIds(components []IComponent) []ComponentId {
+	componentIds := make([]ComponentId, len(components))
 
 	for i, component := range components {
-		componentTypes[i] = toComponentType(component)
+		componentIds[i] = ComponentIdOf(component)
 	}
 
-	return componentTypes
+	return componentIds
 }
 
-// getARequiredComponents non-exhaustively gets required components of `components` adds those components to `result`, and their types to `typesToExclude`.
-// Required components of which their type exists in `typesToExclude` are skipped.
-func getRequiredComponents(typesToExclude *[]ComponentType, components []IComponent, result *[]IComponent) (newComponents []IComponent) {
+// getARequiredComponents non-exhaustively gets required components of `components` adds those components to `result`, and their types to `componentsToExclude`.
+// Required components of which their type exists in `componentsToExclude` are skipped.
+func getRequiredComponents(componentsToExclude *[]ComponentId, components []IComponent, result *[]IComponent) (newComponents []IComponent) {
 	newComponents = []IComponent{}
 
 	for _, component := range components {
 		for _, required_component := range component.RequiredComponents() {
-			componentType := toComponentType(required_component)
+			componentId := ComponentIdOf(required_component)
 
-			if slices.Contains(*typesToExclude, componentType) {
+			if slices.Contains(*componentsToExclude, componentId) {
 				continue
 			}
 
-			*typesToExclude = append(*typesToExclude, componentType)
+			*componentsToExclude = append(*componentsToExclude, componentId)
 			*result = append(*result, required_component)
 			newComponents = append(newComponents, required_component)
 		}
@@ -86,12 +86,12 @@ func getRequiredComponents(typesToExclude *[]ComponentType, components []ICompon
 
 // getAllRequiredComponents exhaustively gets all required components of `components`.
 //
-// `typesToExclude` gets updated with the types from the result.
-func getAllRequiredComponents(typesToExclude *[]ComponentType, components []IComponent) []IComponent {
+// `componentsToExclude` gets updated with the types from the result.
+func getAllRequiredComponents(componentsToExclude *[]ComponentId, components []IComponent) []IComponent {
 	result := []IComponent{}
 
 	for {
-		components = getRequiredComponents(typesToExclude, components, &result)
+		components = getRequiredComponents(componentsToExclude, components, &result)
 
 		if len(components) == 0 {
 			break

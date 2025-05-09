@@ -10,7 +10,7 @@ import (
 // combinedQueryOptions is a combination of all possible all query options, parsed for easy use within queries.
 type combinedQueryOptions struct {
 	Filters            []QueryFilter
-	OptionalComponents []ComponentType
+	OptionalComponents []ComponentId
 	ReadOnlyComponents combinedReadOnlyComponent
 	isLazy             bool
 }
@@ -28,7 +28,7 @@ func (o *combinedQueryOptions) isFilteredOut(entityData *EntityData) bool {
 // validateOptions returns an error if there are any invalid or non-logical options.
 // If an error is returned, it does not mean that the combinedQueryOptions can not be
 // used in a query, thus the error should be treated as a warning.
-func (o *combinedQueryOptions) validateOptions(queryComponents []ComponentType) error {
+func (o *combinedQueryOptions) validateOptions(queryComponents []ComponentId) error {
 	if duplicate, _, _ := utils.GetFirstDuplicate(o.OptionalComponents); duplicate != nil {
 		return fmt.Errorf("optional component %s is given multiple times", (*duplicate).String())
 	}
@@ -39,17 +39,17 @@ func (o *combinedQueryOptions) validateOptions(queryComponents []ComponentType) 
 		}
 	}
 
-	if duplicate, _, _ := utils.GetFirstDuplicate(o.ReadOnlyComponents.ComponentTypes); duplicate != nil {
+	if duplicate, _, _ := utils.GetFirstDuplicate(o.ReadOnlyComponents.ComponentIds); duplicate != nil {
 		return fmt.Errorf("read-only component %s is given multiple times", (*duplicate).String())
 	}
 
-	for _, readOnly := range o.ReadOnlyComponents.ComponentTypes {
+	for _, readOnly := range o.ReadOnlyComponents.ComponentIds {
 		if !slices.Contains(queryComponents, readOnly) {
 			return fmt.Errorf("read-only component %s is not in query", readOnly.String())
 		}
 	}
 
-	if o.ReadOnlyComponents.IsAllReadOnly && len(o.ReadOnlyComponents.ComponentTypes) > 0 {
+	if o.ReadOnlyComponents.IsAllReadOnly && len(o.ReadOnlyComponents.ComponentIds) > 0 {
 		return fmt.Errorf("can not have specific read-only components together with IsAllReadOnly")
 	}
 
@@ -57,8 +57,8 @@ func (o *combinedQueryOptions) validateOptions(queryComponents []ComponentType) 
 }
 
 type combinedReadOnlyComponent struct {
-	ComponentTypes []ComponentType
-	IsAllReadOnly  bool
+	ComponentIds  []ComponentId
+	IsAllReadOnly bool
 }
 
 type QueryOption interface {
@@ -100,13 +100,13 @@ func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents, I
 	if err != nil {
 		return result, fmt.Errorf("failed to cast optional components to concrete type: %w", err)
 	}
-	result.OptionalComponents = concreteOptionals.getOptionalComponentTypes()
+	result.OptionalComponents = concreteOptionals.getOptionalComponentIds()
 
 	readOnlyComponents, err := utils.ToConcrete[ReadOnlyComponents]()
 	if err != nil {
 		return result, fmt.Errorf("failed to cast read only components to concrete type: %w", err)
 	}
-	result.ReadOnlyComponents.ComponentTypes, result.ReadOnlyComponents.IsAllReadOnly = readOnlyComponents.getReadonlyComponentTypes()
+	result.ReadOnlyComponents.ComponentIds, result.ReadOnlyComponents.IsAllReadOnly = readOnlyComponents.getReadonlyComponentIds()
 
 	queryOptionLazy, err := utils.ToConcrete[IsQueryLazy]()
 	if err != nil {
@@ -253,7 +253,7 @@ func mergeQueryOptions(queryOptions []QueryOption) (result combinedQueryOptions,
 		result.Filters = append(result.Filters, options.Filters...)
 		result.OptionalComponents = append(result.OptionalComponents, result.OptionalComponents...)
 
-		result.ReadOnlyComponents.ComponentTypes = append(result.ReadOnlyComponents.ComponentTypes, options.ReadOnlyComponents.ComponentTypes...)
+		result.ReadOnlyComponents.ComponentIds = append(result.ReadOnlyComponents.ComponentIds, options.ReadOnlyComponents.ComponentIds...)
 
 		if !result.ReadOnlyComponents.IsAllReadOnly && options.ReadOnlyComponents.IsAllReadOnly {
 			result.ReadOnlyComponents.IsAllReadOnly = true
@@ -270,8 +270,8 @@ func mergeQueryOptions(queryOptions []QueryOption) (result combinedQueryOptions,
 func QueryWithOptional[C IComponent](query Query) error {
 	options := query.getOptions()
 
-	componentType := GetComponentType[C]()
-	options.OptionalComponents = append(options.OptionalComponents, componentType)
+	componentId := ComponentIdFor[C]()
+	options.OptionalComponents = append(options.OptionalComponents, componentId)
 
 	return query.Validate()
 }
@@ -279,8 +279,8 @@ func QueryWithOptional[C IComponent](query Query) error {
 func QueryWithReadOnly[C IComponent](query Query) error {
 	options := query.getOptions()
 
-	componentType := GetComponentType[C]()
-	options.ReadOnlyComponents.ComponentTypes = append(options.ReadOnlyComponents.ComponentTypes, componentType)
+	componentId := ComponentIdFor[C]()
+	options.ReadOnlyComponents.ComponentIds = append(options.ReadOnlyComponents.ComponentIds, componentId)
 
 	return query.Validate()
 }
@@ -290,17 +290,17 @@ func QueryWithAllReadOnly(query Query) {
 }
 
 func QueryWith[C IComponent](query Query) error {
-	componentType := GetComponentType[C]()
+	componentId := ComponentIdFor[C]()
 	options := query.getOptions()
-	options.Filters = append(options.Filters, queryFilterWith{c: []ComponentType{componentType}})
+	options.Filters = append(options.Filters, queryFilterWith{c: []ComponentId{componentId}})
 
 	return query.Validate()
 }
 
 func QueryWithout[C IComponent](query Query) error {
-	componentType := GetComponentType[C]()
+	componentId := ComponentIdFor[C]()
 	options := query.getOptions()
-	options.Filters = append(options.Filters, queryFilterWithout{c: []ComponentType{componentType}})
+	options.Filters = append(options.Filters, queryFilterWithout{c: []ComponentId{componentId}})
 
 	return query.Validate()
 }
