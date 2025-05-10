@@ -26,7 +26,7 @@ func main() {
 
 	// Query all NPC components
 	query := ecs.Query1[NPC, ecs.Default]{}
-	query.Prepare()
+	query.Prepare(&world)
 	query.Exec(&world)
 	query.Result().Iter(func(entityId ecs.EntityId, npc *NPC) error {
 		fmt.Printf("simple query: %d: %s \n", entityId, npc.name)
@@ -35,7 +35,7 @@ func main() {
 
 	// Query all NPC components of entities that have the Friendly component
 	query2 := ecs.Query1[NPC, ecs.With[Friendly]]{}
-	query2.Prepare()
+	query2.Prepare(&world)
 	query2.Exec(&world)
 	query2.Result().Iter(func(entityId ecs.EntityId, npc *NPC) error {
 		fmt.Printf("query with Friendly: %d: %s \n", entityId, npc.name)
@@ -44,7 +44,7 @@ func main() {
 
 	// Query all NPC and Dialog components of entities that do not have the Friendly component
 	query3 := ecs.Query2[NPC, Dialog, ecs.Without[Friendly]]{}
-	query3.Prepare()
+	query3.Prepare(&world)
 	query3.Exec(&world)
 	query3.Result().Iter(func(entityId ecs.EntityId, npc *NPC, dialog *Dialog) error {
 		fmt.Printf("query without Friendly: %d: %s says %s \n", entityId, npc.name, dialog.text)
@@ -79,9 +79,9 @@ func main() {
 
 	// You can set query options using functions instead of with generics. You won't have to call Prepare
 	dynamicallyBuildQuery := ecs.Query1[NPC, ecs.Default]{}
-	ecs.QueryWith[Dialog](&dynamicallyBuildQuery)
-	ecs.QueryWithout[Friendly](&dynamicallyBuildQuery)
+	ecs.QueryWith[Dialog](&world, &dynamicallyBuildQuery)
+	ecs.QueryWithout[Friendly](&world, &dynamicallyBuildQuery)
 	ecs.QueryWithAllReadOnly(&dynamicallyBuildQuery)
-	ecs.QueryWithOptional[NPC](&dynamicallyBuildQuery)
+	ecs.QueryWithOptional[NPC](&world, &dynamicallyBuildQuery)
 	dynamicallyBuildQuery.Exec(&world)
 }

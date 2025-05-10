@@ -240,7 +240,7 @@ func Get8[A, B, C, D, E, F, G, H IComponent](world *World, entity EntityId) (
 // Can return the following errors:
 //   - ErrComponentNotFound error when the entity does not have a component of type T.
 func setComponentFromEntry[T IComponent](world *World, entityData *EntityData, target **T) error {
-	componentId := ComponentIdFor[T]()
+	componentId := ComponentIdFor[T](world)
 
 	componentRegistryIndex, ok := entityData.components[componentId]
 	if !ok {

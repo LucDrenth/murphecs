@@ -13,24 +13,24 @@ type componentRegistry struct {
 	pointerToStart unsafe.Pointer // points to the start of data
 	data           reflect.Value  // buffer for storing components
 	componentSize  uintptr        // the amount of memory that each component takes up in data
-	ComponentId    reflect.Type
+	componentId    ComponentId
 	nextItemIndex  uint // the next inserted component will be inserted at this index
 	capacity       uint // the number of components that can be stored with the current size of data
 }
 
 // createComponentRegistry creates a new instance of createComponentRegistry that can hold [capacity] components of type [ComponentId].
-func createComponentRegistry(capacity uint, ComponentId reflect.Type) (componentRegistry, error) {
+func createComponentRegistry(capacity uint, componentId ComponentId) (componentRegistry, error) {
 	if capacity == 0 {
 		return componentRegistry{}, fmt.Errorf("%w: capacity may not be 0", ErrInvalidComponentStorageCapacity)
 	}
 
-	data := reflect.New(reflect.ArrayOf(int(capacity), ComponentId)).Elem()
+	data := reflect.New(reflect.ArrayOf(int(capacity), componentId.componentType)).Elem()
 
 	return componentRegistry{
 		pointerToStart: data.Addr().UnsafePointer(),
 		data:           data,
-		componentSize:  utils.AlignedSize(ComponentId),
-		ComponentId:    ComponentId,
+		componentSize:  utils.AlignedSize(componentId.componentType),
+		componentId:    componentId,
 		nextItemIndex:  0,
 		capacity:       capacity,
 	}, nil
@@ -39,7 +39,7 @@ func createComponentRegistry(capacity uint, ComponentId reflect.Type) (component
 // increaseCapacity creates a new component buffer with more capacity
 func (c *componentRegistry) increaseCapacity(extraCapacity uint) {
 	newCapacity := c.capacity + extraCapacity
-	newData := reflect.New(reflect.ArrayOf(int(newCapacity), c.ComponentId)).Elem()
+	newData := reflect.New(reflect.ArrayOf(int(newCapacity), c.componentId.componentType)).Elem()
 	reflect.Copy(newData, c.data)
 
 	c.data = newData

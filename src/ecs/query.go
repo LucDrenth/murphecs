@@ -15,7 +15,7 @@ type Query interface {
 	//
 	// This step is necessary because the way that queries are created is optimized for users, and not
 	// for the computer. This method closes that gap.
-	Prepare() error
+	Prepare(*World) error
 
 	// Validate checks if there are any unexpected or unoptimized things. It returns an error if there
 	// is something that can be optimized. The error should be treated as a warning, and does not mean
@@ -35,7 +35,8 @@ type Query interface {
 }
 
 type queryOptions struct {
-	options combinedQueryOptions
+	options    combinedQueryOptions
+	components []ComponentId
 }
 
 func (o *queryOptions) getOptions() *combinedQueryOptions {
@@ -44,6 +45,10 @@ func (o *queryOptions) getOptions() *combinedQueryOptions {
 
 func (o *queryOptions) IsLazy() bool {
 	return o.options.isLazy
+}
+
+func (o *queryOptions) Validate() error {
+	return o.options.validateOptions(o.components)
 }
 
 // Query1 queries 1 component.
@@ -269,48 +274,39 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) E
 	return nil
 }
 
-func (q *Query1[A, QueryOptions]) Prepare() (err error) {
-	q.options, err = toCombinedQueryOptions[QueryOptions]()
+func (q *Query1[A, QueryOptions]) Prepare(world *World) (err error) {
+	q.options, err = toCombinedQueryOptions[QueryOptions](world)
+	q.components = []ComponentId{
+		ComponentIdFor[A](world),
+	}
 	return err
 }
-func (q *Query2[A, B, QueryOptions]) Prepare() (err error) {
-	q.options, err = toCombinedQueryOptions[QueryOptions]()
+func (q *Query2[A, B, QueryOptions]) Prepare(world *World) (err error) {
+	q.options, err = toCombinedQueryOptions[QueryOptions](world)
+	q.components = []ComponentId{
+		ComponentIdFor[A](world),
+		ComponentIdFor[B](world),
+	}
 	return err
 }
-func (q *Query3[A, B, C, QueryOptions]) Prepare() (err error) {
-	q.options, err = toCombinedQueryOptions[QueryOptions]()
+func (q *Query3[A, B, C, QueryOptions]) Prepare(world *World) (err error) {
+	q.options, err = toCombinedQueryOptions[QueryOptions](world)
+	q.components = []ComponentId{
+		ComponentIdFor[A](world),
+		ComponentIdFor[B](world),
+		ComponentIdFor[C](world),
+	}
 	return err
 }
-func (q *Query4[A, B, C, D, QueryOptions]) Prepare() (err error) {
-	q.options, err = toCombinedQueryOptions[QueryOptions]()
+func (q *Query4[A, B, C, D, QueryOptions]) Prepare(world *World) (err error) {
+	q.options, err = toCombinedQueryOptions[QueryOptions](world)
+	q.components = []ComponentId{
+		ComponentIdFor[A](world),
+		ComponentIdFor[B](world),
+		ComponentIdFor[C](world),
+		ComponentIdFor[D](world),
+	}
 	return err
-}
-
-func (q *Query1[ComponentA, _]) Validate() error {
-	return q.options.validateOptions([]ComponentId{
-		ComponentIdFor[ComponentA](),
-	})
-}
-func (q *Query2[ComponentA, ComponentB, _]) Validate() error {
-	return q.options.validateOptions([]ComponentId{
-		ComponentIdFor[ComponentA](),
-		ComponentIdFor[ComponentB](),
-	})
-}
-func (q *Query3[ComponentA, ComponentB, ComponentC, _]) Validate() error {
-	return q.options.validateOptions([]ComponentId{
-		ComponentIdFor[ComponentA](),
-		ComponentIdFor[ComponentB](),
-		ComponentIdFor[ComponentC](),
-	})
-}
-func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, _]) Validate() error {
-	return q.options.validateOptions([]ComponentId{
-		ComponentIdFor[ComponentA](),
-		ComponentIdFor[ComponentB](),
-		ComponentIdFor[ComponentC](),
-		ComponentIdFor[ComponentD](),
-	})
 }
 
 func (q *Query1[ComponentA, QueryOptions]) Result() *Query1Result[ComponentA] {
@@ -344,7 +340,7 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) C
 // match is true when the entity has the component or if the component is marked marked as optional.
 // When match is true, the entity should be present in the query results.
 func getQueryComponent[T IComponent](world *World, entityData *EntityData, queryOptions *combinedQueryOptions) (result *T, match bool, err error) {
-	componentId := ComponentIdFor[T]()
+	componentId := ComponentIdFor[T](world)
 
 	componentRegistryIndex, entityHasComponent := entityData.components[componentId]
 	if !entityHasComponent {

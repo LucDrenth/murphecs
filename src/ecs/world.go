@@ -2,6 +2,7 @@ package ecs
 
 import (
 	"errors"
+	"reflect"
 )
 
 // World contains all of the entities and their components.
@@ -10,6 +11,7 @@ type World struct {
 	entities                 map[EntityId]*EntityData
 	components               map[ComponentId]*componentRegistry
 	initialComponentCapacity initialComponentCapacityStrategy
+	componentIdRegistry      componentIdRegistry
 }
 
 // DefaultWorld returns a World with default configs.
@@ -35,6 +37,9 @@ func NewWorld(configs WorldConfigs) (World, error) {
 		entities:                 map[EntityId]*EntityData{},
 		components:               map[ComponentId]*componentRegistry{},
 		initialComponentCapacity: configs.ComponentCapacityStrategy,
+		componentIdRegistry: componentIdRegistry{
+			components: map[reflect.Type]uint{},
+		},
 	}, nil
 }
 

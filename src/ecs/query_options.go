@@ -30,22 +30,22 @@ func (o *combinedQueryOptions) isFilteredOut(entityData *EntityData) bool {
 // used in a query, thus the error should be treated as a warning.
 func (o *combinedQueryOptions) validateOptions(queryComponents []ComponentId) error {
 	if duplicate, _, _ := utils.GetFirstDuplicate(o.OptionalComponents); duplicate != nil {
-		return fmt.Errorf("optional component %s is given multiple times", (*duplicate).String())
+		return fmt.Errorf("optional component %s is given multiple times", (*duplicate).DebugString())
 	}
 
 	for _, optional := range o.OptionalComponents {
 		if !slices.Contains(queryComponents, optional) {
-			return fmt.Errorf("optional component %s is not in query", optional.String())
+			return fmt.Errorf("optional component %s is not in query", optional.DebugString())
 		}
 	}
 
 	if duplicate, _, _ := utils.GetFirstDuplicate(o.ReadOnlyComponents.ComponentIds); duplicate != nil {
-		return fmt.Errorf("read-only component %s is given multiple times", (*duplicate).String())
+		return fmt.Errorf("read-only component %s is given multiple times", (*duplicate).DebugString())
 	}
 
 	for _, readOnly := range o.ReadOnlyComponents.ComponentIds {
 		if !slices.Contains(queryComponents, readOnly) {
-			return fmt.Errorf("read-only component %s is not in query", readOnly.String())
+			return fmt.Errorf("read-only component %s is not in query", readOnly.DebugString())
 		}
 	}
 
@@ -62,7 +62,7 @@ type combinedReadOnlyComponent struct {
 }
 
 type QueryOption interface {
-	getCombinedQueryOptions() (combinedQueryOptions, error)
+	getCombinedQueryOptions(*World) (combinedQueryOptions, error)
 }
 
 // default query options: NoFilter, NoOptional, NoReadonly
@@ -70,17 +70,17 @@ type Default struct{}
 type QueryOptionsAllReadOnly struct{}
 type QueryOptions[_ QueryParamFilter, _ OptionalComponents, _ ReadOnlyComponents, _ IsQueryLazy] struct{}
 
-func (Default) getCombinedQueryOptions() (combinedQueryOptions, error) {
+func (Default) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
 	return combinedQueryOptions{}, nil
 }
 
-func (o QueryOptionsAllReadOnly) getCombinedQueryOptions() (combinedQueryOptions, error) {
+func (o QueryOptionsAllReadOnly) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
 	return combinedQueryOptions{
 		ReadOnlyComponents: combinedReadOnlyComponent{IsAllReadOnly: true},
 	}, nil
 }
 
-func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents, IsQueryLazy]) getCombinedQueryOptions() (combinedQueryOptions, error) {
+func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents, IsQueryLazy]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
 	result := combinedQueryOptions{}
 
 	concreteFilters, err := utils.ToConcrete[QueryParamFilter]()
@@ -88,7 +88,7 @@ func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents, I
 		return result, fmt.Errorf("failed to cast filter to concrete type: %w", err)
 	}
 
-	filter, err := getFilterFromConcreteQueryParamFilter(concreteFilters)
+	filter, err := getFilterFromConcreteQueryParamFilter(concreteFilters, world)
 	if err != nil {
 		return result, fmt.Errorf("failed to create filter: %w", err)
 	}
@@ -100,13 +100,13 @@ func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents, I
 	if err != nil {
 		return result, fmt.Errorf("failed to cast optional components to concrete type: %w", err)
 	}
-	result.OptionalComponents = concreteOptionals.getOptionalComponentIds()
+	result.OptionalComponents = concreteOptionals.getOptionalComponentIds(world)
 
 	readOnlyComponents, err := utils.ToConcrete[ReadOnlyComponents]()
 	if err != nil {
 		return result, fmt.Errorf("failed to cast read only components to concrete type: %w", err)
 	}
-	result.ReadOnlyComponents.ComponentIds, result.ReadOnlyComponents.IsAllReadOnly = readOnlyComponents.getReadonlyComponentIds()
+	result.ReadOnlyComponents.ComponentIds, result.ReadOnlyComponents.IsAllReadOnly = readOnlyComponents.getReadonlyComponentIds(world)
 
 	queryOptionLazy, err := utils.ToConcrete[IsQueryLazy]()
 	if err != nil {
@@ -117,12 +117,12 @@ func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents, I
 	return result, nil
 }
 
-func getFilterFromConcreteQueryParamFilter(filters QueryParamFilter) (QueryFilter, error) {
+func getFilterFromConcreteQueryParamFilter(filters QueryParamFilter, world *World) (QueryFilter, error) {
 	switch concreteFilterType := filters.getFilterType(); concreteFilterType {
 	case filterTypeWith:
-		return queryFilterWith{c: filters.getComponents()}, nil
+		return queryFilterWith{c: filters.getComponents(world)}, nil
 	case filterTypeWithout:
-		return queryFilterWithout{c: filters.getComponents()}, nil
+		return queryFilterWithout{c: filters.getComponents(world)}, nil
 	case filterTypeNone:
 		return nil, nil
 	case filterTypeAnd:
@@ -132,12 +132,12 @@ func getFilterFromConcreteQueryParamFilter(filters QueryParamFilter) (QueryFilte
 				return nil, fmt.Errorf("failed to create AND filter: %w", err)
 			}
 
-			filterA, err := getFilterFromConcreteQueryParamFilter(filterParamA)
+			filterA, err := getFilterFromConcreteQueryParamFilter(filterParamA, world)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create AND filter for a: %w", err)
 			}
 
-			filterB, err := getFilterFromConcreteQueryParamFilter(filterParamB)
+			filterB, err := getFilterFromConcreteQueryParamFilter(filterParamB, world)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create AND filter for b: %w", err)
 			}
@@ -151,12 +151,12 @@ func getFilterFromConcreteQueryParamFilter(filters QueryParamFilter) (QueryFilte
 				return nil, fmt.Errorf("failed to create OR filter: %w", err)
 			}
 
-			filterA, err := getFilterFromConcreteQueryParamFilter(filterParamA)
+			filterA, err := getFilterFromConcreteQueryParamFilter(filterParamA, world)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create OR filter for a: %w", err)
 			}
 
-			filterB, err := getFilterFromConcreteQueryParamFilter(filterParamB)
+			filterB, err := getFilterFromConcreteQueryParamFilter(filterParamB, world)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create OR filter for b: %w", err)
 			}
@@ -168,7 +168,7 @@ func getFilterFromConcreteQueryParamFilter(filters QueryParamFilter) (QueryFilte
 	return nil, fmt.Errorf("unhandled filter type: %d", filters.getFilterType())
 }
 
-func toCombinedQueryOptions[QueryOptions QueryOption]() (combinedQueryOptions, error) {
+func toCombinedQueryOptions[QueryOptions QueryOption](world *World) (combinedQueryOptions, error) {
 	result := combinedQueryOptions{}
 
 	concreteQueryOptions, err := utils.ToConcrete[QueryOptions]()
@@ -176,7 +176,7 @@ func toCombinedQueryOptions[QueryOptions QueryOption]() (combinedQueryOptions, e
 		return result, fmt.Errorf("failed to cast query options to concrete type: %w", err)
 	}
 
-	return concreteQueryOptions.getCombinedQueryOptions()
+	return concreteQueryOptions.getCombinedQueryOptions(world)
 }
 
 // Multiple query options that will be combined. Multiple filters will result in them being used with an AND operator.
@@ -188,7 +188,7 @@ type QueryOptions3[A, B, C QueryOption] struct{}
 // Multiple query options that will be combined. Multiple filters will result in them being used with an AND operator.
 type QueryOptions4[A, B, C, D QueryOption] struct{}
 
-func (o QueryOptions2[A, B]) getCombinedQueryOptions() (result combinedQueryOptions, err error) {
+func (o QueryOptions2[A, B]) getCombinedQueryOptions(world *World) (result combinedQueryOptions, err error) {
 	a, err := utils.ToConcrete[A]()
 	if err != nil {
 		return result, err
@@ -199,9 +199,9 @@ func (o QueryOptions2[A, B]) getCombinedQueryOptions() (result combinedQueryOpti
 		return result, err
 	}
 
-	return mergeQueryOptions([]QueryOption{a, b})
+	return mergeQueryOptions([]QueryOption{a, b}, world)
 }
-func (o QueryOptions3[A, B, C]) getCombinedQueryOptions() (result combinedQueryOptions, err error) {
+func (o QueryOptions3[A, B, C]) getCombinedQueryOptions(world *World) (result combinedQueryOptions, err error) {
 	a, err := utils.ToConcrete[A]()
 	if err != nil {
 		return result, err
@@ -217,9 +217,9 @@ func (o QueryOptions3[A, B, C]) getCombinedQueryOptions() (result combinedQueryO
 		return result, err
 	}
 
-	return mergeQueryOptions([]QueryOption{a, b, c})
+	return mergeQueryOptions([]QueryOption{a, b, c}, world)
 }
-func (o QueryOptions4[A, B, C, D]) getCombinedQueryOptions() (result combinedQueryOptions, err error) {
+func (o QueryOptions4[A, B, C, D]) getCombinedQueryOptions(world *World) (result combinedQueryOptions, err error) {
 	a, err := utils.ToConcrete[A]()
 	if err != nil {
 		return result, err
@@ -240,12 +240,12 @@ func (o QueryOptions4[A, B, C, D]) getCombinedQueryOptions() (result combinedQue
 		return result, err
 	}
 
-	return mergeQueryOptions([]QueryOption{a, b, c, d})
+	return mergeQueryOptions([]QueryOption{a, b, c, d}, world)
 }
 
-func mergeQueryOptions(queryOptions []QueryOption) (result combinedQueryOptions, err error) {
+func mergeQueryOptions(queryOptions []QueryOption, world *World) (result combinedQueryOptions, err error) {
 	for _, queryOption := range queryOptions {
-		options, err := queryOption.getCombinedQueryOptions()
+		options, err := queryOption.getCombinedQueryOptions(world)
 		if err != nil {
 			return result, err
 		}
@@ -267,19 +267,19 @@ func mergeQueryOptions(queryOptions []QueryOption) (result combinedQueryOptions,
 	return result, nil
 }
 
-func QueryWithOptional[C IComponent](query Query) error {
+func QueryWithOptional[C IComponent](world *World, query Query) error {
 	options := query.getOptions()
 
-	componentId := ComponentIdFor[C]()
+	componentId := ComponentIdFor[C](world)
 	options.OptionalComponents = append(options.OptionalComponents, componentId)
 
 	return query.Validate()
 }
 
-func QueryWithReadOnly[C IComponent](query Query) error {
+func QueryWithReadOnly[C IComponent](world *World, query Query) error {
 	options := query.getOptions()
 
-	componentId := ComponentIdFor[C]()
+	componentId := ComponentIdFor[C](world)
 	options.ReadOnlyComponents.ComponentIds = append(options.ReadOnlyComponents.ComponentIds, componentId)
 
 	return query.Validate()
@@ -289,29 +289,29 @@ func QueryWithAllReadOnly(query Query) {
 	query.getOptions().ReadOnlyComponents.IsAllReadOnly = true
 }
 
-func QueryWith[C IComponent](query Query) error {
-	componentId := ComponentIdFor[C]()
+func QueryWith[C IComponent](world *World, query Query) error {
+	componentId := ComponentIdFor[C](world)
 	options := query.getOptions()
 	options.Filters = append(options.Filters, queryFilterWith{c: []ComponentId{componentId}})
 
 	return query.Validate()
 }
 
-func QueryWithout[C IComponent](query Query) error {
-	componentId := ComponentIdFor[C]()
+func QueryWithout[C IComponent](world *World, query Query) error {
+	componentId := ComponentIdFor[C](world)
 	options := query.getOptions()
 	options.Filters = append(options.Filters, queryFilterWithout{c: []ComponentId{componentId}})
 
 	return query.Validate()
 }
 
-func QueryWithFilters[Filters QueryParamFilter](query Query) error {
+func QueryWithFilters[Filters QueryParamFilter](world *World, query Query) error {
 	concreteFilters, err := utils.ToConcrete[Filters]()
 	if err != nil {
 		return fmt.Errorf("failed to cast filter to concrete type: %w", err)
 	}
 
-	filter, err := getFilterFromConcreteQueryParamFilter(concreteFilters)
+	filter, err := getFilterFromConcreteQueryParamFilter(concreteFilters, world)
 	if err != nil {
 		return fmt.Errorf("failed to create filter: %w", err)
 	}

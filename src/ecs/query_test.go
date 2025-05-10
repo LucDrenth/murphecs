@@ -25,7 +25,7 @@ func TestQuery1(t *testing.T) {
 		expectedValue2 := 20
 		world := DefaultWorld()
 		query := Query1[componentA, Default]{}
-		err := query.Prepare()
+		err := query.Prepare(&world)
 		assert.NoError(err)
 
 		err = query.Exec(&world)
@@ -79,7 +79,7 @@ func TestQuery1(t *testing.T) {
 		assert.NoError(err)
 
 		query := Query1[componentA, With[componentB]]{}
-		err = query.Prepare()
+		err = query.Prepare(&world)
 		assert.NoError(err)
 		err = query.Exec(&world)
 		assert.NoError(err)
@@ -105,7 +105,7 @@ func TestQuery1(t *testing.T) {
 		assert.NoError(err)
 
 		query := Query1[componentA, Without[componentB]]{}
-		err = query.Prepare()
+		err = query.Prepare(&world)
 		assert.NoError(err)
 		err = query.Exec(&world)
 		assert.NoError(err)
@@ -131,7 +131,7 @@ func TestQuery1(t *testing.T) {
 		assert.NoError(err)
 
 		query := Query1[componentA, And[With[componentB], With[componentC]]]{}
-		err = query.Prepare()
+		err = query.Prepare(&world)
 		assert.NoError(err)
 		err = query.Exec(&world)
 		assert.NoError(err)
@@ -161,7 +161,7 @@ func TestQuery1(t *testing.T) {
 		assert.NoError(err)
 
 		query := Query1[componentA, Or[With[componentB], With[componentC]]]{}
-		err = query.Prepare()
+		err = query.Prepare(&world)
 		assert.NoError(err)
 		err = query.Exec(&world)
 		assert.NoError(err)
@@ -187,7 +187,7 @@ func TestQuery1(t *testing.T) {
 		assert.NoError(err)
 
 		query := Query1[componentA, QueryOptions[With[componentB], Optional1[componentA], NoReadOnly, NotLazy]]{}
-		err = query.Prepare()
+		err = query.Prepare(&world)
 		assert.NoError(err)
 		err = query.Exec(&world)
 		assert.NoError(err)
@@ -201,7 +201,7 @@ func TestQuery1(t *testing.T) {
 		expectedValue := 10
 		world := DefaultWorld()
 		query := Query1[componentA, Default]{}
-		err := query.Prepare()
+		err := query.Prepare(&world)
 		assert.NoError(err)
 		_, err = Spawn(&world, &componentA{value: 0}, &componentB{})
 		assert.NoError(err)
@@ -229,7 +229,7 @@ func TestQuery1(t *testing.T) {
 		expectedValue := 0
 		world := DefaultWorld()
 		query := Query1[componentA, AllReadOnly]{}
-		err := query.Prepare()
+		err := query.Prepare(&world)
 		assert.NoError(err)
 		_, err = Spawn(&world, &componentA{value: 0}, &componentB{})
 		assert.NoError(err)
@@ -260,7 +260,7 @@ func TestQuery1(t *testing.T) {
 		_, err = Spawn(&world, &componentA{})
 		assert.NoError(err)
 		query := Query1[componentA, Default]{}
-		err = query.Prepare()
+		err = query.Prepare(&world)
 		assert.NoError(err)
 		err = query.Exec(&world)
 		assert.NoError(err)

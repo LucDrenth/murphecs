@@ -1,7 +1,7 @@
 package ecs
 
 type ReadOnlyComponents interface {
-	getReadonlyComponentIds() (readOnlyComponentIds []ComponentId, isAllReadyOnly bool)
+	getReadonlyComponentIds(world *World) (readOnlyComponentIds []ComponentId, isAllReadyOnly bool)
 }
 
 // All components in the query results are mutable.
@@ -37,56 +37,56 @@ type ReadOnly3[A, B, C IComponent] struct{}
 // This allows parallelization of systems that use this query as a system parameter.
 type ReadOnly4[A, B, C, D IComponent] struct{}
 
-func (o NoReadOnly) getReadonlyComponentIds() (readOnlyComponentIds []ComponentId, isAllReadyOnly bool) {
+func (o NoReadOnly) getReadonlyComponentIds(world *World) (readOnlyComponentIds []ComponentId, isAllReadyOnly bool) {
 	return []ComponentId{}, false
 }
 
-func (o AllReadOnly) getReadonlyComponentIds() (readOnlyComponentIds []ComponentId, isAllReadyOnly bool) {
+func (o AllReadOnly) getReadonlyComponentIds(world *World) (readOnlyComponentIds []ComponentId, isAllReadyOnly bool) {
 	return []ComponentId{}, true
 }
 
-func (o ReadOnly1[A]) getReadonlyComponentIds() (readOnlyComponentIds []ComponentId, isAllReadyOnly bool) {
+func (o ReadOnly1[A]) getReadonlyComponentIds(world *World) (readOnlyComponentIds []ComponentId, isAllReadyOnly bool) {
 	return []ComponentId{
-		ComponentIdFor[A](),
+		ComponentIdFor[A](world),
 	}, false
 }
 
-func (o ReadOnly2[A, B]) getReadonlyComponentIds() (readOnlyComponentIds []ComponentId, isAllReadyOnly bool) {
+func (o ReadOnly2[A, B]) getReadonlyComponentIds(world *World) (readOnlyComponentIds []ComponentId, isAllReadyOnly bool) {
 	return []ComponentId{
-		ComponentIdFor[A](),
-		ComponentIdFor[B](),
+		ComponentIdFor[A](world),
+		ComponentIdFor[B](world),
 	}, false
 }
 
-func (o ReadOnly3[A, B, C]) getReadonlyComponentIds() (readOnlyComponentIds []ComponentId, isAllReadyOnly bool) {
+func (o ReadOnly3[A, B, C]) getReadonlyComponentIds(world *World) (readOnlyComponentIds []ComponentId, isAllReadyOnly bool) {
 	return []ComponentId{
-		ComponentIdFor[A](),
-		ComponentIdFor[B](),
-		ComponentIdFor[C](),
+		ComponentIdFor[A](world),
+		ComponentIdFor[B](world),
+		ComponentIdFor[C](world),
 	}, false
 }
 
-func (o ReadOnly4[A, B, C, D]) getReadonlyComponentIds() (readOnlyComponentIds []ComponentId, isAllReadyOnly bool) {
+func (o ReadOnly4[A, B, C, D]) getReadonlyComponentIds(world *World) (readOnlyComponentIds []ComponentId, isAllReadyOnly bool) {
 	return []ComponentId{
-		ComponentIdFor[A](),
-		ComponentIdFor[B](),
-		ComponentIdFor[C](),
-		ComponentIdFor[D](),
+		ComponentIdFor[A](world),
+		ComponentIdFor[B](world),
+		ComponentIdFor[C](world),
+		ComponentIdFor[D](world),
 	}, false
 }
 
-func (readOnly AllReadOnly) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, AllReadOnly, NotLazy]]()
+func (readOnly AllReadOnly) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, AllReadOnly, NotLazy]](world)
 }
-func (readOnly ReadOnly1[A]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly1[A], NotLazy]]()
+func (readOnly ReadOnly1[A]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly1[A], NotLazy]](world)
 }
-func (readOnly ReadOnly2[A, B]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly2[A, B], NotLazy]]()
+func (readOnly ReadOnly2[A, B]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly2[A, B], NotLazy]](world)
 }
-func (readOnly ReadOnly3[A, B, C]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly3[A, B, C], NotLazy]]()
+func (readOnly ReadOnly3[A, B, C]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly3[A, B, C], NotLazy]](world)
 }
-func (readOnly ReadOnly4[A, B, C, D]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly4[A, B, C, D], NotLazy]]()
+func (readOnly ReadOnly4[A, B, C, D]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[NoFilter, NoOptional, ReadOnly4[A, B, C, D], NotLazy]](world)
 }

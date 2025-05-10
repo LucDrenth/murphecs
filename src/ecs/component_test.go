@@ -1,6 +1,7 @@
 package ecs
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -124,8 +125,10 @@ func TestGetAllRequiredComponents(t *testing.T) {
 
 	for _, scenario := range scenarios {
 		t.Run(scenario.description, func(t *testing.T) {
-			typesToExclude := toComponentIds(scenario.components)
-			result := getAllRequiredComponents(&typesToExclude, scenario.components)
+			world := DefaultWorld()
+
+			typesToExclude := toComponentIds(scenario.components, &world)
+			result := getAllRequiredComponents(&typesToExclude, scenario.components, &world)
 			assert.Equal(t, scenario.nrExpectedResults, len(result))
 		})
 	}
@@ -138,13 +141,15 @@ func TestComponentIdConversions(t *testing.T) {
 	t.Run("test that component IDs differ", func(t *testing.T) {
 		assert := assert.New(t)
 
+		world := DefaultWorld()
+
 		assert.NotEqual(
-			ComponentIdOf(componentA{}),
-			ComponentIdOf(componentB{}),
+			ComponentIdOf(componentA{}, &world),
+			ComponentIdOf(componentB{}, &world),
 		)
 		assert.NotEqual(
-			ComponentIdFor[componentA](),
-			ComponentIdFor[componentB](),
+			ComponentIdFor[componentA](&world),
+			ComponentIdFor[componentB](&world),
 		)
 	})
 
@@ -164,37 +169,61 @@ func TestComponentIdConversions(t *testing.T) {
 	t.Run("toComponentId and getComponentId result in the same type", func(t *testing.T) {
 		assert := assert.New(t)
 
+		world := DefaultWorld()
+
 		assert.Equal(
-			ComponentIdOf(componentA{}),
-			ComponentIdFor[componentA](),
+			ComponentIdOf(componentA{}, &world),
+			ComponentIdFor[componentA](&world),
 		)
 		assert.NotEqual(
-			ComponentIdFor[componentA](),
-			ComponentIdFor[componentB](),
+			ComponentIdFor[componentA](&world),
+			ComponentIdFor[componentB](&world),
 		)
 	})
 
 	t.Run("getting type from an IComponent returns the same type as when passing type param", func(t *testing.T) {
 		assert := assert.New(t)
 
+		world := DefaultWorld()
 		var iComponent IComponent = componentA{}
 
+		a := ComponentIdOf(iComponent, &world)
+		b := ComponentIdFor[componentA](&world)
+
 		assert.Equal(
-			ComponentIdOf(iComponent).String(),
-			ComponentIdFor[componentA]().String(),
+			a.DebugString(),
+			b.DebugString(),
 		)
 	})
 
 	t.Run("return the same result for components and component pointers", func(t *testing.T) {
 		assert := assert.New(t)
 
+		world := DefaultWorld()
+
 		assert.Equal(
-			ComponentIdOf(&componentA{}),
-			ComponentIdOf(componentA{}),
+			ComponentIdOf(&componentA{}, &world),
+			ComponentIdOf(componentA{}, &world),
 		)
 		assert.Equal(
-			ComponentIdFor[componentA](),
-			ComponentIdFor[*componentA](),
+			ComponentIdFor[componentA](&world),
+			ComponentIdFor[*componentA](&world),
 		)
 	})
+}
+
+func TestComponentIdRegistry(t *testing.T) {
+	assert := assert.New(t)
+
+	type componentA struct{ Component }
+	type componentB struct{ Component }
+
+	componentIdRegistry := componentIdRegistry{
+		components: map[reflect.Type]uint{},
+		currentId:  0,
+	}
+
+	assert.Equal(uint(1), componentIdRegistry.getId(reflect.TypeFor[componentA]()))
+	assert.Equal(uint(1), componentIdRegistry.getId(reflect.TypeFor[componentA]()))
+	assert.Equal(uint(2), componentIdRegistry.getId(reflect.TypeFor[componentB]()))
 }

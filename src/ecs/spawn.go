@@ -16,7 +16,7 @@ import (
 //
 // Calling Spawn without any components to generate an entityId is allowed.
 func Spawn(world *World, components ...IComponent) (EntityId, error) {
-	componentIds := toComponentIds(components)
+	componentIds := toComponentIds(components, world)
 
 	// check for duplicates
 	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(componentIds)
@@ -26,7 +26,7 @@ func Spawn(world *World, components ...IComponent) (EntityId, error) {
 	}
 
 	// get required components
-	requiredComponents := getAllRequiredComponents(&componentIds, components)
+	requiredComponents := getAllRequiredComponents(&componentIds, components, world)
 	components = append(components, requiredComponents...)
 
 	// spawn components
@@ -35,7 +35,7 @@ func Spawn(world *World, components ...IComponent) (EntityId, error) {
 	var returnedErr error = nil
 
 	for _, component := range components {
-		componentId := ComponentIdOf(component)
+		componentId := ComponentIdOf(component, world)
 		componentRegistry, err := world.getComponentRegistry(componentId)
 		if err != nil {
 			returnedErr = fmt.Errorf("failed to get component registry: %w", err)

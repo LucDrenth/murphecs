@@ -23,7 +23,7 @@ func Insert(world *World, entity EntityId, components ...IComponent) (resultErr 
 		return ErrEntityNotFound
 	}
 
-	componentIds := toComponentIds(components)
+	componentIds := toComponentIds(components, world)
 
 	// check for duplicates
 	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(componentIds)
@@ -53,8 +53,8 @@ func Insert(world *World, entity EntityId, components ...IComponent) (resultErr 
 		world.entities[entity].components[componentIds[i]] = componentIndex
 	}
 
-	requiredComponents := getAllRequiredComponents(&componentIds, components)
-	componentIds = toComponentIds(requiredComponents)
+	requiredComponents := getAllRequiredComponents(&componentIds, components, world)
+	componentIds = toComponentIds(requiredComponents, world)
 
 	for i, component := range requiredComponents {
 		if _, componentExists := entityData.components[componentIds[i]]; componentExists {

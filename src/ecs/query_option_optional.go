@@ -1,7 +1,7 @@
 package ecs
 
 type OptionalComponents interface {
-	getOptionalComponentIds() []ComponentId
+	getOptionalComponentIds(world *World) []ComponentId
 }
 
 // Entities have to have all components in order to be in the query result
@@ -23,49 +23,49 @@ type Optional3[A, B, C IComponent] struct{}
 // not present will be nil in the query result.
 type Optional4[A, B, C, D IComponent] struct{}
 
-func (o NoOptional) getOptionalComponentIds() []ComponentId {
+func (o NoOptional) getOptionalComponentIds(world *World) []ComponentId {
 	return []ComponentId{}
 }
 
-func (o Optional1[A]) getOptionalComponentIds() []ComponentId {
+func (o Optional1[A]) getOptionalComponentIds(world *World) []ComponentId {
 	return []ComponentId{
-		ComponentIdFor[A](),
+		ComponentIdFor[A](world),
 	}
 }
 
-func (o Optional2[A, B]) getOptionalComponentIds() []ComponentId {
+func (o Optional2[A, B]) getOptionalComponentIds(world *World) []ComponentId {
 	return []ComponentId{
-		ComponentIdFor[A](),
-		ComponentIdFor[B](),
+		ComponentIdFor[A](world),
+		ComponentIdFor[B](world),
 	}
 }
 
-func (o Optional3[A, B, C]) getOptionalComponentIds() []ComponentId {
+func (o Optional3[A, B, C]) getOptionalComponentIds(world *World) []ComponentId {
 	return []ComponentId{
-		ComponentIdFor[A](),
-		ComponentIdFor[B](),
-		ComponentIdFor[C](),
+		ComponentIdFor[A](world),
+		ComponentIdFor[B](world),
+		ComponentIdFor[C](world),
 	}
 }
 
-func (o Optional4[A, B, C, D]) getOptionalComponentIds() []ComponentId {
+func (o Optional4[A, B, C, D]) getOptionalComponentIds(world *World) []ComponentId {
 	return []ComponentId{
-		ComponentIdFor[A](),
-		ComponentIdFor[B](),
-		ComponentIdFor[C](),
-		ComponentIdFor[D](),
+		ComponentIdFor[A](world),
+		ComponentIdFor[B](world),
+		ComponentIdFor[C](world),
+		ComponentIdFor[D](world),
 	}
 }
 
-func (optional Optional1[A]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional1[A], NoReadOnly, NotLazy]]()
+func (optional Optional1[A]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional1[A], NoReadOnly, NotLazy]](world)
 }
-func (optional Optional2[A, B]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional2[A, B], NoReadOnly, NotLazy]]()
+func (optional Optional2[A, B]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional2[A, B], NoReadOnly, NotLazy]](world)
 }
-func (optional Optional3[A, B, C]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional3[A, B, C], NoReadOnly, NotLazy]]()
+func (optional Optional3[A, B, C]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional3[A, B, C], NoReadOnly, NotLazy]](world)
 }
-func (optional Optional4[A, B, C, D]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional4[A, B, C, D], NoReadOnly, NotLazy]]()
+func (optional Optional4[A, B, C, D]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional4[A, B, C, D], NoReadOnly, NotLazy]](world)
 }

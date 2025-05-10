@@ -40,12 +40,12 @@ func TestGetComponentRegistry(t *testing.T) {
 	// create component registry if it is not present yet
 	world, err := NewWorld(DefaultWorldConfigs())
 	assert.NoError(err)
-	componentRegistry, err := world.getComponentRegistry(ComponentIdFor[componentA]())
+	componentRegistry, err := world.getComponentRegistry(ComponentIdFor[componentA](&world))
 	assert.NoError(err)
 	assert.NotNil(componentRegistry)
 
 	// get the same component registry if it is already present
-	componentRegistry2, err := world.getComponentRegistry(ComponentIdFor[componentA]())
+	componentRegistry2, err := world.getComponentRegistry(ComponentIdFor[componentA](&world))
 	assert.NotNil(componentRegistry)
 	assert.NoError(err)
 	assert.Equal(componentRegistry, componentRegistry2)

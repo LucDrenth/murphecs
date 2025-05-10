@@ -16,7 +16,7 @@ func Remove[A IComponent](world *World, entity EntityId) error {
 		return ErrEntityNotFound
 	}
 
-	return removeComponentFromEntityData[A](entityData)
+	return removeComponentFromEntityData[A](entityData, world)
 }
 
 // Remove2 removes the given components from entity.
@@ -30,10 +30,10 @@ func Remove2[A, B IComponent](world *World, entity EntityId) (result error) {
 		return ErrEntityNotFound
 	}
 
-	if err := removeComponentFromEntityData[A](entityData); err != nil {
+	if err := removeComponentFromEntityData[A](entityData, world); err != nil {
 		result = err
 	}
-	if err := removeComponentFromEntityData[B](entityData); err != nil {
+	if err := removeComponentFromEntityData[B](entityData, world); err != nil {
 		result = err
 	}
 
@@ -51,13 +51,13 @@ func Remove3[A, B, C IComponent](world *World, entity EntityId) (result error) {
 		return ErrEntityNotFound
 	}
 
-	if err := removeComponentFromEntityData[A](entityData); err != nil {
+	if err := removeComponentFromEntityData[A](entityData, world); err != nil {
 		result = err
 	}
-	if err := removeComponentFromEntityData[B](entityData); err != nil {
+	if err := removeComponentFromEntityData[B](entityData, world); err != nil {
 		result = err
 	}
-	if err := removeComponentFromEntityData[C](entityData); err != nil {
+	if err := removeComponentFromEntityData[C](entityData, world); err != nil {
 		result = err
 	}
 
@@ -75,24 +75,24 @@ func Remove4[A, B, C, D IComponent](world *World, entity EntityId) (result error
 		return ErrEntityNotFound
 	}
 
-	if err := removeComponentFromEntityData[A](entityData); err != nil {
+	if err := removeComponentFromEntityData[A](entityData, world); err != nil {
 		result = err
 	}
-	if err := removeComponentFromEntityData[B](entityData); err != nil {
+	if err := removeComponentFromEntityData[B](entityData, world); err != nil {
 		result = err
 	}
-	if err := removeComponentFromEntityData[C](entityData); err != nil {
+	if err := removeComponentFromEntityData[C](entityData, world); err != nil {
 		result = err
 	}
-	if err := removeComponentFromEntityData[D](entityData); err != nil {
+	if err := removeComponentFromEntityData[D](entityData, world); err != nil {
 		result = err
 	}
 
 	return result
 }
 
-func removeComponentFromEntityData[T IComponent](entry *EntityData) error {
-	componentId := ComponentIdFor[T]()
+func removeComponentFromEntityData[T IComponent](entry *EntityData, world *World) error {
+	componentId := ComponentIdFor[T](world)
 	if _, ok := entry.components[componentId]; !ok {
 		return fmt.Errorf("%w: %s", ErrComponentNotFound, ComponentDebugStringFor[T]())
 	}

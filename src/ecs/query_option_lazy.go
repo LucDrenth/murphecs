@@ -14,10 +14,10 @@ type NotLazy struct{}
 // runs cleared.
 type Lazy struct{}
 
-func (NotLazy) getCombinedQueryOptions() (combinedQueryOptions, error) {
+func (NotLazy) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
 	return combinedQueryOptions{isLazy: false}, nil
 }
-func (Lazy) getCombinedQueryOptions() (combinedQueryOptions, error) {
+func (Lazy) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
 	return combinedQueryOptions{isLazy: true}, nil
 }
 

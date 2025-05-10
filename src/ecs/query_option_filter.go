@@ -17,7 +17,7 @@ const (
 )
 
 type QueryParamFilter interface {
-	getComponents() []ComponentId
+	getComponents(world *World) []ComponentId
 	getFilterType() filterType
 	getNestedFilters() (a QueryParamFilter, b QueryParamFilter, err error)
 }
@@ -27,24 +27,24 @@ type Without[A IComponent] struct{}
 type And[A, B QueryParamFilter] struct{}
 type Or[A, B QueryParamFilter] struct{}
 
-func (filter NoFilter) getComponents() []ComponentId {
+func (filter NoFilter) getComponents(world *World) []ComponentId {
 	return []ComponentId{}
 }
 
-func (filter And[A, B]) getComponents() []ComponentId {
+func (filter And[A, B]) getComponents(world *World) []ComponentId {
 	return []ComponentId{}
 }
 
-func (filter Or[A, B]) getComponents() []ComponentId {
+func (filter Or[A, B]) getComponents(world *World) []ComponentId {
 	return []ComponentId{}
 }
 
-func (filter With[A]) getComponents() []ComponentId {
-	return []ComponentId{ComponentIdFor[A]()}
+func (filter With[A]) getComponents(world *World) []ComponentId {
+	return []ComponentId{ComponentIdFor[A](world)}
 }
 
-func (filter Without[A]) getComponents() []ComponentId {
-	return []ComponentId{ComponentIdFor[A]()}
+func (filter Without[A]) getComponents(world *World) []ComponentId {
+	return []ComponentId{ComponentIdFor[A](world)}
 }
 
 func (filter NoFilter) getFilterType() filterType {
@@ -108,17 +108,17 @@ func (filter Or[A, B]) getNestedFilters() (a QueryParamFilter, b QueryParamFilte
 	return a, b, nil
 }
 
-func (filter With[A]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[With[A], NoOptional, NoReadOnly, NotLazy]]()
+func (filter With[A]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[With[A], NoOptional, NoReadOnly, NotLazy]](world)
 }
-func (filter Without[A]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[Without[A], NoOptional, NoReadOnly, NotLazy]]()
+func (filter Without[A]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[Without[A], NoOptional, NoReadOnly, NotLazy]](world)
 }
-func (filter And[A, B]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[And[A, B], NoOptional, NoReadOnly, NotLazy]]()
+func (filter And[A, B]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[And[A, B], NoOptional, NoReadOnly, NotLazy]](world)
 }
-func (filter Or[A, B]) getCombinedQueryOptions() (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[Or[A, B], NoOptional, NoReadOnly, NotLazy]]()
+func (filter Or[A, B]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+	return toCombinedQueryOptions[QueryOptions[Or[A, B], NoOptional, NoReadOnly, NotLazy]](world)
 }
 
 type QueryFilter interface {

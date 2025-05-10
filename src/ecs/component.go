@@ -6,6 +6,21 @@ import (
 	"strings"
 )
 
+type componentIdRegistry struct {
+	components map[reflect.Type]uint
+	currentId  uint
+}
+
+func (c *componentIdRegistry) getId(componentType reflect.Type) uint {
+	if id, exists := c.components[componentType]; exists {
+		return id
+	}
+
+	c.currentId += 1
+	c.components[componentType] = c.currentId
+	return c.currentId
+}
+
 type IComponent interface {
 	RequiredComponents() []IComponent
 }
@@ -16,28 +31,41 @@ func (Component) RequiredComponents() []IComponent {
 	return []IComponent{}
 }
 
-type ComponentId = reflect.Type
+type ComponentId struct {
+	id            uint
+	componentType reflect.Type
+}
+
+func (c *ComponentId) DebugString() string {
+	return c.componentType.String()
+}
 
 // ComponentIdOf returns a unique representation of the component ID
-func ComponentIdOf(component IComponent) ComponentId {
-	result := reflect.TypeOf(component)
+func ComponentIdOf(component IComponent, world *World) ComponentId {
+	componentType := reflect.TypeOf(component)
 
-	if result.Kind() == reflect.Pointer {
-		return result.Elem()
+	if componentType.Kind() == reflect.Pointer {
+		componentType = componentType.Elem()
 	}
 
-	return result
+	return ComponentId{
+		id:            world.componentIdRegistry.getId(componentType),
+		componentType: componentType,
+	}
 }
 
 // ComponentIdFor returns a unique representation of the component ID
-func ComponentIdFor[T IComponent]() ComponentId {
-	result := reflect.TypeFor[T]()
+func ComponentIdFor[T IComponent](world *World) ComponentId {
+	componentType := reflect.TypeFor[T]()
 
-	if result.Kind() == reflect.Pointer {
-		return result.Elem()
+	if componentType.Kind() == reflect.Pointer {
+		componentType = componentType.Elem()
 	}
 
-	return result
+	return ComponentId{
+		id:            world.componentIdRegistry.getId(componentType),
+		componentType: componentType,
+	}
 }
 
 // ComponentDebugStringOf returns a string reflection of a component id such as "ecs.Entity"
@@ -52,11 +80,11 @@ func ComponentDebugStringFor[T IComponent]() string {
 	return result
 }
 
-func toComponentIds(components []IComponent) []ComponentId {
+func toComponentIds(components []IComponent, world *World) []ComponentId {
 	componentIds := make([]ComponentId, len(components))
 
 	for i, component := range components {
-		componentIds[i] = ComponentIdOf(component)
+		componentIds[i] = ComponentIdOf(component, world)
 	}
 
 	return componentIds
@@ -64,12 +92,12 @@ func toComponentIds(components []IComponent) []ComponentId {
 
 // getARequiredComponents non-exhaustively gets required components of `components` adds those components to `result`, and their types to `componentsToExclude`.
 // Required components of which their type exists in `componentsToExclude` are skipped.
-func getRequiredComponents(componentsToExclude *[]ComponentId, components []IComponent, result *[]IComponent) (newComponents []IComponent) {
+func getRequiredComponents(componentsToExclude *[]ComponentId, components []IComponent, result *[]IComponent, world *World) (newComponents []IComponent) {
 	newComponents = []IComponent{}
 
 	for _, component := range components {
 		for _, required_component := range component.RequiredComponents() {
-			componentId := ComponentIdOf(required_component)
+			componentId := ComponentIdOf(required_component, world)
 
 			if slices.Contains(*componentsToExclude, componentId) {
 				continue
@@ -87,11 +115,11 @@ func getRequiredComponents(componentsToExclude *[]ComponentId, components []ICom
 // getAllRequiredComponents exhaustively gets all required components of `components`.
 //
 // `componentsToExclude` gets updated with the types from the result.
-func getAllRequiredComponents(componentsToExclude *[]ComponentId, components []IComponent) []IComponent {
+func getAllRequiredComponents(componentsToExclude *[]ComponentId, components []IComponent, world *World) []IComponent {
 	result := []IComponent{}
 
 	for {
-		components = getRequiredComponents(componentsToExclude, components, &result)
+		components = getRequiredComponents(componentsToExclude, components, &result, world)
 
 		if len(components) == 0 {
 			break

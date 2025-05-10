@@ -89,7 +89,7 @@ func (s *SystemSet) add(sys System, world *ecs.World, logger log.Logger, resourc
 		parameterType := systemValue.Type().In(i)
 
 		if parameterType.Implements(queryType) {
-			query, err := parseQueryParam(parameterType, logger)
+			query, err := parseQueryParam(parameterType, world, logger)
 			if err != nil {
 				return fmt.Errorf("%w: %w", ErrSystemParamQueryNotValid, err)
 			}
@@ -122,7 +122,7 @@ func (s *SystemSet) add(sys System, world *ecs.World, logger log.Logger, resourc
 	return nil
 }
 
-func parseQueryParam(parameterType reflect.Type, logger log.Logger) (ecs.Query, error) {
+func parseQueryParam(parameterType reflect.Type, world *ecs.World, logger log.Logger) (ecs.Query, error) {
 	if parameterType.Kind() == reflect.Interface {
 		return nil, fmt.Errorf("can not be an interface")
 	}
@@ -132,7 +132,7 @@ func parseQueryParam(parameterType reflect.Type, logger log.Logger) (ecs.Query, 
 		return nil, fmt.Errorf("failed to cast param to query")
 	}
 
-	err := query.Prepare()
+	err := query.Prepare(world)
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare query param: %w", err)
 	}
