@@ -6,8 +6,8 @@ test:
 
 # run all benchmarks and only display the benchmark results
 benchmark:
-	go test -bench=.  ./... | grep -E "\bBenchmark"
+	go test -bench=. ./... | grep -E "\bBenchmark"
 
 # run user facing ecs benchmarks
 benchmark-ecs:
-	go test -bench=.  ./benchmark/ecs/ | grep -E "\bBenchmark"
+	go test -bench=. ./benchmark/ecs/ | grep -E "\bBenchmark"
