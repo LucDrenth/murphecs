@@ -323,5 +323,135 @@ func BenchmarkQuery(b *testing.B) {
 				query.Exec(&world)
 			}
 		})
+
+		b.Run(fmt.Sprintf("Query3-Basic-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query3[emptyComponentA, emptyComponentD, emptyComponentC, ecs.Default]{}
+
+			err := query.Prepare(&world)
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query3-Optional-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query3[emptyComponentA, emptyComponentD, emptyComponentC, ecs.Optional1[emptyComponentA]]{}
+
+			err := query.Prepare(&world)
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query3-ReadOnly-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query3[emptyComponentA, emptyComponentD, emptyComponentC, ecs.AllReadOnly]{}
+
+			err := query.Prepare(&world)
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query3-With1-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query3[emptyComponentA, emptyComponentD, emptyComponentC, ecs.With[componentWithValue]]{}
+
+			err := query.Prepare(&world)
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query3-Without1-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query3[emptyComponentA, emptyComponentD, emptyComponentC, ecs.Without[componentWithValue]]{}
+
+			err := query.Prepare(&world)
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query4-Basic-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query4[emptyComponentA, emptyComponentD, emptyComponentB, emptyComponentC, ecs.Default]{}
+
+			err := query.Prepare(&world)
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query4-Optional-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query4[emptyComponentA, emptyComponentD, emptyComponentB, emptyComponentC, ecs.Optional1[emptyComponentA]]{}
+
+			err := query.Prepare(&world)
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query4-ReadOnly-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query4[emptyComponentA, emptyComponentD, emptyComponentB, emptyComponentC, ecs.AllReadOnly]{}
+
+			err := query.Prepare(&world)
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query4-With1-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query4[emptyComponentA, emptyComponentD, emptyComponentB, emptyComponentC, ecs.With[componentWithValue]]{}
+
+			err := query.Prepare(&world)
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query4-Without1-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query4[emptyComponentA, emptyComponentD, emptyComponentB, emptyComponentC, ecs.Without[componentWithValue]]{}
+
+			err := query.Prepare(&world)
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
 	}
 }
