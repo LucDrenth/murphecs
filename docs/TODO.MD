@@ -6,6 +6,7 @@
 
 **Nice-to-have**
 - [performance] Generational entities
+- [performance] Archetype graph to speed up insert/remove. Add an `edges map[componentIds]Archetype` to Archetype where `componentIds` is a hash of the components to add or remove. This gives better performance for archetypes with many components because only the components to add/remove need to be hashed instead of the whole set of new component ids. See https://ajmmertens.medium.com/building-an-ecs-2-archetypes-and-vectorization-fe21690805f9 for more explanation and examples.
 - [feature] Events
 - [feature] Add Query5..Query16 and Optional5..Optional16
 - [feature] World config on how to grow component storage capacity

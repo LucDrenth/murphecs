@@ -5,9 +5,10 @@ import (
 )
 
 func BenchmarkToComponentId(b *testing.B) {
+	type componentA struct{ Component }
+
 	world := DefaultWorld()
-	type aComponent struct{ Component }
-	component := aComponent{}
+	component := componentA{}
 
 	for b.Loop() {
 		ComponentIdOf(component, &world)
@@ -15,11 +16,12 @@ func BenchmarkToComponentId(b *testing.B) {
 }
 
 func BenchmarkGetComponentId(b *testing.B) {
+	type componentA struct{ Component }
+
 	world := DefaultWorld()
-	type aComponent struct{ Component }
 
 	for b.Loop() {
-		ComponentIdFor[aComponent](&world)
-		ComponentIdFor[*aComponent](&world)
+		ComponentIdFor[componentA](&world)
+		ComponentIdFor[*componentA](&world)
 	}
 }
