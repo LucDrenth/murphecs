@@ -8,10 +8,10 @@ import (
 // World contains all of the entities and their components.
 type World struct {
 	entityIdCounter          uint
-	entities                 map[EntityId]*EntityData
-	components               map[ComponentId]*componentRegistry
+	entities                 map[EntityId]*EntityData // TODO EntityData probably does not have to be pointer once archeType is implemented
 	initialComponentCapacity initialComponentCapacityStrategy
-	componentIdRegistry      componentIdRegistry
+	componentRegistry        componentRegistry
+	archetypeStorage         archetypeStorage
 }
 
 // DefaultWorld returns a World with default configs.
@@ -35,11 +35,11 @@ func NewWorld(configs WorldConfigs) (World, error) {
 
 	return World{
 		entities:                 map[EntityId]*EntityData{},
-		components:               map[ComponentId]*componentRegistry{},
 		initialComponentCapacity: configs.ComponentCapacityStrategy,
-		componentIdRegistry: componentIdRegistry{
+		componentRegistry: componentRegistry{
 			components: map[reflect.Type]uint{},
 		},
+		archetypeStorage: newArchetypeStorage(),
 	}, nil
 }
 
@@ -48,38 +48,10 @@ func (world *World) CountEntities() int {
 }
 
 func (world *World) CountComponents() int {
-	result := 0
-
-	for _, entry := range world.entities {
-		result += len(entry.components)
-	}
-
-	return result
+	return int(world.archetypeStorage.countComponents())
 }
 
-func (world *World) createEntity() EntityId {
+func (world *World) generateEntityId() EntityId {
 	world.entityIdCounter++
-	entity := EntityId(world.entityIdCounter)
-	world.entities[entity] = &EntityData{components: map[ComponentId]uint{}}
-	return entity
-}
-
-// getComponentRegistry creates a new component registry if it doesn't exist yet.
-func (world *World) getComponentRegistry(ComponentId ComponentId) (*componentRegistry, error) {
-	componentRegistry, ok := world.components[ComponentId]
-	if !ok {
-		newComponentRegistry, err := createComponentRegistry(
-			world.initialComponentCapacity.GetDefaultComponentCapacity(ComponentId),
-			ComponentId,
-		)
-
-		if err != nil {
-			return nil, err
-		}
-
-		world.components[ComponentId] = &newComponentRegistry
-		return &newComponentRegistry, nil
-	}
-
-	return componentRegistry, nil
+	return EntityId(world.entityIdCounter)
 }

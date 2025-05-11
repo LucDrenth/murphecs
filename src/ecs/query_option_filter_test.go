@@ -14,48 +14,47 @@ func TestQueryFilter(t *testing.T) {
 		assert := assert.New(t)
 
 		world := DefaultWorld()
-
-		entityData := EntityData{components: map[ComponentId]uint{
-			ComponentIdFor[componentA](&world): 0,
-		}}
+		entity, err := Spawn(&world, &componentA{})
+		assert.NoError(err)
+		entityData := world.entities[entity]
 
 		filter := queryFilterWith{c: []ComponentId{
 			ComponentIdFor[componentA](&world),
 		}}
-		assert.True(filter.Validate(&entityData))
+		assert.True(filter.Validate(entityData))
 
 		filter = queryFilterWith{c: []ComponentId{
 			ComponentIdFor[componentB](&world),
 		}}
-		assert.False(filter.Validate(&entityData))
+		assert.False(filter.Validate(entityData))
 	})
 
 	t.Run("queryFilterWithout only validates if entry does not have the component", func(t *testing.T) {
 		assert := assert.New(t)
 
 		world := DefaultWorld()
-		entityData := EntityData{components: map[ComponentId]uint{
-			ComponentIdFor[componentA](&world): 0,
-		}}
+		entity, err := Spawn(&world, &componentA{})
+		assert.NoError(err)
+		entityData := world.entities[entity]
 
 		filter := queryFilterWithout{c: []ComponentId{
 			ComponentIdFor[componentA](&world),
 		}}
-		assert.False(filter.Validate(&entityData))
+		assert.False(filter.Validate(entityData))
 
 		filter = queryFilterWithout{c: []ComponentId{
 			ComponentIdFor[componentB](&world),
 		}}
-		assert.True(filter.Validate(&entityData))
+		assert.True(filter.Validate(entityData))
 	})
 
 	t.Run("queryFilterAnd only validates if both sub-filters are true", func(t *testing.T) {
 		assert := assert.New(t)
 
 		world := DefaultWorld()
-		entityData := EntityData{components: map[ComponentId]uint{
-			ComponentIdFor[componentA](&world): 0,
-		}}
+		entity, err := Spawn(&world, &componentA{})
+		assert.NoError(err)
+		entityData := world.entities[entity]
 
 		// both are true
 		filter := queryFilterAnd{
@@ -66,7 +65,7 @@ func TestQueryFilter(t *testing.T) {
 				ComponentIdFor[componentB](&world),
 			}},
 		}
-		assert.True(filter.Validate(&entityData))
+		assert.True(filter.Validate(entityData))
 
 		// one is true, 1 is false
 		filter = queryFilterAnd{
@@ -77,7 +76,7 @@ func TestQueryFilter(t *testing.T) {
 				ComponentIdFor[componentB](&world),
 			}},
 		}
-		assert.False(filter.Validate(&entityData))
+		assert.False(filter.Validate(entityData))
 
 		// both are false
 		filter = queryFilterAnd{
@@ -88,17 +87,16 @@ func TestQueryFilter(t *testing.T) {
 				ComponentIdFor[componentC](&world),
 			}},
 		}
-		assert.False(filter.Validate(&entityData))
+		assert.False(filter.Validate(entityData))
 	})
 
 	t.Run("queryFilterOr returns true if either one or both of the sub-filters are true", func(t *testing.T) {
 		assert := assert.New(t)
 
 		world := DefaultWorld()
-		entityData := EntityData{components: map[ComponentId]uint{
-			ComponentIdFor[componentA](&world): 0,
-			ComponentIdFor[componentB](&world): 0,
-		}}
+		entity, err := Spawn(&world, &componentA{}, &componentB{})
+		assert.NoError(err)
+		entityData := world.entities[entity]
 
 		// both are true
 		filter := queryFilterOr{
@@ -109,7 +107,7 @@ func TestQueryFilter(t *testing.T) {
 				ComponentIdFor[componentB](&world),
 			}},
 		}
-		assert.True(filter.Validate(&entityData))
+		assert.True(filter.Validate(entityData))
 
 		// one is true, one is false
 		filter = queryFilterOr{
@@ -120,7 +118,7 @@ func TestQueryFilter(t *testing.T) {
 				ComponentIdFor[componentC](&world),
 			}},
 		}
-		assert.True(filter.Validate(&entityData))
+		assert.True(filter.Validate(entityData))
 
 		// both are false
 		filter = queryFilterOr{
@@ -131,6 +129,6 @@ func TestQueryFilter(t *testing.T) {
 				ComponentIdFor[componentD](&world),
 			}},
 		}
-		assert.False(filter.Validate(&entityData))
+		assert.False(filter.Validate(entityData))
 	})
 }

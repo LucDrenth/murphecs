@@ -22,7 +22,7 @@ func Spawn(world *World, components ...IComponent) (EntityId, error) {
 	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(componentIds)
 	if duplicate != nil {
 		debugType := ComponentDebugStringOf(components[duplicateIndexA])
-		return 0, fmt.Errorf("%w: %s at positions %d and %d", ErrDuplicateComponent, debugType, duplicateIndexA, duplicateIndexB)
+		return nonExistingEntity, fmt.Errorf("%w: %s at positions %d and %d", ErrDuplicateComponent, debugType, duplicateIndexA, duplicateIndexB)
 	}
 
 	// get required components
@@ -30,26 +30,33 @@ func Spawn(world *World, components ...IComponent) (EntityId, error) {
 	components = append(components, requiredComponents...)
 
 	// spawn components
-	entity := world.createEntity()
+	entityId := world.generateEntityId()
 
 	var returnedErr error = nil
 
+	archetype, err := world.archetypeStorage.getArchetype(world, componentIds)
+	if err != nil {
+		return nonExistingEntity, err
+	}
+	world.archetypeStorage.entityIdToArchetype[entityId] = archetype
+
+	var row uint
 	for _, component := range components {
+		// We can not reuse componentIds because it is not in the same order as components
 		componentId := ComponentIdOf(component, world)
-		componentRegistry, err := world.getComponentRegistry(componentId)
+
+		storage := archetype.components[componentId]
+		row, err = storage.insert(component)
 		if err != nil {
-			returnedErr = fmt.Errorf("failed to get component registry: %w", err)
+			returnedErr = fmt.Errorf("failed to insert component %s in to component registry: %w", componentId.DebugString(), err)
 			continue
 		}
-
-		componentIndex, err := componentRegistry.insert(component)
-		if err != nil {
-			returnedErr = fmt.Errorf("failed to insert component in to component registry: %w", err)
-			continue
-		}
-
-		world.entities[entity].components[componentId] = componentIndex
 	}
 
-	return entity, returnedErr
+	world.entities[entityId] = &EntityData{
+		row:       row,
+		archetype: archetype,
+	}
+
+	return entityId, returnedErr
 }

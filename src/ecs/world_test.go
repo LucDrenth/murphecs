@@ -21,32 +21,13 @@ func TestCreateWorld(t *testing.T) {
 	})
 }
 
-func TestCreateEntity(t *testing.T) {
+func TestGenerateEntityId(t *testing.T) {
 	assert := assert.New(t)
 
 	world, err := NewWorld(DefaultWorldConfigs())
 	assert.NoError(err)
-	entity1 := world.createEntity()
-	entity2 := world.createEntity()
+	entity1 := world.generateEntityId()
+	entity2 := world.generateEntityId()
 
 	assert.NotEqual(entity1, entity2)
-}
-
-func TestGetComponentRegistry(t *testing.T) {
-	type componentA struct{ Component }
-
-	assert := assert.New(t)
-
-	// create component registry if it is not present yet
-	world, err := NewWorld(DefaultWorldConfigs())
-	assert.NoError(err)
-	componentRegistry, err := world.getComponentRegistry(ComponentIdFor[componentA](&world))
-	assert.NoError(err)
-	assert.NotNil(componentRegistry)
-
-	// get the same component registry if it is already present
-	componentRegistry2, err := world.getComponentRegistry(ComponentIdFor[componentA](&world))
-	assert.NotNil(componentRegistry)
-	assert.NoError(err)
-	assert.Equal(componentRegistry, componentRegistry2)
 }

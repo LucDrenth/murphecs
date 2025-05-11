@@ -17,6 +17,20 @@ func GetFirstDuplicate[T comparable](elements []T) (*T, int, int) {
 	return nil, -1, -1
 }
 
+// IsUnique returns true if elements do not contain any duplicates
+func IsUnique[T comparable](elements []T) bool {
+	for i := range len(elements) - 1 {
+		for j := i + 1; j < len(elements); j++ {
+
+			if elements[i] == elements[j] {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
 // RemoveFromSlice removes s[index].
 //
 // This function does not check if index is out of bounds, and will panic if index >= len(s) or index < 0

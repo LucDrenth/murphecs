@@ -6,12 +6,12 @@ import (
 	"strings"
 )
 
-type componentIdRegistry struct {
+type componentRegistry struct {
 	components map[reflect.Type]uint
 	currentId  uint
 }
 
-func (c *componentIdRegistry) getId(componentType reflect.Type) uint {
+func (c *componentRegistry) getId(componentType reflect.Type) uint {
 	if id, exists := c.components[componentType]; exists {
 		return id
 	}
@@ -37,7 +37,12 @@ type ComponentId struct {
 }
 
 func (c *ComponentId) DebugString() string {
-	return c.componentType.String()
+	result, _ := strings.CutPrefix(c.componentType.String(), "*")
+	return result
+}
+
+func (c *ComponentId) Is(other *ComponentId) bool {
+	return other.id == c.id
 }
 
 // ComponentIdOf returns a unique representation of the component ID
@@ -49,7 +54,7 @@ func ComponentIdOf(component IComponent, world *World) ComponentId {
 	}
 
 	return ComponentId{
-		id:            world.componentIdRegistry.getId(componentType),
+		id:            world.componentRegistry.getId(componentType),
 		componentType: componentType,
 	}
 }
@@ -63,7 +68,7 @@ func ComponentIdFor[T IComponent](world *World) ComponentId {
 	}
 
 	return ComponentId{
-		id:            world.componentIdRegistry.getId(componentType),
+		id:            world.componentRegistry.getId(componentType),
 		componentType: componentType,
 	}
 }

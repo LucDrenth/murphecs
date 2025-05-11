@@ -218,7 +218,7 @@ func TestComponentIdRegistry(t *testing.T) {
 	type componentA struct{ Component }
 	type componentB struct{ Component }
 
-	componentIdRegistry := componentIdRegistry{
+	componentIdRegistry := componentRegistry{
 		components: map[reflect.Type]uint{},
 		currentId:  0,
 	}

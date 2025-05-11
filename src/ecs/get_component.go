@@ -242,12 +242,12 @@ func Get8[A, B, C, D, E, F, G, H IComponent](world *World, entity EntityId) (
 func setComponentFromEntry[T IComponent](world *World, entityData *EntityData, target **T) error {
 	componentId := ComponentIdFor[T](world)
 
-	componentRegistryIndex, ok := entityData.components[componentId]
-	if !ok {
+	storage, componentExists := entityData.archetype.components[componentId]
+	if !componentExists {
 		return ErrComponentNotFound
 	}
 
-	result, err := getComponentFromComponentRegistry[T](world.components[componentId], componentRegistryIndex)
+	result, err := getComponentFromComponentStorage[T](storage, entityData.row)
 	if err != nil {
 		return err
 	}

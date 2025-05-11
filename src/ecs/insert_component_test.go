@@ -51,7 +51,7 @@ func TestInsert(t *testing.T) {
 		assert := assert.New(t)
 		world := DefaultWorld()
 
-		err := Insert(&world, nonExistingEntity)
+		err := Insert(&world, nonExistingEntity, &componentA{})
 		assert.ErrorIs(err, ErrEntityNotFound)
 	})
 

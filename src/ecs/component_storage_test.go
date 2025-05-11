@@ -14,7 +14,7 @@ func TestNewComponentRegistry(t *testing.T) {
 
 		world := DefaultWorld()
 
-		_, err := createComponentRegistry(0, ComponentIdFor[componentA](&world))
+		_, err := createComponentStorage(0, ComponentIdFor[componentA](&world))
 		assert.ErrorIs(err, ErrInvalidComponentStorageCapacity)
 	})
 
@@ -23,9 +23,9 @@ func TestNewComponentRegistry(t *testing.T) {
 
 		world := DefaultWorld()
 
-		_, err := createComponentRegistry(1, ComponentIdFor[componentA](&world))
+		_, err := createComponentStorage(1, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
-		_, err = createComponentRegistry(1024, ComponentIdFor[componentA](&world))
+		_, err = createComponentStorage(1024, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 	})
 }
@@ -38,7 +38,7 @@ func TestComponentRegistryInsert(t *testing.T) {
 
 		world := DefaultWorld()
 
-		componentRegistry, err := createComponentRegistry(4, ComponentIdFor[componentA](&world))
+		componentRegistry, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 		_, err = componentRegistry.insert(componentA{})
 		assert.ErrorIs(err, ErrComponentIsNotAPointer)
@@ -49,7 +49,7 @@ func TestComponentRegistryInsert(t *testing.T) {
 
 		world := DefaultWorld()
 
-		componentRegistry, err := createComponentRegistry(4, ComponentIdFor[componentA](&world))
+		componentRegistry, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 		_, err = componentRegistry.insert(&componentA{})
 		assert.NoError(err)
@@ -60,7 +60,7 @@ func TestComponentRegistryInsert(t *testing.T) {
 
 		world := DefaultWorld()
 
-		componentRegistry, err := createComponentRegistry(4, ComponentIdFor[componentA](&world))
+		componentRegistry, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 
 		for range 10 {
@@ -81,9 +81,9 @@ func TestGetComponentFromComponentRegistry(t *testing.T) {
 
 		world := DefaultWorld()
 
-		componentRegistry, err := createComponentRegistry(4, ComponentIdFor[componentA](&world))
+		componentRegistry, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
-		component, err := getComponentFromComponentRegistry[componentA](&componentRegistry, 5)
+		component, err := getComponentFromComponentStorage[componentA](&componentRegistry, 5)
 		assert.Error(err)
 		assert.Nil(component)
 	})
@@ -94,7 +94,7 @@ func TestGetComponentFromComponentRegistry(t *testing.T) {
 		world := DefaultWorld()
 		capacity := 4
 
-		componentRegistry, err := createComponentRegistry(uint(capacity), ComponentIdFor[componentA](&world))
+		componentRegistry, err := createComponentStorage(uint(capacity), ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 
 		for i := range capacity {
@@ -105,7 +105,7 @@ func TestGetComponentFromComponentRegistry(t *testing.T) {
 		}
 
 		for i := range capacity {
-			component, err := getComponentFromComponentRegistry[componentA](&componentRegistry, uint(i))
+			component, err := getComponentFromComponentStorage[componentA](&componentRegistry, uint(i))
 			assert.NoError(err)
 			assert.NotNil(component)
 			assert.Equal(i, component.value)
@@ -119,7 +119,7 @@ func TestGetComponentFromComponentRegistry(t *testing.T) {
 		capacity := 4
 		numberOfInserts := 15
 
-		componentRegistry, err := createComponentRegistry(uint(capacity), ComponentIdFor[componentA](&world))
+		componentRegistry, err := createComponentStorage(uint(capacity), ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 
 		for i := range numberOfInserts {
@@ -130,7 +130,7 @@ func TestGetComponentFromComponentRegistry(t *testing.T) {
 		}
 
 		for i := range numberOfInserts {
-			component, err := getComponentFromComponentRegistry[componentA](&componentRegistry, uint(i))
+			component, err := getComponentFromComponentStorage[componentA](&componentRegistry, uint(i))
 			assert.NoError(err)
 			assert.NotNil(component)
 			assert.Equal(i, component.value)

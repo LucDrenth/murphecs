@@ -18,6 +18,10 @@ import (
 //   - Returns an ErrInvalidComponentStorageCapacity if the component storage capacity, that is decided through World
 //     configs, is not valid
 func Insert(world *World, entity EntityId, components ...IComponent) (resultErr error) {
+	if len(components) == 0 {
+		return nil
+	}
+
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return ErrEntityNotFound
@@ -25,56 +29,77 @@ func Insert(world *World, entity EntityId, components ...IComponent) (resultErr 
 
 	componentIds := toComponentIds(components, world)
 
-	// check for duplicates
 	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(componentIds)
 	if duplicate != nil {
 		debugType := ComponentDebugStringOf(components[duplicateIndexA])
 		return fmt.Errorf("%w: %s at positions %d and %d", ErrDuplicateComponent, debugType, duplicateIndexA, duplicateIndexB)
 	}
 
-	for i, component := range components {
-		if _, componentExists := entityData.components[componentIds[i]]; componentExists {
-			resultErr = fmt.Errorf("%w: %s", ErrComponentAlreadyPresent, ComponentDebugStringOf(component))
-			continue
-		}
+	oldArchetype := entityData.archetype
 
-		componentRegistry, err := world.getComponentRegistry(componentIds[i])
-		if err != nil {
-			resultErr = fmt.Errorf("failed to get component registry: %w", err)
-			continue
+	componentIdsToAdd := make([]ComponentId, 0, len(componentIds))
+	componentsToAdd := make([]IComponent, 0, len(components))
+	for i, componentId := range componentIds {
+		if oldArchetype.HasComponent(componentId) {
+			resultErr = fmt.Errorf("%w: %s", ErrComponentAlreadyPresent, componentId.DebugString())
+		} else {
+			componentIdsToAdd = append(componentIdsToAdd, componentId)
+			componentsToAdd = append(componentsToAdd, components[i])
 		}
-
-		componentIndex, err := componentRegistry.insert(component)
-		if err != nil {
-			resultErr = fmt.Errorf("failed to insert component: %w", err)
-			continue
-		}
-
-		world.entities[entity].components[componentIds[i]] = componentIndex
 	}
 
-	requiredComponents := getAllRequiredComponents(&componentIds, components, world)
-	componentIds = toComponentIds(requiredComponents, world)
-
-	for i, component := range requiredComponents {
-		if _, componentExists := entityData.components[componentIds[i]]; componentExists {
-			continue
-		}
-
-		componentRegistry, err := world.getComponentRegistry(componentIds[i])
-		if err != nil {
-			resultErr = fmt.Errorf("failed to get component registry: %w", err)
-			continue
-		}
-
-		componentIndex, err := componentRegistry.insert(component)
-		if err != nil {
-			resultErr = fmt.Errorf("failed to insert a required component: %w", err)
-			continue
-		}
-
-		world.entities[entity].components[componentIds[i]] = componentIndex
+	if len(componentIdsToAdd) == 0 {
+		return resultErr
 	}
+
+	// move archetype
+	newComponentIds := append(componentIdsToAdd, oldArchetype.componentIds...)
+	requiredComponents := getAllRequiredComponents(&newComponentIds, componentsToAdd, world)
+
+	newArchetype, err := world.archetypeStorage.getArchetype(world, newComponentIds)
+	if err != nil {
+		return err
+	}
+
+	var newRow uint
+
+	for componentId, oldStorage := range oldArchetype.components {
+		rawComponent, err := oldStorage.getComponentPointer(entityData.row)
+		if err != nil {
+			return err
+		}
+
+		newRow, err = newArchetype.components[componentId].insertRaw(rawComponent)
+		if err != nil {
+			return err
+		}
+
+		oldStorage.remove(entityData.row)
+	}
+
+	// insert new component
+	for i, component := range componentsToAdd {
+		storage := newArchetype.components[componentIdsToAdd[i]]
+		newRow, err = storage.insert(component)
+		if err != nil {
+			resultErr = fmt.Errorf("failed to insert component %s in to component registry: %w", componentIdsToAdd[i].DebugString(), err)
+			continue
+		}
+	}
+
+	for _, component := range requiredComponents {
+		componentId := ComponentIdOf(component, world)
+		storage := newArchetype.components[componentId]
+		newRow, err = storage.insert(component)
+		if err != nil {
+			resultErr = fmt.Errorf("failed to insert required component %s in to component registry: %w", componentId.DebugString(), err)
+			continue
+		}
+	}
+
+	entityData.archetype = newArchetype
+	entityData.row = newRow
+	world.archetypeStorage.entityIdToArchetype[entity] = newArchetype
 
 	return resultErr
 }

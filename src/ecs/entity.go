@@ -7,10 +7,10 @@ type EntityId = uint
 const nonExistingEntity = EntityId(0)
 
 type EntityData struct {
-	components map[ComponentId]uint // ComponentId --> componentRegistry index
+	archetype *Archetype
+	row       uint // index of archetype its component storages
 }
 
 func (e *EntityData) hasComponent(c ComponentId) bool {
-	_, ok := e.components[c]
-	return ok
+	return e.archetype.HasComponent(c)
 }

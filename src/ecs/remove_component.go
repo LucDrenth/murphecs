@@ -3,6 +3,9 @@ package ecs
 
 import (
 	"fmt"
+	"slices"
+
+	"github.com/lucdrenth/murph_engine/src/utils"
 )
 
 // Remove removes the given component from entity.
@@ -11,12 +14,9 @@ import (
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
 func Remove[A IComponent](world *World, entity EntityId) error {
-	entityData, ok := world.entities[entity]
-	if !ok {
-		return ErrEntityNotFound
-	}
-
-	return removeComponentFromEntityData[A](entityData, world)
+	return removeComponents(world, entity, []ComponentId{
+		ComponentIdFor[A](world),
+	})
 }
 
 // Remove2 removes the given components from entity.
@@ -25,19 +25,10 @@ func Remove[A IComponent](world *World, entity EntityId) error {
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
 func Remove2[A, B IComponent](world *World, entity EntityId) (result error) {
-	entityData, ok := world.entities[entity]
-	if !ok {
-		return ErrEntityNotFound
-	}
-
-	if err := removeComponentFromEntityData[A](entityData, world); err != nil {
-		result = err
-	}
-	if err := removeComponentFromEntityData[B](entityData, world); err != nil {
-		result = err
-	}
-
-	return result
+	return removeComponents(world, entity, []ComponentId{
+		ComponentIdFor[A](world),
+		ComponentIdFor[B](world),
+	})
 }
 
 // Remove3 removes the given components from entity.
@@ -46,22 +37,11 @@ func Remove2[A, B IComponent](world *World, entity EntityId) (result error) {
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
 func Remove3[A, B, C IComponent](world *World, entity EntityId) (result error) {
-	entityData, ok := world.entities[entity]
-	if !ok {
-		return ErrEntityNotFound
-	}
-
-	if err := removeComponentFromEntityData[A](entityData, world); err != nil {
-		result = err
-	}
-	if err := removeComponentFromEntityData[B](entityData, world); err != nil {
-		result = err
-	}
-	if err := removeComponentFromEntityData[C](entityData, world); err != nil {
-		result = err
-	}
-
-	return result
+	return removeComponents(world, entity, []ComponentId{
+		ComponentIdFor[A](world),
+		ComponentIdFor[B](world),
+		ComponentIdFor[C](world),
+	})
 }
 
 // Remove4 removes the given components from entity.
@@ -70,33 +50,76 @@ func Remove3[A, B, C IComponent](world *World, entity EntityId) (result error) {
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
 func Remove4[A, B, C, D IComponent](world *World, entity EntityId) (result error) {
-	entityData, ok := world.entities[entity]
+	return removeComponents(world, entity, []ComponentId{
+		ComponentIdFor[A](world),
+		ComponentIdFor[B](world),
+		ComponentIdFor[C](world),
+		ComponentIdFor[D](world),
+	})
+}
+
+func removeComponents(world *World, entityId EntityId, componentIds []ComponentId) (resultErr error) {
+	entity, ok := world.entities[entityId]
 	if !ok {
 		return ErrEntityNotFound
 	}
 
-	if err := removeComponentFromEntityData[A](entityData, world); err != nil {
-		result = err
-	}
-	if err := removeComponentFromEntityData[B](entityData, world); err != nil {
-		result = err
-	}
-	if err := removeComponentFromEntityData[C](entityData, world); err != nil {
-		result = err
-	}
-	if err := removeComponentFromEntityData[D](entityData, world); err != nil {
-		result = err
+	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(componentIds)
+	if duplicate != nil {
+		return fmt.Errorf("%w: %s at positions %d and %d", ErrDuplicateComponent, duplicate.DebugString(), duplicateIndexA, duplicateIndexB)
 	}
 
-	return result
-}
-
-func removeComponentFromEntityData[T IComponent](entry *EntityData, world *World) error {
-	componentId := ComponentIdFor[T](world)
-	if _, ok := entry.components[componentId]; !ok {
-		return fmt.Errorf("%w: %s", ErrComponentNotFound, ComponentDebugStringFor[T]())
+	componentIdsToRemove := make([]ComponentId, len(componentIds))
+	for _, componentId := range componentIds {
+		if !entity.archetype.HasComponent(componentId) {
+			resultErr = fmt.Errorf("%w: %s", ErrComponentNotFound, componentId.DebugString())
+		} else {
+			componentIdsToRemove = append(componentIdsToRemove, componentId)
+		}
 	}
 
-	delete(entry.components, componentId)
-	return nil
+	if len(componentIdsToRemove) == 0 {
+		return resultErr
+	}
+
+	oldArchetype := entity.archetype
+
+	newComponentIds := make([]ComponentId, 0, len(oldArchetype.componentIds))
+	for _, componentId := range oldArchetype.componentIds {
+		if !slices.Contains(componentIdsToRemove, componentId) {
+			newComponentIds = append(newComponentIds, componentId)
+		}
+	}
+
+	newArchetype, err := world.archetypeStorage.getArchetype(world, newComponentIds)
+	if err != nil {
+		return err
+	}
+
+	var newRow uint
+
+	for componentId, oldStorage := range oldArchetype.components {
+		if newArchetype.HasComponent(componentId) {
+			rawComponent, err := oldStorage.getComponentPointer(entity.row)
+			if err != nil {
+				resultErr = err
+				continue
+			}
+
+			storage := newArchetype.components[componentId]
+			newRow, err = storage.insertRaw(rawComponent)
+			if err != nil {
+				resultErr = err
+				continue
+			}
+		}
+
+		oldStorage.remove(entity.row)
+	}
+
+	entity.archetype = newArchetype
+	entity.row = newRow
+	world.archetypeStorage.entityIdToArchetype[entityId] = newArchetype
+
+	return resultErr
 }

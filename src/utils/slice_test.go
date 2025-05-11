@@ -104,6 +104,73 @@ func TestGetFirstDuplicate(t *testing.T) {
 	}
 }
 
+func TestIsUnique(t *testing.T) {
+	scenarios := []struct {
+		description string
+		elements    []string
+		expected    bool
+	}{
+		{
+			description: "returns true regardless of order",
+			elements:    []string{"A", "B", "C"},
+			expected:    true,
+		},
+		{
+			description: "returns true regardless of order",
+			elements:    []string{"A", "C", "B"},
+			expected:    true,
+		},
+		{
+			description: "returns true regardless of order",
+			elements:    []string{"B", "A", "C"},
+			expected:    true,
+		},
+		{
+			description: "returns true regardless of order",
+			elements:    []string{"B", "C", "A"},
+			expected:    true,
+		},
+		{
+			description: "returns true regardless of order",
+			elements:    []string{"C", "A", "B"},
+			expected:    true,
+		},
+		{
+			description: "returns true regardless of order",
+			elements:    []string{"C", "B", "A"},
+			expected:    true,
+		},
+		{
+			description: "returns false if there is a duplicate, no matter the place",
+			elements:    []string{"A", "A", "B"},
+			expected:    false,
+		},
+		{
+			description: "returns false if there is a duplicate, no matter the place",
+			elements:    []string{"A", "B", "A"},
+			expected:    false,
+		},
+		{
+			description: "returns false if there is a duplicate, no matter the place",
+			elements:    []string{"B", "A", "A"},
+			expected:    false,
+		},
+		{
+			description: "returns false if there are multiple duplicates",
+			elements:    []string{"A", "A", "B", "B"},
+			expected:    false,
+		},
+	}
+
+	for _, scenario := range scenarios {
+		t.Run(scenario.description, func(t *testing.T) {
+			assert := assert.New(t)
+
+			assert.Equal(scenario.expected, IsUnique(scenario.elements))
+		})
+	}
+}
+
 func TestRemoveFromSlice(t *testing.T) {
 	scenarios := []struct {
 		description    string

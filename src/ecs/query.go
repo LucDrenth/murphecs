@@ -342,12 +342,12 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) C
 func getQueryComponent[T IComponent](world *World, entityData *EntityData, queryOptions *combinedQueryOptions) (result *T, match bool, err error) {
 	componentId := ComponentIdFor[T](world)
 
-	componentRegistryIndex, entityHasComponent := entityData.components[componentId]
-	if !entityHasComponent {
+	storage, componentExists := entityData.archetype.components[componentId]
+	if !componentExists {
 		return nil, slices.Contains(queryOptions.OptionalComponents, componentId), nil
 	}
 
-	result, err = getComponentFromComponentRegistry[T](world.components[componentId], componentRegistryIndex)
+	result, err = getComponentFromComponentStorage[T](storage, entityData.row)
 	if err != nil {
 		return nil, false, fmt.Errorf("getQueryComponent encountered unexpected error: %v", err)
 	}
