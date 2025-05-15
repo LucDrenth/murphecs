@@ -10,8 +10,7 @@ import (
 type Query interface {
 	Exec(world *World) error
 
-	// Prepare extracts the query options and puts it in CombinedQueryOptions. This should be called
-	// once, after which the query is ready to be used (e.g. Exec can be called).
+	// Prepare needs to be called before running Exec.
 	//
 	// This step is necessary because the way that queries are created is optimized for users, and not
 	// for the computer. This method closes that gap.
@@ -68,7 +67,8 @@ func (o *queryOptions) Validate() error {
 //   - use [And] and [Or] to combine filters.
 type Query1[ComponentA IComponent, _ QueryOption] struct {
 	queryOptions
-	results Query1Result[ComponentA]
+	results      Query1Result[ComponentA]
+	componentIdA ComponentId
 }
 
 // Query2 queries 2 components.
@@ -88,7 +88,9 @@ type Query1[ComponentA IComponent, _ QueryOption] struct {
 //   - use [And] and [Or] to combine filters.
 type Query2[ComponentA, ComponentB IComponent, _ QueryOption] struct {
 	queryOptions
-	results Query2Result[ComponentA, ComponentB]
+	results      Query2Result[ComponentA, ComponentB]
+	componentIdA ComponentId
+	componentIdB ComponentId
 }
 
 // Query3 queries 3 components.
@@ -108,7 +110,10 @@ type Query2[ComponentA, ComponentB IComponent, _ QueryOption] struct {
 //   - use [And] and [Or] to combine filters.
 type Query3[ComponentA, ComponentB, ComponentC IComponent, _ QueryOption] struct {
 	queryOptions
-	results Query3Result[ComponentA, ComponentB, ComponentC]
+	results      Query3Result[ComponentA, ComponentB, ComponentC]
+	componentIdA ComponentId
+	componentIdB ComponentId
+	componentIdC ComponentId
 }
 
 // Query4 queries 4 components.
@@ -128,7 +133,11 @@ type Query3[ComponentA, ComponentB, ComponentC IComponent, _ QueryOption] struct
 //   - use [And] and [Or] to combine filters.
 type Query4[ComponentA, ComponentB, ComponentC, ComponentD IComponent, _ QueryOption] struct {
 	queryOptions
-	results Query4Result[ComponentA, ComponentB, ComponentC, ComponentD]
+	results      Query4Result[ComponentA, ComponentB, ComponentC, ComponentD]
+	componentIdA ComponentId
+	componentIdB ComponentId
+	componentIdC ComponentId
+	componentIdD ComponentId
 }
 
 func (q *Query1[ComponentA, QueryOptions]) Exec(world *World) error {
@@ -139,7 +148,7 @@ func (q *Query1[ComponentA, QueryOptions]) Exec(world *World) error {
 			continue
 		}
 
-		a, match, err := getQueryComponent[ComponentA](world, entityData, &q.options)
+		a, match, err := getQueryComponent[ComponentA](q.componentIdA, entityData, &q.options)
 		if err != nil {
 			return err
 		}
@@ -161,7 +170,7 @@ func (q *Query2[ComponentA, ComponentB, QueryOptions]) Exec(world *World) error 
 			continue
 		}
 
-		a, match, err := getQueryComponent[ComponentA](world, entityData, &q.options)
+		a, match, err := getQueryComponent[ComponentA](q.componentIdA, entityData, &q.options)
 		if err != nil {
 			return err
 		}
@@ -169,7 +178,7 @@ func (q *Query2[ComponentA, ComponentB, QueryOptions]) Exec(world *World) error 
 			continue
 		}
 
-		b, match, err := getQueryComponent[ComponentB](world, entityData, &q.options)
+		b, match, err := getQueryComponent[ComponentB](q.componentIdB, entityData, &q.options)
 		if err != nil {
 			return err
 		}
@@ -192,7 +201,7 @@ func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Exec(world *W
 			continue
 		}
 
-		a, match, err := getQueryComponent[ComponentA](world, entityData, &q.options)
+		a, match, err := getQueryComponent[ComponentA](q.componentIdA, entityData, &q.options)
 		if err != nil {
 			return err
 		}
@@ -200,7 +209,7 @@ func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Exec(world *W
 			continue
 		}
 
-		b, match, err := getQueryComponent[ComponentB](world, entityData, &q.options)
+		b, match, err := getQueryComponent[ComponentB](q.componentIdB, entityData, &q.options)
 		if err != nil {
 			return err
 		}
@@ -208,7 +217,7 @@ func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Exec(world *W
 			continue
 		}
 
-		c, match, err := getQueryComponent[ComponentC](world, entityData, &q.options)
+		c, match, err := getQueryComponent[ComponentC](q.componentIdC, entityData, &q.options)
 		if err != nil {
 			return err
 		}
@@ -232,7 +241,7 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) E
 			continue
 		}
 
-		a, match, err := getQueryComponent[ComponentA](world, entityData, &q.options)
+		a, match, err := getQueryComponent[ComponentA](q.componentIdA, entityData, &q.options)
 		if err != nil {
 			return err
 		}
@@ -240,7 +249,7 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) E
 			continue
 		}
 
-		b, match, err := getQueryComponent[ComponentB](world, entityData, &q.options)
+		b, match, err := getQueryComponent[ComponentB](q.componentIdB, entityData, &q.options)
 		if err != nil {
 			return err
 		}
@@ -248,7 +257,7 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) E
 			continue
 		}
 
-		c, match, err := getQueryComponent[ComponentC](world, entityData, &q.options)
+		c, match, err := getQueryComponent[ComponentC](q.componentIdC, entityData, &q.options)
 		if err != nil {
 			return err
 		}
@@ -256,7 +265,7 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) E
 			continue
 		}
 
-		d, match, err := getQueryComponent[ComponentD](world, entityData, &q.options)
+		d, match, err := getQueryComponent[ComponentD](q.componentIdD, entityData, &q.options)
 		if err != nil {
 			return err
 		}
@@ -276,35 +285,45 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) E
 
 func (q *Query1[A, QueryOptions]) Prepare(world *World) (err error) {
 	q.options, err = toCombinedQueryOptions[QueryOptions](world)
+	q.componentIdA = ComponentIdFor[A](world)
 	q.components = []ComponentId{
-		ComponentIdFor[A](world),
+		q.componentIdA,
 	}
 	return err
 }
 func (q *Query2[A, B, QueryOptions]) Prepare(world *World) (err error) {
 	q.options, err = toCombinedQueryOptions[QueryOptions](world)
+	q.componentIdA = ComponentIdFor[A](world)
+	q.componentIdB = ComponentIdFor[B](world)
 	q.components = []ComponentId{
-		ComponentIdFor[A](world),
-		ComponentIdFor[B](world),
+		q.componentIdA,
+		q.componentIdB,
 	}
 	return err
 }
 func (q *Query3[A, B, C, QueryOptions]) Prepare(world *World) (err error) {
 	q.options, err = toCombinedQueryOptions[QueryOptions](world)
+	q.componentIdA = ComponentIdFor[A](world)
+	q.componentIdB = ComponentIdFor[B](world)
+	q.componentIdC = ComponentIdFor[C](world)
 	q.components = []ComponentId{
-		ComponentIdFor[A](world),
-		ComponentIdFor[B](world),
-		ComponentIdFor[C](world),
+		q.componentIdA,
+		q.componentIdB,
+		q.componentIdC,
 	}
 	return err
 }
 func (q *Query4[A, B, C, D, QueryOptions]) Prepare(world *World) (err error) {
 	q.options, err = toCombinedQueryOptions[QueryOptions](world)
+	q.componentIdA = ComponentIdFor[A](world)
+	q.componentIdB = ComponentIdFor[B](world)
+	q.componentIdC = ComponentIdFor[C](world)
+	q.componentIdD = ComponentIdFor[D](world)
 	q.components = []ComponentId{
-		ComponentIdFor[A](world),
-		ComponentIdFor[B](world),
-		ComponentIdFor[C](world),
-		ComponentIdFor[D](world),
+		q.componentIdA,
+		q.componentIdB,
+		q.componentIdC,
+		q.componentIdD,
 	}
 	return err
 }
@@ -339,9 +358,7 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) C
 //
 // match is true when the entity has the component or if the component is marked marked as optional.
 // When match is true, the entity should be present in the query results.
-func getQueryComponent[T IComponent](world *World, entityData *EntityData, queryOptions *combinedQueryOptions) (result *T, match bool, err error) {
-	componentId := ComponentIdFor[T](world)
-
+func getQueryComponent[T IComponent](componentId ComponentId, entityData *EntityData, queryOptions *combinedQueryOptions) (result *T, match bool, err error) {
 	storage, componentExists := entityData.archetype.components[componentId]
 	if !componentExists {
 		return nil, slices.Contains(queryOptions.OptionalComponents, componentId), nil
