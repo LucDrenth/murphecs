@@ -66,3 +66,18 @@ To run any example, run below command and replace `readme` with the directory of
 ```bash
 go run ./examples/readme
 ```
+
+# Development
+## Benchmarking
+To compare benchmarks with changed code, run below command with your new code
+```bash
+go test -count=10 -bench=. ./benchmark/ecs/ > new.txt
+```
+and then below command with your old code
+```bash
+go test -count=10 -bench=. ./benchmark/ecs/ > new.txt
+```
+Now run [benchstat](https://pkg.go.dev/golang.org/x/perf/cmd/benchstat) on the files created above:
+```bash
+go tool benchstat old.txt new.txt
+```
