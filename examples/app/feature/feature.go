@@ -9,10 +9,8 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
 
+	"github.com/lucdrenth/murphecs/examples/app/run"
 	"github.com/lucdrenth/murphecs/src/app"
 	"github.com/lucdrenth/murphecs/src/ecs"
 )
@@ -39,7 +37,7 @@ func main() {
 		AppName: "MyApp",
 	})
 
-	runApp(&myApp)
+	run.RunSubApp(&myApp)
 }
 
 type appNameResource struct {
@@ -75,15 +73,4 @@ func tickPrinter(logger app.Logger, tickCounter *tickCounter, appName appNameRes
 
 func cleanupPrinter(logger app.Logger, appName appNameResource) {
 	logger.Info(fmt.Sprintf("%s - Cleaning up", appName.name))
-}
-
-func runApp(subApp *app.BasicSubApp) {
-	exitChannel := make(chan struct{})
-	isDoneChannel := make(chan bool)
-
-	subApp.Run(exitChannel, isDoneChannel)
-
-	cancelChan := make(chan os.Signal, 1)
-	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
-	<-cancelChan
 }

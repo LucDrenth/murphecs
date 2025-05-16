@@ -3,10 +3,8 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
 
+	"github.com/lucdrenth/murphecs/examples/app/run"
 	"github.com/lucdrenth/murphecs/src/app"
 	"github.com/lucdrenth/murphecs/src/ecs"
 )
@@ -31,7 +29,7 @@ func main() {
 	myApp.AddSystem(update, incrementCounter)
 	myApp.AddSystem(update, logCounter)
 
-	runApp(&myApp)
+	run.RunSubApp(&myApp)
 }
 
 // Define the counter as a parameter of this system to use it.
@@ -49,15 +47,4 @@ func incrementCounter(counter *counter) {
 // We do not need to add it ourselves.
 func logCounter(counter counter, log app.Logger) {
 	log.Info(fmt.Sprintf("counter value: %d", counter.value))
-}
-
-func runApp(subApp *app.BasicSubApp) {
-	exitChannel := make(chan struct{})
-	isDoneChannel := make(chan bool)
-
-	subApp.Run(exitChannel, isDoneChannel)
-
-	cancelChan := make(chan os.Signal, 1)
-	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
-	<-cancelChan
 }
