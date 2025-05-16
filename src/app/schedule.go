@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/lucdrenth/murphecs/src/ecs"
-	"github.com/lucdrenth/murphecs/src/log"
 )
 
 type Schedule string
@@ -32,7 +31,7 @@ func (s *Scheduler) AddSchedule(schedule Schedule) error {
 	return nil
 }
 
-func (s *Scheduler) AddSystem(schedule Schedule, system System, world *ecs.World, logger log.Logger, resources *resourceStorage) error {
+func (s *Scheduler) AddSystem(schedule Schedule, system System, world *ecs.World, logger Logger, resources *resourceStorage) error {
 	systemSet, exists := s.systems[schedule]
 	if !exists {
 		return fmt.Errorf("schedule %s does not exist", schedule)

@@ -1,4 +1,4 @@
-package log
+package app
 
 import "fmt"
 
@@ -13,16 +13,16 @@ type Logger interface {
 	Error(string)
 }
 
-var _ Logger = (*NoOp)(nil)
+var _ Logger = (*NoOpLogger)(nil)
 
-// NoOp is a no-op logger that does nothing.
-type NoOp struct {
+// NoOpLogger is a no-op logger that does nothing.
+type NoOpLogger struct {
 }
 
-func (n *NoOp) Debug(string) {}
-func (n *NoOp) Info(string)  {}
-func (n *NoOp) Warn(string)  {}
-func (n *NoOp) Error(string) {}
+func (n *NoOpLogger) Debug(string) {}
+func (n *NoOpLogger) Info(string)  {}
+func (n *NoOpLogger) Warn(string)  {}
+func (n *NoOpLogger) Error(string) {}
 
 // SimpleConsoleLogger is a logger that prints messages to the console with a level prefix
 type SimpleConsoleLogger struct {

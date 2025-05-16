@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	"github.com/lucdrenth/murphecs/src/ecs"
-	"github.com/lucdrenth/murphecs/src/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,7 +13,7 @@ func TestAddSystem(t *testing.T) {
 		assert := assert.New(t)
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		err := systemSet.add("not a func", &world, &logger, &resourceStorage)
@@ -25,7 +24,7 @@ func TestAddSystem(t *testing.T) {
 		assert := assert.New(t)
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		err := systemSet.add(func() {}, &world, &logger, &resourceStorage)
@@ -36,7 +35,7 @@ func TestAddSystem(t *testing.T) {
 		assert := assert.New(t)
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		err := systemSet.add(func(world *ecs.World) {}, &world, &logger, &resourceStorage)
@@ -47,7 +46,7 @@ func TestAddSystem(t *testing.T) {
 		assert := assert.New(t)
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		err := systemSet.add(func(world ecs.World) {}, &world, &logger, &resourceStorage)
@@ -61,7 +60,7 @@ func TestAddSystem(t *testing.T) {
 
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		err := systemSet.add(func(_ ecs.Query1[componentA, ecs.Default]) {}, &world, &logger, &resourceStorage)
@@ -73,7 +72,7 @@ func TestAddSystem(t *testing.T) {
 
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		err := systemSet.add(func(_ ecs.Query) {}, &world, &logger, &resourceStorage)
@@ -87,7 +86,7 @@ func TestAddSystem(t *testing.T) {
 
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		err := systemSet.add(func(_ *ecs.Query1[componentA, ecs.Default]) {}, &world, &logger, &resourceStorage)
@@ -100,7 +99,7 @@ func TestAddSystem(t *testing.T) {
 
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		err := systemSet.add(func(_ resourceA) {}, &world, &logger, &resourceStorage)
@@ -114,7 +113,7 @@ func TestAddSystem(t *testing.T) {
 
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 		err := resourceStorage.add(&resourceA{})
 		assert.NoError(err)
@@ -130,7 +129,7 @@ func TestAddSystem(t *testing.T) {
 
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 		err := resourceStorage.add(&resourceA{})
 		assert.NoError(err)
@@ -144,7 +143,7 @@ func TestAddSystem(t *testing.T) {
 
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		err := systemSet.add(func() int { return 10 }, &world, &logger, &resourceStorage)
@@ -156,7 +155,7 @@ func TestAddSystem(t *testing.T) {
 
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		err := systemSet.add(func() error { return nil }, &world, &logger, &resourceStorage)
@@ -170,7 +169,7 @@ func TestExecSystem(t *testing.T) {
 
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		didRun := false
@@ -188,7 +187,7 @@ func TestExecSystem(t *testing.T) {
 
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		resource := resourceA{value: 10}
@@ -209,7 +208,7 @@ func TestExecSystem(t *testing.T) {
 
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		resource := resourceA{value: 10}
@@ -230,7 +229,7 @@ func TestExecSystem(t *testing.T) {
 
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		resource := resourceA{value: 10}
@@ -276,7 +275,7 @@ func TestExecSystem(t *testing.T) {
 
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		err := systemSet.add(func() {}, &world, &logger, &resourceStorage)
@@ -291,7 +290,7 @@ func TestExecSystem(t *testing.T) {
 
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		err := systemSet.add(func() error { return nil }, &world, &logger, &resourceStorage)
@@ -306,7 +305,7 @@ func TestExecSystem(t *testing.T) {
 
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		err := systemSet.add(func() error { return errors.New("oops") }, &world, &logger, &resourceStorage)
@@ -323,7 +322,7 @@ func TestExecSystem(t *testing.T) {
 
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		_, err := ecs.Spawn(&world, &componentA{})
@@ -348,7 +347,7 @@ func TestExecSystem(t *testing.T) {
 
 		systemSet := SystemSet{}
 		world := ecs.DefaultWorld()
-		logger := log.NoOp{}
+		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
 		_, err := ecs.Spawn(&world, &componentA{})

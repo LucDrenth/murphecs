@@ -15,7 +15,6 @@ import (
 
 	"github.com/lucdrenth/murphecs/src/app"
 	"github.com/lucdrenth/murphecs/src/ecs"
-	"github.com/lucdrenth/murphecs/src/log"
 )
 
 const (
@@ -25,7 +24,7 @@ const (
 )
 
 func main() {
-	var logger log.Logger = &log.SimpleConsoleLogger{}
+	var logger app.Logger = &app.SimpleConsoleLogger{}
 	myApp, err := app.NewBasicSubApp(logger, ecs.DefaultWorldConfigs())
 	if err != nil {
 		panic(err)
@@ -65,16 +64,16 @@ func (f *debugPrinterFeature) Init() {
 	f.AddSystem(Cleanup, cleanupPrinter)
 }
 
-func startupPrinter(logger log.Logger, appName appNameResource) {
+func startupPrinter(logger app.Logger, appName appNameResource) {
 	logger.Info(fmt.Sprintf("%s - Starting up", appName.name))
 }
 
-func tickPrinter(logger log.Logger, tickCounter *tickCounter, appName appNameResource) {
+func tickPrinter(logger app.Logger, tickCounter *tickCounter, appName appNameResource) {
 	tickCounter.count += 1
 	logger.Info(fmt.Sprintf("%s - Tick number %d", appName.name, tickCounter.count))
 }
 
-func cleanupPrinter(logger log.Logger, appName appNameResource) {
+func cleanupPrinter(logger app.Logger, appName appNameResource) {
 	logger.Info(fmt.Sprintf("%s - Cleaning up", appName.name))
 }
 

@@ -9,7 +9,6 @@ import (
 
 	"github.com/lucdrenth/murphecs/src/app"
 	"github.com/lucdrenth/murphecs/src/ecs"
-	"github.com/lucdrenth/murphecs/src/log"
 )
 
 const update app.Schedule = "Update"
@@ -19,7 +18,7 @@ type counter struct {
 }
 
 func main() {
-	var logger log.Logger = &log.SimpleConsoleLogger{}
+	var logger app.Logger = &app.SimpleConsoleLogger{}
 	myApp, err := app.NewBasicSubApp(logger, ecs.DefaultWorldConfigs())
 	if err != nil {
 		panic(err)
@@ -48,7 +47,7 @@ func incrementCounter(counter *counter) {
 //
 // The log.logger resource is a special resource that is added to every app by default.
 // We do not need to add it ourselves.
-func logCounter(counter counter, log log.Logger) {
+func logCounter(counter counter, log app.Logger) {
 	log.Info(fmt.Sprintf("counter value: %d", counter.value))
 }
 

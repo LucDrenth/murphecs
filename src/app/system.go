@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/lucdrenth/murphecs/src/ecs"
-	"github.com/lucdrenth/murphecs/src/log"
 )
 
 type System any
@@ -74,7 +73,7 @@ func (s *SystemSet) execSystems() []error {
 	return errors
 }
 
-func (s *SystemSet) add(sys System, world *ecs.World, logger log.Logger, resources *resourceStorage) error {
+func (s *SystemSet) add(sys System, world *ecs.World, logger Logger, resources *resourceStorage) error {
 	systemValue := reflect.ValueOf(sys)
 	queryType := reflect.TypeOf((*ecs.Query)(nil)).Elem()
 
@@ -120,7 +119,7 @@ func (s *SystemSet) add(sys System, world *ecs.World, logger log.Logger, resourc
 	return nil
 }
 
-func parseQueryParam(parameterType reflect.Type, world *ecs.World, logger log.Logger) (ecs.Query, error) {
+func parseQueryParam(parameterType reflect.Type, world *ecs.World, logger Logger) (ecs.Query, error) {
 	if parameterType.Kind() == reflect.Interface {
 		return nil, fmt.Errorf("can not be an interface")
 	}

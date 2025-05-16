@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/lucdrenth/murphecs/src/ecs"
-	"github.com/lucdrenth/murphecs/src/log"
 	"github.com/lucdrenth/murphecs/src/utils"
 )
 
@@ -24,13 +23,13 @@ type BasicSubApp struct {
 	schedules map[ScheduleType]*Scheduler
 	resources resourceStorage // resources that can be pulled by system params.
 	features  map[reflect.Type]IFeature
-	logger    log.Logger
+	logger    Logger
 	debugType string
 }
 
-func NewBasicSubApp(logger log.Logger, worldConfigs ecs.WorldConfigs) (BasicSubApp, error) {
+func NewBasicSubApp(logger Logger, worldConfigs ecs.WorldConfigs) (BasicSubApp, error) {
 	if logger == nil {
-		noOpLogger := log.NoOp{}
+		noOpLogger := NoOpLogger{}
 		logger = &noOpLogger
 	}
 
