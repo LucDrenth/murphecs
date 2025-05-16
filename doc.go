@@ -1,2 +1,2 @@
-// Package murph_engine provides the core of Murphy Engine
-package murph_engine
+// Package murphecs provides an Entity Component System
+package murphecs

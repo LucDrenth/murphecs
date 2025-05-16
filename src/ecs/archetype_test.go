@@ -3,7 +3,7 @@ package ecs
 import (
 	"testing"
 
-	"github.com/lucdrenth/murph_engine/src/utils"
+	"github.com/lucdrenth/murphecs/src/utils"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -3,8 +3,8 @@ package app
 import (
 	"fmt"
 
-	"github.com/lucdrenth/murph_engine/src/ecs"
-	"github.com/lucdrenth/murph_engine/src/log"
+	"github.com/lucdrenth/murphecs/src/ecs"
+	"github.com/lucdrenth/murphecs/src/log"
 )
 
 type Schedule string

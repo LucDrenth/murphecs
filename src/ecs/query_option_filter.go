@@ -3,7 +3,7 @@ package ecs
 import (
 	"errors"
 
-	"github.com/lucdrenth/murph_engine/src/utils"
+	"github.com/lucdrenth/murphecs/src/utils"
 )
 
 type filterType = int

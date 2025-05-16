@@ -3,7 +3,7 @@ package ecs
 import (
 	"fmt"
 
-	"github.com/lucdrenth/murph_engine/src/utils"
+	"github.com/lucdrenth/murphecs/src/utils"
 )
 
 // Insert adds the given components and all their required components (that the entity does not yet have) to the given entity.

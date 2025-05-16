@@ -2,8 +2,8 @@ package app
 
 type IFeature interface {
 	Init()
-	getResources() []Resource
-	getSystems() []FeatureSystem
+	GetResources() []Resource
+	GetSystems() []FeatureSystem
 }
 
 // Feature is a set of resources and systems that will be initialized and added to an app before the
@@ -32,10 +32,10 @@ func (feature *Feature) AddResource(resource Resource) *Feature {
 	return feature
 }
 
-func (feature *Feature) getResources() []Resource {
+func (feature *Feature) GetResources() []Resource {
 	return feature.resources
 }
 
-func (feature *Feature) getSystems() []FeatureSystem {
+func (feature *Feature) GetSystems() []FeatureSystem {
 	return feature.systems
 }

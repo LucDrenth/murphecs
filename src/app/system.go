@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/lucdrenth/murph_engine/src/ecs"
-	"github.com/lucdrenth/murph_engine/src/log"
+	"github.com/lucdrenth/murphecs/src/ecs"
+	"github.com/lucdrenth/murphecs/src/log"
 )
 
 type System any
@@ -98,8 +98,6 @@ func (s *SystemSet) add(sys System, world *ecs.World, logger log.Logger, resourc
 			params[i] = reflect.ValueOf(query)
 		} else if parameterType == reflect.TypeFor[*ecs.World]() {
 			params[i] = reflect.ValueOf(world)
-		} else if parameterType == reflect.TypeFor[log.Logger]() {
-			params[i] = reflect.ValueOf(logger)
 		} else {
 			resource, err := resources.getReflectResource(parameterType)
 			if err != nil {
@@ -196,8 +194,6 @@ func validateSystemParameters(systemValue reflect.Value, queryType reflect.Type,
 			//	1. it is a potentially big object and copying it could give bad performance
 			//	2. it is probably unintended and would cause unexpected behavior
 			return fmt.Errorf("system parameter %d: %w", i+1, ErrSystemParamWorldNotAPointer)
-		} else if parameterType == reflect.TypeFor[log.Logger]() {
-			return nil
 		} else {
 			_, err := resources.getReflectResource(parameterType)
 			if err == nil {
@@ -218,6 +214,6 @@ func validateSystemParameters(systemValue reflect.Value, queryType reflect.Type,
 // systemToDebugString returns a reflection string of the system but with shortened paths.
 func systemToDebugString(system System) string {
 	result := reflect.TypeOf(system).String()
-	result = strings.ReplaceAll(result, "github.com/lucdrenth/murph_engine/src/", "murph_engine/")
+	result = strings.ReplaceAll(result, "github.com/lucdrenth/murphecs/src/", "murphecs/")
 	return result
 }

@@ -16,14 +16,7 @@
 - [quality-of-life] Set function to either overwrite or insert a component. It is already possible by removing and then inserting a component but its not very user friendly.
 - [tests] More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
 
-# Window
-- [feature] Be able to create a window
-
-# Graphics
-- [feature] Draw a triangle
-
 # Project
-- [refactor] Rebrand to murphecs or murph-ecs. Move the engine part to a separate repo
 - [feature] Linter
 - [feature] Pipeline in Github that automatically runs:
     - tests - fail if any fails
@@ -34,10 +27,9 @@
 # App
 **Must have**
 - [feature] Nested `Feature`
-- [feature] Custom runner for executing the game loop
+- [feature] Custom runner for executing the SubApp loop
 - [feature] A runner that can run at a fixed rate
-- [feature] Delta resource
-- [feature] Query worlds other than the app its own world
+- [feature] Query worlds other than a SubApp its own world
 
 **Nice-to-have**
 - [feature] Execute systems in parallel. If systems are in the same schedule, they can be run in parallel if the systems do not touch any passed-by-ref resource (query/resource) of any of the other systems. Mind that we can probably not run a system with a Query in parallel with any other system that pulls in ecs.World, because we can not detect if it will be used to mutate anything that other systems touch system-insert time.

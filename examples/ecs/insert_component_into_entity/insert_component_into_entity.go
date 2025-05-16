@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/lucdrenth/murph_engine/src/ecs"
+	"github.com/lucdrenth/murphecs/src/ecs"
 )
 
 type NPC struct {

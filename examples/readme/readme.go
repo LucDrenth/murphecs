@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/rand/v2"
 
-	"github.com/lucdrenth/murph_engine/src/ecs"
+	"github.com/lucdrenth/murphecs/src/ecs"
 )
 
 type Position struct {

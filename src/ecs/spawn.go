@@ -3,7 +3,7 @@ package ecs
 import (
 	"fmt"
 
-	"github.com/lucdrenth/murph_engine/src/utils"
+	"github.com/lucdrenth/murphecs/src/utils"
 )
 
 // Spawn spawns the given components and all their required components that are not declared in the component parameters.

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/lucdrenth/murph_engine/src/utils"
+	"github.com/lucdrenth/murphecs/src/utils"
 )
 
 type Query interface {

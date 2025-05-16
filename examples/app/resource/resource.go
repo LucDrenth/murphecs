@@ -3,30 +3,36 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
 
-	engine "github.com/lucdrenth/murph_engine/src/engine"
-	"github.com/lucdrenth/murph_engine/src/engine/schedule"
-	"github.com/lucdrenth/murph_engine/src/log"
+	"github.com/lucdrenth/murphecs/src/app"
+	"github.com/lucdrenth/murphecs/src/ecs"
+	"github.com/lucdrenth/murphecs/src/log"
 )
+
+const update app.Schedule = "Update"
 
 type counter struct {
 	value int
 }
 
 func main() {
-	e, err := engine.Default()
+	var logger log.Logger = &log.SimpleConsoleLogger{}
+	myApp, err := app.NewBasicSubApp(logger, ecs.DefaultWorldConfigs())
 	if err != nil {
 		panic(err)
 	}
 
-	// We add the counter resource to the app.
-	// We have to pass it as a reference, or it will result in an error.
-	e.App(engine.AppIDCore).
-		AddResource(&counter{value: 10}).
-		AddSystem(schedule.Update, incrementCounter).
-		AddSystem(schedule.Update, logCounter)
+	myApp.AddSchedule(update, app.ScheduleTypeRepeating)
 
-	e.Run()
+	myApp.AddResource(&logger)
+	myApp.AddResource(&counter{})
+	myApp.AddSystem(update, incrementCounter)
+	myApp.AddSystem(update, logCounter)
+
+	runApp(&myApp)
 }
 
 // Define the counter as a parameter of this system to use it.
@@ -44,4 +50,15 @@ func incrementCounter(counter *counter) {
 // We do not need to add it ourselves.
 func logCounter(counter counter, log log.Logger) {
 	log.Info(fmt.Sprintf("counter value: %d", counter.value))
+}
+
+func runApp(subApp *app.BasicSubApp) {
+	exitChannel := make(chan struct{})
+	isDoneChannel := make(chan bool)
+
+	subApp.Run(exitChannel, isDoneChannel)
+
+	cancelChan := make(chan os.Signal, 1)
+	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
+	<-cancelChan
 }

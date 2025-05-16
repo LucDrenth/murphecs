@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/lucdrenth/murph_engine/src/ecs"
+	"github.com/lucdrenth/murphecs/src/ecs"
 )
 
 type emptyComponentA struct{ ecs.Component }

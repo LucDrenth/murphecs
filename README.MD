@@ -1,11 +1,15 @@
 # About
-Murph Engine is a Game Engine based on a custom Entity Component System written in Go.
+Murphecs is an Entity Component System written in Go.
 
-!! This project is currently in a very early stage of development.
+# Why Murphecs
+There are a bunch of other ECS implementation in Go already, so why did I choose to make Murphecs? 
+
+1. Other ECS I have seen all focus on performance over user usability. While performance is important, and is one of the main reasons for choosing to use an ECS, I believe usability comes first. 
+2. Other ECS I have seen all focus on the Entity Component part, and leave out the System part. Murphecs has a great systems approach that relies on SubApp's, which contains the ECS world and can run systems that operate on the ECS.
 
 # Installation
 ```bash
-go get github.com/lucdrenth/murph_engine
+go get github.com/lucdrenth/murphecs
 ```
 
 # Usage
@@ -17,7 +21,7 @@ import (
 	"fmt"
 	"math/rand/v2"
 
-	"github.com/lucdrenth/murph_engine/src/ecs"
+	"github.com/lucdrenth/murphecs/src/ecs"
 )
 
 type Position struct {
@@ -67,7 +71,9 @@ To run any example, run below command and replace `readme` with the directory of
 go run ./examples/readme
 ```
 
-# Development
+# Contributing
+If you want to contribute to Murphecs, feel free to open an issue or make a PR. If the change could be considered controversial, consider making an issue first to discuss the changes before working on the implementation. 
+
 ## Benchmarking
 To compare benchmarks with changed code, run below command with your new code
 ```bash

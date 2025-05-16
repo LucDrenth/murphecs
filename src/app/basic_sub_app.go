@@ -6,9 +6,9 @@ import (
 	"slices"
 	"time"
 
-	"github.com/lucdrenth/murph_engine/src/ecs"
-	"github.com/lucdrenth/murph_engine/src/log"
-	"github.com/lucdrenth/murph_engine/src/utils"
+	"github.com/lucdrenth/murphecs/src/ecs"
+	"github.com/lucdrenth/murphecs/src/log"
+	"github.com/lucdrenth/murphecs/src/utils"
 )
 
 type ScheduleType int
@@ -30,7 +30,7 @@ type BasicSubApp struct {
 
 func NewBasicSubApp(logger log.Logger, worldConfigs ecs.WorldConfigs) (BasicSubApp, error) {
 	if logger == nil {
-		noOpLogger := log.NoOp()
+		noOpLogger := log.NoOp{}
 		logger = &noOpLogger
 	}
 
@@ -46,7 +46,6 @@ func NewBasicSubApp(logger log.Logger, worldConfigs ecs.WorldConfigs) (BasicSubA
 	// instead. Thus we register them as blacklisted so that an error is logged when the user
 	// tries to add them.
 	registerBlacklistedResource[*ecs.World](&resourceStorage)
-	registerBlacklistedResourceType(reflect.TypeOf(logger), &resourceStorage)
 
 	return BasicSubApp{
 		world: world,
@@ -184,14 +183,14 @@ func (app *BasicSubApp) processFeatures() {
 	}
 
 	for _, feature := range app.features {
-		resources := feature.getResources()
+		resources := feature.GetResources()
 		for i := range resources {
 			app.AddResource(resources[i])
 		}
 	}
 
 	for _, feature := range app.features {
-		systems := feature.getSystems()
+		systems := feature.GetSystems()
 		for i := range systems {
 			app.AddSystem(systems[i].schedule, systems[i].system)
 		}
