@@ -23,6 +23,7 @@
 - [feature] Draw a triangle
 
 # Project
+- [refactor] Rebrand to murphecs or murph-ecs. Move the engine part to a separate repo
 - [feature] Linter
 - [feature] Pipeline in Github that automatically runs:
     - tests - fail if any fails
@@ -32,7 +33,9 @@
 
 # App
 **Must have**
-- [feature] Loop that can run at a fixed rate
+- [feature] Nested `Feature`
+- [feature] Custom runner for executing the game loop
+- [feature] A runner that can run at a fixed rate
 - [feature] Delta resource
 - [feature] Query worlds other than the app its own world
 
