@@ -42,22 +42,12 @@ func (f *testFeatureForSubAppB) Init() {
 func TestProcessFeatures(t *testing.T) {
 	assert := assert.New(t)
 
-	t.Run("handles empty features", func(t *testing.T) {
-		logger := testLogger{}
-		app, err := New(&logger, ecs.DefaultWorldConfigs())
-		assert.NoError(err)
-
-		app.processFeatures()
-		assert.Equal(uint(0), logger.err)
-	})
-
 	t.Run("logs error if a feature its Init method does not have pointer receiver", func(t *testing.T) {
 		logger := testLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
 		app.AddFeature(&invalidFeature{})
-		app.processFeatures()
 		assert.Equal(uint(1), logger.err)
 		assert.Equal(uint(0), app.NumberOfResources())
 		assert.Equal(uint(0), app.NumberOfSystems())
@@ -70,7 +60,6 @@ func TestProcessFeatures(t *testing.T) {
 
 		assert.NoError(err)
 		app.AddFeature(&testFeatureForSubAppA{})
-		app.processFeatures()
 		assert.Equal(uint(0), logger.err)
 		assert.Equal(uint(2), app.NumberOfResources())
 		assert.Equal(uint(1), app.NumberOfSystems())

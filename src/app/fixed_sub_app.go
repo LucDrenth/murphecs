@@ -27,7 +27,6 @@ type FixedSubApp struct {
 	world     ecs.World
 	schedules map[scheduleType]*Scheduler
 	resources resourceStorage // resources that can be pulled by system params.
-	features  *Feature        // this 'master' feature is empty except for its nested features
 	logger    Logger
 	debugType string
 	tickRate  time.Duration
@@ -61,7 +60,6 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (FixedSubApp, error) {
 			ScheduleTypeCleanup:   utils.PointerTo(NewScheduler()),
 		},
 		resources: resourceStorage,
-		features:  &Feature{},
 		logger:    logger,
 		debugType: "App",
 		tickRate:  time.Second / 60.0,
@@ -117,40 +115,10 @@ func (app *FixedSubApp) AddResource(resource Resource) *FixedSubApp {
 }
 
 func (app *FixedSubApp) AddFeature(feature IFeature) *FixedSubApp {
-	app.features.AddFeature(feature)
-	return app
-}
+	feature.Init()
+	features := feature.GetAndInitNestedFeatures()
+	features = append(features, feature)
 
-func (app *FixedSubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
-	app.processFeatures()
-
-	startupSystems, err := app.schedules[ScheduleTypeStartup].GetSystemSets()
-	if err != nil {
-		app.logger.Error(fmt.Sprintf("%s - failed to get startup systems: %v", app.debugType, err))
-		return
-	}
-
-	repeatedSystems, err := app.schedules[ScheduleTypeRepeating].GetSystemSets()
-	if err != nil {
-		app.logger.Error(fmt.Sprintf("%s - failed to get repeated systems: %v", app.debugType, err))
-		return
-	}
-
-	cleanupSystems, err := app.schedules[ScheduleTypeCleanup].GetSystemSets()
-	if err != nil {
-		app.logger.Error(fmt.Sprintf("%s - failed to get cleanup systems: %v", app.debugType, err))
-		return
-	}
-
-	app.runSystemSet(startupSystems)
-	app.runRepeatedUntilExit(exitChannel, repeatedSystems)
-	app.runSystemSet(cleanupSystems)
-	isDoneChannel <- true
-}
-
-// processFeatures adds the resources and systems from all features
-func (app *FixedSubApp) processFeatures() {
-	features := app.features.GetFeatures()
 	validatedFeatures := make([]IFeature, 0, len(features))
 	for _, feature := range features {
 		err := validateFeature(feature)
@@ -176,8 +144,32 @@ func (app *FixedSubApp) processFeatures() {
 		}
 	}
 
-	// free up resources
-	app.features = nil
+	return app
+}
+
+func (app *FixedSubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
+	startupSystems, err := app.schedules[ScheduleTypeStartup].GetSystemSets()
+	if err != nil {
+		app.logger.Error(fmt.Sprintf("%s - failed to get startup systems: %v", app.debugType, err))
+		return
+	}
+
+	repeatedSystems, err := app.schedules[ScheduleTypeRepeating].GetSystemSets()
+	if err != nil {
+		app.logger.Error(fmt.Sprintf("%s - failed to get repeated systems: %v", app.debugType, err))
+		return
+	}
+
+	cleanupSystems, err := app.schedules[ScheduleTypeCleanup].GetSystemSets()
+	if err != nil {
+		app.logger.Error(fmt.Sprintf("%s - failed to get cleanup systems: %v", app.debugType, err))
+		return
+	}
+
+	app.runSystemSet(startupSystems)
+	app.runRepeatedUntilExit(exitChannel, repeatedSystems)
+	app.runSystemSet(cleanupSystems)
+	isDoneChannel <- true
 }
 
 func (app *FixedSubApp) runSystemSet(systemSets []*SystemSet) {

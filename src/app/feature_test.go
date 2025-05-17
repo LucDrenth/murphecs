@@ -25,17 +25,17 @@ func TestNestedFeature(t *testing.T) {
 
 	var feature IFeature = &testFeatureA{}
 	feature.Init()
-	assert.Len(feature.GetFeatures(), 0)
+	assert.Len(feature.GetAndInitNestedFeatures(), 0)
 
 	feature = &testFeatureB{}
 	feature.Init()
-	assert.Len(feature.GetFeatures(), 3)
+	assert.Len(feature.GetAndInitNestedFeatures(), 3)
 
 	feature = &testFeatureC{}
 	feature.Init()
-	assert.Len(feature.GetFeatures(), 2)
+	assert.Len(feature.GetAndInitNestedFeatures(), 2)
 
 	feature = &testFeatureD{}
 	feature.Init()
-	assert.Len(feature.GetFeatures(), 0)
+	assert.Len(feature.GetAndInitNestedFeatures(), 0)
 }

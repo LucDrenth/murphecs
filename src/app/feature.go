@@ -12,8 +12,9 @@ type IFeature interface {
 	GetResources() []Resource
 	GetSystems() []FeatureSystem
 
-	// GetFeatures recursively get and Init all features
-	GetFeatures() []IFeature
+	// GetAndInitNestedFeatures recursively gets and Inits all features. It needs to init them so
+	// that we can get its nested features.
+	GetAndInitNestedFeatures() []IFeature
 }
 
 // Feature is a set of resources and systems that will be initialized and added to an app before the
@@ -56,13 +57,13 @@ func (feature *Feature) GetSystems() []FeatureSystem {
 	return feature.systems
 }
 
-func (feature *Feature) GetFeatures() []IFeature {
+func (feature *Feature) GetAndInitNestedFeatures() []IFeature {
 	result := []IFeature{}
 
 	for _, nestedFeature := range feature.features {
 		nestedFeature.Init()
 		result = append(result, nestedFeature)
-		result = append(result, nestedFeature.GetFeatures()...)
+		result = append(result, nestedFeature.GetAndInitNestedFeatures()...)
 	}
 
 	return result
