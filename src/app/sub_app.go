@@ -28,7 +28,7 @@ type SubApp struct {
 	schedules map[scheduleType]*Scheduler
 	resources resourceStorage // resources that can be pulled by system params.
 	logger    Logger
-	debugType string
+	name      string
 	tickRate  time.Duration // the rate at which the repeating systems run
 	lastDelta float64       // delta time of the last tick
 }
@@ -61,7 +61,7 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (SubApp, error) {
 		},
 		resources: resourceStorage,
 		logger:    logger,
-		debugType: "App",
+		name:      "App",
 		tickRate:  time.Second / 60.0,
 	}, nil
 }
@@ -72,7 +72,7 @@ func (app *SubApp) AddSystem(schedule Schedule, system System) *SubApp {
 			err := scheduler.AddSystem(schedule, system, &app.world, app.logger, &app.resources)
 			if err != nil {
 				app.logger.Error(fmt.Sprintf("%s - failed to add system %s: %v",
-					app.debugType,
+					app.name,
 					systemToDebugString(system),
 					err,
 				))
@@ -83,7 +83,7 @@ func (app *SubApp) AddSystem(schedule Schedule, system System) *SubApp {
 	}
 
 	app.logger.Error(fmt.Sprintf("%s - failed to add system %s: schedule %s not found",
-		app.debugType,
+		app.name,
 		systemToDebugString(system),
 		schedule,
 	))
@@ -93,13 +93,13 @@ func (app *SubApp) AddSystem(schedule Schedule, system System) *SubApp {
 func (app *SubApp) AddSchedule(schedule Schedule, scheduleType scheduleType) *SubApp {
 	scheduler, ok := app.schedules[scheduleType]
 	if !ok {
-		app.logger.Error(fmt.Sprintf("%s - failed to add schedule %s: invalid schedule type", app.debugType, schedule))
+		app.logger.Error(fmt.Sprintf("%s - failed to add schedule %s: invalid schedule type", app.name, schedule))
 		return app
 	}
 
 	err := scheduler.AddSchedule(schedule)
 	if err != nil {
-		app.logger.Error(fmt.Sprintf("%s - failed to add schedule %s: %v", app.debugType, schedule, err))
+		app.logger.Error(fmt.Sprintf("%s - failed to add schedule %s: %v", app.name, schedule, err))
 	}
 
 	return app
@@ -108,7 +108,7 @@ func (app *SubApp) AddSchedule(schedule Schedule, scheduleType scheduleType) *Su
 func (app *SubApp) AddResource(resource Resource) *SubApp {
 	err := app.resources.add(resource)
 	if err != nil {
-		app.logger.Error(fmt.Sprintf("%s - failed to add resource %s: %v", app.debugType, getResourceDebugType(resource), err))
+		app.logger.Error(fmt.Sprintf("%s - failed to add resource %s: %v", app.name, getResourceDebugType(resource), err))
 	}
 
 	return app
@@ -123,7 +123,7 @@ func (app *SubApp) AddFeature(feature IFeature) *SubApp {
 	for _, feature := range features {
 		err := validateFeature(feature)
 		if err != nil {
-			app.logger.Error(fmt.Sprintf("%s - %v", app.debugType, err))
+			app.logger.Error(fmt.Sprintf("%s - %v", app.name, err))
 			continue
 		}
 
@@ -150,19 +150,19 @@ func (app *SubApp) AddFeature(feature IFeature) *SubApp {
 func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 	startupSystems, err := app.schedules[ScheduleTypeStartup].GetSystemSets()
 	if err != nil {
-		app.logger.Error(fmt.Sprintf("%s - failed to get startup systems: %v", app.debugType, err))
+		app.logger.Error(fmt.Sprintf("%s - failed to get startup systems: %v", app.name, err))
 		return
 	}
 
 	repeatedSystems, err := app.schedules[ScheduleTypeRepeating].GetSystemSets()
 	if err != nil {
-		app.logger.Error(fmt.Sprintf("%s - failed to get repeated systems: %v", app.debugType, err))
+		app.logger.Error(fmt.Sprintf("%s - failed to get repeated systems: %v", app.name, err))
 		return
 	}
 
 	cleanupSystems, err := app.schedules[ScheduleTypeCleanup].GetSystemSets()
 	if err != nil {
-		app.logger.Error(fmt.Sprintf("%s - failed to get cleanup systems: %v", app.debugType, err))
+		app.logger.Error(fmt.Sprintf("%s - failed to get cleanup systems: %v", app.name, err))
 		return
 	}
 
@@ -176,18 +176,18 @@ func (app *SubApp) runSystemSet(systemSets []*SystemSet) {
 	for _, systemSet := range systemSets {
 		errors := systemSet.exec(&app.world)
 		for _, err := range errors {
-			app.logger.Error(fmt.Sprintf("%s - system returned error: %v", app.debugType, err))
+			app.logger.Error(fmt.Sprintf("%s - system returned error: %v", app.name, err))
 		}
 	}
 }
 
-func (app *SubApp) SetDebugType(debugType string) {
-	app.debugType = debugType
+func (app *SubApp) SetName(name string) {
+	app.name = name
 }
 
 func (app *SubApp) SetTickRate(tickRate time.Duration) {
 	if tickRate == 0 {
-		app.logger.Error(fmt.Sprintf("%s - failed to set tickRate: can not be zero", app.debugType))
+		app.logger.Error(fmt.Sprintf("%s - failed to set tickRate: can not be zero", app.name))
 		return
 	}
 	app.tickRate = tickRate
