@@ -26,7 +26,6 @@
 
 # App
 **Must have**
-- [feature] Nested `Feature`
 - [feature] Custom runner for executing the SubApp loop
 - [feature] A runner that can run at a fixed rate
 - [feature] Query worlds other than a SubApp its own world

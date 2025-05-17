@@ -42,3 +42,26 @@ func (l *SimpleConsoleLogger) Warn(message string) {
 func (l *SimpleConsoleLogger) Error(message string) {
 	fmt.Println("ERROR: " + message)
 }
+
+// testLogger counts the number times a certain level is logged. Useful for tests
+type testLogger struct {
+	debug uint
+	info  uint
+	warn  uint
+	err   uint
+}
+
+func (l *testLogger) Debug(message string) {
+	l.debug++
+}
+func (l *testLogger) Info(message string) {
+	l.info++
+
+}
+func (l *testLogger) Warn(message string) {
+	l.warn++
+
+}
+func (l *testLogger) Error(message string) {
+	l.err++
+}

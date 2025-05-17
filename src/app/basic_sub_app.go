@@ -2,7 +2,6 @@ package app
 
 import (
 	"fmt"
-	"reflect"
 	"slices"
 	"time"
 
@@ -22,7 +21,7 @@ type BasicSubApp struct {
 	world     ecs.World
 	schedules map[ScheduleType]*Scheduler
 	resources resourceStorage // resources that can be pulled by system params.
-	features  map[reflect.Type]IFeature
+	features  *Feature        // this 'master' feature is empty except for its nested features
 	logger    Logger
 	debugType string
 }
@@ -54,7 +53,7 @@ func NewBasicSubApp(logger Logger, worldConfigs ecs.WorldConfigs) (BasicSubApp, 
 			ScheduleTypeCleanup:   utils.PointerTo(NewScheduler()),
 		},
 		resources: resourceStorage,
-		features:  map[reflect.Type]IFeature{},
+		features:  &Feature{},
 		logger:    logger,
 		debugType: "App",
 	}, nil
@@ -109,23 +108,7 @@ func (app *BasicSubApp) AddResource(resource Resource) SubApp {
 }
 
 func (app *BasicSubApp) AddFeature(feature IFeature) SubApp {
-	featureType := reflect.TypeOf(feature)
-	if _, exists := app.features[featureType]; exists {
-		app.logger.Error(fmt.Sprintf("%s - failed to add feature %s: already added", app.debugType, featureType.String()))
-		return app
-	}
-
-	initHasPointerReceiver, err := utils.MethodHasPointerReceiver(feature, "Init")
-	if err != nil {
-		app.logger.Error(fmt.Sprintf("%s - failed to add feature %s: failed to validate: %v", app.debugType, featureType.String(), err))
-		return app
-	}
-	if !initHasPointerReceiver {
-		app.logger.Error(fmt.Sprintf("%s - failed to add feature %s: Init must be pointer receiver", app.debugType, featureType.String()))
-		return app
-	}
-
-	app.features[featureType] = feature
+	app.features.AddFeature(feature)
 	return app
 }
 
@@ -176,25 +159,35 @@ func (app *BasicSubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bo
 	isDoneChannel <- true
 }
 
+// processFeatures adds the resources and systems from all features
 func (app *BasicSubApp) processFeatures() {
-	for _, feature := range app.features {
-		feature.Init()
+	features := app.features.GetFeatures()
+	validatedFeatures := make([]IFeature, 0, len(features))
+	for _, feature := range features {
+		err := validateFeature(feature)
+		if err != nil {
+			app.logger.Error(fmt.Sprintf("%s - %v", app.debugType, err))
+			continue
+		}
+
+		validatedFeatures = append(validatedFeatures, feature)
 	}
 
-	for _, feature := range app.features {
+	for _, feature := range validatedFeatures {
 		resources := feature.GetResources()
 		for i := range resources {
 			app.AddResource(resources[i])
 		}
 	}
 
-	for _, feature := range app.features {
+	for _, feature := range validatedFeatures {
 		systems := feature.GetSystems()
 		for i := range systems {
 			app.AddSystem(systems[i].schedule, systems[i].system)
 		}
 	}
 
+	// free up resources by making features nil
 	app.features = nil
 }
 
@@ -209,4 +202,17 @@ func (app *BasicSubApp) runSystemSet(systemSets []*SystemSet) {
 
 func (app *BasicSubApp) SetDebugType(debugType string) {
 	app.debugType = debugType
+}
+
+func (app *BasicSubApp) NumberOfResources() uint {
+	return uint(len(app.resources.resources))
+}
+
+func (app *BasicSubApp) NumberOfSystems() uint {
+	result := uint(0)
+
+	for _, schedules := range app.schedules {
+		result += schedules.NumberOfSystems()
+	}
+	return result
 }

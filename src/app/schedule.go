@@ -58,3 +58,11 @@ func (s *Scheduler) GetSystemSets() ([]*SystemSet, error) {
 
 	return result, nil
 }
+
+func (s *Scheduler) NumberOfSystems() uint {
+	result := uint(0)
+	for _, systems := range s.systems {
+		result += uint(len(systems.systems))
+	}
+	return result
+}

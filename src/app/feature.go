@@ -1,9 +1,19 @@
 package app
 
+import (
+	"fmt"
+	"reflect"
+
+	"github.com/lucdrenth/murphecs/src/utils"
+)
+
 type IFeature interface {
 	Init()
 	GetResources() []Resource
 	GetSystems() []FeatureSystem
+
+	// GetFeatures recursively get and Init all features
+	GetFeatures() []IFeature
 }
 
 // Feature is a set of resources and systems that will be initialized and added to an app before the
@@ -15,6 +25,7 @@ type IFeature interface {
 type Feature struct {
 	resources []Resource
 	systems   []FeatureSystem
+	features  []IFeature
 }
 
 type FeatureSystem struct {
@@ -32,10 +43,39 @@ func (feature *Feature) AddResource(resource Resource) *Feature {
 	return feature
 }
 
+func (feature *Feature) AddFeature(f IFeature) *Feature {
+	feature.features = append(feature.features, f)
+	return feature
+}
+
 func (feature *Feature) GetResources() []Resource {
 	return feature.resources
 }
 
 func (feature *Feature) GetSystems() []FeatureSystem {
 	return feature.systems
+}
+
+func (feature *Feature) GetFeatures() []IFeature {
+	result := []IFeature{}
+
+	for _, nestedFeature := range feature.features {
+		nestedFeature.Init()
+		result = append(result, nestedFeature)
+		result = append(result, nestedFeature.GetFeatures()...)
+	}
+
+	return result
+}
+
+func validateFeature(feature IFeature) error {
+	initHasPointerReceiver, err := utils.MethodHasPointerReceiver(feature, "Init")
+	if err != nil {
+		return fmt.Errorf("failed to add feature %s: failed to validate: %v", reflect.TypeOf(feature).String(), err)
+	}
+	if !initHasPointerReceiver {
+		return fmt.Errorf("failed to add feature %s: Init must be pointer receiver", reflect.TypeOf(feature).String())
+	}
+
+	return nil
 }
