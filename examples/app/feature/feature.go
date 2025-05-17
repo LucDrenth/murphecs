@@ -16,9 +16,9 @@ import (
 )
 
 const (
-	Startup app.Schedule = "Startup"
-	Update  app.Schedule = "Update"
-	Cleanup app.Schedule = "Cleanup"
+	startup app.Schedule = "Startup"
+	update  app.Schedule = "Update"
+	cleanup app.Schedule = "Cleanup"
 )
 
 func main() {
@@ -29,9 +29,9 @@ func main() {
 	}
 	myApp.AddResource(&logger)
 
-	myApp.AddSchedule(Startup, app.ScheduleTypeStartup).
-		AddSchedule(Update, app.ScheduleTypeRepeating).
-		AddSchedule(Cleanup, app.ScheduleTypeCleanup)
+	myApp.AddSchedule(startup, app.ScheduleTypeStartup).
+		AddSchedule(update, app.ScheduleTypeRepeating).
+		AddSchedule(cleanup, app.ScheduleTypeCleanup)
 
 	myApp.AddFeature(&debugPrinterFeature{
 		AppName: "MyApp",
@@ -57,9 +57,9 @@ type tickCounter struct {
 func (f *debugPrinterFeature) Init() {
 	f.AddResource(&appNameResource{name: f.AppName})
 	f.AddResource(&tickCounter{})
-	f.AddSystem(Startup, startupPrinter)
-	f.AddSystem(Update, tickPrinter)
-	f.AddSystem(Cleanup, cleanupPrinter)
+	f.AddSystem(startup, startupPrinter)
+	f.AddSystem(update, tickPrinter)
+	f.AddSystem(cleanup, cleanupPrinter)
 }
 
 func startupPrinter(logger app.Logger, appName appNameResource) {
