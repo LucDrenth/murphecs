@@ -1,5 +1,7 @@
 package app
 
+import "time"
+
 type ID int
 
 type SubApp interface {
@@ -21,4 +23,12 @@ type SubApp interface {
 	// are added before the feature systems are added. This way we don't have to worry about adding resources before adding
 	// systems that use them.
 	AddFeature(IFeature) SubApp
+
+	// SetTickRate defines how often the main loop should run. You can safely change this after running, in which case the new
+	// tick rate will be picked up after the next update.
+	//
+	// For example, use `SetTickRate(time.Second / 60)` to run at 60 ticks per second.
+	SetTickRate(time.Duration)
+
+	Delta() float64
 }

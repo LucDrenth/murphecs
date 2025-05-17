@@ -24,6 +24,8 @@ type BasicSubApp struct {
 	features  *Feature        // this 'master' feature is empty except for its nested features
 	logger    Logger
 	debugType string
+	tickRate  time.Duration
+	lastDelta float64 // delta time of the last tick
 }
 
 func NewBasicSubApp(logger Logger, worldConfigs ecs.WorldConfigs) (BasicSubApp, error) {
@@ -56,6 +58,7 @@ func NewBasicSubApp(logger Logger, worldConfigs ecs.WorldConfigs) (BasicSubApp, 
 		features:  &Feature{},
 		logger:    logger,
 		debugType: "App",
+		tickRate:  time.Second / 60.0,
 	}, nil
 }
 
@@ -134,27 +137,7 @@ func (app *BasicSubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bo
 	}
 
 	app.runSystemSet(startupSystems)
-
-	exit := false
-
-	// TODO a timed loop that runs x times a second
-	for {
-		select {
-		case <-exitChannel:
-			exit = true
-		default:
-			exit = false
-		}
-
-		if exit {
-			break
-		}
-
-		app.runSystemSet(repeatedSystems)
-
-		time.Sleep(time.Second * 1)
-	}
-
+	app.runRepeatedUntilExit(exitChannel, repeatedSystems)
 	app.runSystemSet(cleanupSystems)
 	isDoneChannel <- true
 }
@@ -187,7 +170,7 @@ func (app *BasicSubApp) processFeatures() {
 		}
 	}
 
-	// free up resources by making features nil
+	// free up resources
 	app.features = nil
 }
 
@@ -204,6 +187,18 @@ func (app *BasicSubApp) SetDebugType(debugType string) {
 	app.debugType = debugType
 }
 
+func (app *BasicSubApp) SetTickRate(tickRate time.Duration) {
+	if tickRate == 0 {
+		app.logger.Error(fmt.Sprintf("%s - failed to set tickRate: can not be zero", app.debugType))
+		return
+	}
+	app.tickRate = tickRate
+}
+
+func (app *BasicSubApp) Delta() float64 {
+	return app.lastDelta
+}
+
 func (app *BasicSubApp) NumberOfResources() uint {
 	return uint(len(app.resources.resources))
 }
@@ -215,4 +210,32 @@ func (app *BasicSubApp) NumberOfSystems() uint {
 		result += schedules.NumberOfSystems()
 	}
 	return result
+}
+
+func (app *BasicSubApp) runRepeatedUntilExit(exitChannel <-chan struct{}, systems []*SystemSet) {
+	ticker := time.NewTicker(app.tickRate)
+	currentTickRate := app.tickRate
+	var now int64
+	var delta float64
+	start := time.Now().UnixNano()
+
+	for {
+		select {
+		case <-exitChannel:
+			return
+
+		case <-ticker.C:
+			now = time.Now().UnixNano()
+			delta = float64(now-start) / 1_000_000_000
+			start = now
+
+			app.lastDelta = delta
+			app.runSystemSet(systems)
+
+			if currentTickRate != app.tickRate {
+				app.runRepeatedUntilExit(exitChannel, systems)
+				return
+			}
+		}
+	}
 }

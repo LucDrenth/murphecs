@@ -26,9 +26,7 @@
 
 # App
 **Must have**
-- [feature] Custom runner for executing the SubApp loop
-- [feature] A runner that can run at a fixed rate
-- [feature] Query worlds other than a SubApp its own world
+- [feature] Query between SubApp worlds its own world
 
 **Nice-to-have**
 - [feature] Execute systems in parallel. If systems are in the same schedule, they can be run in parallel if the systems do not touch any passed-by-ref resource (query/resource) of any of the other systems. Mind that we can probably not run a system with a Query in parallel with any other system that pulls in ecs.World, because we can not detect if it will be used to mutate anything that other systems touch system-insert time.
