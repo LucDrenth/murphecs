@@ -4,8 +4,8 @@ Murphecs is an Entity Component System written in Go.
 # Why Murphecs
 There are a bunch of other ECS implementation in Go already, so why did I choose to make Murphecs? 
 
-1. Other ECS I have seen all focus on performance over user usability. While performance is important, and is one of the main reasons for choosing to use an ECS, I believe usability comes first. 
-2. Other ECS I have seen all focus on the Entity Component part, and leave out the System part. Murphecs has an easy to use systems approach that allows for running systems in parallel.
+1. Other ECS I have seen all focus on performance over usability. While performance is important, and is one of the main reasons for choosing to use an ECS, I believe usability comes first. 
+2. Other ECS I have seen all focus on the Entity Component part, and leave out the System part. Murphecs has easy to use systems functionality that allows for automatic parallelization.
 
 # Installation
 ```bash

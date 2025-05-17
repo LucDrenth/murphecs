@@ -29,8 +29,9 @@ type SubApp struct {
 	resources resourceStorage // resources that can be pulled by system params.
 	logger    Logger
 	name      string
-	tickRate  time.Duration // the rate at which the repeating systems run
-	lastDelta float64       // delta time of the last tick
+	tickRate  *time.Duration // the rate at which the repeating systems run
+	lastDelta *float64       // delta time of the last tick
+	runner    Runner
 }
 
 func New(logger Logger, worldConfigs ecs.WorldConfigs) (SubApp, error) {
@@ -52,7 +53,7 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (SubApp, error) {
 	// tries to add them.
 	registerBlacklistedResource[*ecs.World](&resourceStorage)
 
-	return SubApp{
+	subApp := SubApp{
 		world: world,
 		schedules: map[scheduleType]*Scheduler{
 			ScheduleTypeStartup:   utils.PointerTo(NewScheduler()),
@@ -62,8 +63,12 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (SubApp, error) {
 		resources: resourceStorage,
 		logger:    logger,
 		name:      "App",
-		tickRate:  time.Second / 60.0,
-	}, nil
+		tickRate:  utils.PointerTo(time.Second / 60.0),
+		lastDelta: utils.PointerTo(0.0),
+	}
+	subApp.SetFixedRunner()
+
+	return subApp, nil
 }
 
 func (app *SubApp) AddSystem(schedule Schedule, system System) *SubApp {
@@ -166,35 +171,34 @@ func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 		return
 	}
 
-	app.runSystemSet(startupSystems)
-	app.runRepeatedUntilExit(exitChannel, repeatedSystems)
-	app.runSystemSet(cleanupSystems)
-	isDoneChannel <- true
-}
-
-func (app *SubApp) runSystemSet(systemSets []*SystemSet) {
-	for _, systemSet := range systemSets {
-		errors := systemSet.exec(&app.world)
-		for _, err := range errors {
-			app.logger.Error(fmt.Sprintf("%s - system returned error: %v", app.name, err))
-		}
+	onceRunner := onceRunner{
+		world:   &app.world,
+		logger:  app.logger,
+		appName: app.name,
 	}
+
+	onceRunner.Run(exitChannel, startupSystems)
+	app.runner.Run(exitChannel, repeatedSystems)
+	onceRunner.Run(exitChannel, cleanupSystems)
+	isDoneChannel <- true
 }
 
 func (app *SubApp) SetName(name string) {
 	app.name = name
 }
 
+// SetTickRate sets the interval at which the repeated systems are run. This can be safely changed while
+// the app is already running, in which case it will be picked up after the next run.
 func (app *SubApp) SetTickRate(tickRate time.Duration) {
 	if tickRate == 0 {
 		app.logger.Error(fmt.Sprintf("%s - failed to set tickRate: can not be zero", app.name))
 		return
 	}
-	app.tickRate = tickRate
+	*app.tickRate = tickRate
 }
 
 func (app *SubApp) Delta() float64 {
-	return app.lastDelta
+	return *app.lastDelta
 }
 
 func (app *SubApp) NumberOfResources() uint {
@@ -210,30 +214,28 @@ func (app *SubApp) NumberOfSystems() uint {
 	return result
 }
 
-func (app *SubApp) runRepeatedUntilExit(exitChannel <-chan struct{}, systems []*SystemSet) {
-	ticker := time.NewTicker(app.tickRate)
-	currentTickRate := app.tickRate
-	var now int64
-	var delta float64
-	start := time.Now().UnixNano()
+func (app *SubApp) World() *ecs.World {
+	return &app.world
+}
 
-	for {
-		select {
-		case <-exitChannel:
-			return
+// SetRunner sets the runner for the repeated systems
+func (app *SubApp) SetRunner(runner Runner) {
+	if runner == nil {
+		app.logger.Error(fmt.Sprintf("%s - failed to set runner: can not be nil", app.name))
+		return
+	}
 
-		case <-ticker.C:
-			now = time.Now().UnixNano()
-			delta = float64(now-start) / 1_000_000_000
-			start = now
+	app.runner = runner
+}
 
-			app.lastDelta = delta
-			app.runSystemSet(systems)
-
-			if currentTickRate != app.tickRate {
-				app.runRepeatedUntilExit(exitChannel, systems)
-				return
-			}
-		}
+// SetFixedRunner sets the default fixedRunner, which runs systems at a fixed interval. To control the interval time,
+// use `app.SetTickRate`.
+func (app *SubApp) SetFixedRunner() {
+	app.runner = &fixedRunner{
+		tickRate: app.tickRate,
+		delta:    app.lastDelta,
+		world:    &app.world,
+		logger:   app.logger,
+		appName:  app.name,
 	}
 }

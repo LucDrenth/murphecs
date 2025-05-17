@@ -65,3 +65,27 @@ func TestProcessFeatures(t *testing.T) {
 		assert.Equal(uint(1), app.NumberOfSystems())
 	})
 }
+
+func TestSetRunner(t *testing.T) {
+	t.Run("logs an error when passing nil runner", func(t *testing.T) {
+		assert := assert.New(t)
+
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+
+		app.SetRunner(nil)
+		assert.Equal(uint(1), logger.err)
+	})
+
+	t.Run("logs no error when passing a proper runner", func(t *testing.T) {
+		assert := assert.New(t)
+
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+
+		app.SetRunner(&fixedRunner{})
+		assert.Equal(uint(0), logger.err)
+	})
+}

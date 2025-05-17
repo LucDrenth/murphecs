@@ -33,7 +33,7 @@ type SystemSet struct {
 	systemParamQueries []ecs.Query
 }
 
-func (s *SystemSet) exec(world *ecs.World) []error {
+func (s *SystemSet) Exec(world *ecs.World) []error {
 	err := s.handleSystemParamQueries(world)
 	if err != nil {
 		return []error{

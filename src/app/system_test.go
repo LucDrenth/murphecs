@@ -176,7 +176,7 @@ func TestExecSystem(t *testing.T) {
 		err := systemSet.add(func() { didRun = true }, &world, &logger, &resourceStorage)
 		assert.NoError(err)
 
-		systemSet.exec(&world)
+		systemSet.Exec(&world)
 		assert.True(didRun)
 	})
 
@@ -197,7 +197,7 @@ func TestExecSystem(t *testing.T) {
 
 		err = systemSet.add(func(r *resourceA) { r.value = 20 }, &world, &logger, &resourceStorage)
 		assert.NoError(err)
-		systemSet.exec(&world)
+		systemSet.Exec(&world)
 		assert.Equal(20, resource.value)
 	})
 
@@ -218,7 +218,7 @@ func TestExecSystem(t *testing.T) {
 
 		err = systemSet.add(func(r resourceA) { r.value = 20 }, &world, &logger, &resourceStorage)
 		assert.NoError(err)
-		systemSet.exec(&world)
+		systemSet.Exec(&world)
 		assert.Equal(10, resource.value)
 	})
 
@@ -267,7 +267,7 @@ func TestExecSystem(t *testing.T) {
 		}, &world, &logger, &resourceStorage)
 		assert.NoError(err)
 
-		systemSet.exec(&world)
+		systemSet.Exec(&world)
 	})
 
 	t.Run("returns no errors if the system does not return anything", func(t *testing.T) {
@@ -280,7 +280,7 @@ func TestExecSystem(t *testing.T) {
 
 		err := systemSet.add(func() {}, &world, &logger, &resourceStorage)
 		assert.NoError(err)
-		errors := systemSet.exec(&world)
+		errors := systemSet.Exec(&world)
 
 		assert.Empty(errors)
 	})
@@ -295,7 +295,7 @@ func TestExecSystem(t *testing.T) {
 
 		err := systemSet.add(func() error { return nil }, &world, &logger, &resourceStorage)
 		assert.NoError(err)
-		errors := systemSet.exec(&world)
+		errors := systemSet.Exec(&world)
 
 		assert.Empty(errors)
 	})
@@ -310,7 +310,7 @@ func TestExecSystem(t *testing.T) {
 
 		err := systemSet.add(func() error { return errors.New("oops") }, &world, &logger, &resourceStorage)
 		assert.NoError(err)
-		errors := systemSet.exec(&world)
+		errors := systemSet.Exec(&world)
 
 		assert.Len(errors, 1)
 	})
@@ -334,7 +334,7 @@ func TestExecSystem(t *testing.T) {
 		}, &world, &logger, &resourceStorage)
 		assert.NoError(err)
 
-		errors := systemSet.exec(&world)
+		errors := systemSet.Exec(&world)
 		assert.Empty(errors)
 
 		assert.Equal(1, numberOfResults)
@@ -359,7 +359,7 @@ func TestExecSystem(t *testing.T) {
 		}, &world, &logger, &resourceStorage)
 		assert.NoError(err)
 
-		errors := systemSet.exec(&world)
+		errors := systemSet.Exec(&world)
 		assert.Empty(errors)
 
 		assert.Equal(0, numberOfResults)
