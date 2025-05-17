@@ -9,7 +9,7 @@ import (
 	"github.com/lucdrenth/murphecs/src/app"
 )
 
-func RunApp(subApp *app.FixedSubApp) {
+func RunApp(subApp *app.SubApp) {
 	// run app
 	exitChannel := make(chan struct{})
 	isDoneChannel := make(chan bool)

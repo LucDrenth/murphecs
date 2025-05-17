@@ -34,7 +34,7 @@ func main() {
 	run.RunApp(&myApp)
 }
 
-func createSetDeltaResourceSystem(app *app.FixedSubApp) func(delta *delta) {
+func createSetDeltaResourceSystem(app *app.SubApp) func(delta *delta) {
 	return func(delta *delta) {
 		delta.secs = app.Delta()
 	}
