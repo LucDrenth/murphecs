@@ -17,7 +17,7 @@ type counter struct {
 
 func main() {
 	var logger app.Logger = &app.SimpleConsoleLogger{}
-	myApp, err := app.NewBasicSubApp(logger, ecs.DefaultWorldConfigs())
+	myApp, err := app.New(logger, ecs.DefaultWorldConfigs())
 	if err != nil {
 		panic(err)
 	}
@@ -29,7 +29,7 @@ func main() {
 	myApp.AddSystem(update, incrementCounter)
 	myApp.AddSystem(update, logCounter)
 
-	run.RunSubApp(&myApp)
+	run.RunApp(&myApp)
 }
 
 // Define the counter as a parameter of this system to use it.

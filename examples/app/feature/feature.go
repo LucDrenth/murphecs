@@ -23,7 +23,7 @@ const (
 
 func main() {
 	var logger app.Logger = &app.SimpleConsoleLogger{}
-	myApp, err := app.NewBasicSubApp(logger, ecs.DefaultWorldConfigs())
+	myApp, err := app.New(logger, ecs.DefaultWorldConfigs())
 	if err != nil {
 		panic(err)
 	}
@@ -37,7 +37,7 @@ func main() {
 		AppName: "MyApp",
 	})
 
-	run.RunSubApp(&myApp)
+	run.RunApp(&myApp)
 }
 
 type appNameResource struct {

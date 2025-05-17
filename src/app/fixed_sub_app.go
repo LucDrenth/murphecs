@@ -9,17 +9,23 @@ import (
 	"github.com/lucdrenth/murphecs/src/utils"
 )
 
-type ScheduleType int
+type scheduleType int
 
 const (
-	ScheduleTypeStartup   ScheduleType = iota // run only once, on startup
+	ScheduleTypeStartup   scheduleType = iota // run only once, on startup
 	ScheduleTypeRepeating                     // runs repeatedly, in the main loop
 	ScheduleTypeCleanup                       // runs only once, before quitting
 )
 
-type BasicSubApp struct {
+// FixedSubApp is a sub app with startup, repeating and cleanup systems.
+//
+// The repeating systems run at a fixed time. If running the systems takes longer then the tickRate, missed ticks
+// will not be repeated.
+// For example: if the tickRate is 1 second and a tick suddenly takes 4 seconds, the next tick will be run immediately
+// after, and then after 1 second.
+type FixedSubApp struct {
 	world     ecs.World
-	schedules map[ScheduleType]*Scheduler
+	schedules map[scheduleType]*Scheduler
 	resources resourceStorage // resources that can be pulled by system params.
 	features  *Feature        // this 'master' feature is empty except for its nested features
 	logger    Logger
@@ -28,7 +34,7 @@ type BasicSubApp struct {
 	lastDelta float64 // delta time of the last tick
 }
 
-func NewBasicSubApp(logger Logger, worldConfigs ecs.WorldConfigs) (BasicSubApp, error) {
+func New(logger Logger, worldConfigs ecs.WorldConfigs) (FixedSubApp, error) {
 	if logger == nil {
 		noOpLogger := NoOpLogger{}
 		logger = &noOpLogger
@@ -36,7 +42,7 @@ func NewBasicSubApp(logger Logger, worldConfigs ecs.WorldConfigs) (BasicSubApp, 
 
 	world, err := ecs.NewWorld(worldConfigs)
 	if err != nil {
-		return BasicSubApp{}, fmt.Errorf("failed to create world: %w", err)
+		return FixedSubApp{}, fmt.Errorf("failed to create world: %w", err)
 	}
 
 	resourceStorage := newResourceStorage()
@@ -47,9 +53,9 @@ func NewBasicSubApp(logger Logger, worldConfigs ecs.WorldConfigs) (BasicSubApp, 
 	// tries to add them.
 	registerBlacklistedResource[*ecs.World](&resourceStorage)
 
-	return BasicSubApp{
+	return FixedSubApp{
 		world: world,
-		schedules: map[ScheduleType]*Scheduler{
+		schedules: map[scheduleType]*Scheduler{
 			ScheduleTypeStartup:   utils.PointerTo(NewScheduler()),
 			ScheduleTypeRepeating: utils.PointerTo(NewScheduler()),
 			ScheduleTypeCleanup:   utils.PointerTo(NewScheduler()),
@@ -62,7 +68,7 @@ func NewBasicSubApp(logger Logger, worldConfigs ecs.WorldConfigs) (BasicSubApp, 
 	}, nil
 }
 
-func (app *BasicSubApp) AddSystem(schedule Schedule, system System) SubApp {
+func (app *FixedSubApp) AddSystem(schedule Schedule, system System) *FixedSubApp {
 	for _, scheduler := range app.schedules {
 		if slices.Contains(scheduler.order, schedule) {
 			err := scheduler.AddSystem(schedule, system, &app.world, app.logger, &app.resources)
@@ -86,7 +92,7 @@ func (app *BasicSubApp) AddSystem(schedule Schedule, system System) SubApp {
 	return app
 }
 
-func (app *BasicSubApp) AddSchedule(schedule Schedule, scheduleType ScheduleType) SubApp {
+func (app *FixedSubApp) AddSchedule(schedule Schedule, scheduleType scheduleType) *FixedSubApp {
 	scheduler, ok := app.schedules[scheduleType]
 	if !ok {
 		app.logger.Error(fmt.Sprintf("%s - failed to add schedule %s: invalid schedule type", app.debugType, schedule))
@@ -101,7 +107,7 @@ func (app *BasicSubApp) AddSchedule(schedule Schedule, scheduleType ScheduleType
 	return app
 }
 
-func (app *BasicSubApp) AddResource(resource Resource) SubApp {
+func (app *FixedSubApp) AddResource(resource Resource) *FixedSubApp {
 	err := app.resources.add(resource)
 	if err != nil {
 		app.logger.Error(fmt.Sprintf("%s - failed to add resource %s: %v", app.debugType, getResourceDebugType(resource), err))
@@ -110,12 +116,12 @@ func (app *BasicSubApp) AddResource(resource Resource) SubApp {
 	return app
 }
 
-func (app *BasicSubApp) AddFeature(feature IFeature) SubApp {
+func (app *FixedSubApp) AddFeature(feature IFeature) *FixedSubApp {
 	app.features.AddFeature(feature)
 	return app
 }
 
-func (app *BasicSubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
+func (app *FixedSubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 	app.processFeatures()
 
 	startupSystems, err := app.schedules[ScheduleTypeStartup].GetSystemSets()
@@ -143,7 +149,7 @@ func (app *BasicSubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bo
 }
 
 // processFeatures adds the resources and systems from all features
-func (app *BasicSubApp) processFeatures() {
+func (app *FixedSubApp) processFeatures() {
 	features := app.features.GetFeatures()
 	validatedFeatures := make([]IFeature, 0, len(features))
 	for _, feature := range features {
@@ -174,7 +180,7 @@ func (app *BasicSubApp) processFeatures() {
 	app.features = nil
 }
 
-func (app *BasicSubApp) runSystemSet(systemSets []*SystemSet) {
+func (app *FixedSubApp) runSystemSet(systemSets []*SystemSet) {
 	for _, systemSet := range systemSets {
 		errors := systemSet.exec(&app.world)
 		for _, err := range errors {
@@ -183,11 +189,11 @@ func (app *BasicSubApp) runSystemSet(systemSets []*SystemSet) {
 	}
 }
 
-func (app *BasicSubApp) SetDebugType(debugType string) {
+func (app *FixedSubApp) SetDebugType(debugType string) {
 	app.debugType = debugType
 }
 
-func (app *BasicSubApp) SetTickRate(tickRate time.Duration) {
+func (app *FixedSubApp) SetTickRate(tickRate time.Duration) {
 	if tickRate == 0 {
 		app.logger.Error(fmt.Sprintf("%s - failed to set tickRate: can not be zero", app.debugType))
 		return
@@ -195,15 +201,15 @@ func (app *BasicSubApp) SetTickRate(tickRate time.Duration) {
 	app.tickRate = tickRate
 }
 
-func (app *BasicSubApp) Delta() float64 {
+func (app *FixedSubApp) Delta() float64 {
 	return app.lastDelta
 }
 
-func (app *BasicSubApp) NumberOfResources() uint {
+func (app *FixedSubApp) NumberOfResources() uint {
 	return uint(len(app.resources.resources))
 }
 
-func (app *BasicSubApp) NumberOfSystems() uint {
+func (app *FixedSubApp) NumberOfSystems() uint {
 	result := uint(0)
 
 	for _, schedules := range app.schedules {
@@ -212,7 +218,7 @@ func (app *BasicSubApp) NumberOfSystems() uint {
 	return result
 }
 
-func (app *BasicSubApp) runRepeatedUntilExit(exitChannel <-chan struct{}, systems []*SystemSet) {
+func (app *FixedSubApp) runRepeatedUntilExit(exitChannel <-chan struct{}, systems []*SystemSet) {
 	ticker := time.NewTicker(app.tickRate)
 	currentTickRate := app.tickRate
 	var now int64

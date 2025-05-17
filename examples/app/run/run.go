@@ -1,4 +1,4 @@
-// Demonstrate how to run a SubApp
+// Demonstrate how to run an app
 package run
 
 import (
@@ -9,7 +9,7 @@ import (
 	"github.com/lucdrenth/murphecs/src/app"
 )
 
-func RunSubApp(subApp app.SubApp) {
+func RunApp(subApp *app.FixedSubApp) {
 	// run app
 	exitChannel := make(chan struct{})
 	isDoneChannel := make(chan bool)

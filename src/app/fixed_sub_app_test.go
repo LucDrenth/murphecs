@@ -44,7 +44,7 @@ func TestProcessFeatures(t *testing.T) {
 
 	t.Run("handles empty features", func(t *testing.T) {
 		logger := testLogger{}
-		app, err := NewBasicSubApp(&logger, ecs.DefaultWorldConfigs())
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
 		app.processFeatures()
@@ -53,7 +53,7 @@ func TestProcessFeatures(t *testing.T) {
 
 	t.Run("logs error if a feature its Init method does not have pointer receiver", func(t *testing.T) {
 		logger := testLogger{}
-		app, err := NewBasicSubApp(&logger, ecs.DefaultWorldConfigs())
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
 		app.AddFeature(&invalidFeature{})
@@ -65,7 +65,7 @@ func TestProcessFeatures(t *testing.T) {
 
 	t.Run("adds all resources of the feature and its nested features", func(t *testing.T) {
 		logger := testLogger{}
-		app, err := NewBasicSubApp(&logger, ecs.DefaultWorldConfigs())
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		app.AddSchedule(testSchedule, ScheduleTypeRepeating)
 
 		assert.NoError(err)
