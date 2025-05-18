@@ -55,12 +55,6 @@ func (o *queryOptions) Validate() error {
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
-//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
-//     parallel with other systems.
-//   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
-//     component is optional, entities do not have to have that component in order for it to return a result,
-//     as long as it has the other (not-optional) components.
 //   - use [NoFilter] to not use any filters
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.
@@ -75,12 +69,11 @@ type Query0[_ QueryOption] struct {
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
-//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
-//     parallel with other systems.
-//   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
-//     component is optional, entities do not have to have that component in order for it to return a result,
-//     as long as it has the other (not-optional) components.
+//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1] to specify if components are read-only. Marking components as
+//     read-only allows systems with queries as system-params to be run in parallel with other systems.
+//   - use [NoOptional], [Optional1] to mark component as optional. When a component is optional, entities do not
+//     have to have that component in order for it to return a result, as long as it has the other (not-optional)
+//     components.
 //   - use [NoFilter] to not use any filters
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.
@@ -96,12 +89,11 @@ type Query1[ComponentA IComponent, _ QueryOption] struct {
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
-//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
-//     parallel with other systems.
-//   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
-//     component is optional, entities do not have to have that component in order for it to return a result,
-//     as long as it has the other (not-optional) components.
+//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] to specify if components are read-only. Marking
+//     components as read-only allows systems with queries as system-params to be run in parallel with other systems.
+//   - use [NoOptional], [Optional1], [Optional2] to mark components as optional. When a component is optional, entities
+//     do not have to have that component in order for it to return a result, as long as it has the other (not-optional)
+//     components.
 //   - use [NoFilter] to not use any filters
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.

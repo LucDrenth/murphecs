@@ -50,7 +50,7 @@ func (o *combinedQueryOptions) validateOptions(queryComponents []ComponentId) er
 	}
 
 	if o.ReadOnlyComponents.IsAllReadOnly && len(o.ReadOnlyComponents.ComponentIds) > 0 {
-		return fmt.Errorf("can not have specific read-only components together with IsAllReadOnly")
+		return fmt.Errorf("should not have specific read-only components together with IsAllReadOnly")
 	}
 
 	return nil
@@ -65,7 +65,7 @@ type QueryOption interface {
 	getCombinedQueryOptions(*World) (combinedQueryOptions, error)
 }
 
-// default query options: NoFilter, NoOptional, NoReadonly
+// default query options: NoFilter, NoOptional, NoReadonly, NotLazy
 type Default struct{}
 type QueryOptionsAllReadOnly struct{}
 type QueryOptions[_ QueryParamFilter, _ OptionalComponents, _ ReadOnlyComponents, _ IsQueryLazy] struct{}
