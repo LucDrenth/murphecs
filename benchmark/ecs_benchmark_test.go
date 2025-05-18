@@ -163,8 +163,111 @@ func BenchmarkGet(b *testing.B) {
 	})
 }
 
+func BenchmarkHasComponent(b *testing.B) {
+	for _, numberOfEntities := range []int{10, 100, 1_000, 10_000} {
+		world := ecs.DefaultWorld()
+		for range numberOfEntities {
+			// spawn decoy entities
+			if _, err := ecs.Spawn(&world, &emptyComponentA{}); err != nil {
+				b.Fatal(err)
+			}
+			if _, err := ecs.Spawn(&world); err != nil {
+				b.Fatal(err)
+			}
+		}
+
+		entity, err := ecs.Spawn(&world, &emptyComponentA{})
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		b.Run(fmt.Sprintf("ComponentFound-%d-Entities", numberOfEntities), func(b *testing.B) {
+			var componentFound bool
+
+			for b.Loop() {
+				componentFound, err = ecs.HasComponent[emptyComponentA](&world, entity)
+			}
+
+			if err != nil {
+				b.Fatal(err)
+			}
+			if !componentFound {
+				b.Fatal("component should have been found")
+			}
+		})
+
+		b.Run(fmt.Sprintf("ComponentNotFound-%d-Entities", numberOfEntities), func(b *testing.B) {
+			var componentFound bool
+
+			for b.Loop() {
+				componentFound, err = ecs.HasComponent[emptyComponentB](&world, entity)
+			}
+
+			if err != nil {
+				b.Fatal(err)
+			}
+			if componentFound {
+				b.Fatal("component should not have been found")
+			}
+		})
+	}
+}
+
+func BenchmarkHasComponentId(b *testing.B) {
+	for _, numberOfEntities := range []int{10, 100, 1_000, 10_000} {
+		world := ecs.DefaultWorld()
+		for range numberOfEntities {
+			// spawn decoy entities
+			if _, err := ecs.Spawn(&world, &emptyComponentA{}); err != nil {
+				b.Fatal(err)
+			}
+			if _, err := ecs.Spawn(&world); err != nil {
+				b.Fatal(err)
+			}
+		}
+
+		entity, err := ecs.Spawn(&world, &emptyComponentA{})
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		componentIdA := ecs.ComponentIdFor[emptyComponentA](&world)
+		componentIdB := ecs.ComponentIdFor[emptyComponentB](&world)
+
+		b.Run(fmt.Sprintf("ComponentFound-%d-Entities", numberOfEntities), func(b *testing.B) {
+			var componentFound bool
+
+			for b.Loop() {
+				componentFound, err = ecs.HasComponentId(&world, entity, componentIdA)
+			}
+
+			if err != nil {
+				b.Fatal(err)
+			}
+			if !componentFound {
+				b.Fatal("component should have been found")
+			}
+		})
+
+		b.Run(fmt.Sprintf("ComponentNotFound-%d-Entities", numberOfEntities), func(b *testing.B) {
+			var componentFound bool
+
+			for b.Loop() {
+				componentFound, err = ecs.HasComponentId(&world, entity, componentIdB)
+			}
+
+			if err != nil {
+				b.Fatal(err)
+			}
+			if componentFound {
+				b.Fatal("component should not have been found")
+			}
+		})
+	}
+}
+
 func BenchmarkQuery(b *testing.B) {
-	for _, size := range []int{10, 100, 1_000, 10_000, 100_000} {
+	for _, size := range []int{10, 100, 1_000, 10_000} {
 		world := ecs.DefaultWorld()
 
 		for range size {
