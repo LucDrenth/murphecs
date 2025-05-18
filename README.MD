@@ -77,11 +77,11 @@ If you want to contribute to Murphecs, feel free to open an issue or make a PR. 
 ## Benchmarking
 To compare benchmarks with changed code, run below command with your new code
 ```bash
-go test -count=10 -bench=. ./benchmark/ecs/ > new.txt
+go test -count=10 -bench=. ./benchmark/ > new.txt
 ```
 and then below command with your old code
 ```bash
-go test -count=10 -bench=. ./benchmark/ecs/ > new.txt
+go test -count=10 -bench=. ./benchmark/ > old.txt
 ```
 Now run [benchstat](https://pkg.go.dev/golang.org/x/perf/cmd/benchstat) on the files created above:
 ```bash
