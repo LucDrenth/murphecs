@@ -87,35 +87,48 @@ func BenchmarkInsert(b *testing.B) {
 
 func BenchmarkRemove(b *testing.B) {
 	b.Run("OneComponent", func(b *testing.B) {
-		for b.Loop() {
-			world := ecs.DefaultWorld()
-			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+		world := ecs.DefaultWorld()
+		if err := fillWorld(&world); err != nil {
+			b.FailNow()
+		}
 
+		for b.Loop() {
+			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 			ecs.Remove[emptyComponentA](&world, entity)
 		}
 	})
 
 	b.Run("TwoComponents", func(b *testing.B) {
-		for b.Loop() {
-			world := ecs.DefaultWorld()
-			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+		world := ecs.DefaultWorld()
+		if err := fillWorld(&world); err != nil {
+			b.FailNow()
+		}
 
+		for b.Loop() {
+			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 			ecs.Remove2[emptyComponentA, emptyComponentB](&world, entity)
 		}
 	})
 
 	b.Run("ThreeComponents", func(b *testing.B) {
-		for b.Loop() {
-			world := ecs.DefaultWorld()
-			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+		world := ecs.DefaultWorld()
+		if err := fillWorld(&world); err != nil {
+			b.FailNow()
+		}
 
+		for b.Loop() {
+			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 			ecs.Remove3[emptyComponentA, emptyComponentB, emptyComponentC](&world, entity)
 		}
 	})
 
 	b.Run("FourComponents", func(b *testing.B) {
+		world := ecs.DefaultWorld()
+		if err := fillWorld(&world); err != nil {
+			b.FailNow()
+		}
+
 		for b.Loop() {
-			world := ecs.DefaultWorld()
 			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 
 			ecs.Remove4[emptyComponentA, emptyComponentB, emptyComponentC, emptyComponentD](&world, entity)
@@ -125,6 +138,9 @@ func BenchmarkRemove(b *testing.B) {
 
 func BenchmarkDelete(b *testing.B) {
 	world := ecs.DefaultWorld()
+	if err := fillWorld(&world); err != nil {
+		b.FailNow()
+	}
 
 	for b.Loop() {
 		entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
@@ -134,9 +150,15 @@ func BenchmarkDelete(b *testing.B) {
 
 func BenchmarkGet(b *testing.B) {
 	world := ecs.DefaultWorld()
-	ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+	if err := fillWorld(&world); err != nil {
+		b.FailNow()
+	}
+
 	target, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
-	ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+
+	if err := fillWorld(&world); err != nil {
+		b.FailNow()
+	}
 
 	b.Run("Get1", func(b *testing.B) {
 		for b.Loop() {
@@ -166,11 +188,16 @@ func BenchmarkGet(b *testing.B) {
 func BenchmarkHasComponent(b *testing.B) {
 	for _, numberOfEntities := range []int{10, 100, 1_000, 10_000} {
 		world := ecs.DefaultWorld()
+
 		for range numberOfEntities {
-			// spawn decoy entities
+			if err := fillWorld(&world); err != nil {
+				b.FailNow()
+			}
+
 			if _, err := ecs.Spawn(&world, &emptyComponentA{}); err != nil {
 				b.Fatal(err)
 			}
+
 			if _, err := ecs.Spawn(&world); err != nil {
 				b.Fatal(err)
 			}
@@ -217,10 +244,14 @@ func BenchmarkHasComponentId(b *testing.B) {
 	for _, numberOfEntities := range []int{10, 100, 1_000, 10_000} {
 		world := ecs.DefaultWorld()
 		for range numberOfEntities {
-			// spawn decoy entities
+			if err := fillWorld(&world); err != nil {
+				b.FailNow()
+			}
+
 			if _, err := ecs.Spawn(&world, &emptyComponentA{}); err != nil {
 				b.Fatal(err)
 			}
+
 			if _, err := ecs.Spawn(&world); err != nil {
 				b.Fatal(err)
 			}
@@ -271,28 +302,7 @@ func BenchmarkQuery(b *testing.B) {
 		world := ecs.DefaultWorld()
 
 		for range size {
-			if _, err := ecs.Spawn(&world, &emptyComponentA{}); err != nil {
-				b.FailNow()
-			}
-			if _, err := ecs.Spawn(&world, &emptyComponentB{}, &emptyComponentA{}); err != nil {
-				b.FailNow()
-			}
-			if _, err := ecs.Spawn(&world, &emptyComponentC{}); err != nil {
-				b.FailNow()
-			}
-			if _, err := ecs.Spawn(&world, &emptyComponentA{}); err != nil {
-				b.FailNow()
-			}
-			if _, err := ecs.Spawn(&world, &componentWithValue{value: size}, &emptyComponentA{}); err != nil {
-				b.FailNow()
-			}
-			if _, err := ecs.Spawn(&world, &emptyComponentC{}, &emptyComponentA{}, &emptyComponentB{}); err != nil {
-				b.FailNow()
-			}
-			if _, err := ecs.Spawn(&world, &emptyComponentD{}, &emptyComponentC{}); err != nil {
-				b.FailNow()
-			}
-			if _, err := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{}); err != nil {
+			if err := fillWorld(&world); err != nil {
 				b.FailNow()
 			}
 		}
@@ -596,4 +606,33 @@ func BenchmarkQuery(b *testing.B) {
 			}
 		})
 	}
+}
+
+func fillWorld(world *ecs.World) error {
+	if _, err := ecs.Spawn(world, &emptyComponentA{}); err != nil {
+		return err
+	}
+	if _, err := ecs.Spawn(world, &emptyComponentB{}, &emptyComponentA{}); err != nil {
+		return err
+	}
+	if _, err := ecs.Spawn(world, &emptyComponentC{}); err != nil {
+		return err
+	}
+	if _, err := ecs.Spawn(world, &emptyComponentA{}); err != nil {
+		return err
+	}
+	if _, err := ecs.Spawn(world, &componentWithValue{value: 456}, &emptyComponentA{}); err != nil {
+		return err
+	}
+	if _, err := ecs.Spawn(world, &emptyComponentC{}, &emptyComponentA{}, &emptyComponentB{}); err != nil {
+		return err
+	}
+	if _, err := ecs.Spawn(world, &emptyComponentD{}, &emptyComponentC{}); err != nil {
+		return err
+	}
+	if _, err := ecs.Spawn(world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{}); err != nil {
+		return err
+	}
+
+	return nil
 }
