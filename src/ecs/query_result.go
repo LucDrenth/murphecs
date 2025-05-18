@@ -7,6 +7,9 @@ type QueryResult interface {
 	NumberOfResult() uint
 	Clear()
 }
+type Query0Result struct {
+	entityIds []EntityId
+}
 type Query1Result[A IComponent] struct {
 	componentsA []*A
 	entityIds   []EntityId
@@ -30,6 +33,9 @@ type Query4Result[A, B, C, D IComponent] struct {
 	entityIds   []EntityId
 }
 
+func (q *Query0Result) Clear() {
+	q.entityIds = []EntityId{}
+}
 func (q *Query1Result[A]) Clear() {
 	q.componentsA = []*A{}
 	q.entityIds = []EntityId{}
@@ -53,6 +59,9 @@ func (q *Query4Result[A, B, C, D]) Clear() {
 	q.entityIds = []EntityId{}
 }
 
+func (q *Query0Result) NumberOfResult() uint {
+	return uint(len(q.entityIds))
+}
 func (q *Query1Result[A]) NumberOfResult() uint {
 	return uint(len(q.entityIds))
 }
@@ -90,6 +99,18 @@ func (q *Query2Result[A, B]) Range() func(yield func(*A, *B) bool) {
 			}
 		}
 	}
+}
+
+// Iter executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query0Result) Iter(f func(entityId EntityId) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i]); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // Iter executes function f on each entity that the query returned, until f returns an error.

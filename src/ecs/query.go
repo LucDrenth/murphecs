@@ -50,6 +50,26 @@ func (o *queryOptions) Validate() error {
 	return o.options.validateOptions(o.components)
 }
 
+// Query0 gets the entities that match the query options.
+//
+// Prepare must be called once before calling Execute.
+//
+// The following query options are available:
+//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
+//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
+//     parallel with other systems.
+//   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
+//     component is optional, entities do not have to have that component in order for it to return a result,
+//     as long as it has the other (not-optional) components.
+//   - use [NoFilter] to not use any filters
+//   - use [With] to make the results only include entities that has a specific component.
+//   - use [Without] to make the results only include entities that do not have a specific component.
+//   - use [And] and [Or] to combine filters.
+type Query0[_ QueryOption] struct {
+	queryOptions
+	results Query0Result
+}
+
 // Query1 queries 1 component.
 //
 // Prepare must be called once before calling Execute.
@@ -138,6 +158,20 @@ type Query4[ComponentA, ComponentB, ComponentC, ComponentD IComponent, _ QueryOp
 	componentIdB ComponentId
 	componentIdC ComponentId
 	componentIdD ComponentId
+}
+
+func (q *Query0[QueryOptions]) Exec(world *World) error {
+	q.ClearResults()
+
+	for entityId, entityData := range world.entities {
+		if q.options.isFilteredOut(entityData) {
+			continue
+		}
+
+		q.results.entityIds = append(q.results.entityIds, entityId)
+	}
+
+	return nil
 }
 
 func (q *Query1[ComponentA, QueryOptions]) Exec(world *World) error {
@@ -283,6 +317,11 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) E
 	return nil
 }
 
+func (q *Query0[QueryOptions]) Prepare(world *World) (err error) {
+	q.options, err = toCombinedQueryOptions[QueryOptions](world)
+	q.components = []ComponentId{}
+	return err
+}
 func (q *Query1[A, QueryOptions]) Prepare(world *World) (err error) {
 	q.options, err = toCombinedQueryOptions[QueryOptions](world)
 	q.componentIdA = ComponentIdFor[A](world)
@@ -328,6 +367,9 @@ func (q *Query4[A, B, C, D, QueryOptions]) Prepare(world *World) (err error) {
 	return err
 }
 
+func (q *Query0[QueryOptions]) Result() *Query0Result {
+	return &q.results
+}
 func (q *Query1[ComponentA, QueryOptions]) Result() *Query1Result[ComponentA] {
 	return &q.results
 }
@@ -341,6 +383,9 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) R
 	return &q.results
 }
 
+func (q *Query0[QueryOptions]) ClearResults() {
+	q.results.Clear()
+}
 func (q *Query1[ComponentA, QueryOptions]) ClearResults() {
 	q.results.Clear()
 }

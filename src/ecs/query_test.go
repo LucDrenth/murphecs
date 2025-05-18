@@ -7,6 +7,62 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestQuery0(t *testing.T) {
+	type componentA struct{ Component }
+	type componentB struct{ Component }
+	type componentC struct{ Component }
+
+	t.Run("query with default options return the expected results", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := DefaultWorld()
+		query := Query0[With[componentA]]{}
+		err := query.Prepare(&world)
+		assert.NoError(err)
+
+		// assert that exec on empty world query returns no results
+		err = query.Exec(&world)
+		assert.NoError(err)
+		assert.Equal(uint(0), query.Result().NumberOfResult())
+
+		// spawn 2 entities that are expected to be returned from the query and 1 decoy entity that should be skipped
+		expectedEntity1, err := Spawn(&world, &componentA{}, &componentB{})
+		assert.NoError(err)
+		_, err = Spawn(&world, &componentB{}) // decoy component, we should not get this one in the query results
+		assert.NoError(err)
+		expectedEntity2, err := Spawn(&world, &componentA{}, &componentB{})
+		assert.NoError(err)
+
+		err = query.Exec(&world)
+		assert.NoError(err)
+		assert.Equal(uint(2), query.Result().NumberOfResult())
+
+		foundExpectedEntity1 := false
+		foundExpectedEntity2 := false
+		query.results.Iter(func(entityId EntityId) error {
+			if entityId == expectedEntity1 {
+				foundExpectedEntity1 = true
+			} else if entityId == expectedEntity2 {
+				foundExpectedEntity2 = true
+			} else {
+				assert.FailNow("returned unexpected entity", entityId)
+			}
+			return nil
+		})
+
+		assert.True(foundExpectedEntity1)
+		assert.True(foundExpectedEntity2)
+
+		// assert that clearing the query results works as expected
+		query.Result().Clear()
+		assert.Equal(uint(0), query.results.NumberOfResult())
+	})
+
+	t.Run("Query0 satisfies Query", func(t *testing.T) {
+		var _ Query = &Query0[Default]{}
+	})
+}
+
 func TestQuery1(t *testing.T) {
 	type componentA struct {
 		Component

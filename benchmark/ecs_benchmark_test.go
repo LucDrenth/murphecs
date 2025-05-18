@@ -297,6 +297,45 @@ func BenchmarkQuery(b *testing.B) {
 			}
 		}
 
+		b.Run(fmt.Sprintf("Query0-Basic-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query0[ecs.Default]{}
+
+			err := query.Prepare(&world)
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query0-With1-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query0[ecs.With[emptyComponentC]]{}
+
+			err := query.Prepare(&world)
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
+		b.Run(fmt.Sprintf("Query0-Without1-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query0[ecs.Without[emptyComponentC]]{}
+
+			err := query.Prepare(&world)
+			if err != nil {
+				b.FailNow()
+			}
+
+			for b.Loop() {
+				query.Exec(&world)
+			}
+		})
+
 		b.Run(fmt.Sprintf("Query1-Basic-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query1[emptyComponentA, ecs.Default]{}
 
