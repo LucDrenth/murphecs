@@ -1,6 +1,5 @@
 # ECS
 **Must have**
-- [bug] Fix GC issue when copying pointer values. See https://github.com/mlange-42/ark/issues/246
 - [feature] Observers
 - [feature] Relationships (like parent/child)
 - [performance] When removing component from entity, or deleting an entity, the place of the component(s) in the component storage are never reused. To prevent memory from forever growing, We could either move the last componentRegistry component to the place of the removed component, but mind that we'd need to update it for all storages in the archetype
