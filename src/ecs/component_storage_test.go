@@ -142,6 +142,36 @@ func TestComponentRegistryInsert(t *testing.T) {
 	})
 }
 
+func TestComponentRegistrySet(t *testing.T) {
+	type componentA struct{ Component }
+
+	t.Run("returns an error when index is out of bounds", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := DefaultWorld()
+		componentRegistry, err := createComponentStorage(2, ComponentIdFor[componentA](&world))
+		assert.NoError(err)
+
+		err = componentRegistry.set(&componentA{}, 3)
+		assert.ErrorIs(err, ErrComponentRegistryIndexOutOfBounds)
+	})
+
+	t.Run("can set a component at the same index multiple times", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := DefaultWorld()
+		componentRegistry, err := createComponentStorage(2, ComponentIdFor[componentA](&world))
+		assert.NoError(err)
+
+		for range 10 {
+			err = componentRegistry.set(&componentA{}, 1)
+			assert.NoError(err)
+		}
+
+		assert.Equal(uint(2), componentRegistry.capacity)
+	})
+}
+
 func TestGetComponentFromComponentRegistry(t *testing.T) {
 	type componentA struct {
 		value int

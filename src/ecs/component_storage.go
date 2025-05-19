@@ -73,7 +73,7 @@ func (storage *componentStorage) insert(component IComponent) (uint, error) {
 // Returns an ErrComponentIsNotAPointer when component is not passed as a reference (e.g. componentA{}, instead of &componentA{})
 func (storage *componentStorage) set(component IComponent, index uint) error {
 	if index >= storage.capacity {
-		return fmt.Errorf("index %d is out of bounds", index)
+		return fmt.Errorf("%w: %d", ErrComponentRegistryIndexOutOfBounds, index)
 	}
 
 	componentValue := reflect.ValueOf(component)
