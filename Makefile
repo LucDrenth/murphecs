@@ -10,4 +10,4 @@ benchmark:
 
 # run user facing ecs benchmarks
 benchmark-ecs:
-	go test -bench=. ./benchmark/ecs/ | grep -E "\bBenchmark"
+	go test -bench=. ./benchmark/ | grep -E "\bBenchmark"

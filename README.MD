@@ -75,15 +75,14 @@ go run ./examples/readme
 If you want to contribute to Murphecs, feel free to open an issue or make a PR. If the change could be considered controversial, consider making an issue first to discuss the changes before working on the implementation. 
 
 ## Benchmarking
-To compare benchmarks with changed code, run below command with your new code
+To compare benchmarks with another commit, run
 ```bash
-go test -count=10 -bench=. ./benchmark/ > new.txt
+./scripts/compare-benchmarks.sh $COMMIT_HASH $FOLDER $COUNT
 ```
-and then below command with your old code
+
+For example:
 ```bash
-go test -count=10 -bench=. ./benchmark/ > old.txt
+./scripts/compare-benchmarks.sh d2331b8c11083e15147b4470275c18896d7404e3 ./benchmark/ 10
 ```
-Now run [benchstat](https://pkg.go.dev/golang.org/x/perf/cmd/benchstat) on the files created above:
-```bash
-go tool benchstat old.txt new.txt
-```
+
+Be aware that this script will temporarily stash your current changes. If anything goes wrong or you cancel early, and you are missing changes, just run `git stash pop`.
