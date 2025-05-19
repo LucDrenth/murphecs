@@ -52,12 +52,6 @@ func (storage *componentStorage) increaseCapacity(extraCapacity uint) {
 //
 // Returns an ErrComponentIsNotAPointer when component is not passed as a reference (e.g. componentA{}, instead of &componentA{})
 func (storage *componentStorage) insert(component IComponent) (uint, error) {
-	componentValue := reflect.ValueOf(component)
-
-	if componentValue.Kind() != reflect.Ptr {
-		return 0, fmt.Errorf("%w: component %s must be a pointer", ErrComponentIsNotAPointer, ComponentDebugStringOf(component))
-	}
-
 	insertIndex := storage.nextItemIndex
 
 	if storage.capacity == insertIndex {
@@ -65,19 +59,40 @@ func (storage *componentStorage) insert(component IComponent) (uint, error) {
 		storage.increaseCapacity(storage.capacity)
 	}
 
-	componentPointer := componentValue.UnsafePointer()
-
-	destination, err := storage.getComponentPointer(insertIndex)
+	err := storage.set(component, insertIndex)
 	if err != nil {
-		// this error should never happen because we always make sure we have enough capacity.
-		return 0, fmt.Errorf("unexpected error when getting component pointer: %w", err)
+		return 0, err
 	}
 
-	utils.CopyPointerData(componentPointer, destination, storage.componentSize)
 	storage.nextItemIndex += 1
 	storage.numberOfComponents += 1
 
 	return insertIndex, nil
+}
+
+// Returns an ErrComponentIsNotAPointer when component is not passed as a reference (e.g. componentA{}, instead of &componentA{})
+func (storage *componentStorage) set(component IComponent, index uint) error {
+	if index >= storage.capacity {
+		return fmt.Errorf("index %d is out of bounds", index)
+	}
+
+	componentValue := reflect.ValueOf(component)
+
+	if componentValue.Kind() != reflect.Ptr {
+		return fmt.Errorf("%w: component %s must be a pointer", ErrComponentIsNotAPointer, ComponentDebugStringOf(component))
+	}
+
+	componentPointer := componentValue.UnsafePointer()
+
+	destination, err := storage.getComponentPointer(index)
+	if err != nil {
+		// this error should never happen because we always make sure we have enough capacity.
+		return fmt.Errorf("unexpected error when getting component pointer: %w", err)
+	}
+
+	utils.CopyPointerData(componentPointer, destination, storage.componentSize)
+
+	return nil
 }
 
 // insertRaw returns the index at which the component was inserted.

@@ -12,7 +12,6 @@
 - [feature] Events
 - [feature] Add Query5..Query16 and Optional5..Optional16
 - [feature] World config on how to grow component storage capacity
-- [quality-of-life] Set function to either overwrite or insert a component. It is already possible by removing and then inserting a component but its not very user friendly.
 - [tests] More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
 
 # Project
