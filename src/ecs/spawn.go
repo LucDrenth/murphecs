@@ -46,7 +46,7 @@ func Spawn(world *World, components ...IComponent) (EntityId, error) {
 		componentId := ComponentIdOf(component, world)
 
 		storage := archetype.components[componentId]
-		row, err = storage.insert(component)
+		row, err = storage.insert(world, component)
 		if err != nil {
 			returnedErr = fmt.Errorf("failed to insert component %s in to component registry: %w", componentId.DebugString(), err)
 			continue

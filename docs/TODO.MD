@@ -10,7 +10,6 @@
 - [performance] Query can create a list of ArcheTypes on Prepare so that we don't have to go through every entity. Archetypes would have to maintain a list of entities.
 - [feature] Events
 - [feature] Add Query5..Query16 and Optional5..Optional16
-- [feature] World config on how to grow component storage capacity
 - [tests] More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
 
 # Project

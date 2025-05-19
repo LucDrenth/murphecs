@@ -11,13 +11,33 @@ func TestCreateWorld(t *testing.T) {
 		DefaultWorld()
 	})
 
-	t.Run("returns an error when using nil for componentCapacityStrategy", func(t *testing.T) {
+	t.Run("returns an error when using nil for ComponentCapacityStrategy", func(t *testing.T) {
 		assert := assert.New(t)
 
 		_, err := NewWorld(WorldConfigs{
-			ComponentCapacityStrategy: nil,
+			InitialComponentCapacityStrategy: nil,
 		})
 		assert.Error(err)
+	})
+
+	t.Run("returns an error when using nil for GrowComponentCapacityStrategy", func(t *testing.T) {
+		assert := assert.New(t)
+
+		_, err := NewWorld(WorldConfigs{
+			InitialComponentCapacityStrategy: &StaticDefaultComponentCapacity{Capacity: 1024},
+			ComponentCapacityGrowthStrategy:  nil,
+		})
+		assert.Error(err)
+	})
+
+	t.Run("succeeds when passing valid configs", func(t *testing.T) {
+		assert := assert.New(t)
+
+		_, err := NewWorld(WorldConfigs{
+			InitialComponentCapacityStrategy: &StaticDefaultComponentCapacity{Capacity: 1024},
+			ComponentCapacityGrowthStrategy:  &ComponentCapacityGrowthDouble{},
+		})
+		assert.NoError(err)
 	})
 }
 

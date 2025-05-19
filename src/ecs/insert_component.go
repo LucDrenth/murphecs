@@ -80,7 +80,7 @@ func Insert(world *World, entity EntityId, components ...IComponent) (resultErr 
 	// insert new component
 	for i, component := range componentsToAdd {
 		storage := newArchetype.components[componentIdsToAdd[i]]
-		newRow, err = storage.insert(component)
+		newRow, err = storage.insert(world, component)
 		if err != nil {
 			resultErr = fmt.Errorf("failed to insert component %s in to component registry: %w", componentIdsToAdd[i].DebugString(), err)
 			continue
@@ -90,7 +90,7 @@ func Insert(world *World, entity EntityId, components ...IComponent) (resultErr 
 	for _, component := range requiredComponents {
 		componentId := ComponentIdOf(component, world)
 		storage := newArchetype.components[componentId]
-		newRow, err = storage.insert(component)
+		newRow, err = storage.insert(world, component)
 		if err != nil {
 			resultErr = fmt.Errorf("failed to insert required component %s in to component registry: %w", componentId.DebugString(), err)
 			continue
@@ -179,7 +179,7 @@ func InsertOrOverwrite(world *World, entity EntityId, components ...IComponent) 
 	// insert new component
 	for i, component := range componentsToAdd {
 		storage := newArchetype.components[componentIdsToAdd[i]]
-		newRow, err = storage.insert(component)
+		newRow, err = storage.insert(world, component)
 		if err != nil {
 			resultErr = fmt.Errorf("failed to insert component %s in to component registry: %w", componentIdsToAdd[i].DebugString(), err)
 			continue
@@ -189,7 +189,7 @@ func InsertOrOverwrite(world *World, entity EntityId, components ...IComponent) 
 	for _, component := range requiredComponents {
 		componentId := ComponentIdOf(component, world)
 		storage := newArchetype.components[componentId]
-		newRow, err = storage.insert(component)
+		newRow, err = storage.insert(world, component)
 		if err != nil {
 			resultErr = fmt.Errorf("failed to insert required component %s in to component registry: %w", componentId.DebugString(), err)
 			continue

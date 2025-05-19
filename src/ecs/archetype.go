@@ -74,7 +74,7 @@ func newArchetype(world *World, componentIds []ComponentId) (Archetype, error) {
 	components := map[ComponentId]*componentStorage{}
 	for i := range componentIds {
 		storage, err := createComponentStorage(
-			world.initialComponentCapacity.GetDefaultComponentCapacity(componentIds[i]),
+			world.initialComponentCapacityStrategy.GetDefaultComponentCapacity(componentIds[i]),
 			componentIds[i],
 		)
 		if err != nil {

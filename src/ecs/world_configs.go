@@ -2,12 +2,16 @@ package ecs
 
 type WorldConfigs struct {
 	// Decides the capacity of a component storage when a component is spawned or inserted for the first time.
-	ComponentCapacityStrategy initialComponentCapacityStrategy
+	InitialComponentCapacityStrategy initialComponentCapacityStrategy
+
+	// Decides by how much the component storage capacity grows when inserting a component if the component storage is full
+	ComponentCapacityGrowthStrategy componentCapacityGrowthStrategy
 }
 
 func DefaultWorldConfigs() WorldConfigs {
 	return WorldConfigs{
-		ComponentCapacityStrategy: &StaticDefaultComponentCapacity{Capacity: 1024},
+		InitialComponentCapacityStrategy: &StaticDefaultComponentCapacity{Capacity: 1024},
+		ComponentCapacityGrowthStrategy:  &ComponentCapacityGrowthDouble{},
 	}
 }
 
@@ -39,4 +43,14 @@ func (s *ComponentSpecificDefaultComponentCapacity) GetDefaultComponentCapacity(
 	}
 
 	return s.Default
+}
+
+type componentCapacityGrowthStrategy interface {
+	GetExtraCapacity(currentCapacity uint) uint
+}
+
+type ComponentCapacityGrowthDouble struct{}
+
+func (s *ComponentCapacityGrowthDouble) GetExtraCapacity(currentCapacity uint) uint {
+	return currentCapacity
 }

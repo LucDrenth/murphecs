@@ -51,12 +51,16 @@ func (storage *componentStorage) increaseCapacity(extraCapacity uint) {
 // insert returns the index at which the component was inserted.
 //
 // Returns an ErrComponentIsNotAPointer when component is not passed as a reference (e.g. componentA{}, instead of &componentA{})
-func (storage *componentStorage) insert(component IComponent) (uint, error) {
+func (storage *componentStorage) insert(world *World, component IComponent) (uint, error) {
 	insertIndex := storage.nextItemIndex
 
 	if storage.capacity == insertIndex {
 		// double our current capacity
-		storage.increaseCapacity(storage.capacity)
+		extraCapacity := world.componentCapacityGrowthStrategy.GetExtraCapacity(storage.capacity)
+		if extraCapacity == 0 {
+			return 0, fmt.Errorf("component capacity growth is 0")
+		}
+		storage.increaseCapacity(extraCapacity)
 	}
 
 	err := storage.set(component, insertIndex)
@@ -73,7 +77,7 @@ func (storage *componentStorage) insert(component IComponent) (uint, error) {
 // Returns an ErrComponentIsNotAPointer when component is not passed as a reference (e.g. componentA{}, instead of &componentA{})
 func (storage *componentStorage) set(component IComponent, index uint) error {
 	if index >= storage.capacity {
-		return fmt.Errorf("%w: %d", ErrComponentRegistryIndexOutOfBounds, index)
+		return fmt.Errorf("%w: %d", ErrComponentStorageIndexOutOfBounds, index)
 	}
 
 	componentValue := reflect.ValueOf(component)

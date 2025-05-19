@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewComponentRegistry(t *testing.T) {
+func TestCreateComponentStorage(t *testing.T) {
 	type componentA struct{ Component }
 
 	t.Run("returns an error when using capacity of 0", func(t *testing.T) {
@@ -31,7 +31,7 @@ func TestNewComponentRegistry(t *testing.T) {
 	})
 }
 
-func TestComponentRegistryInsert(t *testing.T) {
+func TestComponentStorageInsert(t *testing.T) {
 	type componentA struct{ Component }
 
 	t.Run("fails when component is not a pointer", func(t *testing.T) {
@@ -39,9 +39,9 @@ func TestComponentRegistryInsert(t *testing.T) {
 
 		world := DefaultWorld()
 
-		componentRegistry, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
+		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
-		_, err = componentRegistry.insert(componentA{})
+		_, err = componentStorage.insert(&world, componentA{})
 		assert.ErrorIs(err, ErrComponentIsNotAPointer)
 	})
 
@@ -49,24 +49,30 @@ func TestComponentRegistryInsert(t *testing.T) {
 		assert := assert.New(t)
 
 		world := DefaultWorld()
-		componentRegistry, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
+		capacity := uint(4)
+		componentStorage, err := createComponentStorage(capacity, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 
-		_, err = componentRegistry.insert(&componentA{})
+		_, err = componentStorage.insert(&world, &componentA{})
 		assert.NoError(err)
+
+		assert.Equal(capacity, componentStorage.capacity)
 	})
 
 	t.Run("increases capacity and inserts the component when overstepping capacity", func(t *testing.T) {
 		assert := assert.New(t)
 
 		world := DefaultWorld()
-		componentRegistry, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
+		capacity := uint(4)
+		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 
 		for range 10 {
-			_, err = componentRegistry.insert(&componentA{})
+			_, err = componentStorage.insert(&world, &componentA{})
 			assert.NoError(err)
 		}
+
+		assert.True(componentStorage.capacity > capacity)
 	})
 
 	type componentWithPointers struct {
@@ -80,7 +86,7 @@ func TestComponentRegistryInsert(t *testing.T) {
 		assert := assert.New(t)
 
 		world := DefaultWorld()
-		componentRegistry, err := createComponentStorage(4, ComponentIdFor[componentWithPointers](&world))
+		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentWithPointers](&world))
 		assert.NoError(err)
 
 		name := "a name"
@@ -99,12 +105,12 @@ func TestComponentRegistryInsert(t *testing.T) {
 				item.intSlice = append(item.intSlice, &i)
 			}
 
-			componentRegistry.insert(&item)
+			componentStorage.insert(&world, &item)
 		}
 
 		{
 			// assert that component matches what we inserted
-			item, err := getComponentFromComponentStorage[componentWithPointers](&componentRegistry, 0)
+			item, err := getComponentFromComponentStorage[componentWithPointers](&componentStorage, 0)
 			assert.NoError(err)
 			assert.Equal(name, *item.name)
 			assert.Equal(
@@ -124,7 +130,7 @@ func TestComponentRegistryInsert(t *testing.T) {
 
 		{
 			// assert that component matches what we inserted after garbage collection has run
-			item, err := getComponentFromComponentStorage[componentWithPointers](&componentRegistry, 0)
+			item, err := getComponentFromComponentStorage[componentWithPointers](&componentStorage, 0)
 			assert.NoError(err)
 			assert.Equal(name, *item.name)
 			assert.Equal(
@@ -142,37 +148,37 @@ func TestComponentRegistryInsert(t *testing.T) {
 	})
 }
 
-func TestComponentRegistrySet(t *testing.T) {
+func TestComponentStorageSet(t *testing.T) {
 	type componentA struct{ Component }
 
 	t.Run("returns an error when index is out of bounds", func(t *testing.T) {
 		assert := assert.New(t)
 
 		world := DefaultWorld()
-		componentRegistry, err := createComponentStorage(2, ComponentIdFor[componentA](&world))
+		componentStorage, err := createComponentStorage(2, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 
-		err = componentRegistry.set(&componentA{}, 3)
-		assert.ErrorIs(err, ErrComponentRegistryIndexOutOfBounds)
+		err = componentStorage.set(&componentA{}, 3)
+		assert.ErrorIs(err, ErrComponentStorageIndexOutOfBounds)
 	})
 
 	t.Run("can set a component at the same index multiple times", func(t *testing.T) {
 		assert := assert.New(t)
 
 		world := DefaultWorld()
-		componentRegistry, err := createComponentStorage(2, ComponentIdFor[componentA](&world))
+		componentStorage, err := createComponentStorage(2, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 
 		for range 10 {
-			err = componentRegistry.set(&componentA{}, 1)
+			err = componentStorage.set(&componentA{}, 1)
 			assert.NoError(err)
 		}
 
-		assert.Equal(uint(2), componentRegistry.capacity)
+		assert.Equal(uint(2), componentStorage.capacity)
 	})
 }
 
-func TestGetComponentFromComponentRegistry(t *testing.T) {
+func TestGetComponentFromComponentStorage(t *testing.T) {
 	type componentA struct {
 		value int
 		Component
@@ -183,9 +189,9 @@ func TestGetComponentFromComponentRegistry(t *testing.T) {
 
 		world := DefaultWorld()
 
-		componentRegistry, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
+		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
-		component, err := getComponentFromComponentStorage[componentA](&componentRegistry, 5)
+		component, err := getComponentFromComponentStorage[componentA](&componentStorage, 5)
 		assert.Error(err)
 		assert.Nil(component)
 	})
@@ -196,18 +202,18 @@ func TestGetComponentFromComponentRegistry(t *testing.T) {
 		world := DefaultWorld()
 		capacity := 4
 
-		componentRegistry, err := createComponentStorage(uint(capacity), ComponentIdFor[componentA](&world))
+		componentStorage, err := createComponentStorage(uint(capacity), ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 
 		for i := range capacity {
-			_, err = componentRegistry.insert(&componentA{
+			_, err = componentStorage.insert(&world, &componentA{
 				value: i,
 			})
 			assert.NoError(err)
 		}
 
 		for i := range capacity {
-			component, err := getComponentFromComponentStorage[componentA](&componentRegistry, uint(i))
+			component, err := getComponentFromComponentStorage[componentA](&componentStorage, uint(i))
 			assert.NoError(err)
 			assert.NotNil(component)
 			assert.Equal(i, component.value)
@@ -221,18 +227,18 @@ func TestGetComponentFromComponentRegistry(t *testing.T) {
 		capacity := 4
 		numberOfInserts := 15
 
-		componentRegistry, err := createComponentStorage(uint(capacity), ComponentIdFor[componentA](&world))
+		componentStorage, err := createComponentStorage(uint(capacity), ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 
 		for i := range numberOfInserts {
-			_, err = componentRegistry.insert(&componentA{
+			_, err = componentStorage.insert(&world, &componentA{
 				value: i,
 			})
 			assert.NoError(err)
 		}
 
 		for i := range numberOfInserts {
-			component, err := getComponentFromComponentStorage[componentA](&componentRegistry, uint(i))
+			component, err := getComponentFromComponentStorage[componentA](&componentStorage, uint(i))
 			assert.NoError(err)
 			assert.NotNil(component)
 			assert.Equal(i, component.value)

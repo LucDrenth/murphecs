@@ -7,11 +7,13 @@ import (
 
 // World contains all of the entities and their components.
 type World struct {
-	entityIdCounter          uint
-	entities                 map[EntityId]*EntityData // TODO EntityData probably does not have to be pointer once archeType is implemented
-	initialComponentCapacity initialComponentCapacityStrategy
-	componentRegistry        componentRegistry
-	archetypeStorage         archetypeStorage
+	entityIdCounter   uint
+	entities          map[EntityId]*EntityData // TODO EntityData probably does not have to be pointer once archeType is implemented
+	componentRegistry componentRegistry
+	archetypeStorage  archetypeStorage
+
+	initialComponentCapacityStrategy initialComponentCapacityStrategy
+	componentCapacityGrowthStrategy  componentCapacityGrowthStrategy
 }
 
 // DefaultWorld returns a World with default configs.
@@ -29,13 +31,18 @@ func DefaultWorld() World {
 
 // NewWorld returns a world that can contain entities and components.
 func NewWorld(configs WorldConfigs) (World, error) {
-	if configs.ComponentCapacityStrategy == nil {
-		return World{}, errors.New("component capacity strategy can not be nil")
+	if configs.InitialComponentCapacityStrategy == nil {
+		return World{}, errors.New("config InitialComponentCapacityStrategy can not be nil")
+	}
+
+	if configs.ComponentCapacityGrowthStrategy == nil {
+		return World{}, errors.New("config ComponentCapacityGrowthStrategy can not be nil")
 	}
 
 	return World{
-		entities:                 map[EntityId]*EntityData{},
-		initialComponentCapacity: configs.ComponentCapacityStrategy,
+		entities:                         map[EntityId]*EntityData{},
+		initialComponentCapacityStrategy: configs.InitialComponentCapacityStrategy,
+		componentCapacityGrowthStrategy:  configs.ComponentCapacityGrowthStrategy,
 		componentRegistry: componentRegistry{
 			components: map[reflect.Type]uint{},
 		},
