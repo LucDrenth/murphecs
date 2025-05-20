@@ -4,6 +4,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/lucdrenth/murphecs/src/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,6 +30,21 @@ func TestCreateComponentStorage(t *testing.T) {
 		_, err = createComponentStorage(1024, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 	})
+}
+
+func TestGetComponentStoragePointer(t *testing.T) {
+	assert := assert.New(t)
+
+	world := DefaultWorld()
+	componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
+	assert.NoError(err)
+
+	_, err = componentStorage.getComponentPointer(3)
+	assert.NoError(err)
+	_, err = componentStorage.getComponentPointer(4)
+	assert.Error(err)
+	_, err = componentStorage.getComponentPointer(5)
+	assert.Error(err)
 }
 
 func TestComponentStorageInsert(t *testing.T) {
@@ -75,75 +91,34 @@ func TestComponentStorageInsert(t *testing.T) {
 		assert.True(componentStorage.capacity > capacity)
 	})
 
-	type componentWithPointers struct {
-		Component
-		name     *string
-		aMap     map[string]int
-		intSlice []*int
-	}
-
 	t.Run("works well with garbage collector", func(t *testing.T) {
 		assert := assert.New(t)
 
 		world := DefaultWorld()
-		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentWithPointers](&world))
+		componentStorage, err := createComponentStorage(4, ComponentIdFor[ComponentWithPointers](&world))
 		assert.NoError(err)
 
-		name := "a name"
-		sliceLength := 100
-
 		{
-			item := componentWithPointers{
-				name: &name,
-				aMap: map[string]int{
-					"1": 1,
-					"3": 3,
-				},
-				intSlice: []*int{},
-			}
-			for i := range sliceLength {
-				item.intSlice = append(item.intSlice, &i)
-			}
-
-			componentStorage.insert(&world, &item)
+			item := CreateComponentWithPointers()
+			componentStorage.insert(&world, item)
 		}
 
 		{
 			// assert that component matches what we inserted
-			item, err := getComponentFromComponentStorage[componentWithPointers](&componentStorage, 0)
+			item, err := getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 0)
 			assert.NoError(err)
-			assert.Equal(name, *item.name)
-			assert.Equal(
-				map[string]int{
-					"1": 1,
-					"3": 3,
-				},
-				item.aMap,
-			)
-			assert.Len(item.intSlice, 100)
-			for i := range sliceLength {
-				assert.Equal(i, *item.intSlice[i])
-			}
+			err = item.Validate()
+			assert.NoError(err)
 		}
 
 		runtime.GC()
 
 		{
 			// assert that component matches what we inserted after garbage collection has run
-			item, err := getComponentFromComponentStorage[componentWithPointers](&componentStorage, 0)
+			item, err := getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 0)
 			assert.NoError(err)
-			assert.Equal(name, *item.name)
-			assert.Equal(
-				map[string]int{
-					"1": 1,
-					"3": 3,
-				},
-				item.aMap,
-			)
-			assert.Len(item.intSlice, 100)
-			for i := range sliceLength {
-				assert.Equal(i, *item.intSlice[i])
-			}
+			err = item.Validate()
+			assert.NoError(err)
 		}
 	})
 }
@@ -242,6 +217,142 @@ func TestGetComponentFromComponentStorage(t *testing.T) {
 			assert.NoError(err)
 			assert.NotNil(component)
 			assert.Equal(i, component.value)
+		}
+	})
+}
+
+func TestRemoveFromComponentStorage(t *testing.T) {
+	type componentA struct{ Component }
+
+	t.Run("returns error if removing component at invalid index", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := DefaultWorld()
+		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
+		assert.NoError(err)
+
+		err = componentStorage.remove(0)
+		assert.ErrorIs(err, ErrComponentStorageIndexOutOfBounds)
+	})
+
+	t.Run("successfully removes a component", func(t *testing.T) {
+		assert := assert.New(t)
+
+		capacity := uint(4)
+		world := DefaultWorld()
+		componentStorage, err := createComponentStorage(capacity, ComponentIdFor[componentA](&world))
+		assert.NoError(err)
+		index, err := componentStorage.insert(&world, &componentA{})
+		assert.NoError(err)
+
+		err = componentStorage.remove(index)
+		assert.NoError(err)
+	})
+}
+
+func TestComponentStorageCopyComponent(t *testing.T) {
+	type componentA struct {
+		Component
+		value int
+	}
+
+	t.Run("returns an error if 'from' is out of bounds", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := DefaultWorld()
+		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
+		assert.NoError(err)
+		_, err = componentStorage.insert(&world, &componentA{})
+		assert.NoError(err)
+
+		err = componentStorage.copyComponent(1, 0)
+		assert.ErrorIs(err, ErrComponentStorageIndexOutOfBounds)
+	})
+
+	t.Run("returns an error if 'to' is out of bounds", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := DefaultWorld()
+		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
+		assert.NoError(err)
+		_, err = componentStorage.insert(&world, &componentA{})
+		assert.NoError(err)
+
+		err = componentStorage.copyComponent(0, 1)
+		assert.ErrorIs(err, ErrComponentStorageIndexOutOfBounds)
+	})
+
+	t.Run("successfully copies component", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := DefaultWorld()
+		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
+		assert.NoError(err)
+		_, err = componentStorage.insert(&world, &componentA{value: 10})
+		assert.NoError(err)
+		_, err = componentStorage.insert(&world, &componentA{value: 20})
+		assert.NoError(err)
+
+		err = componentStorage.copyComponent(1, 0)
+		assert.NoError(err)
+		component, err := getComponentFromComponentStorage[componentA](&componentStorage, 0) // copied-over component
+		assert.Equal(20, component.value)
+		component, err = getComponentFromComponentStorage[componentA](&componentStorage, 1) // original component
+		assert.Equal(20, component.value)
+
+		// changing the original should not change the copy
+		component.value = 30
+		component, err = getComponentFromComponentStorage[componentA](&componentStorage, 0) // copied-over component
+		assert.Equal(20, component.value)
+	})
+
+	t.Run("plays well with the garbage collector", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := DefaultWorld()
+		componentStorage, err := createComponentStorage(4, ComponentIdFor[ComponentWithPointers](&world))
+		assert.NoError(err)
+		_, err = componentStorage.insert(&world, &componentA{})
+		assert.NoError(err)
+		_, err = componentStorage.insert(&world, CreateComponentWithPointers())
+		assert.NoError(err)
+
+		err = componentStorage.copyComponent(1, 0)
+		assert.NoError(err)
+
+		{
+			component, err := getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 0) // copied-over component
+			assert.NoError(err)
+			assert.NoError(component.Validate())
+			component, err = getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 1) // original component
+			assert.NoError(err)
+			assert.NoError(component.Validate())
+		}
+
+		runtime.GC()
+
+		{
+			component, err := getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 0) // copied-over component
+			assert.NoError(err)
+			assert.NoError(component.Validate())
+			component, err = getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 1) // original component
+			assert.NoError(err)
+			assert.NoError(component.Validate())
+
+			// change component value
+			component.name = utils.PointerTo(componentWithPointersName + " and something else")
+		}
+
+		runtime.GC()
+
+		{
+			component, err := getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 0) // copied-over component
+			assert.NoError(err)
+			assert.NoError(component.Validate()) // should not have changed
+
+			component, err = getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 1) // original component
+			assert.NoError(err)
+			assert.Error(component.Validate()) // now has an error because name changed
 		}
 	})
 }

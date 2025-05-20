@@ -11,5 +11,5 @@ var (
 	ErrComponentIsNotAPointer  error = errors.New("component is not a pointer")
 
 	ErrInvalidComponentStorageCapacity  error = errors.New("invalid component storage capacity")
-	ErrComponentStorageIndexOutOfBounds error = errors.New("component registry index is out of bounds")
+	ErrComponentStorageIndexOutOfBounds error = errors.New("component storage index is out of bounds")
 )

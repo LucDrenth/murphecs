@@ -126,13 +126,45 @@ func (storage *componentStorage) insertRaw(world *World, componentPointer unsafe
 }
 
 func (storage *componentStorage) remove(index uint) error {
-	if index >= storage.capacity {
-		return fmt.Errorf("index %d is out of bounds for componentStorage of size %d", index, storage.nextItemIndex)
+	if index >= storage.nextItemIndex {
+		return fmt.Errorf("%w: %d", ErrComponentStorageIndexOutOfBounds, index)
 	}
 
 	storage.numberOfComponents -= 1
 
-	// TODO on insert, reuse the component at [index] that is now free.
+	// TODO move last item to the removed spot. Don't forget to update all in archetype!
+
+	return nil
+}
+
+// copyComponent copies a component from one index in the storage to another. Both indices must already be
+// a valid component, you can not use an empty index.
+func (storage *componentStorage) copyComponent(fromIndex uint, toIndex uint) error {
+	if fromIndex == toIndex {
+		return nil
+	}
+
+	if fromIndex >= storage.nextItemIndex {
+		return fmt.Errorf("%w: fromIndex: %d", ErrComponentStorageIndexOutOfBounds, fromIndex)
+	}
+
+	if toIndex >= storage.nextItemIndex {
+		return fmt.Errorf("%w: toIndex: %d", ErrComponentStorageIndexOutOfBounds, toIndex)
+	}
+
+	source, err := storage.getComponentPointer(fromIndex)
+	if err != nil {
+		// this should never happen because we already check index bounds above
+		return err
+	}
+
+	destination, err := storage.getComponentPointer(toIndex)
+	if err != nil {
+		// this should never happen because we already check index bounds above
+		return err
+	}
+
+	utils.CopyPointerData(source, destination, storage.componentSize)
 
 	return nil
 }
@@ -141,8 +173,9 @@ func (storage *componentStorage) remove(index uint) error {
 //
 // Returns an error if index is out of bounds.
 func (storage *componentStorage) getComponentPointer(index uint) (unsafe.Pointer, error) {
+	// This check might be redundant in most cases but lets be extra safe with unsafe.Pointer
 	if index >= storage.capacity {
-		return nil, fmt.Errorf("index %d is out of bounds for componentStorage of size %d", index, storage.nextItemIndex)
+		return nil, fmt.Errorf("%w: index is %d, componentStorage size is %d", ErrComponentStorageIndexOutOfBounds, index, storage.nextItemIndex)
 	}
 
 	return unsafe.Add(storage.pointerToStart, uintptr(index)*storage.componentSize), nil
