@@ -69,7 +69,7 @@ func Insert(world *World, entity EntityId, components ...IComponent) (resultErr 
 			return err
 		}
 
-		newRow, err = newArchetype.components[componentId].insertRaw(rawComponent)
+		newRow, err = newArchetype.components[componentId].insertRaw(world, rawComponent)
 		if err != nil {
 			return err
 		}
@@ -168,7 +168,7 @@ func InsertOrOverwrite(world *World, entity EntityId, components ...IComponent) 
 			return err
 		}
 
-		newRow, err = newArchetype.components[componentId].insertRaw(rawComponent)
+		newRow, err = newArchetype.components[componentId].insertRaw(world, rawComponent)
 		if err != nil {
 			return err
 		}

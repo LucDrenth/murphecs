@@ -107,7 +107,7 @@ func removeComponents(world *World, entityId EntityId, componentIds []ComponentI
 			}
 
 			storage := newArchetype.components[componentId]
-			newRow, err = storage.insertRaw(rawComponent)
+			newRow, err = storage.insertRaw(world, rawComponent)
 			if err != nil {
 				resultErr = err
 				continue
