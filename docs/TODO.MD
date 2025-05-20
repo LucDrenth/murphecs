@@ -2,15 +2,16 @@
 **Must have**
 - [feature] Observers
 - [feature] Relationships (like parent/child)
-- [performance] When removing component from entity, or deleting an entity, the place of the component(s) in the component storage are never reused. To prevent memory from forever growing, We could either move the last componentRegistry component to the place of the removed component, but mind that we'd need to update it for all storages in the archetype
 
 **Nice-to-have**
-- [performance] Generational entities
+- [performance] Generational entities. EntityId would become {id: uint, generation: uint}. World its entityList would becomes a slice instead of a map, and entityId would correlate with the slice index. This provides faster lookups. We'd need an deadEntityPool to choose from when creating a new EntityId which would increment its generation and repurpose it.
 - [performance] Archetype graph to speed up insert/remove. Add an `edges map[componentIds]Archetype` to Archetype where `componentIds` is a hash of the components to add or remove. This gives better performance for archetypes with many components because only the components to add/remove need to be hashed instead of the whole set of new component ids. See https://ajmmertens.medium.com/building-an-ecs-2-archetypes-and-vectorization-fe21690805f9 for more explanation and examples.
 - [performance] Query can create a list of ArcheTypes on Prepare so that we don't have to go through every entity. Archetypes would have to maintain a list of entities.
+- [performance] Cache Queries
 - [feature] Events
 - [feature] Add Query5..Query16 and Optional5..Optional16
 - [tests] More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
+- [quality-of-life] handle spawning/inserting nil
 
 # Project
 - [feature] Linter

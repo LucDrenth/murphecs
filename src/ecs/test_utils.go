@@ -5,7 +5,19 @@ import (
 	"reflect"
 )
 
-// componentWithPointers is useful to test garbage collection. it is initialized with
+type componentWithValueA struct {
+	Component
+	value int
+}
+type componentWithValueB struct {
+	Component
+	value int
+}
+
+type emptyComponentA struct{ Component }
+type emptyComponentB struct{ Component }
+
+// componentWithPointers is useful to test garbage collection
 type ComponentWithPointers struct {
 	Component
 	name     *string
@@ -18,6 +30,8 @@ var (
 	componentWithPointersSliceLength int    = 10
 )
 
+// CreateComponentWithPointers creates a component with lots of pointer data. This is useful for testing garbage collection.
+// Use ComponentWithPointersValidate to check if the data behind the pointers is still the same.
 func CreateComponentWithPointers() *ComponentWithPointers {
 	item := ComponentWithPointers{
 		name: &componentWithPointersName,

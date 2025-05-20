@@ -62,6 +62,7 @@ func Insert(world *World, entity EntityId, components ...IComponent) (resultErr 
 	}
 
 	var newRow uint
+	var movedComponent *movedComponent
 
 	for componentId, oldStorage := range oldArchetype.components {
 		rawComponent, err := oldStorage.getComponentPointer(entityData.row)
@@ -74,8 +75,15 @@ func Insert(world *World, entity EntityId, components ...IComponent) (resultErr 
 			return err
 		}
 
-		oldStorage.remove(entityData.row)
+		err, removeResult := oldStorage.remove(entityData.row)
+		if err != nil {
+			return err
+		}
+
+		movedComponent = removeResult
 	}
+
+	handleComponentStorageIndexMove(world, movedComponent, oldArchetype)
 
 	// insert new component
 	for i, component := range componentsToAdd {
@@ -161,6 +169,7 @@ func InsertOrOverwrite(world *World, entity EntityId, components ...IComponent) 
 	}
 
 	var newRow uint
+	var movedComponent *movedComponent
 
 	for componentId, oldStorage := range oldArchetype.components {
 		rawComponent, err := oldStorage.getComponentPointer(entityData.row)
@@ -173,8 +182,15 @@ func InsertOrOverwrite(world *World, entity EntityId, components ...IComponent) 
 			return err
 		}
 
-		oldStorage.remove(entityData.row)
+		err, removeResult := oldStorage.remove(entityData.row)
+		if err != nil {
+			return err
+		}
+
+		movedComponent = removeResult
 	}
+
+	handleComponentStorageIndexMove(world, movedComponent, oldArchetype)
 
 	// insert new component
 	for i, component := range componentsToAdd {

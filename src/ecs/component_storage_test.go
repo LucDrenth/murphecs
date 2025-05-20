@@ -231,22 +231,80 @@ func TestRemoveFromComponentStorage(t *testing.T) {
 		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 
-		err = componentStorage.remove(0)
+		err, _ = componentStorage.remove(0)
 		assert.ErrorIs(err, ErrComponentStorageIndexOutOfBounds)
 	})
 
 	t.Run("successfully removes a component", func(t *testing.T) {
 		assert := assert.New(t)
 
-		capacity := uint(4)
 		world := DefaultWorld()
-		componentStorage, err := createComponentStorage(capacity, ComponentIdFor[componentA](&world))
+		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 		index, err := componentStorage.insert(&world, &componentA{})
 		assert.NoError(err)
 
-		err = componentStorage.remove(index)
+		err, _ = componentStorage.remove(index)
 		assert.NoError(err)
+	})
+
+	t.Run("does not move any component if the last inserted component is removed", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := DefaultWorld()
+		componentStorage, err := createComponentStorage(1024, ComponentIdFor[componentA](&world))
+		assert.NoError(err)
+
+		nrComponents := uint(10)
+		for range nrComponents {
+			_, err := componentStorage.insert(&world, &componentA{})
+			assert.NoError(err)
+		}
+
+		err, movedComponent := componentStorage.remove(nrComponents - 1)
+		assert.NoError(err)
+		assert.Nil(movedComponent)
+	})
+
+	t.Run("moves the last component to the place of the removed component", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := DefaultWorld()
+		componentStorage, err := createComponentStorage(1024, ComponentIdFor[componentA](&world))
+		assert.NoError(err)
+
+		nrComponents := uint(10)
+		for range nrComponents {
+			_, err := componentStorage.insert(&world, &componentA{})
+			assert.NoError(err)
+		}
+
+		err, movedComponent := componentStorage.remove(5)
+		assert.NoError(err)
+		assert.NotNil(movedComponent)
+		assert.Equal(nrComponents-1, movedComponent.fromIndex)
+		assert.Equal(uint(5), movedComponent.toIndex)
+	})
+
+	t.Run("remove makes the component storage reuse memory", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := DefaultWorld()
+		capacity := uint(8)
+		componentStorage, err := createComponentStorage(capacity, ComponentIdFor[componentA](&world))
+		assert.NoError(err)
+
+		for range capacity {
+			_, err := componentStorage.insert(&world, &emptyComponentA{})
+			assert.NoError(err)
+		}
+
+		err, _ = componentStorage.remove(5)
+		assert.NoError(err)
+		_, err = componentStorage.insert(&world, &emptyComponentA{})
+		assert.NoError(err)
+
+		assert.Equal(capacity, componentStorage.capacity)
 	})
 }
 

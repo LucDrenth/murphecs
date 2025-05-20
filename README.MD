@@ -77,12 +77,12 @@ If you want to contribute to Murphecs, feel free to open an issue or make a PR. 
 ## Benchmarking
 To compare benchmarks with another commit, run
 ```bash
-./scripts/compare-benchmarks.sh $COMMIT_HASH $FOLDER $COUNT
+./scripts/compare-benchmarks.sh $COMMIT_HASH $COUNT $FOLDER
 ```
 
 For example:
 ```bash
-./scripts/compare-benchmarks.sh d2331b8c11083e15147b4470275c18896d7404e3 ./benchmark/ 10
+./scripts/compare-benchmarks.sh d2331b8c11083e15147b4470275c18896d7404e3 10 ./benchmark/
 ```
 
 Be aware that this script will temporarily stash your current changes. If anything goes wrong or you cancel early, and you are missing changes, just run `git stash pop`.

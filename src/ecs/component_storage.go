@@ -8,7 +8,7 @@ import (
 	"github.com/lucdrenth/murphecs/src/utils"
 )
 
-// componentStorage stores instances one type of component
+// componentStorage stores instances of one type of component
 type componentStorage struct {
 	pointerToStart     unsafe.Pointer // points to the start of data
 	data               reflect.Value  // buffer for storing components
@@ -16,7 +16,7 @@ type componentStorage struct {
 	componentId        ComponentId
 	nextItemIndex      uint // the next inserted component will be inserted at this index
 	capacity           uint // the number of components that can be stored with the current size of data
-	numberOfComponents uint // the number of active components that this storage holds
+	numberOfComponents uint // the number of components that this storage contains
 }
 
 // createComponentStorage creates a new instance of createComponentStorage that can hold [capacity] components of type [ComponentId].
@@ -125,16 +125,40 @@ func (storage *componentStorage) insertRaw(world *World, componentPointer unsafe
 	return insertIndex, nil
 }
 
-func (storage *componentStorage) remove(index uint) error {
+// indicates that a component should be moved to another index to free up space
+type movedComponent struct {
+	fromIndex uint
+	toIndex   uint
+}
+
+// remove moves the last item of the component storage to the index of the removed component and returns the indices
+// of its old and new spot. This should be used to update the entity data.
+func (storage *componentStorage) remove(index uint) (error, *movedComponent) {
 	if index >= storage.nextItemIndex {
-		return fmt.Errorf("%w: %d", ErrComponentStorageIndexOutOfBounds, index)
+		return fmt.Errorf("%w: %d", ErrComponentStorageIndexOutOfBounds, index), nil
 	}
 
 	storage.numberOfComponents -= 1
 
-	// TODO move last item to the removed spot. Don't forget to update all in archetype!
+	if storage.nextItemIndex == 0 || index >= (storage.nextItemIndex-1) {
+		return nil, nil
+	}
 
-	return nil
+	// move the last component in the storage to the index of the removed component to reuse the memory block.
+
+	result := movedComponent{
+		fromIndex: storage.nextItemIndex - 1,
+		toIndex:   index,
+	}
+
+	err := storage.copyComponent(result.fromIndex, result.toIndex)
+	if err != nil {
+		return fmt.Errorf("failed to move component: %w", err), &result
+	}
+
+	storage.nextItemIndex -= 1
+
+	return nil, &result
 }
 
 // copyComponent copies a component from one index in the storage to another. Both indices must already be

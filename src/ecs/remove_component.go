@@ -69,7 +69,7 @@ func removeComponents(world *World, entityId EntityId, componentIds []ComponentI
 		return fmt.Errorf("%w: %s at positions %d and %d", ErrDuplicateComponent, duplicate.DebugString(), duplicateIndexA, duplicateIndexB)
 	}
 
-	componentIdsToRemove := make([]ComponentId, len(componentIds))
+	componentIdsToRemove := make([]ComponentId, 0, len(componentIds))
 	for _, componentId := range componentIds {
 		if !entity.archetype.HasComponent(componentId) {
 			resultErr = fmt.Errorf("%w: %s", ErrComponentNotFound, componentId.DebugString())
@@ -97,6 +97,7 @@ func removeComponents(world *World, entityId EntityId, componentIds []ComponentI
 	}
 
 	var newRow uint
+	var movedComponent *movedComponent
 
 	for componentId, oldStorage := range oldArchetype.components {
 		if newArchetype.HasComponent(componentId) {
@@ -114,12 +115,34 @@ func removeComponents(world *World, entityId EntityId, componentIds []ComponentI
 			}
 		}
 
-		oldStorage.remove(entity.row)
+		err, removeResult := oldStorage.remove(entity.row)
+		if err != nil {
+			resultErr = err
+			continue
+		}
+
+		movedComponent = removeResult
 	}
+
+	handleComponentStorageIndexMove(world, movedComponent, oldArchetype)
 
 	entity.archetype = newArchetype
 	entity.row = newRow
 	world.archetypeStorage.entityIdToArchetype[entityId] = newArchetype
 
 	return resultErr
+}
+
+func handleComponentStorageIndexMove(world *World, movedComponent *movedComponent, archetype *Archetype) {
+	if movedComponent == nil {
+		return
+	}
+
+	// TODO this is inefficient because we have to loop over all entities. We could make this more efficient
+	// by storing a list of EntityId's in Archetype
+	for _, entityData := range world.entities {
+		if entityData.archetype.id == archetype.id {
+			entityData.row = movedComponent.toIndex
+		}
+	}
 }
