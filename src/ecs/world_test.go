@@ -39,6 +39,18 @@ func TestCreateWorld(t *testing.T) {
 		})
 		assert.NoError(err)
 	})
+
+	t.Run("uses ID config", func(t *testing.T) {
+		assert := assert.New(t)
+
+		worldId := WorldId(3)
+		worldConfigs := DefaultWorldConfigs()
+		worldConfigs.Id = &worldId
+
+		world, err := NewWorld(worldConfigs)
+		assert.NoError(err)
+		assert.Equal(worldId, *world.Id())
+	})
 }
 
 func TestGenerateEntityId(t *testing.T) {

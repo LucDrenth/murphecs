@@ -9,6 +9,8 @@ type WorldId int
 
 // World contains all of the entities and their components.
 type World struct {
+	id *WorldId // setting an id is optional
+
 	entityIdCounter   uint
 	entities          map[EntityId]*EntityData // TODO EntityData probably does not have to be pointer once archeType is implemented
 	componentRegistry componentRegistry
@@ -43,6 +45,7 @@ func NewWorld(configs WorldConfigs) (World, error) {
 
 	return World{
 		entities:                         map[EntityId]*EntityData{},
+		id:                               configs.Id,
 		initialComponentCapacityStrategy: configs.InitialComponentCapacityStrategy,
 		componentCapacityGrowthStrategy:  configs.ComponentCapacityGrowthStrategy,
 		componentRegistry: componentRegistry{
@@ -63,4 +66,8 @@ func (world *World) CountComponents() int {
 func (world *World) generateEntityId() EntityId {
 	world.entityIdCounter++
 	return EntityId(world.entityIdCounter)
+}
+
+func (world *World) Id() *WorldId {
+	return world.id
 }

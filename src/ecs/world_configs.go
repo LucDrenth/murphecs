@@ -6,12 +6,15 @@ type WorldConfigs struct {
 
 	// Decides by how much the component storage capacity grows when inserting a component if the component storage is full
 	ComponentCapacityGrowthStrategy componentCapacityGrowthStrategy
+
+	Id *WorldId
 }
 
 func DefaultWorldConfigs() WorldConfigs {
 	return WorldConfigs{
 		InitialComponentCapacityStrategy: &StaticDefaultComponentCapacity{Capacity: 1024},
 		ComponentCapacityGrowthStrategy:  &ComponentCapacityGrowthDouble{},
+		Id:                               nil,
 	}
 }
 
