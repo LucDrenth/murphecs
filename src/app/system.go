@@ -77,7 +77,7 @@ func (s *SystemSet) add(sys System, world *ecs.World, logger Logger, resources *
 	systemValue := reflect.ValueOf(sys)
 	queryType := reflect.TypeOf((*ecs.Query)(nil)).Elem()
 
-	if err := validateSystem(systemValue, queryType, resources); err != nil {
+	if err := validateSystem(systemValue); err != nil {
 		return fmt.Errorf("system is not valid: %w", err)
 	}
 
@@ -151,7 +151,7 @@ func parseQueryParam(parameterType reflect.Type, world *ecs.World, logger Logger
 	return query, nil
 }
 
-func validateSystem(sys reflect.Value, queryType reflect.Type, resources *resourceStorage) error {
+func validateSystem(sys reflect.Value) error {
 	if sys.Kind() != reflect.Func {
 		return ErrSystemNotAFunction
 	}
