@@ -39,7 +39,7 @@ func BenchmarkHashComponentIds(b *testing.B) {
 	type component31 struct{ Component }
 	type component32 struct{ Component }
 
-	world := DefaultWorld()
+	world := NewDefaultWorld()
 
 	allComponentIds := []ComponentId{
 		ComponentIdFor[component1](&world),

@@ -13,9 +13,9 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("returns an error when passing an incorrect query param filter", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
-		queryOptions := QueryOptions[QueryParamFilter, NoOptional, NoReadOnly, NotLazy]{}
+		queryOptions := QueryOptions[QueryParamFilter, NoOptional, NoReadOnly, NotLazy, DefaultWorld]{}
 		_, err := queryOptions.getCombinedQueryOptions(&world)
 		assert.Error(err)
 	})
@@ -23,9 +23,9 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("returns an error when passing an incorrect read-only option", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
-		queryOptions := QueryOptions[QueryParamFilter, NoOptional, ReadOnlyComponents, NotLazy]{}
+		queryOptions := QueryOptions[QueryParamFilter, NoOptional, ReadOnlyComponents, NotLazy, DefaultWorld]{}
 		_, err := queryOptions.getCombinedQueryOptions(&world)
 		assert.Error(err)
 	})
@@ -33,9 +33,29 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("returns an error when passing incorrect optional components", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
-		queryOptions := QueryOptions[NoFilter, OptionalComponents, NoReadOnly, NotLazy]{}
+		queryOptions := QueryOptions[NoFilter, OptionalComponents, NoReadOnly, NotLazy, DefaultWorld]{}
+		_, err := queryOptions.getCombinedQueryOptions(&world)
+		assert.Error(err)
+	})
+
+	t.Run("returns an error when passing incorrect lazy option", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewDefaultWorld()
+
+		queryOptions := QueryOptions[NoFilter, NoOptional, NoReadOnly, IsQueryLazy, DefaultWorld]{}
+		_, err := queryOptions.getCombinedQueryOptions(&world)
+		assert.Error(err)
+	})
+
+	t.Run("returns an error when passing incorrect target world", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewDefaultWorld()
+
+		queryOptions := QueryOptions[NoFilter, NoOptional, NoReadOnly, NotLazy, TargetWorld]{}
 		_, err := queryOptions.getCombinedQueryOptions(&world)
 		assert.Error(err)
 	})
@@ -43,7 +63,7 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("successfully creates the combined query options with default options", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		queryOptions := Default{}
 		result, err := queryOptions.getCombinedQueryOptions(&world)
@@ -51,14 +71,15 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 		assert.Equal(0, len(result.Filters))
 		assert.Equal(0, len(result.OptionalComponents))
 		assert.False(result.isLazy)
+		assert.Nil(result.targetWorld)
 	})
 
 	t.Run("successfully creates the combined query options with the right amount of filters", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
-		queryOptions := QueryOptions[With[componentA], NoOptional, NoReadOnly, NotLazy]{}
+		queryOptions := QueryOptions[With[componentA], NoOptional, NoReadOnly, NotLazy, DefaultWorld]{}
 		result, err := queryOptions.getCombinedQueryOptions(&world)
 		assert.NoError(err)
 		assert.Equal(1, len(result.Filters))
@@ -68,15 +89,15 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("successfully creates the combined query options with the right amount of optional components", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
-		var queryOptions QueryOption = &QueryOptions[NoFilter, Optional1[componentA], NoReadOnly, NotLazy]{}
+		var queryOptions QueryOption = &QueryOptions[NoFilter, Optional1[componentA], NoReadOnly, NotLazy, DefaultWorld]{}
 		result, err := queryOptions.getCombinedQueryOptions(&world)
 		assert.NoError(err)
 		assert.Equal(0, len(result.Filters))
 		assert.Equal(1, len(result.OptionalComponents))
 
-		queryOptions = &QueryOptions[NoFilter, Optional2[componentA, componentB], NoReadOnly, NotLazy]{}
+		queryOptions = &QueryOptions[NoFilter, Optional2[componentA, componentB], NoReadOnly, NotLazy, DefaultWorld]{}
 		result, err = queryOptions.getCombinedQueryOptions(&world)
 		assert.NoError(err)
 		assert.Equal(0, len(result.Filters))
@@ -86,7 +107,7 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("successfully creates combined query options with the right amount of read-only components", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		var queryOptions QueryOption = &Default{}
 		result, err := queryOptions.getCombinedQueryOptions(&world)
@@ -94,12 +115,12 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 		assert.Equal(0, len(result.ReadOnlyComponents.ComponentIds))
 		assert.False(result.ReadOnlyComponents.IsAllReadOnly)
 
-		queryOptions = &QueryOptions[NoFilter, NoOptional, AllReadOnly, NotLazy]{}
+		queryOptions = &QueryOptions[NoFilter, NoOptional, AllReadOnly, NotLazy, DefaultWorld]{}
 		result, err = queryOptions.getCombinedQueryOptions(&world)
 		assert.NoError(err)
 		assert.True(result.ReadOnlyComponents.IsAllReadOnly)
 
-		queryOptions = &QueryOptions[NoFilter, NoOptional, ReadOnly1[componentA], NotLazy]{}
+		queryOptions = &QueryOptions[NoFilter, NoOptional, ReadOnly1[componentA], NotLazy, DefaultWorld]{}
 		result, err = queryOptions.getCombinedQueryOptions(&world)
 		assert.NoError(err)
 		assert.Equal(1, len(result.ReadOnlyComponents.ComponentIds))
@@ -109,9 +130,9 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("successfully creates the combined query options with all options applied", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
-		queryOptions := QueryOptions[Without[componentB], Optional1[componentA], ReadOnly1[componentA], NotLazy]{}
+		queryOptions := QueryOptions[Without[componentB], Optional1[componentA], ReadOnly1[componentA], NotLazy, DefaultWorld]{}
 		result, err := queryOptions.getCombinedQueryOptions(&world)
 		assert.NoError(err)
 		assert.Equal(1, len(result.Filters))
@@ -122,9 +143,9 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("successfully creates the combined query options with an and filter", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
-		queryOptions := QueryOptions[And[With[componentA], With[componentB]], NoOptional, NoReadOnly, NotLazy]{}
+		queryOptions := QueryOptions[And[With[componentA], With[componentB]], NoOptional, NoReadOnly, NotLazy, DefaultWorld]{}
 		result, err := queryOptions.getCombinedQueryOptions(&world)
 		assert.NoError(err)
 		assert.Equal(1, len(result.Filters))
@@ -135,9 +156,9 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("successfully creates the combined query options with an or filter", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
-		queryOptions := QueryOptions[Or[With[componentA], With[componentB]], NoOptional, NoReadOnly, NotLazy]{}
+		queryOptions := QueryOptions[Or[With[componentA], With[componentB]], NoOptional, NoReadOnly, NotLazy, DefaultWorld]{}
 		result, err := queryOptions.getCombinedQueryOptions(&world)
 		assert.NoError(err)
 		assert.Equal(1, len(result.Filters))
@@ -148,12 +169,23 @@ func TestGetCombinedQueryOptions(t *testing.T) {
 	t.Run("creates a lazy query", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
-		queryOptions := QueryOptions[NoFilter, NoOptional, NoReadOnly, Lazy]{}
+		queryOptions := QueryOptions[NoFilter, NoOptional, NoReadOnly, Lazy, DefaultWorld]{}
 		result, err := queryOptions.getCombinedQueryOptions(&world)
 		assert.NoError(err)
 		assert.True(result.isLazy)
+	})
+
+	t.Run("creates a query with a custom target world", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewDefaultWorld()
+
+		queryOptions := QueryOptions[NoFilter, NoOptional, NoReadOnly, NotLazy, customTargetWorld]{}
+		result, err := queryOptions.getCombinedQueryOptions(&world)
+		assert.NoError(err)
+		assert.Equal(customTargetWorldId, *result.targetWorld)
 	})
 }
 
@@ -164,7 +196,7 @@ func TestValidateCombinedQueryOptions(t *testing.T) {
 	t.Run("returns an error if the same component is given multiple times as optional component", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		options := combinedQueryOptions{
 			Filters:            []QueryFilter{},
@@ -177,7 +209,7 @@ func TestValidateCombinedQueryOptions(t *testing.T) {
 	t.Run("returns an error if the same component is given multiple times as read-only component", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		options := combinedQueryOptions{
 			Filters:            []QueryFilter{},
@@ -192,7 +224,7 @@ func TestValidateCombinedQueryOptions(t *testing.T) {
 	t.Run("returns an error if there are read-only components while AllReadOnly is set to true", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		options := combinedQueryOptions{
 			Filters:            []QueryFilter{},
@@ -208,7 +240,7 @@ func TestValidateCombinedQueryOptions(t *testing.T) {
 	t.Run("returns an error if any read-only component is not in the query components", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		options := combinedQueryOptions{
 			Filters:            []QueryFilter{},
@@ -223,7 +255,7 @@ func TestValidateCombinedQueryOptions(t *testing.T) {
 	t.Run("returns an error if any optional component is not in the query components", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		options := combinedQueryOptions{
 			Filters:            []QueryFilter{},
@@ -238,7 +270,7 @@ func TestValidateCombinedQueryOptions(t *testing.T) {
 	t.Run("returns no error for default query options", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		options := combinedQueryOptions{}
 		assert.NoError(options.validateOptions([]ComponentId{ComponentIdFor[componentA](&world), ComponentIdFor[componentB](&world)}))
@@ -247,7 +279,7 @@ func TestValidateCombinedQueryOptions(t *testing.T) {
 	t.Run("returns no error if there is nothing wrong", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		options := combinedQueryOptions{
 			Filters:            []QueryFilter{},
@@ -267,7 +299,7 @@ func TestMergeQueryOptions(t *testing.T) {
 	t.Run("has IsAllReadOnly set to true if there is any AllReadOnly option", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		result, err := mergeQueryOptions([]QueryOption{
 			ReadOnly1[componentA]{},
@@ -281,7 +313,7 @@ func TestMergeQueryOptions(t *testing.T) {
 	t.Run("has isLazy set to true if there is any Lazy option", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		result, err := mergeQueryOptions([]QueryOption{
 			Lazy{},
@@ -289,5 +321,25 @@ func TestMergeQueryOptions(t *testing.T) {
 		}, &world)
 		assert.NoError(err)
 		assert.True(result.isLazy)
+	})
+
+	t.Run("has the set to the custom target world", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewDefaultWorld()
+
+		result, err := mergeQueryOptions([]QueryOption{
+			DefaultWorld{},
+			customTargetWorld{},
+		}, &world)
+		assert.NoError(err)
+		assert.Equal(customTargetWorldId, *result.targetWorld)
+
+		result, err = mergeQueryOptions([]QueryOption{
+			customTargetWorld{},
+			DefaultWorld{},
+		}, &world)
+		assert.NoError(err)
+		assert.Equal(customTargetWorldId, *result.targetWorld)
 	})
 }

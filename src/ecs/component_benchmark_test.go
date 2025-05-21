@@ -7,7 +7,7 @@ import (
 func BenchmarkToComponentId(b *testing.B) {
 	type componentA struct{ Component }
 
-	world := DefaultWorld()
+	world := NewDefaultWorld()
 	component := componentA{}
 
 	for b.Loop() {
@@ -18,7 +18,7 @@ func BenchmarkToComponentId(b *testing.B) {
 func BenchmarkGetComponentId(b *testing.B) {
 	type componentA struct{ Component }
 
-	world := DefaultWorld()
+	world := NewDefaultWorld()
 
 	for b.Loop() {
 		ComponentIdFor[componentA](&world)

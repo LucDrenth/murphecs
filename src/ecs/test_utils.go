@@ -5,6 +5,20 @@ import (
 	"reflect"
 )
 
+var customTargetWorldId = WorldId(10)
+
+type customTargetWorld struct{}
+
+func (c customTargetWorld) GetWorldId() *WorldId {
+	return &customTargetWorldId
+}
+
+func (customTargetWorld) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+	return combinedQueryOptions{targetWorld: &customTargetWorldId}, nil
+}
+
+var _ TargetWorld = &customTargetWorld{}
+
 type componentWithValueA struct {
 	Component
 	value int

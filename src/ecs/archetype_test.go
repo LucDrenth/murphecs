@@ -15,7 +15,7 @@ func TestHashComponentIds(t *testing.T) {
 	t.Run("returns a unique hash for each combination of components", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		componentHashes := []string{
 			hashComponentIds([]ComponentId{}),
 			hashComponentIds([]ComponentId{
@@ -51,7 +51,7 @@ func TestHashComponentIds(t *testing.T) {
 
 	t.Run("hashing is deterministic", func(t *testing.T) {
 		assert := assert.New(t)
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		assert.Equal(
 			hashComponentIds([]ComponentId{
@@ -95,7 +95,7 @@ func TestArchetypeIsFromComponents(t *testing.T) {
 	type componentB struct{ Component }
 	type componentC struct{ Component }
 
-	world := DefaultWorld()
+	world := NewDefaultWorld()
 
 	scenarios := []struct {
 		description           string
@@ -159,7 +159,7 @@ func TestArchetypeIsFromComponents(t *testing.T) {
 		t.Run(scenario.description, func(t *testing.T) {
 			assert := assert.New(t)
 
-			world := DefaultWorld()
+			world := NewDefaultWorld()
 			archetype, err := newArchetype(&world, scenario.archeTypeComponentIds)
 			assert.NoError(err)
 

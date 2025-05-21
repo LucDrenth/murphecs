@@ -10,7 +10,7 @@ import (
 type NPC struct{ ecs.Component }
 
 func main() {
-	world := ecs.DefaultWorld()
+	world := ecs.NewDefaultWorld()
 	entity, _ := ecs.Spawn(&world, &NPC{})
 
 	fmt.Printf("Before deleting: %d entity in the world\n", world.CountEntities())

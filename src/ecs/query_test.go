@@ -15,7 +15,7 @@ func TestQuery0(t *testing.T) {
 	t.Run("query with default options return the expected results", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		query := Query0[With[componentA]]{}
 		err := query.Prepare(&world)
 		assert.NoError(err)
@@ -79,7 +79,7 @@ func TestQuery1(t *testing.T) {
 
 		expectedValue1 := 10
 		expectedValue2 := 20
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		query := Query1[componentA, Default]{}
 		err := query.Prepare(&world)
 		assert.NoError(err)
@@ -120,7 +120,7 @@ func TestQuery1(t *testing.T) {
 	t.Run("query with With filter returns the expected results", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		_, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{})
 		assert.NoError(err)
 		_, err = Spawn(&world, &componentA{}, &componentB{})
@@ -146,7 +146,7 @@ func TestQuery1(t *testing.T) {
 	t.Run("query with Without filter returns the expected results", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		_, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{})
 		assert.NoError(err)
 		_, err = Spawn(&world, &componentA{}, &componentB{})
@@ -172,7 +172,7 @@ func TestQuery1(t *testing.T) {
 	t.Run("query with AND filter returns the expected results", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		expected, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{})
 		assert.NoError(err)
 		_, err = Spawn(&world, &componentA{}, &componentB{})
@@ -202,7 +202,7 @@ func TestQuery1(t *testing.T) {
 	t.Run("query with OR filter returns the expected results", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		_, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{})
 		assert.NoError(err)
 		_, err = Spawn(&world, &componentA{}, &componentB{})
@@ -228,7 +228,7 @@ func TestQuery1(t *testing.T) {
 	t.Run("query with With filter and all optional components returns the expected results", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		_, err := Spawn(&world, &componentA{}, &componentB{}, &componentC{})
 		assert.NoError(err)
 		_, err = Spawn(&world, &componentA{}, &componentB{})
@@ -242,7 +242,7 @@ func TestQuery1(t *testing.T) {
 		_, err = Spawn(&world, &componentB{}, &componentC{})
 		assert.NoError(err)
 
-		query := Query1[componentA, QueryOptions[With[componentB], Optional1[componentA], NoReadOnly, NotLazy]]{}
+		query := Query1[componentA, QueryOptions[With[componentB], Optional1[componentA], NoReadOnly, NotLazy, DefaultWorld]]{}
 		err = query.Prepare(&world)
 		assert.NoError(err)
 		err = query.Exec(&world)
@@ -255,7 +255,7 @@ func TestQuery1(t *testing.T) {
 		assert := assert.New(t)
 
 		expectedValue := 10
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		query := Query1[componentA, Default]{}
 		err := query.Prepare(&world)
 		assert.NoError(err)
@@ -283,7 +283,7 @@ func TestQuery1(t *testing.T) {
 		assert := assert.New(t)
 
 		expectedValue := 0
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		query := Query1[componentA, AllReadOnly]{}
 		err := query.Prepare(&world)
 		assert.NoError(err)
@@ -310,7 +310,7 @@ func TestQuery1(t *testing.T) {
 	t.Run("query results stops iterating when returning an error", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		_, err := Spawn(&world, &componentA{})
 		assert.NoError(err)
 		_, err = Spawn(&world, &componentA{})

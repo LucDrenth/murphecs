@@ -8,7 +8,7 @@ import (
 
 func TestCreateWorld(t *testing.T) {
 	t.Run("default world does not panic", func(t *testing.T) {
-		DefaultWorld()
+		NewDefaultWorld()
 	})
 
 	t.Run("returns an error when using nil for ComponentCapacityStrategy", func(t *testing.T) {

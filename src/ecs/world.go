@@ -5,6 +5,8 @@ import (
 	"reflect"
 )
 
+type WorldId int
+
 // World contains all of the entities and their components.
 type World struct {
 	entityIdCounter   uint
@@ -16,8 +18,8 @@ type World struct {
 	componentCapacityGrowthStrategy  componentCapacityGrowthStrategy
 }
 
-// DefaultWorld returns a World with default configs.
-func DefaultWorld() World {
+// NewDefaultWorld returns a World with default configs.
+func NewDefaultWorld() World {
 	world, err := NewWorld(DefaultWorldConfigs())
 	if err != nil {
 		// Creating a world with default configs should never result in an error.

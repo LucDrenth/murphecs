@@ -12,7 +12,7 @@ func TestHasComponent(t *testing.T) {
 	t.Run("returns error when entity is not found", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		_, err := HasComponent[componentA](&world, nonExistingEntity)
 		assert.ErrorIs(err, ErrEntityNotFound)
 	})
@@ -20,7 +20,7 @@ func TestHasComponent(t *testing.T) {
 	t.Run("returns false when entity does not have the component", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		entity, err := Spawn(&world)
 		assert.NoError(err)
 
@@ -32,7 +32,7 @@ func TestHasComponent(t *testing.T) {
 	t.Run("returns false when entity does not have the component", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		entity, err := Spawn(&world, &componentA{})
 		assert.NoError(err)
 
@@ -48,7 +48,7 @@ func TestHasComponentId(t *testing.T) {
 	t.Run("returns error when entity is not found", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		componentId := ComponentIdFor[componentA](&world)
 
 		_, err := HasComponentId(&world, nonExistingEntity, componentId)
@@ -58,7 +58,7 @@ func TestHasComponentId(t *testing.T) {
 	t.Run("returns false when entity does not have the component", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		entity, err := Spawn(&world)
 		assert.NoError(err)
 		componentId := ComponentIdFor[componentA](&world)
@@ -71,7 +71,7 @@ func TestHasComponentId(t *testing.T) {
 	t.Run("returns false when entity does not have the component", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		entity, err := Spawn(&world, &componentA{})
 		assert.NoError(err)
 		componentId := ComponentIdFor[componentA](&world)

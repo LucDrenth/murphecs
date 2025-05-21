@@ -125,7 +125,7 @@ func TestGetAllRequiredComponents(t *testing.T) {
 
 	for _, scenario := range scenarios {
 		t.Run(scenario.description, func(t *testing.T) {
-			world := DefaultWorld()
+			world := NewDefaultWorld()
 
 			typesToExclude := toComponentIds(scenario.components, &world)
 			result := getAllRequiredComponents(&typesToExclude, scenario.components, &world)
@@ -141,7 +141,7 @@ func TestComponentIdConversions(t *testing.T) {
 	t.Run("test that component IDs differ", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		assert.NotEqual(
 			ComponentIdOf(componentA{}, &world),
@@ -169,7 +169,7 @@ func TestComponentIdConversions(t *testing.T) {
 	t.Run("toComponentId and getComponentId result in the same type", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		assert.Equal(
 			ComponentIdOf(componentA{}, &world),
@@ -184,7 +184,7 @@ func TestComponentIdConversions(t *testing.T) {
 	t.Run("getting type from an IComponent returns the same type as when passing type param", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		var iComponent IComponent = componentA{}
 
 		a := ComponentIdOf(iComponent, &world)
@@ -199,7 +199,7 @@ func TestComponentIdConversions(t *testing.T) {
 	t.Run("return the same result for components and component pointers", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		assert.Equal(
 			ComponentIdOf(&componentA{}, &world),

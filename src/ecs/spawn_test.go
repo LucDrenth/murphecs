@@ -11,7 +11,7 @@ func TestSpawn(t *testing.T) {
 	type componentB struct{ Component }
 
 	t.Run("successfully spawns", func(t *testing.T) {
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		entity, err := Spawn(&world)
 		assert.Nil(t, err)
@@ -38,7 +38,7 @@ func TestSpawn(t *testing.T) {
 
 	t.Run("returns error if there are duplicate components", func(t *testing.T) {
 		assert := assert.New(t)
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		_, err := Spawn(&world, &componentA{}, &componentA{})
 		assert.ErrorIs(err, ErrDuplicateComponent)
@@ -68,7 +68,7 @@ func (a withRequiredComponents) RequiredComponents() []IComponent {
 func TestSpawnWithRequiredComponents(t *testing.T) {
 	t.Run("successfully spawns required components", func(t *testing.T) {
 		assert := assert.New(t)
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		entity, err := Spawn(&world, &withRequiredComponents{})
 

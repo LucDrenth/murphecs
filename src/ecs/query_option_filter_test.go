@@ -13,7 +13,7 @@ func TestQueryFilter(t *testing.T) {
 	t.Run("queryFilterWith only validates if entry has the component", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		entity, err := Spawn(&world, &componentA{})
 		assert.NoError(err)
 		entityData := world.entities[entity]
@@ -32,7 +32,7 @@ func TestQueryFilter(t *testing.T) {
 	t.Run("queryFilterWithout only validates if entry does not have the component", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		entity, err := Spawn(&world, &componentA{})
 		assert.NoError(err)
 		entityData := world.entities[entity]
@@ -51,7 +51,7 @@ func TestQueryFilter(t *testing.T) {
 	t.Run("queryFilterAnd only validates if both sub-filters are true", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		entity, err := Spawn(&world, &componentA{})
 		assert.NoError(err)
 		entityData := world.entities[entity]
@@ -93,7 +93,7 @@ func TestQueryFilter(t *testing.T) {
 	t.Run("queryFilterOr returns true if either one or both of the sub-filters are true", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		entity, err := Spawn(&world, &componentA{}, &componentB{})
 		assert.NoError(err)
 		entityData := world.entities[entity]

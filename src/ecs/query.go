@@ -30,6 +30,10 @@ type Query interface {
 	// not get executed automatically, and should be done by the user.
 	IsLazy() bool
 
+	// TargetWorld returns wether this query should be executed in a custom world. Returns nil if no custom
+	// world should be used, in which case it defaults to the world of the SubApp it is used in.
+	TargetWorld() *WorldId
+
 	getOptions() *combinedQueryOptions
 }
 
@@ -44,6 +48,10 @@ func (o *queryOptions) getOptions() *combinedQueryOptions {
 
 func (o *queryOptions) IsLazy() bool {
 	return o.options.isLazy
+}
+
+func (o *queryOptions) TargetWorld() *WorldId {
+	return o.options.targetWorld
 }
 
 func (o *queryOptions) Validate() error {

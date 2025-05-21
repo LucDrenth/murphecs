@@ -10,7 +10,7 @@ func TestDelete(t *testing.T) {
 	t.Run("return an error if the entity was not found", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		err := Delete(&world, nonExistingEntity)
 
 		assert.Error(err, ErrEntityNotFound)
@@ -21,7 +21,7 @@ func TestDelete(t *testing.T) {
 
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		entity1, err := Spawn(&world, &structA{})
 		assert.NoError(err)
 		entity2, err := Spawn(&world, &structA{})

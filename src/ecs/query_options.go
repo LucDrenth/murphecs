@@ -13,6 +13,7 @@ type combinedQueryOptions struct {
 	OptionalComponents []ComponentId
 	ReadOnlyComponents combinedReadOnlyComponent
 	isLazy             bool
+	targetWorld        *WorldId
 }
 
 func (o *combinedQueryOptions) isFilteredOut(entityData *EntityData) bool {
@@ -68,7 +69,7 @@ type QueryOption interface {
 // default query options: NoFilter, NoOptional, NoReadonly, NotLazy
 type Default struct{}
 type QueryOptionsAllReadOnly struct{}
-type QueryOptions[_ QueryParamFilter, _ OptionalComponents, _ ReadOnlyComponents, _ IsQueryLazy] struct{}
+type QueryOptions[_ QueryParamFilter, _ OptionalComponents, _ ReadOnlyComponents, _ IsQueryLazy, _ TargetWorld] struct{}
 
 func (Default) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
 	return combinedQueryOptions{}, nil
@@ -80,7 +81,7 @@ func (o QueryOptionsAllReadOnly) getCombinedQueryOptions(world *World) (combined
 	}, nil
 }
 
-func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents, IsQueryLazy]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents, IsQueryLazy, TargetWorld]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
 	result := combinedQueryOptions{}
 
 	concreteFilters, err := utils.ToConcrete[QueryParamFilter]()
@@ -113,6 +114,12 @@ func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents, I
 		return result, fmt.Errorf("failed to cast IsQueryLazy to concrete type: %w", err)
 	}
 	result.isLazy = queryOptionLazy.isLazy()
+
+	queryOptionTargetWorld, err := utils.ToConcrete[TargetWorld]()
+	if err != nil {
+		return result, fmt.Errorf("failed to cast TargetWorld to concrete type: %w", err)
+	}
+	result.targetWorld = queryOptionTargetWorld.GetWorldId()
 
 	return result, nil
 }
@@ -261,6 +268,10 @@ func mergeQueryOptions(queryOptions []QueryOption, world *World) (result combine
 
 		if !result.isLazy && options.isLazy {
 			result.isLazy = true
+		}
+
+		if result.targetWorld == nil && options.targetWorld != nil {
+			result.targetWorld = options.targetWorld
 		}
 	}
 

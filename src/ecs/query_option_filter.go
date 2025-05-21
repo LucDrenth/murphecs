@@ -109,16 +109,16 @@ func (filter Or[A, B]) getNestedFilters() (a QueryParamFilter, b QueryParamFilte
 }
 
 func (filter With[A]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[With[A], NoOptional, NoReadOnly, NotLazy]](world)
+	return toCombinedQueryOptions[QueryOptions[With[A], NoOptional, NoReadOnly, NotLazy, DefaultWorld]](world)
 }
 func (filter Without[A]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[Without[A], NoOptional, NoReadOnly, NotLazy]](world)
+	return toCombinedQueryOptions[QueryOptions[Without[A], NoOptional, NoReadOnly, NotLazy, DefaultWorld]](world)
 }
 func (filter And[A, B]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[And[A, B], NoOptional, NoReadOnly, NotLazy]](world)
+	return toCombinedQueryOptions[QueryOptions[And[A, B], NoOptional, NoReadOnly, NotLazy, DefaultWorld]](world)
 }
 func (filter Or[A, B]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[Or[A, B], NoOptional, NoReadOnly, NotLazy]](world)
+	return toCombinedQueryOptions[QueryOptions[Or[A, B], NoOptional, NoReadOnly, NotLazy, DefaultWorld]](world)
 }
 
 type QueryFilter interface {

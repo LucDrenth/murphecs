@@ -12,7 +12,7 @@ func TestAddSystem(t *testing.T) {
 	t.Run("error if adding a system that is not a function", func(t *testing.T) {
 		assert := assert.New(t)
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
@@ -23,7 +23,7 @@ func TestAddSystem(t *testing.T) {
 	t.Run("can use empty function as system", func(t *testing.T) {
 		assert := assert.New(t)
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
@@ -34,7 +34,7 @@ func TestAddSystem(t *testing.T) {
 	t.Run("can use world as system param", func(t *testing.T) {
 		assert := assert.New(t)
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
@@ -45,7 +45,7 @@ func TestAddSystem(t *testing.T) {
 	t.Run("returns an error when using non-pointer world as system param", func(t *testing.T) {
 		assert := assert.New(t)
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
@@ -59,7 +59,7 @@ func TestAddSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
@@ -71,7 +71,7 @@ func TestAddSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
@@ -85,7 +85,7 @@ func TestAddSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
@@ -98,7 +98,7 @@ func TestAddSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
@@ -112,7 +112,7 @@ func TestAddSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 		err := resourceStorage.add(&resourceA{})
@@ -128,7 +128,7 @@ func TestAddSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 		err := resourceStorage.add(&resourceA{})
@@ -142,7 +142,7 @@ func TestAddSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
@@ -154,7 +154,7 @@ func TestAddSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
@@ -168,7 +168,7 @@ func TestExecSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
@@ -186,7 +186,7 @@ func TestExecSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
@@ -207,7 +207,7 @@ func TestExecSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
@@ -228,7 +228,7 @@ func TestExecSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
@@ -274,7 +274,7 @@ func TestExecSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
@@ -289,7 +289,7 @@ func TestExecSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
@@ -304,7 +304,7 @@ func TestExecSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
@@ -321,7 +321,7 @@ func TestExecSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 
@@ -346,7 +346,7 @@ func TestExecSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		systemSet := SystemSet{}
-		world := ecs.DefaultWorld()
+		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 

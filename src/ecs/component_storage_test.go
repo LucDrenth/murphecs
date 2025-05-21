@@ -14,7 +14,7 @@ func TestCreateComponentStorage(t *testing.T) {
 	t.Run("returns an error when using capacity of 0", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		_, err := createComponentStorage(0, ComponentIdFor[componentA](&world))
 		assert.ErrorIs(err, ErrInvalidComponentStorageCapacity)
@@ -23,7 +23,7 @@ func TestCreateComponentStorage(t *testing.T) {
 	t.Run("does not return an error", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		_, err := createComponentStorage(1, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
@@ -35,7 +35,7 @@ func TestCreateComponentStorage(t *testing.T) {
 func TestGetComponentStoragePointer(t *testing.T) {
 	assert := assert.New(t)
 
-	world := DefaultWorld()
+	world := NewDefaultWorld()
 	componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
 	assert.NoError(err)
 
@@ -53,7 +53,7 @@ func TestComponentStorageInsert(t *testing.T) {
 	t.Run("fails when component is not a pointer", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
@@ -64,7 +64,7 @@ func TestComponentStorageInsert(t *testing.T) {
 	t.Run("successfully inserts when there is enough capacity", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		capacity := uint(4)
 		componentStorage, err := createComponentStorage(capacity, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
@@ -78,7 +78,7 @@ func TestComponentStorageInsert(t *testing.T) {
 	t.Run("increases capacity and inserts the component when overstepping capacity", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		capacity := uint(4)
 		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
@@ -94,7 +94,7 @@ func TestComponentStorageInsert(t *testing.T) {
 	t.Run("works well with garbage collector", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		componentStorage, err := createComponentStorage(4, ComponentIdFor[ComponentWithPointers](&world))
 		assert.NoError(err)
 
@@ -129,7 +129,7 @@ func TestComponentStorageSet(t *testing.T) {
 	t.Run("returns an error when index is out of bounds", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		componentStorage, err := createComponentStorage(2, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 
@@ -140,7 +140,7 @@ func TestComponentStorageSet(t *testing.T) {
 	t.Run("can set a component at the same index multiple times", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		componentStorage, err := createComponentStorage(2, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 
@@ -162,7 +162,7 @@ func TestGetComponentFromComponentStorage(t *testing.T) {
 	t.Run("returns an error if index out of bounds", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 
 		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
@@ -174,7 +174,7 @@ func TestGetComponentFromComponentStorage(t *testing.T) {
 	t.Run("gets the correct components when not exceeding capacity", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		capacity := 4
 
 		componentStorage, err := createComponentStorage(uint(capacity), ComponentIdFor[componentA](&world))
@@ -198,7 +198,7 @@ func TestGetComponentFromComponentStorage(t *testing.T) {
 	t.Run("gets the correct components when exceeding capacity", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		capacity := 4
 		numberOfInserts := 15
 
@@ -227,7 +227,7 @@ func TestRemoveFromComponentStorage(t *testing.T) {
 	t.Run("returns error if removing component at invalid index", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 
@@ -238,7 +238,7 @@ func TestRemoveFromComponentStorage(t *testing.T) {
 	t.Run("successfully removes a component", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 		index, err := componentStorage.insert(&world, &componentA{})
@@ -251,7 +251,7 @@ func TestRemoveFromComponentStorage(t *testing.T) {
 	t.Run("does not move any component if the last inserted component is removed", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		componentStorage, err := createComponentStorage(1024, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 
@@ -269,7 +269,7 @@ func TestRemoveFromComponentStorage(t *testing.T) {
 	t.Run("moves the last component to the place of the removed component", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		componentStorage, err := createComponentStorage(1024, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 
@@ -289,7 +289,7 @@ func TestRemoveFromComponentStorage(t *testing.T) {
 	t.Run("remove makes the component storage reuse memory", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		capacity := uint(8)
 		componentStorage, err := createComponentStorage(capacity, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
@@ -317,7 +317,7 @@ func TestComponentStorageCopyComponent(t *testing.T) {
 	t.Run("returns an error if 'from' is out of bounds", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 		_, err = componentStorage.insert(&world, &componentA{})
@@ -330,7 +330,7 @@ func TestComponentStorageCopyComponent(t *testing.T) {
 	t.Run("returns an error if 'to' is out of bounds", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 		_, err = componentStorage.insert(&world, &componentA{})
@@ -343,7 +343,7 @@ func TestComponentStorageCopyComponent(t *testing.T) {
 	t.Run("successfully copies component", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](&world))
 		assert.NoError(err)
 		_, err = componentStorage.insert(&world, &componentA{value: 10})
@@ -367,7 +367,7 @@ func TestComponentStorageCopyComponent(t *testing.T) {
 	t.Run("plays well with the garbage collector", func(t *testing.T) {
 		assert := assert.New(t)
 
-		world := DefaultWorld()
+		world := NewDefaultWorld()
 		componentStorage, err := createComponentStorage(4, ComponentIdFor[ComponentWithPointers](&world))
 		assert.NoError(err)
 		_, err = componentStorage.insert(&world, &componentA{})
