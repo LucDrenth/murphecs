@@ -78,7 +78,7 @@ func (s *SystemSet) add(sys System, world *ecs.World, logger Logger, resources *
 	queryType := reflect.TypeOf((*ecs.Query)(nil)).Elem()
 
 	if err := validateSystem(systemValue, queryType, resources); err != nil {
-		return fmt.Errorf("failed to validate system: %w", err)
+		return fmt.Errorf("system is not valid: %w", err)
 	}
 
 	numberOfParams := systemValue.Type().NumIn()
@@ -97,10 +97,19 @@ func (s *SystemSet) add(sys System, world *ecs.World, logger Logger, resources *
 			params[i] = reflect.ValueOf(query)
 		} else if parameterType == reflect.TypeFor[*ecs.World]() {
 			params[i] = reflect.ValueOf(world)
-		} else {
+		} else if parameterType == reflect.TypeFor[ecs.World]() {
+			// ecs.World may not be used by-value because:
+			//	1. it is a potentially big object and copying it could give bad performance
+			//	2. it is probably unintended and would cause unexpected behavior
+			return fmt.Errorf("system parameter %d: %w", i+1, ErrSystemParamWorldNotAPointer)
+		} else { // assume its a resource
 			resource, err := resources.getReflectResource(parameterType)
 			if err != nil {
-				return fmt.Errorf("received unexpected system parameter: %w", err)
+				if parameterType.Kind() != reflect.Pointer && reflect.PointerTo(parameterType).Implements(reflect.TypeFor[ecs.Query]()) {
+					return fmt.Errorf("system parameter %d: %w", i+1, ErrSystemParamQueryNotAPointer)
+				}
+
+				return fmt.Errorf("system parameter %d: %w", i+1, ErrSystemParamNotValid)
 			}
 
 			if parameterType.Kind() == reflect.Pointer {
@@ -151,10 +160,6 @@ func validateSystem(sys reflect.Value, queryType reflect.Type, resources *resour
 		return fmt.Errorf("%w: %w", ErrSystemInvalidReturnType, err)
 	}
 
-	if err := validateSystemParameters(sys, queryType, resources); err != nil {
-		return fmt.Errorf("invalid parameter(s): %w", err)
-	}
-
 	return nil
 }
 
@@ -176,38 +181,6 @@ func validateSystemReturnTypes(systemValue reflect.Value) error {
 	}
 
 	return fmt.Errorf("has %d return values but must have either 1 (error) or 0", numberOfSystemReturnValues)
-}
-
-func validateSystemParameters(systemValue reflect.Value, queryType reflect.Type, resources *resourceStorage) error {
-	for i := range systemValue.Type().NumIn() {
-		parameterType := systemValue.Type().In(i)
-
-		if parameterType.Implements(queryType) {
-			// query will be validated at a later step because it first needs to get prepared with `Query.Prepare` before
-			// it can be validated with `Query.Validate`.
-			return nil
-		} else if parameterType == reflect.TypeFor[*ecs.World]() {
-			return nil
-		} else if parameterType == reflect.TypeFor[ecs.World]() {
-			// ecs.World may not be used by-value because:
-			//	1. it is a potentially big object and copying it could give bad performance
-			//	2. it is probably unintended and would cause unexpected behavior
-			return fmt.Errorf("system parameter %d: %w", i+1, ErrSystemParamWorldNotAPointer)
-		} else {
-			_, err := resources.getReflectResource(parameterType)
-			if err == nil {
-				return nil
-			}
-
-			if parameterType.Kind() != reflect.Pointer && reflect.PointerTo(parameterType).Implements(reflect.TypeFor[ecs.Query]()) {
-				return fmt.Errorf("system parameter %d: %w", i+1, ErrSystemParamQueryNotAPointer)
-			}
-
-			return fmt.Errorf("system parameter %d: %w", i+1, ErrSystemParamNotValid)
-		}
-	}
-
-	return nil
 }
 
 // systemToDebugString returns a reflection string of the system but with shortened paths.
