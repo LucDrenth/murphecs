@@ -44,7 +44,7 @@ func TestRemove(t *testing.T) {
 
 		// can not fetch componentA, which was removed
 		a, err := Get1[componentA](&world, entity)
-		assert.Error(err)
+		assert.ErrorIs(err, ErrComponentNotFound)
 		assert.Nil(a)
 
 		// can still fetch componentB, which was not removed
@@ -68,7 +68,7 @@ func TestRemove(t *testing.T) {
 
 		// can not fetch componentA, which was removed
 		a, err := Get1[componentB](&world, entity)
-		assert.Error(err)
+		assert.ErrorIs(err, ErrComponentNotFound)
 		assert.Nil(a)
 
 		// can still fetch componentB, which was not removed
