@@ -64,27 +64,71 @@ func TestGenerateEntityId(t *testing.T) {
 }
 
 func TestStats(t *testing.T) {
-	assert := assert.New(t)
+	t.Run("world returns the correct stats after inserting", func(t *testing.T) {
+		assert := assert.New(t)
 
-	world := NewDefaultWorld()
-	_, err := Spawn(&world, &emptyComponentA{}) // new archetype
-	assert.NoError(err)
-	_, err = Spawn(&world, &emptyComponentB{}) // new archetype
-	assert.NoError(err)
-	_, err = Spawn(&world, &emptyComponentC{}) // new archetype
-	assert.NoError(err)
-	_, err = Spawn(&world, &emptyComponentD{}) // new archetype
-	assert.NoError(err)
-	_, err = Spawn(&world, &emptyComponentA{}) // existing archetype
-	assert.NoError(err)
-	_, err = Spawn(&world, &emptyComponentA{}, &emptyComponentB{}) // new archetype
-	assert.NoError(err)
-	_, err = Spawn(&world, &emptyComponentB{}, &emptyComponentA{}) // existing archetype
-	assert.NoError(err)
-	_, err = Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}) // new archetype
-	assert.NoError(err)
+		world := NewDefaultWorld()
+		_, err := Spawn(&world, &emptyComponentA{}) // new archetype
+		assert.NoError(err)
+		_, err = Spawn(&world, &emptyComponentB{}) // new archetype
+		assert.NoError(err)
+		_, err = Spawn(&world, &emptyComponentC{}) // new archetype
+		assert.NoError(err)
+		_, err = Spawn(&world, &emptyComponentD{}) // new archetype
+		assert.NoError(err)
+		_, err = Spawn(&world, &emptyComponentA{}) // existing archetype
+		assert.NoError(err)
+		_, err = Spawn(&world, &emptyComponentA{}, &emptyComponentB{}) // new archetype
+		assert.NoError(err)
+		_, err = Spawn(&world, &emptyComponentB{}, &emptyComponentA{}) // existing archetype
+		assert.NoError(err)
+		_, err = Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}) // new archetype
+		assert.NoError(err)
 
-	assert.Equal(8, world.CountEntities())
-	assert.Equal(12, world.CountComponents())
-	assert.Equal(6, world.CountArchetypes())
+		assert.Equal(8, world.CountEntities())
+		assert.Equal(12, world.CountComponents())
+		assert.Equal(6, world.CountArchetypes())
+	})
+
+	t.Run("stats do not change when inserting, removing, spawning and deleting with existing archetypes", func(t *testing.T) {
+		assert := assert.New(t)
+
+		// Spawn components to create the following archetypes:
+		// 	- emptyComponentA
+		// 	- emptyComponentB
+		// 	- emptyComponentA + emptyComponentB
+		world := NewDefaultWorld()
+		_, err := Spawn(&world, &emptyComponentA{}) // new archetype
+		assert.NoError(err)
+		_, err = Spawn(&world, &emptyComponentB{}) // new archetype
+		assert.NoError(err)
+		_, err = Spawn(&world, &emptyComponentA{}, &emptyComponentB{}) // new archetype
+		assert.NoError(err)
+
+		// Spawning and then deleting an entity does not alter stats
+		{
+			originalStats := world.Stats()
+
+			entity, err := Spawn(&world, &emptyComponentA{})
+			assert.NoError(err)
+			err = Delete(&world, entity)
+			assert.NoError(err)
+
+			assert.Equal(originalStats, world.Stats())
+		}
+
+		// Inserting and then removing a component does not alter stats
+		{
+			entity, err := Spawn(&world, &emptyComponentA{})
+			assert.NoError(err)
+			originalStats := world.Stats()
+
+			err = Insert(&world, entity, &emptyComponentB{})
+			assert.NoError(err)
+			err = Remove[emptyComponentB](&world, entity)
+			assert.NoError(err)
+
+			assert.Equal(originalStats, world.Stats())
+		}
+	})
 }

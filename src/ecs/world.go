@@ -75,3 +75,17 @@ func (world *World) generateEntityId() EntityId {
 func (world *World) Id() *WorldId {
 	return world.id
 }
+
+type WorldStats struct {
+	NumberOfEntities   int
+	NumberOfComponents int
+	NumberOfArchetypes int
+}
+
+func (world *World) Stats() WorldStats {
+	return WorldStats{
+		NumberOfEntities:   world.CountEntities(),
+		NumberOfComponents: world.CountEntities(),
+		NumberOfArchetypes: world.CountArchetypes(),
+	}
+}
