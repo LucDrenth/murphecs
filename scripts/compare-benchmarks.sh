@@ -1,43 +1,64 @@
 #!/bin/bash
 
-####################################
-##          HOW TO USE            ##
-####################################
-#
-# arg 1: (required) commit hash to compare to
-# arg 2: (required) number of runs
-# arg 3: (required) benchmarks directory
-# arg 4: (optional) benchmarks function
-#
-# for example: compare-benchmarks.sh d2331b8c11083e15147b4470275c18896d7404e3 10 ./benchmark/
-#
-#####################################
+print_help() {
+    echo ""
+    echo "Options:"
+    echo "  -commit           Target commit hash (defaults to latest commit of 'main' branch)"
+    echo "  -count            Number of benchmark runs (defaults to 1)"
+    echo "  -dir              Path to the benchmark directory (defaults to current '/benchmark')"
+    echo "  -func             Benchmark function to run (defaults to '.' to run all functions)"
+    echo "  -help             Show this help message"
+    echo ""
+    exit 0
+}
 
 # process args
-if [ -z "$1" ]; then
-    echo "ERROR: argument 1 (target_commit_hash) is invalid"
-    exit 1
-fi
-target_commit_hash=$1
+target_commit_hash=$(git rev-parse --verify main)
+number_of_runs=1
+benchmark_dir=./benchmark
+benchmark_func='.'
 
-if [ -z "$2" ]; then
-    echo "ERROR: argument 2 (number_of_runs) is invalid"
-    exit 1
-fi
-number_of_runs=$2
-
-if [ -z "$3" ]; then
-    echo "ERROR: argument 3 (benchmark_dir) is invalid"
-    exit 1
-fi
-benchmark_dir=$3
-
-if [ -z "$4" ]; then
-    benchmark_func='.'
-else
-    benchmark_func=$4
-fi
-
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        -commit)
+            if [[ -n "$2" ]] && [[ ! "$2" =~ ^- ]]; then
+                target_commit_hash="$2"
+                shift # past argument
+                shift # past value
+            fi
+            ;;
+        -count)
+            if [[ -n "$2" ]] && [[ ! "$2" =~ ^- ]]; then
+                number_of_runs="$2"
+                shift # past argument
+                shift # past value
+            fi
+            ;;
+        -dir)
+            if [[ -n "$2" ]] && [[ ! "$2" =~ ^- ]]; then
+                benchmark_dir="$2"
+                shift # past argument
+                shift # past value
+            fi
+            ;;
+        -func)
+            if [[ -n "$2" ]] && [[ ! "$2" =~ ^- ]]; then
+                benchmark_func="$2"
+                shift # past argument
+                shift # past value
+            fi
+            ;;
+        -help)
+            print_help
+            ;;
+        *)    # unknown option
+            echo "Unknown option: $1" >&2
+            print_help
+            exit 1
+            ;;
+    esac
+done
 
 # for detecting manually quitting the script
 quit=n
@@ -52,10 +73,12 @@ if [[ `git status --porcelain` ]]; then
     git stash --quiet
 fi
 
+
 # prepare output files
 mkdir -p tmp
 rm -f tmp/current.txt
 rm -f tmp/target.txt
+
 
 # run target benchmarks
 git checkout ${target_commit_hash} --quiet
@@ -75,11 +98,13 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+
 # revert temporary changes
 git switch - --quiet
 if [ $has_local_changes -eq 1 ]; then
     git stash pop --quiet
 fi
+
 
 # run current benchmarks
 echo "running benchmarks for current ..."
@@ -92,6 +117,7 @@ if [ $? -ne 0 ]; then
     
     exit 1
 fi
+
 
 # compare benchmarks
 echo ""

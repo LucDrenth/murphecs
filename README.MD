@@ -75,18 +75,6 @@ go run ./examples/readme
 If you want to contribute to Murphecs, feel free to open an issue or make a PR. If the change could be considered controversial, consider making an issue first to discuss the changes before working on the implementation. 
 
 ## Benchmarking
-To compare benchmarks with another commit, run
-```bash
-# test all benchmarks in a folder
-./scripts/compare-benchmarks.sh $COMMIT_HASH $COUNT $FOLDER
-
-# test a specific benchmark function
-./scripts/compare-benchmarks.sh $COMMIT_HASH $COUNT $FOLDER $FUNCTION_NAME
-```
-
-For example:
-```bash
-./scripts/compare-benchmarks.sh d2331b8c11083e15147b4470275c18896d7404e3 10 ./benchmark/
-```
+To compare benchmarks with that of another commit, run `./scripts/compare-benchmarks.sh`. By default it will compare the benchmarks in [/benchmarks](./benchmark) to that of the main branch. You can also pass a custom commit hash or run only 1 specific benchmark function. Run `./scripts/compare-benchmarks.sh -help` for more info.
 
 Be aware that this script will temporarily stash your current changes. If anything goes wrong and you are missing changes, just run `git stash pop`.
