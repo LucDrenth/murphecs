@@ -190,6 +190,10 @@ func InsertOrOverwrite(world *World, entity EntityId, components ...IComponent) 
 		movedComponent = removeResult
 	}
 
+	err = oldArchetype.removeEntity(entity)
+	if err != nil {
+		return fmt.Errorf("failed to remove entity from old component type: %w", err)
+	}
 	handleComponentStorageIndexMove(world, movedComponent, oldArchetype)
 
 	// insert new component
@@ -215,6 +219,7 @@ func InsertOrOverwrite(world *World, entity EntityId, components ...IComponent) 
 	entityData.archetype = newArchetype
 	entityData.row = newRow
 	world.archetypeStorage.entityIdToArchetype[entity] = newArchetype
+	newArchetype.entities = append(newArchetype.entities, entity)
 
 	return resultErr
 }

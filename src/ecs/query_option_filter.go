@@ -122,8 +122,11 @@ func (filter Or[A, B]) getCombinedQueryOptions(world *World) (combinedQueryOptio
 }
 
 type QueryFilter interface {
-	// Validate that entityData satisfies the filter
-	Validate(*EntityData) bool
+	// EntityMeetsCriteria returns false is the entity is filtered out
+	EntityMeetsCriteria(*EntityData) bool
+
+	// EntityMeetsCriteria returns false is the archetype is filtered out
+	ArchetypeMeetsCriteria(*Archetype) bool
 }
 type queryFilterAnd struct {
 	a QueryFilter
@@ -140,15 +143,15 @@ type queryFilterWithout struct {
 	c []ComponentId
 }
 
-func (filter queryFilterAnd) Validate(e *EntityData) bool {
-	return filter.a.Validate(e) && filter.b.Validate(e)
+func (filter *queryFilterAnd) EntityMeetsCriteria(e *EntityData) bool {
+	return filter.a.EntityMeetsCriteria(e) && filter.b.EntityMeetsCriteria(e)
 }
 
-func (filter queryFilterOr) Validate(e *EntityData) bool {
-	return filter.a.Validate(e) || filter.b.Validate(e)
+func (filter *queryFilterOr) EntityMeetsCriteria(e *EntityData) bool {
+	return filter.a.EntityMeetsCriteria(e) || filter.b.EntityMeetsCriteria(e)
 }
 
-func (filter queryFilterWith) Validate(e *EntityData) bool {
+func (filter *queryFilterWith) EntityMeetsCriteria(e *EntityData) bool {
 	for _, c := range filter.c {
 		if !e.hasComponent(c) {
 			return false
@@ -158,9 +161,37 @@ func (filter queryFilterWith) Validate(e *EntityData) bool {
 	return true
 }
 
-func (filter queryFilterWithout) Validate(e *EntityData) bool {
+func (filter *queryFilterWithout) EntityMeetsCriteria(e *EntityData) bool {
 	for _, c := range filter.c {
 		if e.hasComponent(c) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (filter *queryFilterAnd) ArchetypeMeetsCriteria(archetype *Archetype) bool {
+	return filter.a.ArchetypeMeetsCriteria(archetype) && filter.b.ArchetypeMeetsCriteria(archetype)
+}
+
+func (filter *queryFilterOr) ArchetypeMeetsCriteria(archetype *Archetype) bool {
+	return filter.a.ArchetypeMeetsCriteria(archetype) || filter.b.ArchetypeMeetsCriteria(archetype)
+}
+
+func (filter *queryFilterWith) ArchetypeMeetsCriteria(archetype *Archetype) bool {
+	for _, c := range filter.c {
+		if !archetype.HasComponent(c) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (filter *queryFilterWithout) ArchetypeMeetsCriteria(archetype *Archetype) bool {
+	for _, c := range filter.c {
+		if archetype.HasComponent(c) {
 			return false
 		}
 	}

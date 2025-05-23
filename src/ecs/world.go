@@ -12,7 +12,7 @@ type World struct {
 	id *WorldId // setting an id is optional
 
 	entityIdCounter   uint
-	entities          map[EntityId]*EntityData // TODO EntityData probably does not have to be pointer once archeType is implemented
+	entities          map[EntityId]*EntityData
 	componentRegistry componentRegistry
 	archetypeStorage  archetypeStorage
 

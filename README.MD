@@ -85,4 +85,4 @@ For example:
 ./scripts/compare-benchmarks.sh d2331b8c11083e15147b4470275c18896d7404e3 10 ./benchmark/
 ```
 
-Be aware that this script will temporarily stash your current changes. If anything goes wrong or you cancel early, and you are missing changes, just run `git stash pop`.
+Be aware that this script will temporarily stash your current changes. If anything goes wrong and you are missing changes, just run `git stash pop`.

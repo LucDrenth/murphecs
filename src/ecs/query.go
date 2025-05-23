@@ -163,155 +163,207 @@ type Query4[ComponentA, ComponentB, ComponentC, ComponentD IComponent, _ QueryOp
 func (q *Query0[QueryOptions]) Exec(world *World) error {
 	q.ClearResults()
 
-	for entityId, entityData := range world.entities {
-		if q.options.isFilteredOut(entityData) {
+	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
+		if q.options.isArchetypeFilteredOut(archetype) {
 			continue
 		}
 
-		q.results.entityIds = append(q.results.entityIds, entityId)
+		q.results.entityIds = append(q.results.entityIds, archetype.entities...)
 	}
 
 	return nil
 }
 
-func (q *Query1[ComponentA, QueryOptions]) Exec(world *World) error {
+func (q *Query1[ComponentA, QueryOptions]) Exec(world *World) (err error) {
 	q.ClearResults()
 
-	for entityId, entityData := range world.entities {
-		if q.options.isFilteredOut(entityData) {
+	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
+		if q.options.isArchetypeFilteredOut(archetype) {
 			continue
 		}
 
-		a, match, err := getQueryComponent[ComponentA](q.componentIdA, entityData, &q.options)
-		if err != nil {
-			return err
-		}
-		if !match {
+		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.queryOptions.options)
+		if skip {
 			continue
 		}
 
-		q.results.componentsA = append(q.results.componentsA, a)
-		q.results.entityIds = append(q.results.entityIds, entityId)
+		for _, entity := range archetype.entities {
+			var a *ComponentA
+			if fetchA {
+				a, err = fetchComponentForQueryResult[ComponentA](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				if err != nil {
+					return err
+				}
+			}
+
+			q.results.componentsA = append(q.results.componentsA, a)
+			q.results.entityIds = append(q.results.entityIds, entity)
+		}
 	}
 
 	return nil
 }
-func (q *Query2[ComponentA, ComponentB, QueryOptions]) Exec(world *World) error {
+func (q *Query2[ComponentA, ComponentB, QueryOptions]) Exec(world *World) (err error) {
 	q.ClearResults()
 
-	for entityId, entityData := range world.entities {
-		if q.options.isFilteredOut(entityData) {
+	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
+		if q.options.isArchetypeFilteredOut(archetype) {
 			continue
 		}
 
-		a, match, err := getQueryComponent[ComponentA](q.componentIdA, entityData, &q.options)
-		if err != nil {
-			return err
+		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.queryOptions.options)
+		if skip {
+			continue
 		}
-		if !match {
+		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.queryOptions.options)
+		if skip {
 			continue
 		}
 
-		b, match, err := getQueryComponent[ComponentB](q.componentIdB, entityData, &q.options)
-		if err != nil {
-			return err
-		}
-		if !match {
-			continue
-		}
+		for _, entity := range archetype.entities {
+			var a *ComponentA
+			if fetchA {
+				a, err = fetchComponentForQueryResult[ComponentA](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				if err != nil {
+					return err
+				}
+			}
 
-		q.results.componentsA = append(q.results.componentsA, a)
-		q.results.componentsB = append(q.results.componentsB, b)
-		q.results.entityIds = append(q.results.entityIds, entityId)
+			var b *ComponentB
+			if fetchB {
+				b, err = fetchComponentForQueryResult[ComponentB](q.componentIdB, world.entities[entity].row, archetype, &q.options)
+				if err != nil {
+					return err
+				}
+			}
+
+			q.results.componentsA = append(q.results.componentsA, a)
+			q.results.componentsB = append(q.results.componentsB, b)
+			q.results.entityIds = append(q.results.entityIds, entity)
+		}
 	}
 
 	return nil
 }
-func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Exec(world *World) error {
+func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Exec(world *World) (err error) {
 	q.ClearResults()
 
-	for entityId, entityData := range world.entities {
-		if q.options.isFilteredOut(entityData) {
+	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
+		if q.options.isArchetypeFilteredOut(archetype) {
 			continue
 		}
 
-		a, match, err := getQueryComponent[ComponentA](q.componentIdA, entityData, &q.options)
-		if err != nil {
-			return err
+		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.queryOptions.options)
+		if skip {
+			continue
 		}
-		if !match {
+		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.queryOptions.options)
+		if skip {
+			continue
+		}
+		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.queryOptions.options)
+		if skip {
 			continue
 		}
 
-		b, match, err := getQueryComponent[ComponentB](q.componentIdB, entityData, &q.options)
-		if err != nil {
-			return err
-		}
-		if !match {
-			continue
-		}
+		for _, entity := range archetype.entities {
+			var a *ComponentA
+			if fetchA {
+				a, err = fetchComponentForQueryResult[ComponentA](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				if err != nil {
+					return err
+				}
+			}
 
-		c, match, err := getQueryComponent[ComponentC](q.componentIdC, entityData, &q.options)
-		if err != nil {
-			return err
-		}
-		if !match {
-			continue
-		}
+			var b *ComponentB
+			if fetchB {
+				b, err = fetchComponentForQueryResult[ComponentB](q.componentIdB, world.entities[entity].row, archetype, &q.options)
+				if err != nil {
+					return err
+				}
+			}
 
-		q.results.componentsA = append(q.results.componentsA, a)
-		q.results.componentsB = append(q.results.componentsB, b)
-		q.results.componentsC = append(q.results.componentsC, c)
-		q.results.entityIds = append(q.results.entityIds, entityId)
+			var c *ComponentC
+			if fetchC {
+				c, err = fetchComponentForQueryResult[ComponentC](q.componentIdC, world.entities[entity].row, archetype, &q.options)
+				if err != nil {
+					return err
+				}
+			}
+
+			q.results.componentsA = append(q.results.componentsA, a)
+			q.results.componentsB = append(q.results.componentsB, b)
+			q.results.componentsC = append(q.results.componentsC, c)
+			q.results.entityIds = append(q.results.entityIds, entity)
+		}
 	}
 
 	return nil
 }
-func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) Exec(world *World) error {
+func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) Exec(world *World) (err error) {
 	q.ClearResults()
 
-	for entityId, entityData := range world.entities {
-		if q.options.isFilteredOut(entityData) {
+	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
+		if q.options.isArchetypeFilteredOut(archetype) {
 			continue
 		}
 
-		a, match, err := getQueryComponent[ComponentA](q.componentIdA, entityData, &q.options)
-		if err != nil {
-			return err
+		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.queryOptions.options)
+		if skip {
+			continue
 		}
-		if !match {
+		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.queryOptions.options)
+		if skip {
+			continue
+		}
+		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.queryOptions.options)
+		if skip {
+			continue
+		}
+		fetchD, skip := shouldHandleQueryComponent(q.componentIdD, archetype, &q.queryOptions.options)
+		if skip {
 			continue
 		}
 
-		b, match, err := getQueryComponent[ComponentB](q.componentIdB, entityData, &q.options)
-		if err != nil {
-			return err
-		}
-		if !match {
-			continue
-		}
+		for _, entity := range archetype.entities {
+			var a *ComponentA
+			if fetchA {
+				a, err = fetchComponentForQueryResult[ComponentA](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				if err != nil {
+					return err
+				}
+			}
 
-		c, match, err := getQueryComponent[ComponentC](q.componentIdC, entityData, &q.options)
-		if err != nil {
-			return err
-		}
-		if !match {
-			continue
-		}
+			var b *ComponentB
+			if fetchB {
+				b, err = fetchComponentForQueryResult[ComponentB](q.componentIdB, world.entities[entity].row, archetype, &q.options)
+				if err != nil {
+					return err
+				}
+			}
 
-		d, match, err := getQueryComponent[ComponentD](q.componentIdD, entityData, &q.options)
-		if err != nil {
-			return err
-		}
-		if !match {
-			continue
-		}
+			var c *ComponentC
+			if fetchC {
+				c, err = fetchComponentForQueryResult[ComponentC](q.componentIdC, world.entities[entity].row, archetype, &q.options)
+				if err != nil {
+					return err
+				}
+			}
 
-		q.results.componentsA = append(q.results.componentsA, a)
-		q.results.componentsB = append(q.results.componentsB, b)
-		q.results.componentsC = append(q.results.componentsC, c)
-		q.results.componentsD = append(q.results.componentsD, d)
-		q.results.entityIds = append(q.results.entityIds, entityId)
+			var d *ComponentD
+			if fetchD {
+				d, err = fetchComponentForQueryResult[ComponentD](q.componentIdD, world.entities[entity].row, archetype, &q.options)
+				if err != nil {
+					return err
+				}
+			}
+
+			q.results.componentsA = append(q.results.componentsA, a)
+			q.results.componentsB = append(q.results.componentsB, b)
+			q.results.componentsC = append(q.results.componentsC, c)
+			q.results.componentsD = append(q.results.componentsD, d)
+			q.results.entityIds = append(q.results.entityIds, entity)
+		}
 	}
 
 	return nil
@@ -399,24 +451,34 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) C
 	q.results.Clear()
 }
 
-// getQueryComponent returns a pointer to T if the component is found on the entity.
-//
-// match is true when the entity has the component or if the component is marked marked as optional.
-// When match is true, the entity should be present in the query results.
-func getQueryComponent[T IComponent](componentId ComponentId, entityData *EntityData, queryOptions *combinedQueryOptions) (result *T, match bool, err error) {
-	storage, componentExists := entityData.archetype.components[componentId]
-	if !componentExists {
-		return nil, slices.Contains(queryOptions.OptionalComponents, componentId), nil
+// shouldHandleQueryComponent returns wether a component should be fetched and/or skipped:
+//   - shouldSkip=true means that the archetype should not be included in the query results.
+//   - shouldSkip=false means that the archetype should be included in the query results.
+//   - shouldFetch=true means that the (entities of the) archetype should be included in the query and should be fetched from a component storage.
+//   - shouldFetch=false means that the (entities of the) archetype should be included in the query, but should be nil.
+func shouldHandleQueryComponent(componentId ComponentId, archetype *Archetype, queryOptions *combinedQueryOptions) (shouldFetch bool, shouldSkip bool) {
+	if archetype.HasComponent(componentId) {
+		return true, false
 	}
 
-	result, err = getComponentFromComponentStorage[T](storage, entityData.row)
+	if slices.Contains(queryOptions.OptionalComponents, componentId) {
+		return false, false
+	}
+
+	return false, true
+}
+
+// fetchComponentForQueryResult fetches a component from the component storage
+func fetchComponentForQueryResult[T IComponent](componentId ComponentId, entityRow uint, archetype *Archetype, queryOptions *combinedQueryOptions) (result *T, err error) {
+	storage := archetype.components[componentId]
+	result, err = getComponentFromComponentStorage[T](storage, entityRow)
 	if err != nil {
-		return nil, false, fmt.Errorf("getQueryComponent encountered unexpected error: %v", err)
+		return nil, fmt.Errorf("failed to retrieve component %s from storage: %v", componentId.DebugString(), err)
 	}
 
 	if result != nil && (queryOptions.ReadOnlyComponents.IsAllReadOnly || slices.Contains(queryOptions.ReadOnlyComponents.ComponentIds, componentId)) {
 		result = utils.ClonePointerValue(result)
 	}
 
-	return result, true, nil
+	return result, nil
 }

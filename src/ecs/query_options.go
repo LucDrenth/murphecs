@@ -16,9 +16,19 @@ type combinedQueryOptions struct {
 	targetWorld        *WorldId
 }
 
-func (o *combinedQueryOptions) isFilteredOut(entityData *EntityData) bool {
+func (o *combinedQueryOptions) isEntityFilteredOut(entityData *EntityData) bool {
 	for i := range o.Filters {
-		if !o.Filters[i].Validate(entityData) {
+		if !o.Filters[i].EntityMeetsCriteria(entityData) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (o *combinedQueryOptions) isArchetypeFilteredOut(archetype *Archetype) bool {
+	for i := range o.Filters {
+		if !o.Filters[i].ArchetypeMeetsCriteria(archetype) {
 			return true
 		}
 	}
@@ -127,9 +137,9 @@ func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents, I
 func getFilterFromConcreteQueryParamFilter(filters QueryParamFilter, world *World) (QueryFilter, error) {
 	switch concreteFilterType := filters.getFilterType(); concreteFilterType {
 	case filterTypeWith:
-		return queryFilterWith{c: filters.getComponents(world)}, nil
+		return &queryFilterWith{c: filters.getComponents(world)}, nil
 	case filterTypeWithout:
-		return queryFilterWithout{c: filters.getComponents(world)}, nil
+		return &queryFilterWithout{c: filters.getComponents(world)}, nil
 	case filterTypeNone:
 		return nil, nil
 	case filterTypeAnd:
@@ -149,7 +159,7 @@ func getFilterFromConcreteQueryParamFilter(filters QueryParamFilter, world *Worl
 				return nil, fmt.Errorf("failed to create AND filter for b: %w", err)
 			}
 
-			return queryFilterAnd{a: filterA, b: filterB}, nil
+			return &queryFilterAnd{a: filterA, b: filterB}, nil
 		}
 	case filterTypeOr:
 		{
@@ -168,7 +178,7 @@ func getFilterFromConcreteQueryParamFilter(filters QueryParamFilter, world *Worl
 				return nil, fmt.Errorf("failed to create OR filter for b: %w", err)
 			}
 
-			return queryFilterOr{a: filterA, b: filterB}, nil
+			return &queryFilterOr{a: filterA, b: filterB}, nil
 		}
 	}
 
@@ -303,7 +313,7 @@ func QueryWithAllReadOnly(query Query) {
 func QueryWith[C IComponent](world *World, query Query) error {
 	componentId := ComponentIdFor[C](world)
 	options := query.getOptions()
-	options.Filters = append(options.Filters, queryFilterWith{c: []ComponentId{componentId}})
+	options.Filters = append(options.Filters, &queryFilterWith{c: []ComponentId{componentId}})
 
 	return query.Validate()
 }
@@ -311,7 +321,7 @@ func QueryWith[C IComponent](world *World, query Query) error {
 func QueryWithout[C IComponent](world *World, query Query) error {
 	componentId := ComponentIdFor[C](world)
 	options := query.getOptions()
-	options.Filters = append(options.Filters, queryFilterWithout{c: []ComponentId{componentId}})
+	options.Filters = append(options.Filters, &queryFilterWithout{c: []ComponentId{componentId}})
 
 	return query.Validate()
 }

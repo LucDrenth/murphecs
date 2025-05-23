@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"sort"
 	"strconv"
+
+	"github.com/lucdrenth/murphecs/src/utils"
 )
 
 type archetypeStorage struct {
-	componentsHashToArchetype map[string]Archetype
+	componentsHashToArchetype map[string]*Archetype
 	entityIdToArchetype       map[EntityId]*Archetype
 	componentIdToArchetypes   map[ComponentId]*[]*Archetype
 	idCounter                 uint
@@ -15,7 +17,7 @@ type archetypeStorage struct {
 
 func newArchetypeStorage() archetypeStorage {
 	return archetypeStorage{
-		componentsHashToArchetype: map[string]Archetype{},
+		componentsHashToArchetype: map[string]*Archetype{},
 		entityIdToArchetype:       map[EntityId]*Archetype{},
 		componentIdToArchetypes:   map[ComponentId]*[]*Archetype{},
 	}
@@ -24,28 +26,28 @@ func newArchetypeStorage() archetypeStorage {
 // getArchetype either returns an existing archetype or creates a new one if it doesn't exist yet.
 func (s archetypeStorage) getArchetype(world *World, componentIds []ComponentId) (*Archetype, error) {
 	hash := hashComponentIds(componentIds)
-	archetype, exists := s.componentsHashToArchetype[hash]
+	existingArchetype, exists := s.componentsHashToArchetype[hash]
 	if exists {
-		return &archetype, nil
+		return existingArchetype, nil
 	}
 
-	archetype, err := newArchetype(world, componentIds)
+	newArchetype, err := newArchetype(world, componentIds)
 	if err != nil {
 		return nil, err
 	}
 
-	s.componentsHashToArchetype[hash] = archetype
+	s.componentsHashToArchetype[hash] = newArchetype
 
 	for i := range componentIds {
 		archetypeList, exists := s.componentIdToArchetypes[componentIds[i]]
 		if exists {
-			*archetypeList = append(*archetypeList, &archetype)
+			*archetypeList = append(*archetypeList, newArchetype)
 		} else {
-			s.componentIdToArchetypes[componentIds[i]] = &[]*Archetype{&archetype}
+			s.componentIdToArchetypes[componentIds[i]] = &[]*Archetype{newArchetype}
 		}
 	}
 
-	return &archetype, nil
+	return newArchetype, nil
 }
 
 // countComponents returns the number of living components
@@ -64,11 +66,12 @@ type Archetype struct {
 	componentTypesHash string
 	components         map[ComponentId]*componentStorage
 	componentIds       []ComponentId
+	entities           []EntityId
 }
 
 // newArchetype returns a new archetype for the given componentIds.
 // The componentIds will get sorted, so the order of the given componentIds does not matter.
-func newArchetype(world *World, componentIds []ComponentId) (Archetype, error) {
+func newArchetype(world *World, componentIds []ComponentId) (*Archetype, error) {
 	sortComponentIds(componentIds)
 
 	components := map[ComponentId]*componentStorage{}
@@ -78,7 +81,7 @@ func newArchetype(world *World, componentIds []ComponentId) (Archetype, error) {
 			componentIds[i],
 		)
 		if err != nil {
-			return Archetype{}, fmt.Errorf("failed to create component storage for component %s: %w", componentIds[i].DebugString(), err)
+			return nil, fmt.Errorf("failed to create component storage for component %s: %w", componentIds[i].DebugString(), err)
 		}
 
 		components[componentIds[i]] = &storage
@@ -86,7 +89,7 @@ func newArchetype(world *World, componentIds []ComponentId) (Archetype, error) {
 
 	world.archetypeStorage.idCounter++
 
-	return Archetype{
+	return &Archetype{
 		id:                 world.archetypeStorage.idCounter,
 		componentTypesHash: hashComponentIds(componentIds),
 		components:         components,
@@ -111,6 +114,17 @@ func (archetype *Archetype) CountComponents() uint {
 	}
 
 	return count
+}
+
+func (archetype *Archetype) removeEntity(entity EntityId) error {
+	for i, entityId := range archetype.entities {
+		if entityId == entity {
+			utils.RemoveFromSlice(&archetype.entities, i)
+			return nil
+		}
+	}
+
+	return ErrEntityNotFound
 }
 
 func sortComponentIds(componentIds []ComponentId) {

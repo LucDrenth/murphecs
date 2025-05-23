@@ -5,8 +5,8 @@
 
 **Nice-to-have**
 - [performance] Generational entities. EntityId would become {id: uint, generation: uint}. World its entityList would becomes a slice instead of a map, and entityId would correlate with the slice index. This provides faster lookups. We'd need an deadEntityPool to choose from when creating a new EntityId which would increment its generation and repurpose it.
-- [performance] Archetype graph to speed up insert/remove. Add an `edges map[componentIds]Archetype` to Archetype where `componentIds` is a hash of the components to add or remove. This gives better performance for archetypes with many components because only the components to add/remove need to be hashed instead of the whole set of new component ids. See https://ajmmertens.medium.com/building-an-ecs-2-archetypes-and-vectorization-fe21690805f9 for more explanation and examples.
-- [performance] Query can create a list of ArcheTypes on Prepare so that we don't have to go through every entity. Archetypes would have to maintain a list of entities.
+- [performance] Archetype graph to speed up archetype moves, making insert/remove more efficient. Add an `edges map[componentIds]Archetype` to Archetype where `componentIds` is a hash of the components to add or remove. This gives better performance for archetypes with many components because only the components to add/remove need to be hashed instead of the whole set of new component ids. See https://ajmmertens.medium.com/building-an-ecs-2-archetypes-and-vectorization-fe21690805f9 for more explanation and examples.
+- [performance] Query can create a list of ArcheTypes on Prepare so that we don't have to go through every entity. Archetypes would have to maintain a list of entities. We'd also have to have some kind of dirty flag for archetypes so that if a new archetype is created, the query updates its list of archetypes.
 - [performance] Cache Queries
 - [feature] Events
 - [feature] Add Query5..Query16 and Optional5..Optional16

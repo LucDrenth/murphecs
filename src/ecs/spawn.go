@@ -39,6 +39,7 @@ func Spawn(world *World, components ...IComponent) (EntityId, error) {
 		return nonExistingEntity, err
 	}
 	world.archetypeStorage.entityIdToArchetype[entityId] = archetype
+	archetype.entities = append(archetype.entities, entityId)
 
 	var row uint
 	for _, component := range components {

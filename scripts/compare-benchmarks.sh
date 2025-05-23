@@ -13,8 +13,7 @@
 #
 #####################################
 
-set -e
-
+# process args
 if [ -z "$1" ]; then
     echo "ERROR: argument 1 (target_commit_hash) is invalid"
     exit 1
@@ -40,10 +39,16 @@ else
 fi
 
 
+# for detecting manually quitting the script
+quit=n
+trap 'quit=y' INT
+
+
 # temporarily stash local changes
 has_local_changes=0
 if [[ `git status --porcelain` ]]; then
     has_local_changes=1
+    echo "stashing local changes"
     git stash --quiet
 fi
 
@@ -55,7 +60,17 @@ rm -f tmp/target.txt
 # run target benchmarks
 git checkout ${target_commit_hash} --quiet
 echo "running benchmarks for target ..."
-go test -count=${number_of_runs} -bench=${benchmark_func} ${benchmark_dir} > tmp/target.txt
+go test -count=${number_of_runs} -bench=${benchmark_func} ${benchmark_dir} -timeout 1h > tmp/target.txt
+if [ $? -ne 0 ]; then
+    if [ x"$quit" != xy ]; then
+        # did not manually stop the script
+        echo "ERROR: benchmarks failed. See /tmp/target.txt for more details"
+    fi
+    
+    git switch - --quiet
+    git stash pop --quiet
+    exit 1
+fi
 
 # revert temporary changes
 git switch - --quiet
@@ -65,7 +80,15 @@ fi
 
 # run current benchmarks
 echo "running benchmarks for current ..."
-go test -count=${number_of_runs} -bench=${benchmark_func} ${benchmark_dir} > tmp/current.txt
+go test -count=${number_of_runs} -bench=${benchmark_func} ${benchmark_dir} -timeout 1h > tmp/current.txt
+if [ $? -ne 0 ]; then
+    if [ x"$quit" != xy ]; then
+        # did not manually stop the script
+        echo "ERROR: benchmarks failed. See /tmp/current.txt for more details"
+    fi
+    
+    exit 1
+fi
 
 # compare benchmarks
 echo ""
