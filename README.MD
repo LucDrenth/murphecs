@@ -77,7 +77,11 @@ If you want to contribute to Murphecs, feel free to open an issue or make a PR. 
 ## Benchmarking
 To compare benchmarks with another commit, run
 ```bash
+# test all benchmarks in a folder
 ./scripts/compare-benchmarks.sh $COMMIT_HASH $COUNT $FOLDER
+
+# test a specific benchmark function
+./scripts/compare-benchmarks.sh $COMMIT_HASH $COUNT $FOLDER $FUNCTION_NAME
 ```
 
 For example:

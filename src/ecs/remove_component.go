@@ -143,9 +143,8 @@ func handleComponentStorageIndexMove(world *World, movedComponent *movedComponen
 		return
 	}
 
-	// TODO this is inefficient because we have to loop over all entities. We could make this more efficient
-	// by storing a list of EntityId's in Archetype
-	for _, entityData := range world.entities {
+	for _, entityId := range archetype.entities {
+		entityData := world.entities[entityId]
 		if entityData.archetype.id == archetype.id {
 			entityData.row = movedComponent.toIndex
 		}
