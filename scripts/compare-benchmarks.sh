@@ -68,7 +68,10 @@ if [ $? -ne 0 ]; then
     fi
     
     git switch - --quiet
-    git stash pop --quiet
+    if [ $has_local_changes -eq 1 ]; then
+        git stash pop --quiet
+    fi
+    
     exit 1
 fi
 
