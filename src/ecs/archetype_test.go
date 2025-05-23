@@ -160,7 +160,8 @@ func TestArchetypeIsFromComponents(t *testing.T) {
 			assert := assert.New(t)
 
 			world := NewDefaultWorld()
-			archetype, err := newArchetype(&world, scenario.archeTypeComponentIds)
+			archetypeStorage := newArchetypeStorage()
+			archetype, err := archetypeStorage.getArchetype(&world, scenario.archeTypeComponentIds)
 			assert.NoError(err)
 
 			result := archetype.IsFromComponents(scenario.componentIdsToCheck)

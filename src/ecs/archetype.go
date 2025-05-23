@@ -9,7 +9,7 @@ import (
 )
 
 type archetypeStorage struct {
-	componentsHashToArchetype map[string]*Archetype
+	componentsHashToArchetype map[string]*Archetype // this map stores a list of unique Archetype
 	entityIdToArchetype       map[EntityId]*Archetype
 	componentIdToArchetypes   map[ComponentId]*[]*Archetype
 	idCounter                 uint
@@ -25,6 +25,7 @@ func newArchetypeStorage() archetypeStorage {
 
 // getArchetype either returns an existing archetype or creates a new one if it doesn't exist yet.
 func (s archetypeStorage) getArchetype(world *World, componentIds []ComponentId) (*Archetype, error) {
+	sortComponentIds(componentIds)
 	hash := hashComponentIds(componentIds)
 	existingArchetype, exists := s.componentsHashToArchetype[hash]
 	if exists {
@@ -72,8 +73,6 @@ type Archetype struct {
 // newArchetype returns a new archetype for the given componentIds.
 // The componentIds will get sorted, so the order of the given componentIds does not matter.
 func newArchetype(world *World, componentIds []ComponentId) (*Archetype, error) {
-	sortComponentIds(componentIds)
-
 	components := map[ComponentId]*componentStorage{}
 	for i := range componentIds {
 		storage, err := createComponentStorage(
