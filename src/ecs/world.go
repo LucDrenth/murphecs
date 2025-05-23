@@ -63,6 +63,10 @@ func (world *World) CountComponents() int {
 	return int(world.archetypeStorage.countComponents())
 }
 
+func (world *World) CountArchetypes() int {
+	return len(world.archetypeStorage.componentsHashToArchetype)
+}
+
 func (world *World) generateEntityId() EntityId {
 	world.entityIdCounter++
 	return EntityId(world.entityIdCounter)

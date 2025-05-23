@@ -623,6 +623,7 @@ func BenchmarkQuery(b *testing.B) {
 	}
 }
 
+// Fills the world with 7 different archetypes
 func fillWorld(world *ecs.World) error {
 	if _, err := ecs.Spawn(world, &emptyComponentA{}); err != nil {
 		return err

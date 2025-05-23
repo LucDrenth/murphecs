@@ -30,6 +30,8 @@ type componentWithValueB struct {
 
 type emptyComponentA struct{ Component }
 type emptyComponentB struct{ Component }
+type emptyComponentC struct{ Component }
+type emptyComponentD struct{ Component }
 
 // componentWithPointers is useful to test garbage collection
 type ComponentWithPointers struct {
