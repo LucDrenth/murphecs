@@ -48,92 +48,107 @@ func BenchmarkSpawn(b *testing.B) {
 }
 
 func BenchmarkInsert(b *testing.B) {
-	b.Run("VariadicOneComponent", func(b *testing.B) {
-		for b.Loop() {
+	for _, size := range []int{10, 100, 1_000, 10_000} {
+		setupWorld := func() ecs.World {
 			world := ecs.NewDefaultWorld()
-			entity, _ := ecs.Spawn(&world)
 
-			ecs.Insert(&world, entity, &emptyComponentA{})
+			for range size {
+				if err := fillWorld(&world); err != nil {
+					b.FailNow()
+				}
+			}
+
+			return world
 		}
-	})
 
-	b.Run("VariadicTwoComponents", func(b *testing.B) {
-		for b.Loop() {
-			world := ecs.NewDefaultWorld()
-			entity, _ := ecs.Spawn(&world)
+		b.Run(fmt.Sprintf("OneComponent-Size-%d", size), func(b *testing.B) {
+			world := setupWorld()
 
-			ecs.Insert(&world, entity, &emptyComponentA{}, &emptyComponentB{})
-		}
-	})
+			for b.Loop() {
+				entity, _ := ecs.Spawn(&world)
+				ecs.Insert(&world, entity, &emptyComponentA{})
+			}
+		})
 
-	b.Run("VariadicThreeComponents", func(b *testing.B) {
-		for b.Loop() {
-			world := ecs.NewDefaultWorld()
-			entity, _ := ecs.Spawn(&world)
+		b.Run(fmt.Sprintf("TwoComponent-Size-%d", size), func(b *testing.B) {
+			world := setupWorld()
 
-			ecs.Insert(&world, entity, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{})
-		}
-	})
+			for b.Loop() {
+				entity, _ := ecs.Spawn(&world)
+				ecs.Insert(&world, entity, &emptyComponentA{}, &emptyComponentB{})
+			}
+		})
 
-	b.Run("VariadicFourComponents", func(b *testing.B) {
-		for b.Loop() {
-			world := ecs.NewDefaultWorld()
-			entity, _ := ecs.Spawn(&world)
+		b.Run(fmt.Sprintf("ThreeComponent-Size-%d", size), func(b *testing.B) {
+			world := setupWorld()
 
-			ecs.Insert(&world, entity, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
-		}
-	})
+			for b.Loop() {
+				entity, _ := ecs.Spawn(&world)
+				ecs.Insert(&world, entity, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{})
+			}
+		})
+
+		b.Run(fmt.Sprintf("FourComponent-Size-%d", size), func(b *testing.B) {
+			world := setupWorld()
+
+			for b.Loop() {
+				entity, _ := ecs.Spawn(&world)
+				ecs.Insert(&world, entity, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+			}
+		})
+	}
 }
 
 func BenchmarkRemove(b *testing.B) {
-	b.Run("OneComponent", func(b *testing.B) {
-		world := ecs.NewDefaultWorld()
-		if err := fillWorld(&world); err != nil {
-			b.FailNow()
+	for _, size := range []int{10, 100, 1_000, 10_000} {
+		setupWorld := func() ecs.World {
+			world := ecs.NewDefaultWorld()
+
+			for range size {
+				if err := fillWorld(&world); err != nil {
+					b.FailNow()
+				}
+			}
+
+			return world
 		}
 
-		for b.Loop() {
-			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
-			ecs.Remove[emptyComponentA](&world, entity)
-		}
-	})
+		b.Run(fmt.Sprintf("OneComponent-Size-%d", size), func(b *testing.B) {
+			world := setupWorld()
 
-	b.Run("TwoComponents", func(b *testing.B) {
-		world := ecs.NewDefaultWorld()
-		if err := fillWorld(&world); err != nil {
-			b.FailNow()
-		}
+			for b.Loop() {
+				entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+				ecs.Remove[emptyComponentA](&world, entity)
+			}
+		})
 
-		for b.Loop() {
-			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
-			ecs.Remove2[emptyComponentA, emptyComponentB](&world, entity)
-		}
-	})
+		b.Run(fmt.Sprintf("TwoComponents-Size-%d", size), func(b *testing.B) {
+			world := setupWorld()
 
-	b.Run("ThreeComponents", func(b *testing.B) {
-		world := ecs.NewDefaultWorld()
-		if err := fillWorld(&world); err != nil {
-			b.FailNow()
-		}
+			for b.Loop() {
+				entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+				ecs.Remove2[emptyComponentA, emptyComponentB](&world, entity)
+			}
+		})
 
-		for b.Loop() {
-			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
-			ecs.Remove3[emptyComponentA, emptyComponentB, emptyComponentC](&world, entity)
-		}
-	})
+		b.Run(fmt.Sprintf("ThreeComponents-Size-%d", size), func(b *testing.B) {
+			world := setupWorld()
 
-	b.Run("FourComponents", func(b *testing.B) {
-		world := ecs.NewDefaultWorld()
-		if err := fillWorld(&world); err != nil {
-			b.FailNow()
-		}
+			for b.Loop() {
+				entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+				ecs.Remove3[emptyComponentA, emptyComponentB, emptyComponentC](&world, entity)
+			}
+		})
 
-		for b.Loop() {
-			entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+		b.Run(fmt.Sprintf("FourComponents-Size-%d", size), func(b *testing.B) {
+			world := setupWorld()
 
-			ecs.Remove4[emptyComponentA, emptyComponentB, emptyComponentC, emptyComponentD](&world, entity)
-		}
-	})
+			for b.Loop() {
+				entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+				ecs.Remove4[emptyComponentA, emptyComponentB, emptyComponentC, emptyComponentD](&world, entity)
+			}
+		})
+	}
 }
 
 func BenchmarkDelete(b *testing.B) {
