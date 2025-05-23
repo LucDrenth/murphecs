@@ -124,11 +124,11 @@ func removeComponents(world *World, entityId EntityId, componentIds []ComponentI
 		movedComponent = removeResult
 	}
 
+	handleComponentStorageIndexMove(world, movedComponent, oldArchetype)
 	err = oldArchetype.removeEntity(entityId)
 	if err != nil {
-		resultErr = fmt.Errorf("failed to remove entity from old component type: %w", err)
+		resultErr = fmt.Errorf("failed to remove entity from old archetype: %w", err)
 	}
-	handleComponentStorageIndexMove(world, movedComponent, oldArchetype)
 
 	entity.archetype = newArchetype
 	entity.row = newRow
@@ -145,7 +145,8 @@ func handleComponentStorageIndexMove(world *World, movedComponent *movedComponen
 
 	for _, entityId := range archetype.entities {
 		entityData := world.entities[entityId]
-		if entityData.archetype.id == archetype.id {
+
+		if entityData.row == movedComponent.fromIndex {
 			entityData.row = movedComponent.toIndex
 		}
 	}
