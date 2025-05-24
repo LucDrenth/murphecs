@@ -8,12 +8,12 @@ import (
 	"github.com/lucdrenth/murphecs/src/utils"
 )
 
-// Remove removes the given component from entity.
+// Remove1 removes the given component from entity.
 //
 // Can return the following errors:
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
-func Remove[A IComponent](world *World, entity EntityId) error {
+func Remove1[A IComponent](world *World, entity EntityId) error {
 	return removeComponents(world, entity, []ComponentId{
 		ComponentIdFor[A](world),
 	})

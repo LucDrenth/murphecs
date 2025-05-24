@@ -27,7 +27,7 @@ func main() {
 	fmt.Printf("Before remove: dialog=%v, err=%v\n", (*dialog).text, err)
 
 	// Remove Dialog component so that entity only has 1 component left: NPC
-	ecs.Remove[Dialog](&world, entity)
+	ecs.Remove1[Dialog](&world, entity)
 
 	// Getting the removed component will now fail
 	dialog, err = ecs.Get1[Dialog](&world, entity)
@@ -38,6 +38,6 @@ func main() {
 	fmt.Printf("After remove: npc=%v, err=%v\n", (*npc).name, err)
 
 	// Removing the Dialog component after it was already removed will result in an error
-	err = ecs.Remove[Dialog](&world, entity)
+	err = ecs.Remove1[Dialog](&world, entity)
 	fmt.Printf("Error when removing a component that is not present: %v\n", err)
 }

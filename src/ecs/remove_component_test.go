@@ -14,7 +14,7 @@ func TestRemove(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
-		err := Remove[componentB](&world, nonExistingEntity)
+		err := Remove1[componentB](&world, nonExistingEntity)
 		assert.ErrorIs(err, ErrEntityNotFound)
 	})
 
@@ -25,7 +25,7 @@ func TestRemove(t *testing.T) {
 		entity, err := Spawn(&world, &componentA{})
 		assert.NoError(err)
 
-		err = Remove[componentB](&world, entity)
+		err = Remove1[componentB](&world, entity)
 		assert.ErrorIs(err, ErrComponentNotFound)
 	})
 
@@ -36,7 +36,7 @@ func TestRemove(t *testing.T) {
 		entity, err := Spawn(&world, &componentA{}, &componentB{})
 		assert.NoError(err)
 
-		err = Remove[componentA](&world, entity)
+		err = Remove1[componentA](&world, entity)
 		assert.NoError(err)
 
 		assert.Equal(1, world.CountComponents())
@@ -60,7 +60,7 @@ func TestRemove(t *testing.T) {
 		entity, err := Spawn(&world, &componentA{}, &componentB{})
 		assert.NoError(err)
 
-		err = Remove[componentB](&world, entity)
+		err = Remove1[componentB](&world, entity)
 		assert.NoError(err)
 
 		assert.Equal(1, world.CountComponents())

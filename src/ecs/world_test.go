@@ -125,7 +125,7 @@ func TestStats(t *testing.T) {
 
 			err = Insert(&world, entity, &emptyComponentB{})
 			assert.NoError(err)
-			err = Remove[emptyComponentB](&world, entity)
+			err = Remove1[emptyComponentB](&world, entity)
 			assert.NoError(err)
 
 			assert.Equal(originalStats, world.Stats())

@@ -118,7 +118,7 @@ func BenchmarkRemove(b *testing.B) {
 
 			for b.Loop() {
 				entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
-				ecs.Remove[emptyComponentA](&world, entity)
+				ecs.Remove1[emptyComponentA](&world, entity)
 			}
 		})
 
