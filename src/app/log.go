@@ -33,11 +33,9 @@ func (l *SimpleConsoleLogger) Debug(message string) {
 }
 func (l *SimpleConsoleLogger) Info(message string) {
 	fmt.Println("INFO: " + message)
-
 }
 func (l *SimpleConsoleLogger) Warn(message string) {
 	fmt.Println("WARN: " + message)
-
 }
 func (l *SimpleConsoleLogger) Error(message string) {
 	fmt.Println("ERROR: " + message)
@@ -56,11 +54,9 @@ func (l *testLogger) Debug(message string) {
 }
 func (l *testLogger) Info(message string) {
 	l.info++
-
 }
 func (l *testLogger) Warn(message string) {
 	l.warn++
-
 }
 func (l *testLogger) Error(message string) {
 	l.err++
