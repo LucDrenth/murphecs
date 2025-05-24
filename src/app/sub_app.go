@@ -174,9 +174,10 @@ func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 	}
 
 	onceRunner := onceRunner{
-		world:   &app.world,
-		logger:  app.logger,
-		appName: app.name,
+		world:       &app.world,
+		outerWorlds: &app.outerWorlds,
+		logger:      app.logger,
+		appName:     app.name,
 	}
 
 	onceRunner.Run(exitChannel, startupSystems)
