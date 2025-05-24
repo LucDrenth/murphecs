@@ -372,6 +372,7 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) E
 func (q *Query0[QueryOptions]) Prepare(world *World) (err error) {
 	q.options, err = toCombinedQueryOptions[QueryOptions](world)
 	q.components = []ComponentId{}
+	q.options.optimize(q.components)
 	return err
 }
 func (q *Query1[A, QueryOptions]) Prepare(world *World) (err error) {
@@ -380,6 +381,7 @@ func (q *Query1[A, QueryOptions]) Prepare(world *World) (err error) {
 	q.components = []ComponentId{
 		q.componentIdA,
 	}
+	q.options.optimize(q.components)
 	return err
 }
 func (q *Query2[A, B, QueryOptions]) Prepare(world *World) (err error) {
@@ -390,6 +392,7 @@ func (q *Query2[A, B, QueryOptions]) Prepare(world *World) (err error) {
 		q.componentIdA,
 		q.componentIdB,
 	}
+	q.options.optimize(q.components)
 	return err
 }
 func (q *Query3[A, B, C, QueryOptions]) Prepare(world *World) (err error) {
@@ -402,6 +405,7 @@ func (q *Query3[A, B, C, QueryOptions]) Prepare(world *World) (err error) {
 		q.componentIdB,
 		q.componentIdC,
 	}
+	q.options.optimize(q.components)
 	return err
 }
 func (q *Query4[A, B, C, D, QueryOptions]) Prepare(world *World) (err error) {
@@ -416,6 +420,7 @@ func (q *Query4[A, B, C, D, QueryOptions]) Prepare(world *World) (err error) {
 		q.componentIdC,
 		q.componentIdD,
 	}
+	q.options.optimize(q.components)
 	return err
 }
 

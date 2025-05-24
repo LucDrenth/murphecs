@@ -67,6 +67,30 @@ func (o *CombinedQueryOptions) validateOptions(queryComponents []ComponentId) er
 	return nil
 }
 
+func (o *CombinedQueryOptions) optimize(queryComponents []ComponentId) {
+	// If IsAllReadOnly is not set, and all query components are individually marked as ReadOnly, we can
+	// set IsAllReadOnly to true. This saves a little bit of memory and slightly increase performance.
+	if !o.ReadOnlyComponents.IsAllReadOnly {
+		setAllReadOnly := true
+		for _, component := range queryComponents {
+			if !slices.ContainsFunc(o.ReadOnlyComponents.ComponentIds, func(c ComponentId) bool {
+				return component.id == c.id
+			}) {
+				setAllReadOnly = false
+			}
+		}
+
+		if setAllReadOnly {
+			o.ReadOnlyComponents.IsAllReadOnly = true
+		}
+	}
+
+	if o.ReadOnlyComponents.IsAllReadOnly {
+		// free up memory
+		o.ReadOnlyComponents.ComponentIds = nil
+	}
+}
+
 type combinedReadOnlyComponent struct {
 	ComponentIds  []ComponentId
 	IsAllReadOnly bool

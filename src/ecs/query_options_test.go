@@ -343,3 +343,70 @@ func TestMergeQueryOptions(t *testing.T) {
 		assert.Equal(TestCustomTargetWorldId, *result.TargetWorld)
 	})
 }
+
+func TestOptimizeQueryOptions(t *testing.T) {
+	t.Run("does not set IsAllReadOnly to true when not all components are individually set to ReadOnly", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewDefaultWorld()
+		componentIdA := ComponentIdFor[emptyComponentA](&world)
+		componentIdB := ComponentIdFor[emptyComponentB](&world)
+		componentIdC := ComponentIdFor[emptyComponentC](&world)
+
+		// same component order
+		{
+			options := CombinedQueryOptions{
+				ReadOnlyComponents: combinedReadOnlyComponent{
+					IsAllReadOnly: false,
+					ComponentIds:  []ComponentId{componentIdA, componentIdB},
+				},
+			}
+			options.optimize([]ComponentId{componentIdA, componentIdB, componentIdC})
+			assert.False(options.ReadOnlyComponents.IsAllReadOnly)
+		}
+
+		// different component order
+		{
+			options := CombinedQueryOptions{
+				ReadOnlyComponents: combinedReadOnlyComponent{
+					IsAllReadOnly: false,
+					ComponentIds:  []ComponentId{componentIdA, componentIdB},
+				},
+			}
+			options.optimize([]ComponentId{componentIdB, componentIdA, componentIdC})
+			assert.False(options.ReadOnlyComponents.IsAllReadOnly)
+		}
+	})
+
+	t.Run("when all components are individually set to ReadOnly, set IsAllReadOnly to true", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewDefaultWorld()
+		componentIdA := ComponentIdFor[emptyComponentA](&world)
+		componentIdB := ComponentIdFor[emptyComponentB](&world)
+
+		// same component order
+		{
+			options := CombinedQueryOptions{
+				ReadOnlyComponents: combinedReadOnlyComponent{
+					IsAllReadOnly: false,
+					ComponentIds:  []ComponentId{componentIdA, componentIdB},
+				},
+			}
+			options.optimize([]ComponentId{componentIdA, componentIdB})
+			assert.True(options.ReadOnlyComponents.IsAllReadOnly)
+		}
+
+		// different component order
+		{
+			options := CombinedQueryOptions{
+				ReadOnlyComponents: combinedReadOnlyComponent{
+					IsAllReadOnly: false,
+					ComponentIds:  []ComponentId{componentIdA, componentIdB},
+				},
+			}
+			options.optimize([]ComponentId{componentIdB, componentIdA})
+			assert.True(options.ReadOnlyComponents.IsAllReadOnly)
+		}
+	})
+}
