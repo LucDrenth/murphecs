@@ -9,11 +9,16 @@ import (
 	"github.com/lucdrenth/murphecs/src/app"
 )
 
-func RunApp(subApp *app.SubApp) {
-	// run app
+func RunApp(subApps ...*app.SubApp) {
+	// run apps
 	exitChannel := make(chan struct{})
-	isDoneChannel := make(chan bool)
-	go subApp.Run(exitChannel, isDoneChannel)
+	isDoneChannels := []chan bool{}
+
+	for _, subApp := range subApps {
+		isDoneChannel := make(chan bool)
+		isDoneChannels = append(isDoneChannels, isDoneChannel)
+		go subApp.Run(exitChannel, isDoneChannel)
+	}
 
 	// wait for sigterm
 	cancelChan := make(chan os.Signal, 1)
@@ -21,6 +26,8 @@ func RunApp(subApp *app.SubApp) {
 	<-cancelChan
 	close(exitChannel)
 
-	// wait for app to finish
-	<-isDoneChannel
+	// wait for apps to finish
+	for _, isDoneChannel := range isDoneChannels {
+		<-isDoneChannel
+	}
 }

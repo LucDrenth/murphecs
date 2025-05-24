@@ -15,4 +15,6 @@ var (
 	ErrSystemParamQueryNotValid    error = errors.New("query param not valid")
 	ErrSystemParamWorldNotAPointer error = errors.New("world must be a pointer")
 	ErrSystemParamNotValid         error = errors.New("not valid")
+
+	ErrTargetWorldNotKnown error = errors.New("target world not known")
 )

@@ -7,16 +7,16 @@ import (
 	"github.com/lucdrenth/murphecs/src/utils"
 )
 
-// combinedQueryOptions is a combination of all possible all query options, parsed for easy use within queries.
-type combinedQueryOptions struct {
+// CombinedQueryOptions is a combination of all possible all query options, parsed for easy use within queries.
+type CombinedQueryOptions struct {
 	Filters            []QueryFilter
 	OptionalComponents []ComponentId
 	ReadOnlyComponents combinedReadOnlyComponent
 	isLazy             bool
-	targetWorld        *WorldId
+	TargetWorld        *WorldId
 }
 
-func (o *combinedQueryOptions) isEntityFilteredOut(entityData *EntityData) bool {
+func (o *CombinedQueryOptions) isEntityFilteredOut(entityData *EntityData) bool {
 	for i := range o.Filters {
 		if !o.Filters[i].EntityMeetsCriteria(entityData) {
 			return true
@@ -26,7 +26,7 @@ func (o *combinedQueryOptions) isEntityFilteredOut(entityData *EntityData) bool 
 	return false
 }
 
-func (o *combinedQueryOptions) isArchetypeFilteredOut(archetype *Archetype) bool {
+func (o *CombinedQueryOptions) isArchetypeFilteredOut(archetype *Archetype) bool {
 	for i := range o.Filters {
 		if !o.Filters[i].ArchetypeMeetsCriteria(archetype) {
 			return true
@@ -39,7 +39,7 @@ func (o *combinedQueryOptions) isArchetypeFilteredOut(archetype *Archetype) bool
 // validateOptions returns an error if there are any invalid or non-logical options.
 // If an error is returned, it does not mean that the combinedQueryOptions can not be
 // used in a query, thus the error should be treated as a warning.
-func (o *combinedQueryOptions) validateOptions(queryComponents []ComponentId) error {
+func (o *CombinedQueryOptions) validateOptions(queryComponents []ComponentId) error {
 	if duplicate, _, _ := utils.GetFirstDuplicate(o.OptionalComponents); duplicate != nil {
 		return fmt.Errorf("optional component %s is given multiple times", (*duplicate).DebugString())
 	}
@@ -73,7 +73,7 @@ type combinedReadOnlyComponent struct {
 }
 
 type QueryOption interface {
-	getCombinedQueryOptions(*World) (combinedQueryOptions, error)
+	GetCombinedQueryOptions(*World) (CombinedQueryOptions, error)
 }
 
 // default query options: NoFilter, NoOptional, NoReadonly, NotLazy
@@ -81,18 +81,18 @@ type Default struct{}
 type QueryOptionsAllReadOnly struct{}
 type QueryOptions[_ QueryParamFilter, _ OptionalComponents, _ ReadOnlyComponents, _ IsQueryLazy, _ TargetWorld] struct{}
 
-func (Default) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
-	return combinedQueryOptions{}, nil
+func (Default) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
+	return CombinedQueryOptions{}, nil
 }
 
-func (o QueryOptionsAllReadOnly) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
-	return combinedQueryOptions{
+func (o QueryOptionsAllReadOnly) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
+	return CombinedQueryOptions{
 		ReadOnlyComponents: combinedReadOnlyComponent{IsAllReadOnly: true},
 	}, nil
 }
 
-func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents, IsQueryLazy, TargetWorld]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
-	result := combinedQueryOptions{}
+func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents, IsQueryLazy, TargetWorld]) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
+	result := CombinedQueryOptions{}
 
 	concreteFilters, err := utils.ToConcrete[QueryParamFilter]()
 	if err != nil {
@@ -129,7 +129,7 @@ func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents, I
 	if err != nil {
 		return result, fmt.Errorf("failed to cast TargetWorld to concrete type: %w", err)
 	}
-	result.targetWorld = queryOptionTargetWorld.GetWorldId()
+	result.TargetWorld = queryOptionTargetWorld.GetWorldId()
 
 	return result, nil
 }
@@ -185,15 +185,15 @@ func getFilterFromConcreteQueryParamFilter(filters QueryParamFilter, world *Worl
 	return nil, fmt.Errorf("unhandled filter type: %d", filters.getFilterType())
 }
 
-func toCombinedQueryOptions[QueryOptions QueryOption](world *World) (combinedQueryOptions, error) {
-	result := combinedQueryOptions{}
+func toCombinedQueryOptions[QueryOptions QueryOption](world *World) (CombinedQueryOptions, error) {
+	result := CombinedQueryOptions{}
 
 	concreteQueryOptions, err := utils.ToConcrete[QueryOptions]()
 	if err != nil {
 		return result, fmt.Errorf("failed to cast query options to concrete type: %w", err)
 	}
 
-	return concreteQueryOptions.getCombinedQueryOptions(world)
+	return concreteQueryOptions.GetCombinedQueryOptions(world)
 }
 
 // Multiple query options that will be combined. Multiple filters will result in them being used with an AND operator.
@@ -205,7 +205,7 @@ type QueryOptions3[A, B, C QueryOption] struct{}
 // Multiple query options that will be combined. Multiple filters will result in them being used with an AND operator.
 type QueryOptions4[A, B, C, D QueryOption] struct{}
 
-func (o QueryOptions2[A, B]) getCombinedQueryOptions(world *World) (result combinedQueryOptions, err error) {
+func (o QueryOptions2[A, B]) GetCombinedQueryOptions(world *World) (result CombinedQueryOptions, err error) {
 	a, err := utils.ToConcrete[A]()
 	if err != nil {
 		return result, err
@@ -218,7 +218,7 @@ func (o QueryOptions2[A, B]) getCombinedQueryOptions(world *World) (result combi
 
 	return mergeQueryOptions([]QueryOption{a, b}, world)
 }
-func (o QueryOptions3[A, B, C]) getCombinedQueryOptions(world *World) (result combinedQueryOptions, err error) {
+func (o QueryOptions3[A, B, C]) GetCombinedQueryOptions(world *World) (result CombinedQueryOptions, err error) {
 	a, err := utils.ToConcrete[A]()
 	if err != nil {
 		return result, err
@@ -236,7 +236,7 @@ func (o QueryOptions3[A, B, C]) getCombinedQueryOptions(world *World) (result co
 
 	return mergeQueryOptions([]QueryOption{a, b, c}, world)
 }
-func (o QueryOptions4[A, B, C, D]) getCombinedQueryOptions(world *World) (result combinedQueryOptions, err error) {
+func (o QueryOptions4[A, B, C, D]) GetCombinedQueryOptions(world *World) (result CombinedQueryOptions, err error) {
 	a, err := utils.ToConcrete[A]()
 	if err != nil {
 		return result, err
@@ -260,9 +260,9 @@ func (o QueryOptions4[A, B, C, D]) getCombinedQueryOptions(world *World) (result
 	return mergeQueryOptions([]QueryOption{a, b, c, d}, world)
 }
 
-func mergeQueryOptions(queryOptions []QueryOption, world *World) (result combinedQueryOptions, err error) {
+func mergeQueryOptions(queryOptions []QueryOption, world *World) (result CombinedQueryOptions, err error) {
 	for _, queryOption := range queryOptions {
-		options, err := queryOption.getCombinedQueryOptions(world)
+		options, err := queryOption.GetCombinedQueryOptions(world)
 		if err != nil {
 			return result, err
 		}
@@ -280,8 +280,8 @@ func mergeQueryOptions(queryOptions []QueryOption, world *World) (result combine
 			result.isLazy = true
 		}
 
-		if result.targetWorld == nil && options.targetWorld != nil {
-			result.targetWorld = options.targetWorld
+		if result.TargetWorld == nil && options.TargetWorld != nil {
+			result.TargetWorld = options.TargetWorld
 		}
 	}
 

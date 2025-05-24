@@ -57,15 +57,15 @@ func (o Optional4[A, B, C, D]) getOptionalComponentIds(world *World) []Component
 	}
 }
 
-func (optional Optional1[A]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+func (optional Optional1[A]) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
 	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional1[A], NoReadOnly, NotLazy, DefaultWorld]](world)
 }
-func (optional Optional2[A, B]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+func (optional Optional2[A, B]) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
 	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional2[A, B], NoReadOnly, NotLazy, DefaultWorld]](world)
 }
-func (optional Optional3[A, B, C]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+func (optional Optional3[A, B, C]) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
 	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional3[A, B, C], NoReadOnly, NotLazy, DefaultWorld]](world)
 }
-func (optional Optional4[A, B, C, D]) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
+func (optional Optional4[A, B, C, D]) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
 	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional4[A, B, C, D], NoReadOnly, NotLazy, DefaultWorld]](world)
 }

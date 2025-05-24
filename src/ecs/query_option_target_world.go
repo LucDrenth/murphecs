@@ -11,6 +11,6 @@ func (DefaultWorld) GetWorldId() *WorldId {
 	return nil
 }
 
-func (DefaultWorld) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
-	return combinedQueryOptions{}, nil
+func (DefaultWorld) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
+	return CombinedQueryOptions{}, nil
 }

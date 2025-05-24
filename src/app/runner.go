@@ -13,11 +13,12 @@ type Runner interface {
 
 // FixedRunner runs systems at a fixed interval
 type fixedRunner struct {
-	tickRate *time.Duration
-	delta    *float64
-	world    *ecs.World
-	logger   Logger
-	appName  string
+	tickRate    *time.Duration
+	delta       *float64
+	world       *ecs.World
+	outerWorlds *map[ecs.WorldId]*ecs.World
+	logger      Logger
+	appName     string
 }
 
 func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet) {
@@ -36,7 +37,7 @@ func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet
 			*runner.delta = float64(now-start) / 1_000_000_000
 			start = now
 
-			runSystemSet(systems, runner.world, runner.logger, runner.appName)
+			runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName)
 
 			if currentTickRate != *runner.tickRate {
 				runner.Run(exitChannel, systems)
@@ -48,18 +49,19 @@ func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet
 
 // onceRunner runs systems once and then return
 type onceRunner struct {
-	world   *ecs.World
-	logger  Logger
-	appName string
+	world       *ecs.World
+	outerWorlds *map[ecs.WorldId]*ecs.World
+	logger      Logger
+	appName     string
 }
 
 func (runner *onceRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet) {
-	runSystemSet(systems, runner.world, runner.logger, runner.appName)
+	runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName)
 }
 
-func runSystemSet(systems []*SystemSet, world *ecs.World, logger Logger, appName string) {
+func runSystemSet(systems []*SystemSet, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, appName string) {
 	for _, systemSet := range systems {
-		errors := systemSet.Exec(world)
+		errors := systemSet.Exec(world, outerWorlds)
 		for _, err := range errors {
 			logger.Error(fmt.Sprintf("%s - system returned error: %v", appName, err))
 		}

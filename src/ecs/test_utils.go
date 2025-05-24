@@ -5,19 +5,19 @@ import (
 	"reflect"
 )
 
-var customTargetWorldId = WorldId(10)
+var TestCustomTargetWorldId = WorldId(10)
 
-type customTargetWorld struct{}
+type TestCustomTargetWorld struct{}
 
-func (c customTargetWorld) GetWorldId() *WorldId {
-	return &customTargetWorldId
+func (c TestCustomTargetWorld) GetWorldId() *WorldId {
+	return &TestCustomTargetWorldId
 }
 
-func (customTargetWorld) getCombinedQueryOptions(world *World) (combinedQueryOptions, error) {
-	return combinedQueryOptions{targetWorld: &customTargetWorldId}, nil
+func (TestCustomTargetWorld) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
+	return CombinedQueryOptions{TargetWorld: &TestCustomTargetWorldId}, nil
 }
 
-var _ TargetWorld = &customTargetWorld{}
+var _ TargetWorld = &TestCustomTargetWorld{}
 
 type componentWithValueA struct {
 	Component

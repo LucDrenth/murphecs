@@ -34,15 +34,15 @@ type Query interface {
 	// world should be used, in which case it defaults to the world of the SubApp it is used in.
 	TargetWorld() *WorldId
 
-	getOptions() *combinedQueryOptions
+	getOptions() *CombinedQueryOptions
 }
 
 type queryOptions struct {
-	options    combinedQueryOptions
+	options    CombinedQueryOptions
 	components []ComponentId
 }
 
-func (o *queryOptions) getOptions() *combinedQueryOptions {
+func (o *queryOptions) getOptions() *CombinedQueryOptions {
 	return &o.options
 }
 
@@ -51,7 +51,7 @@ func (o *queryOptions) IsLazy() bool {
 }
 
 func (o *queryOptions) TargetWorld() *WorldId {
-	return o.options.targetWorld
+	return o.options.TargetWorld
 }
 
 func (o *queryOptions) Validate() error {
@@ -456,7 +456,7 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) C
 //   - shouldSkip=false means that the archetype should be included in the query results.
 //   - shouldFetch=true means that the (entities of the) archetype should be included in the query and should be fetched from a component storage.
 //   - shouldFetch=false means that the (entities of the) archetype should be included in the query, but should be nil.
-func shouldHandleQueryComponent(componentId ComponentId, archetype *Archetype, queryOptions *combinedQueryOptions) (shouldFetch bool, shouldSkip bool) {
+func shouldHandleQueryComponent(componentId ComponentId, archetype *Archetype, queryOptions *CombinedQueryOptions) (shouldFetch bool, shouldSkip bool) {
 	if archetype.HasComponent(componentId) {
 		return true, false
 	}
@@ -469,7 +469,7 @@ func shouldHandleQueryComponent(componentId ComponentId, archetype *Archetype, q
 }
 
 // fetchComponentForQueryResult fetches a component from the component storage
-func fetchComponentForQueryResult[T IComponent](componentId ComponentId, entityRow uint, archetype *Archetype, queryOptions *combinedQueryOptions) (result *T, err error) {
+func fetchComponentForQueryResult[T IComponent](componentId ComponentId, entityRow uint, archetype *Archetype, queryOptions *CombinedQueryOptions) (result *T, err error) {
 	storage := archetype.components[componentId]
 	result, err = getComponentFromComponentStorage[T](storage, entityRow)
 	if err != nil {

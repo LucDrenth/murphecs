@@ -31,13 +31,13 @@ func (s *Scheduler) AddSchedule(schedule Schedule) error {
 	return nil
 }
 
-func (s *Scheduler) AddSystem(schedule Schedule, system System, world *ecs.World, logger Logger, resources *resourceStorage) error {
+func (s *Scheduler) AddSystem(schedule Schedule, system System, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, resources *resourceStorage) error {
 	systemSet, exists := s.systems[schedule]
 	if !exists {
 		return fmt.Errorf("schedule %s does not exist", schedule)
 	}
 
-	return systemSet.add(system, world, logger, resources)
+	return systemSet.add(system, world, outerWorlds, logger, resources)
 }
 
 func (s *Scheduler) GetSystemSets() ([]*SystemSet, error) {

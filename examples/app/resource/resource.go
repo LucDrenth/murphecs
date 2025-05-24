@@ -1,4 +1,5 @@
-// Demonstrate how to use app resources
+// Demonstrate how to use app resources. Resources can be seen
+// as singletons that can be used a system params.
 package main
 
 import (

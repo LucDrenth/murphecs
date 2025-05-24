@@ -1,5 +1,9 @@
-// Demonstrate how to define a custom runner. This lets you
-// customize when the app updates are performed.
+// Demonstrate how to define a custom runner. This lets you customize when
+// the app updates are performed.
+//
+// Support for between-world queries is left out of here for simplicity. Pass
+// subApp.OuterWorlds to a runner param and pass it on to the systemSet.Exec
+// function to support them.
 package main
 
 import (
@@ -34,7 +38,7 @@ func (runner *customRunner) Run(exitChannel <-chan struct{}, systems []*app.Syst
 		}
 
 		for _, systemSet := range systems {
-			errors := systemSet.Exec(runner.world)
+			errors := systemSet.Exec(runner.world, nil)
 			for _, err := range errors {
 				runner.logger.Error(fmt.Sprintf("system returned error: %v", err))
 			}

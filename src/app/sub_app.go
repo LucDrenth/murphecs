@@ -24,14 +24,15 @@ const (
 // For example: if the tickRate is 1 second and a tick suddenly takes 4 seconds, the next tick will be run immediately
 // after, and then after 1 second.
 type SubApp struct {
-	world     ecs.World
-	schedules map[scheduleType]*Scheduler
-	resources resourceStorage // resources that can be pulled by system params.
-	logger    Logger
-	name      string
-	tickRate  *time.Duration // the rate at which the repeating systems run
-	lastDelta *float64       // delta time of the last tick
-	runner    Runner
+	world       ecs.World
+	schedules   map[scheduleType]*Scheduler
+	resources   resourceStorage // resources that can be pulled by system params.
+	logger      Logger
+	name        string
+	tickRate    *time.Duration // the rate at which the repeating systems run
+	lastDelta   *float64       // delta time of the last tick
+	runner      Runner
+	outerWorlds map[ecs.WorldId]*ecs.World
 }
 
 func New(logger Logger, worldConfigs ecs.WorldConfigs) (SubApp, error) {
@@ -60,11 +61,12 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (SubApp, error) {
 			ScheduleTypeRepeating: utils.PointerTo(NewScheduler()),
 			ScheduleTypeCleanup:   utils.PointerTo(NewScheduler()),
 		},
-		resources: resourceStorage,
-		logger:    logger,
-		name:      "App",
-		tickRate:  utils.PointerTo(time.Second / 60.0),
-		lastDelta: utils.PointerTo(0.0),
+		resources:   resourceStorage,
+		logger:      logger,
+		name:        "App",
+		tickRate:    utils.PointerTo(time.Second / 60.0),
+		lastDelta:   utils.PointerTo(0.0),
+		outerWorlds: map[ecs.WorldId]*ecs.World{},
 	}
 	subApp.SetFixedRunner()
 
@@ -74,7 +76,7 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (SubApp, error) {
 func (app *SubApp) AddSystem(schedule Schedule, system System) *SubApp {
 	for _, scheduler := range app.schedules {
 		if slices.Contains(scheduler.order, schedule) {
-			err := scheduler.AddSystem(schedule, system, &app.world, app.logger, &app.resources)
+			err := scheduler.AddSystem(schedule, system, &app.world, &app.outerWorlds, app.logger, &app.resources)
 			if err != nil {
 				app.logger.Error(fmt.Sprintf("%s - failed to add system %s: %v",
 					app.name,
@@ -218,6 +220,19 @@ func (app *SubApp) World() *ecs.World {
 	return &app.world
 }
 
+func (app *SubApp) OuterWorlds() *map[ecs.WorldId]*ecs.World {
+	return &app.outerWorlds
+}
+
+func (app *SubApp) RegisterOuterWorld(id ecs.WorldId, world *ecs.World) error {
+	if _, exists := app.outerWorlds[id]; exists {
+		return fmt.Errorf("id %d is already registered", id)
+	}
+
+	app.outerWorlds[id] = world
+	return nil
+}
+
 // SetRunner sets the runner for the repeated systems
 func (app *SubApp) SetRunner(runner Runner) {
 	if runner == nil {
@@ -232,10 +247,11 @@ func (app *SubApp) SetRunner(runner Runner) {
 // use `app.SetTickRate`.
 func (app *SubApp) SetFixedRunner() {
 	app.runner = &fixedRunner{
-		tickRate: app.tickRate,
-		delta:    app.lastDelta,
-		world:    &app.world,
-		logger:   app.logger,
-		appName:  app.name,
+		tickRate:    app.tickRate,
+		delta:       app.lastDelta,
+		world:       &app.world,
+		outerWorlds: &app.outerWorlds,
+		logger:      app.logger,
+		appName:     app.name,
 	}
 }

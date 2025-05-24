@@ -29,12 +29,18 @@ func (s *systemEntry) exec() error {
 }
 
 type SystemSet struct {
-	systems            []systemEntry
-	systemParamQueries []ecs.Query
+	systems                         []systemEntry
+	systemParamQueries              []ecs.Query
+	systemParamQueriesToOuterWorlds []queryToOuterWorld
 }
 
-func (s *SystemSet) Exec(world *ecs.World) []error {
-	err := s.handleSystemParamQueries(world)
+type queryToOuterWorld struct {
+	worldId ecs.WorldId
+	query   ecs.Query
+}
+
+func (s *SystemSet) Exec(world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World) []error {
+	err := s.handleSystemParamQueries(world, outerWorlds)
 	if err != nil {
 		return []error{
 			fmt.Errorf("did not execute system set because query failed: %w", err),
@@ -44,9 +50,8 @@ func (s *SystemSet) Exec(world *ecs.World) []error {
 	return s.execSystems()
 }
 
-func (s *SystemSet) handleSystemParamQueries(world *ecs.World) error {
-	for i := range s.systemParamQueries {
-		query := s.systemParamQueries[i]
+func (s *SystemSet) handleSystemParamQueries(world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World) error {
+	for _, query := range s.systemParamQueries {
 		if query.IsLazy() {
 			query.ClearResults()
 		} else {
@@ -54,6 +59,13 @@ func (s *SystemSet) handleSystemParamQueries(world *ecs.World) error {
 			if err != nil {
 				return err
 			}
+		}
+	}
+
+	for _, outerWorldQuery := range s.systemParamQueriesToOuterWorlds {
+		err := outerWorldQuery.query.Exec((*outerWorlds)[outerWorldQuery.worldId])
+		if err != nil {
+			return err
 		}
 	}
 
@@ -73,7 +85,7 @@ func (s *SystemSet) execSystems() []error {
 	return errors
 }
 
-func (s *SystemSet) add(sys System, world *ecs.World, logger Logger, resources *resourceStorage) error {
+func (s *SystemSet) add(sys System, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, resources *resourceStorage) error {
 	systemValue := reflect.ValueOf(sys)
 	queryType := reflect.TypeOf((*ecs.Query)(nil)).Elem()
 
@@ -88,12 +100,20 @@ func (s *SystemSet) add(sys System, world *ecs.World, logger Logger, resources *
 		parameterType := systemValue.Type().In(i)
 
 		if parameterType.Implements(queryType) {
-			query, err := parseQueryParam(parameterType, world, logger)
+			query, err := parseQueryParam(parameterType, world, logger, outerWorlds)
 			if err != nil {
 				return fmt.Errorf("%w: %w", ErrSystemParamQueryNotValid, err)
 			}
 
-			s.systemParamQueries = append(s.systemParamQueries, query)
+			if query.TargetWorld() != nil {
+				s.systemParamQueriesToOuterWorlds = append(s.systemParamQueriesToOuterWorlds, queryToOuterWorld{
+					worldId: *query.TargetWorld(),
+					query:   query,
+				})
+			} else {
+				s.systemParamQueries = append(s.systemParamQueries, query)
+			}
+
 			params[i] = reflect.ValueOf(query)
 		} else if parameterType == reflect.TypeFor[*ecs.World]() {
 			params[i] = reflect.ValueOf(world)
@@ -128,7 +148,7 @@ func (s *SystemSet) add(sys System, world *ecs.World, logger Logger, resources *
 	return nil
 }
 
-func parseQueryParam(parameterType reflect.Type, world *ecs.World, logger Logger) (ecs.Query, error) {
+func parseQueryParam(parameterType reflect.Type, world *ecs.World, logger Logger, outerWorlds *map[ecs.WorldId]*ecs.World) (ecs.Query, error) {
 	if parameterType.Kind() == reflect.Interface {
 		return nil, fmt.Errorf("can not be an interface")
 	}
@@ -141,6 +161,21 @@ func parseQueryParam(parameterType reflect.Type, world *ecs.World, logger Logger
 	err := query.Prepare(world)
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare query param: %w", err)
+	}
+
+	if query.TargetWorld() != nil {
+		if _, exists := (*outerWorlds)[*query.TargetWorld()]; !exists {
+			return nil, fmt.Errorf("%w: %d", ErrTargetWorldNotKnown, query.TargetWorld())
+		}
+
+		if query.IsLazy() {
+			// We have this limitation because there would be no way to Execute such a query from inside
+			// the system param because there is no way to use another world as a system param.
+			//
+			// We could easily implement this by having some OuterWorld[ecs.TargetWorld] struct that we can
+			// use as a system parameter. For now there is no valid use case for it.
+			return nil, fmt.Errorf("an not target an outer world and be lazy")
+		}
 	}
 
 	warning := query.Validate()
