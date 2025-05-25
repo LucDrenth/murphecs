@@ -4,11 +4,20 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/lucdrenth/murphecs/src/utils"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAddToResourceStorage(t *testing.T) {
 	type resourceA struct{}
+
+	t.Run("fails to add resource if it is nil", func(t *testing.T) {
+		assert := assert.New(t)
+
+		storage := newResourceStorage()
+		err := storage.add(nil)
+		assert.ErrorIs(err, ErrResourceIsNil)
+	})
 
 	t.Run("fails to add resource if it already exists", func(t *testing.T) {
 		assert := assert.New(t)
@@ -28,6 +37,14 @@ func TestAddToResourceStorage(t *testing.T) {
 		assert.ErrorIs(err, ErrResourceNotAPointer)
 	})
 
+	t.Run("fails to add resource if it is not passed by reference", func(t *testing.T) {
+		assert := assert.New(t)
+
+		storage := newResourceStorage()
+		err := storage.add(func() {})
+		assert.ErrorIs(err, ErrResourceNotAPointer)
+	})
+
 	t.Run("fails to add resource if it is blacklisted", func(t *testing.T) {
 		assert := assert.New(t)
 
@@ -36,6 +53,29 @@ func TestAddToResourceStorage(t *testing.T) {
 		assert.NoError(err)
 		err = storage.add(&resourceA{})
 		assert.ErrorIs(err, ErrResourceTypeNotAllowed)
+	})
+
+	t.Run("fails if resource is not a struct", func(t *testing.T) {
+		assert := assert.New(t)
+
+		storage := newResourceStorage()
+
+		err := storage.add(&[]int{1, 2})
+		assert.ErrorIs(err, ErrResourceNotAStruct)
+		err = storage.add(utils.PointerTo("invalid resource type"))
+		assert.ErrorIs(err, ErrResourceNotAStruct)
+		err = storage.add(utils.PointerTo(100))
+		assert.ErrorIs(err, ErrResourceNotAStruct)
+		err = storage.add(utils.PointerTo(func() {}))
+		assert.ErrorIs(err, ErrResourceNotAStruct)
+	})
+
+	t.Run("successfully adds resource", func(t *testing.T) {
+		assert := assert.New(t)
+
+		storage := newResourceStorage()
+		err := storage.add(&resourceA{})
+		assert.NoError(err)
 	})
 }
 
@@ -204,16 +244,16 @@ func TestComponentId(t *testing.T) {
 	t.Run("resource return the same result, regardless of wether its passed by reference", func(t *testing.T) {
 		assert := assert.New(t)
 
-		a := reflectTypeToComponentId(reflect.TypeOf(resourceA{}))
-		b := reflectTypeToComponentId(reflect.TypeOf(&resourceA{}))
+		a := reflectTypeToResourceId(reflect.TypeOf(resourceA{}))
+		b := reflectTypeToResourceId(reflect.TypeOf(&resourceA{}))
 		assert.Equal(a, b)
 	})
 
 	t.Run("resource ids for different resources are unique", func(t *testing.T) {
 		assert := assert.New(t)
 
-		a := reflectTypeToComponentId(reflect.TypeOf(resourceA{}))
-		b := reflectTypeToComponentId(reflect.TypeOf(resourceB{}))
+		a := reflectTypeToResourceId(reflect.TypeOf(resourceA{}))
+		b := reflectTypeToResourceId(reflect.TypeOf(resourceB{}))
 		assert.NotEqual(a, b)
 	})
 

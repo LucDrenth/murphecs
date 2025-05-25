@@ -24,13 +24,21 @@ func newResourceStorage() resourceStorage {
 //   - resource is not passed by reference
 //   - resource is already present
 func (s *resourceStorage) add(resource Resource) error {
+	if resource == nil {
+		return ErrResourceIsNil
+	}
+
 	resourceType := reflect.TypeOf(resource)
 	if resourceType.Kind() != reflect.Pointer {
 		// resource must be passed by reference because if it is not, we can never retrieve it by reference
 		return ErrResourceNotAPointer
 	}
 
-	resourceId := reflectTypeToComponentId(resourceType)
+	if resourceType.Elem().Kind() != reflect.Struct {
+		return ErrResourceNotAStruct
+	}
+
+	resourceId := reflectTypeToResourceId(resourceType)
 
 	if slices.Contains(s.blacklistedResources, resourceId) {
 		return fmt.Errorf("%w: blacklisted", ErrResourceTypeNotAllowed)
@@ -56,7 +64,7 @@ func registerBlacklistedResourceType(resourceType reflect.Type, storage *resourc
 		return ErrResourceNotAPointer
 	}
 
-	resourceId := reflectTypeToComponentId(resourceType)
+	resourceId := reflectTypeToResourceId(resourceType)
 
 	if slices.Contains(storage.blacklistedResources, resourceId) {
 		return ErrResourceAlreadyPresent
@@ -69,7 +77,7 @@ func registerBlacklistedResourceType(resourceType reflect.Type, storage *resourc
 
 func getResourceFromStorage[T Resource](s *resourceStorage) (result T, err error) {
 	resourceType := reflect.TypeFor[T]()
-	resourceId := reflectTypeToComponentId(resourceType)
+	resourceId := reflectTypeToResourceId(resourceType)
 
 	untypedResource, exists := s.resources[resourceId]
 	if !exists {
@@ -96,7 +104,7 @@ func getResourceFromStorage[T Resource](s *resourceStorage) (result T, err error
 
 // getReflectResource returns a pointer to the resource, regardless if wether resourceType is a pointer or not.
 func (s *resourceStorage) getReflectResource(resourceType reflect.Type) (result reflect.Value, err error) {
-	resourceId := reflectTypeToComponentId(resourceType)
+	resourceId := reflectTypeToResourceId(resourceType)
 
 	untypedResource, exists := s.resources[resourceId]
 	if !exists {
@@ -112,7 +120,7 @@ func (s *resourceStorage) getReflectResource(resourceType reflect.Type) (result 
 	return result, nil
 }
 
-func reflectTypeToComponentId(resourceType reflect.Type) resourceId {
+func reflectTypeToResourceId(resourceType reflect.Type) resourceId {
 	if resourceType.Kind() == reflect.Pointer {
 		resourceType = resourceType.Elem()
 	}
