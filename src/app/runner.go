@@ -11,7 +11,7 @@ type Runner interface {
 	Run(exitChannel <-chan struct{}, systems []*SystemSet)
 }
 
-// FixedRunner runs systems at a fixed interval
+// fixedRunner runs systems at a fixed interval
 type fixedRunner struct {
 	tickRate    *time.Duration
 	delta       *float64
@@ -34,7 +34,7 @@ func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet
 
 		case <-ticker.C:
 			now = time.Now().UnixNano()
-			*runner.delta = float64(now-start) / 1_000_000_000
+			*runner.delta = float64(now-start) / 1_000_000_000.0
 			start = now
 
 			runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName)
@@ -44,6 +44,34 @@ func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet
 				return
 			}
 		}
+	}
+}
+
+// uncappedRunner runs systems repeatedly and as fast as it can
+type uncappedRunner struct {
+	delta       *float64
+	world       *ecs.World
+	outerWorlds *map[ecs.WorldId]*ecs.World
+	logger      Logger
+	appName     string
+}
+
+func (runner *uncappedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet) {
+	var now int64
+	start := time.Now().UnixNano()
+
+	for {
+		select {
+		case <-exitChannel:
+			return
+		default:
+		}
+
+		now = time.Now().UnixNano()
+		*runner.delta = float64(now-start) / 1_000_000_000
+		start = now
+
+		runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName)
 	}
 }
 

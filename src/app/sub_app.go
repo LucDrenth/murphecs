@@ -68,7 +68,7 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (SubApp, error) {
 		lastDelta:   utils.PointerTo(0.0),
 		outerWorlds: map[ecs.WorldId]*ecs.World{},
 	}
-	subApp.SetFixedRunner()
+	subApp.UseFixedRunner()
 
 	return subApp, nil
 }
@@ -173,12 +173,7 @@ func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 		return
 	}
 
-	onceRunner := onceRunner{
-		world:       &app.world,
-		outerWorlds: &app.outerWorlds,
-		logger:      app.logger,
-		appName:     app.name,
-	}
+	onceRunner := app.newOnceRunner()
 
 	onceRunner.Run(exitChannel, startupSystems)
 	app.runner.Run(exitChannel, repeatedSystems)
@@ -244,12 +239,32 @@ func (app *SubApp) SetRunner(runner Runner) {
 	app.runner = runner
 }
 
-// SetFixedRunner sets the default fixedRunner, which runs systems at a fixed interval. To control the interval time,
-// use `app.SetTickRate`.
-func (app *SubApp) SetFixedRunner() {
+// SetFixedRunner makes the systems run repeatedly, at a fixed interval. To control the interval time, use `app.SetTickRate`.
+func (app *SubApp) UseFixedRunner() {
 	app.runner = &fixedRunner{
 		tickRate:    app.tickRate,
 		delta:       app.lastDelta,
+		world:       &app.world,
+		outerWorlds: &app.outerWorlds,
+		logger:      app.logger,
+		appName:     app.name,
+	}
+}
+
+// UseUncappedRunner makes the systems run repeatedly, as frequent possible
+func (app *SubApp) UseUncappedRunner() {
+	app.runner = &uncappedRunner{
+		delta:       app.lastDelta,
+		world:       &app.world,
+		outerWorlds: &app.outerWorlds,
+		logger:      app.logger,
+		appName:     app.name,
+	}
+}
+
+// newOnceRunner creates a runner that runs systems only once.
+func (app *SubApp) newOnceRunner() onceRunner {
+	return onceRunner{
 		world:       &app.world,
 		outerWorlds: &app.outerWorlds,
 		logger:      app.logger,

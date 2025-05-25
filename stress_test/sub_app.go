@@ -40,8 +40,7 @@ func main() {
 		panic(err)
 	}
 
-	// set a very high tickrate to test the limit
-	myApp.SetTickRate(time.Nanosecond)
+	myApp.UseUncappedRunner()
 
 	myApp.AddSchedule(startup, app.ScheduleTypeStartup)
 	myApp.AddSchedule(update, app.ScheduleTypeRepeating)
@@ -112,5 +111,5 @@ func printTPS(counter *ticks, startTime timeStarted, lastPrintTime *lastPrintTim
 
 	timeRan := now - startTime.millis
 	tps := 1.0 / (float64(timeRan) / float64(counter.total) / 1000.0)
-	fmt.Printf("TPS: %f\n", tps)
+	fmt.Printf("TPS: %d\n", int(tps))
 }
