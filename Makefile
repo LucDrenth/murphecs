@@ -11,3 +11,6 @@ benchmark:
 # run user facing ecs benchmarks
 benchmark-ecs:
 	go test -bench=. ./benchmark/ | grep -E "\bBenchmark"
+
+count-tests:
+	go test -v ./... | grep "\-\-\- PASS: Test" | wc -l

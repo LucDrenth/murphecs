@@ -2,6 +2,7 @@ package app
 
 import (
 	"testing"
+	"time"
 
 	"github.com/lucdrenth/murphecs/src/ecs"
 	"github.com/stretchr/testify/assert"
@@ -201,6 +202,88 @@ func TestSetRunner(t *testing.T) {
 		assert.NoError(err)
 
 		app.SetRunner(&fixedRunner{})
+		assert.Equal(uint(0), logger.err)
+	})
+}
+
+func TestRun(t *testing.T) {
+	t.Run("runs all systems once and then exists", func(t *testing.T) {
+		assert := assert.New(t)
+
+		const (
+			startup Schedule = "startup"
+			update  Schedule = "startup"
+			cleanup Schedule = "cleanup"
+		)
+
+		numberOfSystemRuns := 0
+
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+
+		app.
+			AddSchedule(startup, ScheduleTypeStartup).
+			AddSchedule(update, ScheduleTypeRepeating).
+			AddSchedule(cleanup, ScheduleTypeCleanup)
+
+		app.
+			AddSystem(startup, func() { numberOfSystemRuns++ }).
+			AddSystem(update, func() { numberOfSystemRuns++ }).
+			AddSystem(cleanup, func() { numberOfSystemRuns++ })
+
+		runner := app.newOnceRunner()
+		app.SetRunner(&runner)
+
+		isDoneChannel := make(chan bool)
+		go app.Run(make(chan struct{}), isDoneChannel)
+		<-isDoneChannel
+
+		assert.Equal(uint(0), logger.err)
+		assert.Equal(3, numberOfSystemRuns)
+	})
+
+	t.Run("fixed runner stops when closing exit channel", func(t *testing.T) {
+		assert := assert.New(t)
+
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+
+		exitChannel := make(chan struct{})
+		isDoneChannel := make(chan bool)
+
+		go app.Run(exitChannel, isDoneChannel)
+		go func() {
+			time.Sleep(100 * time.Millisecond)
+			close(exitChannel)
+		}()
+
+		<-isDoneChannel
+		assert.Equal(uint(0), logger.err)
+	})
+
+	t.Run("uncapped runner stops when closing exit channel", func(t *testing.T) {
+		assert := assert.New(t)
+
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+
+		app.UseUncappedRunner()
+
+		exitChannel := make(chan struct{})
+		isDoneChannel := make(chan bool)
+
+		go app.Run(exitChannel, isDoneChannel)
+
+		// simulate an exit signal
+		go func() {
+			time.Sleep(100 * time.Millisecond)
+			close(exitChannel)
+		}()
+
+		<-isDoneChannel
 		assert.Equal(uint(0), logger.err)
 	})
 }
