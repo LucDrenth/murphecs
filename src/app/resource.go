@@ -34,8 +34,8 @@ func (s *resourceStorage) add(resource Resource) error {
 		return ErrResourceNotAPointer
 	}
 
-	if resourceType.Elem().Kind() != reflect.Struct {
-		return ErrResourceNotAStruct
+	if resourceType.Elem().Kind() != reflect.Struct && resourceType.Elem().Kind() != reflect.Interface {
+		return fmt.Errorf("%w: %s", ErrResourceTypeNotValid, resourceType.Elem().Kind().String())
 	}
 
 	resourceId := reflectTypeToResourceId(resourceType)

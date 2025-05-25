@@ -55,26 +55,36 @@ func TestAddToResourceStorage(t *testing.T) {
 		assert.ErrorIs(err, ErrResourceTypeNotAllowed)
 	})
 
-	t.Run("fails if resource is not a struct", func(t *testing.T) {
+	t.Run("fails if resource is not a valid type", func(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
 
 		err := storage.add(&[]int{1, 2})
-		assert.ErrorIs(err, ErrResourceNotAStruct)
+		assert.ErrorIs(err, ErrResourceTypeNotValid)
 		err = storage.add(utils.PointerTo("invalid resource type"))
-		assert.ErrorIs(err, ErrResourceNotAStruct)
+		assert.ErrorIs(err, ErrResourceTypeNotValid)
 		err = storage.add(utils.PointerTo(100))
-		assert.ErrorIs(err, ErrResourceNotAStruct)
+		assert.ErrorIs(err, ErrResourceTypeNotValid)
 		err = storage.add(utils.PointerTo(func() {}))
-		assert.ErrorIs(err, ErrResourceNotAStruct)
+		assert.ErrorIs(err, ErrResourceTypeNotValid)
 	})
 
-	t.Run("successfully adds resource", func(t *testing.T) {
+	t.Run("successfully adds struct resource", func(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
 		err := storage.add(&resourceA{})
+		assert.NoError(err)
+	})
+
+	t.Run("successfully adds interface resource", func(t *testing.T) {
+		assert := assert.New(t)
+
+		storage := newResourceStorage()
+
+		var log Logger = &NoOpLogger{}
+		err := storage.add(&log)
 		assert.NoError(err)
 	})
 }
