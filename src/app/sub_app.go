@@ -72,6 +72,7 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (SubApp, error) {
 	return subApp, nil
 }
 
+// AddSystem adds a system that will be run when the schedule is run. Systems must be a function.
 func (app *SubApp) AddSystem(schedule Schedule, system System) *SubApp {
 	scheduler := app.getScheduler(schedule)
 	if scheduler == nil {
@@ -105,6 +106,12 @@ func (app *SubApp) getScheduler(schedule Schedule) *Scheduler {
 	return nil
 }
 
+// AddSchedule adds a schedule that systems can be added to.
+//
+// scheduleType can be one of:
+//   - [ScheduleTypeStartup] - systems in a schedule with this schedule type run once, when starting the app
+//   - [ScheduleTypeRepeating] - systems in a schedule with this schedule type run repeatedly, after startup
+//   - [ScheduleTypeCleanup] - systems in a schedule with this schedule type run once, when closing the app
 func (app *SubApp) AddSchedule(schedule Schedule, scheduleType scheduleType) *SubApp {
 	scheduler, ok := app.schedules[scheduleType]
 	if !ok {
@@ -120,6 +127,7 @@ func (app *SubApp) AddSchedule(schedule Schedule, scheduleType scheduleType) *Su
 	return app
 }
 
+// AddResource adds a resource that can then be used in system params. There can only be 1 one each resource.
 func (app *SubApp) AddResource(resource Resource) *SubApp {
 	err := app.resources.add(resource)
 	if err != nil {
