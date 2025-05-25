@@ -39,18 +39,21 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	appFoo.AddResource(&logger)
-	appFoo.AddSchedule(startup, app.ScheduleTypeStartup)
-	appFoo.AddSchedule(update, app.ScheduleTypeRepeating)
+	appFoo.
+		AddSchedule(startup, app.ScheduleTypeStartup).
+		AddSchedule(update, app.ScheduleTypeRepeating).
+		AddResource(&logger)
 
 	appBar, err := app.New(logger, ecs.DefaultWorldConfigs())
 	if err != nil {
 		panic(err)
 	}
 	appBar.SetTickRate(time.Second * 2)
-	appBar.AddResource(&logger)
-	appBar.AddSchedule(startup, app.ScheduleTypeStartup)
-	appBar.AddSchedule(update, app.ScheduleTypeRepeating)
+
+	appBar.
+		AddSchedule(startup, app.ScheduleTypeStartup).
+		AddSchedule(update, app.ScheduleTypeRepeating).
+		AddResource(&logger)
 
 	// 3. Register appFoo to appBar so that we can query appFoo from a appBar system
 	appBar.RegisterOuterWorld(appFooId, appFoo.World())

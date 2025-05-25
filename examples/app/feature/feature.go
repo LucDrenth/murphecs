@@ -27,11 +27,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	myApp.AddResource(&logger)
 
 	myApp.AddSchedule(startup, app.ScheduleTypeStartup).
 		AddSchedule(update, app.ScheduleTypeRepeating).
-		AddSchedule(cleanup, app.ScheduleTypeCleanup)
+		AddSchedule(cleanup, app.ScheduleTypeCleanup).
+		AddResource(&logger)
 
 	myApp.AddFeature(&debugPrinterFeature{
 		AppName: "MyApp",
@@ -54,12 +54,13 @@ type tickCounter struct {
 	count int
 }
 
-func (f *debugPrinterFeature) Init() {
-	f.AddResource(&appNameResource{name: f.AppName})
-	f.AddResource(&tickCounter{})
-	f.AddSystem(startup, startupPrinter)
-	f.AddSystem(update, tickPrinter)
-	f.AddSystem(cleanup, cleanupPrinter)
+func (feature *debugPrinterFeature) Init() {
+	feature.
+		AddResource(&appNameResource{name: feature.AppName}).
+		AddResource(&tickCounter{}).
+		AddSystem(startup, startupPrinter).
+		AddSystem(update, tickPrinter).
+		AddSystem(cleanup, cleanupPrinter)
 }
 
 func startupPrinter(logger app.Logger, appName appNameResource) {

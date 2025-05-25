@@ -25,10 +25,11 @@ func main() {
 
 	myApp.AddSchedule(update, app.ScheduleTypeRepeating)
 
-	myApp.AddResource(&logger)
-	myApp.AddResource(&counter{})
-	myApp.AddSystem(update, incrementCounter)
-	myApp.AddSystem(update, logCounter)
+	myApp.
+		AddResource(&logger).
+		AddResource(&counter{}).
+		AddSystem(update, incrementCounter).
+		AddSystem(update, logCounter)
 
 	run.RunApp(&myApp)
 }

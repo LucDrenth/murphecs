@@ -23,13 +23,15 @@ func main() {
 		panic(err)
 	}
 
-	myApp.AddSchedule(beforeUpdate, app.ScheduleTypeRepeating)
-	myApp.AddSchedule(update, app.ScheduleTypeRepeating)
+	myApp.
+		AddSchedule(beforeUpdate, app.ScheduleTypeRepeating).
+		AddSchedule(update, app.ScheduleTypeRepeating)
 
-	myApp.AddResource(&logger)
-	myApp.AddResource(&delta{})
-	myApp.AddSystem(beforeUpdate, createSetDeltaResourceSystem(&myApp))
-	myApp.AddSystem(update, logCurrentDelta)
+	myApp.
+		AddResource(&logger).
+		AddResource(&delta{}).
+		AddSystem(beforeUpdate, createSetDeltaResourceSystem(&myApp)).
+		AddSystem(update, logCurrentDelta)
 
 	run.RunApp(&myApp)
 }

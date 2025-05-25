@@ -59,14 +59,15 @@ func main() {
 	}
 	myApp.SetRunner(&runner) // <--- Use our custom runner
 
-	myApp.AddSchedule(update, app.ScheduleTypeRepeating)
-	myApp.AddResource(&logger)
-	myApp.AddSystem(update, func(log app.Logger) {
-		log.Info("running system 1!")
-	})
-	myApp.AddSystem(update, func(log app.Logger) {
-		log.Info("running system 2!")
-	})
+	myApp.
+		AddSchedule(update, app.ScheduleTypeRepeating).
+		AddResource(&logger).
+		AddSystem(update, func(log app.Logger) {
+			log.Info("running system 1!")
+		}).
+		AddSystem(update, func(log app.Logger) {
+			log.Info("running system 2!")
+		})
 
 	run.RunApp(&myApp)
 }

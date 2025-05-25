@@ -9,6 +9,11 @@ import (
 	"github.com/lucdrenth/murphecs/src/ecs"
 )
 
+const (
+	startup app.Schedule = "Startup"
+	update  app.Schedule = "Update"
+)
+
 type emptyComponentA struct{ ecs.Component }
 type emptyComponentB struct{ ecs.Component }
 type emptyComponentC struct{ ecs.Component }
@@ -17,9 +22,6 @@ type componentWithValue struct {
 	ecs.Component
 	value int
 }
-
-const startup app.Schedule = "Startup"
-const update app.Schedule = "Update"
 
 type ticks struct {
 	total int64
@@ -42,20 +44,22 @@ func main() {
 
 	myApp.UseUncappedRunner()
 
-	myApp.AddSchedule(startup, app.ScheduleTypeStartup)
-	myApp.AddSchedule(update, app.ScheduleTypeRepeating)
-	myApp.AddResource(&logger)
-	myApp.AddResource(&ticks{total: 0})
-	myApp.AddResource(&timeStarted{
-		millis: time.Now().UnixMilli(),
-	})
-	myApp.AddResource(&lastPrintTime{
-		millis: time.Now().UnixMilli(),
-	})
+	myApp.
+		AddSchedule(startup, app.ScheduleTypeStartup).
+		AddSchedule(update, app.ScheduleTypeRepeating).
+		AddResource(&logger).
+		AddResource(&ticks{total: 0}).
+		AddResource(&timeStarted{
+			millis: time.Now().UnixMilli(),
+		}).
+		AddResource(&lastPrintTime{
+			millis: time.Now().UnixMilli(),
+		})
 
-	myApp.AddSystem(startup, insertComponents)
-	myApp.AddSystem(update, runQuery)
-	myApp.AddSystem(update, printTPS)
+	myApp.
+		AddSystem(startup, insertComponents).
+		AddSystem(update, runQuery).
+		AddSystem(update, printTPS)
 
 	run.RunApp(&myApp)
 }
@@ -110,6 +114,6 @@ func printTPS(counter *ticks, startTime timeStarted, lastPrintTime *lastPrintTim
 	lastPrintTime.millis = now
 
 	timeRan := now - startTime.millis
-	tps := 1.0 / (float64(timeRan) / float64(counter.total) / 1000.0)
+	tps := 1.0 / (float64(timeRan) / float64(counter.total) / 1_000.0)
 	fmt.Printf("TPS: %d\n", int(tps))
 }
