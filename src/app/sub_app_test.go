@@ -39,10 +39,123 @@ func (f *testFeatureForSubAppB) Init() {
 	f.AddResource(&testResourceForSubAppB{})
 }
 
-func TestProcessFeatures(t *testing.T) {
-	assert := assert.New(t)
+func TestAddResource(t *testing.T) {
+	type resourceA struct{}
 
+	t.Run("logs an error when resource is not valid", func(t *testing.T) {
+		assert := assert.New(t)
+
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+
+		app.AddResource(&resourceA{})
+		app.AddResource(&resourceA{}) // <- resource already added so its not valid
+		assert.Equal(uint(1), logger.err)
+		assert.Equal(uint(1), app.NumberOfResources())
+	})
+
+	t.Run("successfully adds a resource", func(t *testing.T) {
+		assert := assert.New(t)
+
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+
+		app.AddResource(&resourceA{})
+		assert.Equal(uint(0), logger.err)
+		assert.Equal(uint(1), app.NumberOfResources())
+	})
+}
+
+func TestAddSchedule(t *testing.T) {
+	const schedule Schedule = "schedule"
+
+	t.Run("logs an error when the schedule type is not valid", func(t *testing.T) {
+		assert := assert.New(t)
+
+		var invalidScheduleType scheduleType = 100
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+
+		app.AddSchedule(schedule, invalidScheduleType)
+		assert.Equal(uint(1), logger.err)
+		assert.Equal(uint(0), app.NumberOfSchedules())
+	})
+
+	t.Run("logs an error when schedule not valid", func(t *testing.T) {
+		assert := assert.New(t)
+
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+
+		app.AddSchedule(schedule, ScheduleTypeStartup)
+		app.AddSchedule(schedule, ScheduleTypeStartup) // <-- already added, so not valid
+		assert.Equal(uint(1), logger.err)
+		assert.Equal(uint(1), app.NumberOfSchedules())
+	})
+
+	t.Run("successfully adds a schedule", func(t *testing.T) {
+		assert := assert.New(t)
+
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+
+		app.AddSchedule(schedule, ScheduleTypeStartup)
+		assert.Equal(uint(0), logger.err)
+		assert.Equal(uint(1), app.NumberOfSchedules())
+	})
+}
+
+func TestAddSystemToSubApp(t *testing.T) {
+	const schedule Schedule = "schedule"
+
+	t.Run("logs error when schedule does not exist", func(t *testing.T) {
+		assert := assert.New(t)
+
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+
+		app.AddSystem(schedule, func() {})
+		assert.Equal(uint(1), logger.err)
+		assert.Equal(uint(0), app.NumberOfSystems())
+	})
+
+	t.Run("logs error when system is not valid", func(t *testing.T) {
+		assert := assert.New(t)
+
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+		app.AddSchedule(schedule, ScheduleTypeStartup)
+
+		app.AddSystem(schedule, "a string is not a valid system")
+		assert.Equal(uint(1), logger.err)
+		assert.Equal(uint(0), app.NumberOfSystems())
+	})
+
+	t.Run("successfully adds system", func(t *testing.T) {
+		assert := assert.New(t)
+
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+		app.AddSchedule(schedule, ScheduleTypeStartup)
+
+		app.AddSystem(schedule, func() {})
+		assert.Equal(uint(0), logger.err)
+		assert.Equal(uint(1), app.NumberOfSystems())
+	})
+}
+
+func TestAddFeature(t *testing.T) {
 	t.Run("logs error if a feature its Init method does not have pointer receiver", func(t *testing.T) {
+		assert := assert.New(t)
+
 		logger := testLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
@@ -54,6 +167,8 @@ func TestProcessFeatures(t *testing.T) {
 	})
 
 	t.Run("adds all resources of the feature and its nested features", func(t *testing.T) {
+		assert := assert.New(t)
+
 		logger := testLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		app.AddSchedule(testSchedule, ScheduleTypeRepeating)

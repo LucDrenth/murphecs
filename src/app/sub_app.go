@@ -48,10 +48,9 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (SubApp, error) {
 
 	resourceStorage := newResourceStorage()
 
-	// The following resources are reserved by this app. Even if a user would add them, it
-	// would not be possible to fetch them because the reserved resource would be returned
-	// instead. Thus we register them as blacklisted so that an error is logged when the user
-	// tries to add them.
+	// The following resources are reserved by this app. If a user would add them, systems would
+	// use the reserved resource instead if the inserted resource, which could cause confusion. So
+	// we register them as blacklisted so that an error is logged when the user tries to add them.
 	registerBlacklistedResource[*ecs.World](&resourceStorage)
 
 	subApp := SubApp{
@@ -74,27 +73,36 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (SubApp, error) {
 }
 
 func (app *SubApp) AddSystem(schedule Schedule, system System) *SubApp {
+	scheduler := app.getScheduler(schedule)
+	if scheduler == nil {
+		app.logger.Error(fmt.Sprintf("%s - failed to add system %s: schedule %s not found",
+			app.name,
+			systemToDebugString(system),
+			schedule,
+		))
+		return app
+	}
+
+	err := scheduler.AddSystem(schedule, system, &app.world, &app.outerWorlds, app.logger, &app.resources)
+	if err != nil {
+		app.logger.Error(fmt.Sprintf("%s - failed to add system %s: %v",
+			app.name,
+			systemToDebugString(system),
+			err,
+		))
+	}
+
+	return app
+}
+
+func (app *SubApp) getScheduler(schedule Schedule) *Scheduler {
 	for _, scheduler := range app.schedules {
 		if slices.Contains(scheduler.order, schedule) {
-			err := scheduler.AddSystem(schedule, system, &app.world, &app.outerWorlds, app.logger, &app.resources)
-			if err != nil {
-				app.logger.Error(fmt.Sprintf("%s - failed to add system %s: %v",
-					app.name,
-					systemToDebugString(system),
-					err,
-				))
-			}
-
-			return app
+			return scheduler
 		}
 	}
 
-	app.logger.Error(fmt.Sprintf("%s - failed to add system %s: schedule %s not found",
-		app.name,
-		systemToDebugString(system),
-		schedule,
-	))
-	return app
+	return nil
 }
 
 func (app *SubApp) AddSchedule(schedule Schedule, scheduleType scheduleType) *SubApp {
@@ -188,10 +196,6 @@ func (app *SubApp) SetName(name string) {
 // SetTickRate sets the interval at which the repeated systems are run. This can be safely changed while
 // the app is already running, in which case it will be picked up after the next run.
 func (app *SubApp) SetTickRate(tickRate time.Duration) {
-	if tickRate == 0 {
-		app.logger.Error(fmt.Sprintf("%s - failed to set tickRate: can not be zero", app.name))
-		return
-	}
 	*app.tickRate = tickRate
 }
 
@@ -212,6 +216,16 @@ func (app *SubApp) NumberOfSystems() uint {
 	return result
 }
 
+func (app *SubApp) NumberOfSchedules() uint {
+	result := uint(0)
+
+	for _, schedules := range app.schedules {
+		result += uint(len(schedules.systems))
+	}
+
+	return result
+}
+
 func (app *SubApp) World() *ecs.World {
 	return &app.world
 }
@@ -220,6 +234,7 @@ func (app *SubApp) OuterWorlds() *map[ecs.WorldId]*ecs.World {
 	return &app.outerWorlds
 }
 
+// RegisterOuterWorld lets you use the outer world in system param queries.
 func (app *SubApp) RegisterOuterWorld(id ecs.WorldId, world *ecs.World) error {
 	if _, exists := app.outerWorlds[id]; exists {
 		return fmt.Errorf("id %d is already registered", id)
