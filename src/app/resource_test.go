@@ -46,6 +46,19 @@ func TestAddToResourceStorage(t *testing.T) {
 		assert.ErrorIs(err, ErrResourceAlreadyPresent)
 	})
 
+	t.Run("interface resource and its struct implementation are treated as the same resource type", func(t *testing.T) {
+		assert := assert.New(t)
+
+		storage := newResourceStorage()
+
+		var resource testResourceInterface = &testResourceInterfaceA{}
+		err := storage.add(resource)
+		assert.NoError(err)
+
+		err = storage.add(&testResourceInterfaceA{})
+		assert.ErrorIs(err, ErrResourceAlreadyPresent)
+	})
+
 	t.Run("fails to add resource if it is not passed by reference", func(t *testing.T) {
 		assert := assert.New(t)
 
@@ -112,6 +125,19 @@ func TestAddToResourceStorage(t *testing.T) {
 
 		var log Logger = &NoOpLogger{}
 		err := storage.add(&log)
+		assert.NoError(err)
+	})
+
+	t.Run("reference to interface resource and its struct implementation are not treated as the same resource type", func(t *testing.T) {
+		assert := assert.New(t)
+
+		storage := newResourceStorage()
+
+		var resource testResourceInterface = &testResourceInterfaceA{}
+		err := storage.add(&resource)
+		assert.NoError(err)
+
+		err = storage.add(&testResourceInterfaceA{})
 		assert.NoError(err)
 	})
 
