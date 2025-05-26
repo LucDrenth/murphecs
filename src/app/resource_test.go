@@ -87,6 +87,16 @@ func TestAddToResourceStorage(t *testing.T) {
 		err := storage.add(&log)
 		assert.NoError(err)
 	})
+
+	t.Run("successfully adds interface resource that has value nil", func(t *testing.T) {
+		assert := assert.New(t)
+
+		storage := newResourceStorage()
+
+		var log Logger = nil
+		err := storage.add(&log)
+		assert.NoError(err)
+	})
 }
 
 func TestRegisterBlacklistedResource(t *testing.T) {
