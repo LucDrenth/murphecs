@@ -127,7 +127,17 @@ func (app *SubApp) AddSchedule(schedule Schedule, scheduleType scheduleType) *Su
 	return app
 }
 
-// AddResource adds a resource that can then be used in system params. There can only be 1 one each resource.
+// AddResource adds a resource that can then be used in system params. There can only be 1 one of each resource type.
+//
+// Struct resources must be passed by reference.
+//   - You can use it in a system param as a pointer to get a reference
+//   - You can use it without a pointer to get a copy of the current resource value.
+//
+// Interface resources can be passed by either reference or by value.
+//   - If you pass it by reference, you must use it in a system param by the interface type, but not as a pointer.
+//     You can then use it by reference, as is normally the case with interface values.
+//   - If you pass it by value, you must use it in a system param by its struct implementation. You can then use that
+//     as a regular struct resource (see above for explanation).
 func (app *SubApp) AddResource(resource Resource) *SubApp {
 	err := app.resources.add(resource)
 	if err != nil {

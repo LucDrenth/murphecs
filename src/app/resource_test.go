@@ -8,6 +8,23 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type testResourceInterface interface {
+	Get() int
+	Increment()
+}
+
+type testResourceInterfaceA struct {
+	value int
+}
+
+func (a *testResourceInterfaceA) Get() int {
+	return a.value
+}
+
+func (a *testResourceInterfaceA) Increment() {
+	a.value += 1
+}
+
 func TestAddToResourceStorage(t *testing.T) {
 	type resourceA struct{}
 
@@ -78,7 +95,17 @@ func TestAddToResourceStorage(t *testing.T) {
 		assert.NoError(err)
 	})
 
-	t.Run("successfully adds interface resource", func(t *testing.T) {
+	t.Run("successfully adds interface resource that is passed by value", func(t *testing.T) {
+		assert := assert.New(t)
+
+		storage := newResourceStorage()
+
+		var log Logger = &NoOpLogger{}
+		err := storage.add(log)
+		assert.NoError(err)
+	})
+
+	t.Run("successfully adds interface resource that is passed by reference", func(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
@@ -146,7 +173,7 @@ func TestGetResourceFromStorage(t *testing.T) {
 		assert.ErrorIs(err, ErrResourceNotFound)
 	})
 
-	t.Run("successfully gets resource copy", func(t *testing.T) {
+	t.Run("successfully gets struct resource copy", func(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
@@ -158,7 +185,7 @@ func TestGetResourceFromStorage(t *testing.T) {
 		assert.Equal(10, resource.value)
 	})
 
-	t.Run("resource copy can not be mutated", func(t *testing.T) {
+	t.Run("struct resource copy can not be mutated", func(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
@@ -174,7 +201,7 @@ func TestGetResourceFromStorage(t *testing.T) {
 		assert.NotEqual(10, resource.value)
 	})
 
-	t.Run("successfully gets resource pointer", func(t *testing.T) {
+	t.Run("successfully gets struct resource pointer", func(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
@@ -186,7 +213,7 @@ func TestGetResourceFromStorage(t *testing.T) {
 		assert.Equal(10, resource.value)
 	})
 
-	t.Run("pointer resource can be mutated", func(t *testing.T) {
+	t.Run("struct resource passed by reference can be mutated", func(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
@@ -200,6 +227,40 @@ func TestGetResourceFromStorage(t *testing.T) {
 		resource, err = getResourceFromStorage[*resourceA](&storage)
 		assert.NoError(err)
 		assert.Equal(10, resource.value)
+	})
+
+	t.Run("interface resource that is passed by reference can be retrieved and mutated", func(t *testing.T) {
+		assert := assert.New(t)
+
+		var resource testResourceInterface = &testResourceInterfaceA{}
+		storage := newResourceStorage()
+		err := storage.add(&resource)
+		assert.NoError(err)
+
+		resource, err = getResourceFromStorage[testResourceInterface](&storage)
+		assert.NoError(err)
+		resource.Increment()
+
+		resource, err = getResourceFromStorage[testResourceInterface](&storage)
+		assert.NoError(err)
+		assert.Equal(1, resource.Get())
+	})
+
+	t.Run("interface resource that is passed by value can be retrieved by its implementation and can be mutated", func(t *testing.T) {
+		assert := assert.New(t)
+
+		var resource testResourceInterface = &testResourceInterfaceA{}
+		storage := newResourceStorage()
+		err := storage.add(resource)
+		assert.NoError(err)
+
+		resource, err = getResourceFromStorage[*testResourceInterfaceA](&storage)
+		assert.NoError(err)
+		resource.Increment()
+
+		resource, err = getResourceFromStorage[*testResourceInterfaceA](&storage)
+		assert.NoError(err)
+		assert.Equal(1, resource.Get())
 	})
 }
 
