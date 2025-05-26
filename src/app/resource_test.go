@@ -25,53 +25,14 @@ func (a *testResourceInterfaceA) Increment() {
 	a.value += 1
 }
 
-func TestAddToResourceStorage(t *testing.T) {
+func TestAddStructToResourceStorage(t *testing.T) {
 	type resourceA struct{}
-
-	t.Run("fails to add resource if it is nil", func(t *testing.T) {
-		assert := assert.New(t)
-
-		storage := newResourceStorage()
-		err := storage.add(nil)
-		assert.ErrorIs(err, ErrResourceIsNil)
-	})
-
-	t.Run("fails to add resource if it already exists", func(t *testing.T) {
-		assert := assert.New(t)
-
-		storage := newResourceStorage()
-		err := storage.add(&resourceA{})
-		assert.NoError(err)
-		err = storage.add(&resourceA{})
-		assert.ErrorIs(err, ErrResourceAlreadyPresent)
-	})
-
-	t.Run("interface resource and its struct implementation are treated as the same resource type", func(t *testing.T) {
-		assert := assert.New(t)
-
-		storage := newResourceStorage()
-
-		var resource testResourceInterface = &testResourceInterfaceA{}
-		err := storage.add(resource)
-		assert.NoError(err)
-
-		err = storage.add(&testResourceInterfaceA{})
-		assert.ErrorIs(err, ErrResourceAlreadyPresent)
-	})
 
 	t.Run("fails to add resource if it is not passed by reference", func(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
 		err := storage.add(resourceA{})
-		assert.ErrorIs(err, ErrResourceNotAPointer)
-	})
-
-	t.Run("fails to add resource if it is not passed by reference", func(t *testing.T) {
-		assert := assert.New(t)
-
-		storage := newResourceStorage()
-		err := storage.add(func() {})
 		assert.ErrorIs(err, ErrResourceNotAPointer)
 	})
 
@@ -100,12 +61,47 @@ func TestAddToResourceStorage(t *testing.T) {
 		assert.ErrorIs(err, ErrResourceTypeNotValid)
 	})
 
+	t.Run("fails to add resource if it is untyped and nil", func(t *testing.T) {
+		assert := assert.New(t)
+
+		storage := newResourceStorage()
+		err := storage.add(nil)
+		assert.ErrorIs(err, ErrResourceIsNil)
+	})
+
+	t.Run("fails to add resource if it already exists", func(t *testing.T) {
+		assert := assert.New(t)
+
+		storage := newResourceStorage()
+		err := storage.add(&resourceA{})
+		assert.NoError(err)
+		err = storage.add(&resourceA{})
+		assert.ErrorIs(err, ErrResourceAlreadyPresent)
+	})
+
 	t.Run("successfully adds struct resource", func(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
 		err := storage.add(&resourceA{})
 		assert.NoError(err)
+	})
+}
+
+func TestAddInterfaceToResourceStorage(t *testing.T) {
+	type resourceA struct{}
+
+	t.Run("interface resource and its struct implementation are treated as the same resource type", func(t *testing.T) {
+		assert := assert.New(t)
+
+		storage := newResourceStorage()
+
+		var resource testResourceInterface = &testResourceInterfaceA{}
+		err := storage.add(resource)
+		assert.NoError(err)
+
+		err = storage.add(&testResourceInterfaceA{})
+		assert.ErrorIs(err, ErrResourceAlreadyPresent)
 	})
 
 	t.Run("successfully adds interface resource that is passed by value", func(t *testing.T) {
@@ -146,8 +142,8 @@ func TestAddToResourceStorage(t *testing.T) {
 
 		storage := newResourceStorage()
 
-		var log Logger = nil
-		err := storage.add(&log)
+		var resource testResourceInterface = nil
+		err := storage.add(&resource)
 		assert.NoError(err)
 	})
 }
