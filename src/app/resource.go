@@ -129,5 +129,10 @@ func reflectTypeToResourceId(resourceType reflect.Type) resourceId {
 }
 
 func getResourceDebugType(resource Resource) string {
-	return reflect.TypeOf(resource).String()
+	resourceType := reflect.TypeOf(resource)
+	if resourceType == nil {
+		return "nil"
+	}
+
+	return resourceType.String()
 }
