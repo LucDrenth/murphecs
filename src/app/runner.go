@@ -75,16 +75,19 @@ func (runner *uncappedRunner) Run(exitChannel <-chan struct{}, systems []*System
 	}
 }
 
-// onceRunner runs systems once and then return
-type onceRunner struct {
-	world       *ecs.World
-	outerWorlds *map[ecs.WorldId]*ecs.World
-	logger      Logger
-	appName     string
+// nTimesRunner runs systems n amount of times and then returns
+type nTimesRunner struct {
+	numberOfRuns int
+	world        *ecs.World
+	outerWorlds  *map[ecs.WorldId]*ecs.World
+	logger       Logger
+	appName      string
 }
 
-func (runner *onceRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet) {
-	runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName)
+func (runner *nTimesRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet) {
+	for range runner.numberOfRuns {
+		runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName)
+	}
 }
 
 func runSystemSet(systems []*SystemSet, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, appName string) {

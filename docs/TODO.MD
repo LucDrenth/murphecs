@@ -27,10 +27,6 @@
     - run `go mod tidy` - fail if anything changed
 
 # App
-**Must have**
-- [bug] Outer-world query has race conditions. To solve:
-    1. Lock the other world when executing the query param
-    2. Lock the other world when executing the system that uses the query.
-
 **Nice-to-have**
 - [feature] Execute systems in parallel. If systems are in the same schedule, they can be run in parallel if the systems do not touch any passed-by-ref resource (query/resource) of any of the other systems. Mind that we can probably not run a system with a Query in parallel with any other system that pulls in ecs.World, because we can not detect if it will be used to mutate anything that other systems touch system-insert time.
+- [performance] When executing systems, not all outer worlds not to be locked for the whole run. We actually only need to lock some components (or the archetypes of those components?) for some worlds.

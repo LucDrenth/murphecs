@@ -40,6 +40,16 @@ type queryToOuterWorld struct {
 }
 
 func (s *SystemSet) Exec(world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World) []error {
+	world.Mutex.Lock()
+	defer world.Mutex.Unlock()
+
+	if outerWorlds != nil {
+		for _, outerWorld := range *outerWorlds {
+			outerWorld.Mutex.Lock()
+			defer outerWorld.Mutex.Unlock()
+		}
+	}
+
 	err := s.handleSystemParamQueries(world, outerWorlds)
 	if err != nil {
 		return []error{
@@ -63,7 +73,8 @@ func (s *SystemSet) handleSystemParamQueries(world *ecs.World, outerWorlds *map[
 	}
 
 	for _, outerWorldQuery := range s.systemParamQueriesToOuterWorlds {
-		err := outerWorldQuery.query.Exec((*outerWorlds)[outerWorldQuery.worldId])
+		outerWorld := (*outerWorlds)[outerWorldQuery.worldId]
+		err := outerWorldQuery.query.Exec(outerWorld)
 		if err != nil {
 			return err
 		}

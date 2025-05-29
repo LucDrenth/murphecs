@@ -199,7 +199,7 @@ func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 		return
 	}
 
-	onceRunner := app.newOnceRunner()
+	onceRunner := app.NewNTimesRunner(1)
 
 	onceRunner.Run(exitChannel, startupSystems)
 	app.runner.Run(exitChannel, repeatedSystems)
@@ -295,12 +295,13 @@ func (app *SubApp) UseUncappedRunner() {
 	}
 }
 
-// newOnceRunner creates a runner that runs systems only once.
-func (app *SubApp) newOnceRunner() onceRunner {
-	return onceRunner{
-		world:       app.world,
-		outerWorlds: &app.outerWorlds,
-		logger:      app.logger,
-		appName:     app.name,
+// NewNTimesRunner creates a runner that runs systems [numberOfRuns] amount of  times
+func (app *SubApp) NewNTimesRunner(numberOfRuns int) nTimesRunner {
+	return nTimesRunner{
+		numberOfRuns: numberOfRuns,
+		world:        app.world,
+		outerWorlds:  &app.outerWorlds,
+		logger:       app.logger,
+		appName:      app.name,
 	}
 }

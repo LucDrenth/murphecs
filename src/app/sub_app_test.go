@@ -1,6 +1,8 @@
 package app
 
 import (
+	"fmt"
+	"strconv"
 	"testing"
 	"time"
 
@@ -232,7 +234,7 @@ func TestRun(t *testing.T) {
 			AddSystem(update, func() { numberOfSystemRuns++ }).
 			AddSystem(cleanup, func() { numberOfSystemRuns++ })
 
-		runner := app.newOnceRunner()
+		runner := app.NewNTimesRunner(1)
 		app.SetRunner(&runner)
 
 		isDoneChannel := make(chan bool)
@@ -284,6 +286,82 @@ func TestRun(t *testing.T) {
 		}()
 
 		<-isDoneChannel
+		assert.Equal(uint(0), logger.err)
+	})
+}
+
+func TestConcurrency(t *testing.T) {
+	const (
+		startup Schedule = "Startup"
+		update  Schedule = "Update"
+	)
+
+	type component struct {
+		ecs.Component
+		data map[string]int
+	}
+
+	t.Run("between-world query that competes for a resource", func(t *testing.T) {
+		// Run two subApps that both compete for `component.data`. When concurrency is not
+		// handled, this test will panic.
+		// It is not a guarantee that it will panic because of the nature of data races but,
+		// but increasing numberOfRuns will increase the likelihood.
+		numberOfRuns := 10_000
+
+		assert := assert.New(t)
+
+		logger := &testLogger{}
+		worldConfigs := ecs.DefaultWorldConfigs()
+		worldConfigs.Id = &ecs.TestCustomTargetWorldId
+		subAppA, err := New(logger, worldConfigs)
+		assert.NoError(err)
+		subAppA.AddSchedule(startup, ScheduleTypeStartup)
+		subAppA.AddSchedule(update, ScheduleTypeRepeating)
+		runner := subAppA.NewNTimesRunner(numberOfRuns)
+		subAppA.SetRunner(&runner)
+
+		subAppB, err := New(logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+		subAppB.AddSchedule(startup, ScheduleTypeStartup)
+		subAppB.AddSchedule(update, ScheduleTypeRepeating)
+		subAppB.RegisterOuterWorld(ecs.TestCustomTargetWorldId, subAppA.World())
+		runner = subAppB.NewNTimesRunner(numberOfRuns)
+		subAppB.SetRunner(&runner)
+
+		subAppA.
+			AddSystem(startup, func(world *ecs.World) error {
+				_, err := ecs.Spawn(world, &component{
+					data: map[string]int{},
+				})
+				return err
+			}).
+			AddSystem(update, func(query *ecs.Query1[component, ecs.Default]) {
+				query.Result().Iter(func(entityId ecs.EntityId, a *component) error {
+					target := len(a.data)
+					a.data[strconv.Itoa(target)] = target
+					return nil
+				})
+			})
+
+		subAppB.
+			AddResource(logger).
+			AddSystem(update, func(log *testLogger, query *ecs.Query1[component, ecs.TestCustomTargetWorld]) {
+				query.Result().Iter(func(entityId ecs.EntityId, a *component) error {
+					for k, v := range a.data {
+						log.Info(fmt.Sprintf("%s=%d\t", k, v))
+					}
+					return nil
+				})
+			})
+
+		exitChannel := make(chan struct{})
+		isDoneChannelA := make(chan bool)
+		isDoneChannelB := make(chan bool)
+		go subAppA.Run(exitChannel, isDoneChannelA)
+		go subAppB.Run(exitChannel, isDoneChannelB)
+		<-isDoneChannelA
+		<-isDoneChannelB
+
 		assert.Equal(uint(0), logger.err)
 	})
 }
