@@ -14,7 +14,6 @@
 - [feature] Events
 - [feature] Add Query5..Query16 and Optional5..Optional16
 - [tests] More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
-- [quality-of-life] handle spawning/inserting nil
 
 # Project
 - [feature] Linter

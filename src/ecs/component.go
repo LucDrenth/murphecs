@@ -102,6 +102,10 @@ func getRequiredComponents(componentsToExclude *[]ComponentId, components []ICom
 
 	for _, component := range components {
 		for _, required_component := range component.RequiredComponents() {
+			if required_component == nil {
+				continue
+			}
+
 			componentId := ComponentIdOf(required_component, world)
 
 			if slices.Contains(*componentsToExclude, componentId) {

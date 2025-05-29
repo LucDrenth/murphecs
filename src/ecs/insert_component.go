@@ -10,6 +10,7 @@ import (
 //
 // Can return the following errors:
 //   - Returns an ErrEntityNotFound error when the given entity does not exist
+//   - Returns an ErrComponentIsNil error when any of the given components is nil
 //   - Returns an ErrDuplicateComponent error when any of the given components are of the same type.
 //   - Returns an ErrComponentAlreadyPresent error if any of the components is already present while still inserting
 //     the components that are not yet present.
@@ -20,6 +21,12 @@ import (
 func Insert(world *World, entity EntityId, components ...IComponent) (resultErr error) {
 	if len(components) == 0 {
 		return nil
+	}
+
+	for i, component := range components {
+		if component == nil {
+			return fmt.Errorf("%w: at position %d", ErrComponentIsNil, i+1)
+		}
 	}
 
 	entityData, ok := world.entities[entity]

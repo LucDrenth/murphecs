@@ -10,6 +10,18 @@ func TestSpawn(t *testing.T) {
 	type componentA struct{ Component }
 	type componentB struct{ Component }
 
+	t.Run("error when passing nil for component", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewDefaultWorld()
+
+		entity, err := Spawn(world, nil)
+		assert.ErrorIs(err, ErrComponentIsNil)
+		assert.Equal(nonExistingEntity, entity)
+
+		assert.Equal(0, world.CountEntities())
+		assert.Equal(0, world.CountComponents())
+	})
+
 	t.Run("error when passing component by value", func(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()

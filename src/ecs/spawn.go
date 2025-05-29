@@ -11,10 +11,17 @@ import (
 // Return the associated entityId of the newly created entity on success.
 //
 // Can return the following errors:
+//   - Returns an ErrComponentIsNil error when any of the given components is nil
 //   - Returns an ErrDuplicateComponent error when any of the given components are of the same type.
 //   - Returns an ErrComponentIsNotAPointer error when any of the given component or their required components are not passed as
 //     a reference.
 func Spawn(world *World, components ...IComponent) (EntityId, error) {
+	for i, component := range components {
+		if component == nil {
+			return nonExistingEntity, fmt.Errorf("%w: at position %d", ErrComponentIsNil, i+1)
+		}
+	}
+
 	componentIds := toComponentIds(components, world)
 
 	// check for duplicates

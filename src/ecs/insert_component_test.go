@@ -48,6 +48,33 @@ func TestInsert(t *testing.T) {
 		assert.NoError(err)
 	})
 
+	t.Run("error when any of the given components are nil", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewDefaultWorld()
+		entity, err := Spawn(world)
+		assert.NoError(err)
+
+		// only 1 nil
+		err = Insert(world, entity, nil)
+		assert.ErrorIs(err, ErrComponentIsNil)
+
+		// 1 valid, 1 nil
+		err = Insert(world, entity, &componentA{}, nil)
+		assert.ErrorIs(err, ErrComponentIsNil)
+
+		// 1 nil, 1 valid
+		err = Insert(world, entity, nil, &componentA{})
+		assert.ErrorIs(err, ErrComponentIsNil)
+
+		// 1 nil, 1 valid, 1 nil
+		err = Insert(world, entity, nil, &componentA{}, nil)
+		assert.ErrorIs(err, ErrComponentIsNil)
+
+		assert.Equal(1, world.CountEntities())
+		assert.Equal(0, world.CountComponents())
+	})
+
 	t.Run("returns an error if the entity is not found", func(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
