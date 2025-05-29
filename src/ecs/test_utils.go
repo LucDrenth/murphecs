@@ -86,7 +86,6 @@ func (item *ComponentWithPointers) Validate() error {
 		value := *item.intSlice[i]
 		if i != value {
 			return fmt.Errorf("invalid intSlice value at index %d: %d", i, value)
-
 		}
 	}
 

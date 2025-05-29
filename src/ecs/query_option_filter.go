@@ -73,7 +73,6 @@ func (filter NoFilter) getNestedFilters() (a QueryParamFilter, b QueryParamFilte
 
 func (filter With[A]) getNestedFilters() (a QueryParamFilter, b QueryParamFilter, err error) {
 	return nil, nil, errors.New("nested filters not supported for this type")
-
 }
 
 func (filter Without[A]) getNestedFilters() (a QueryParamFilter, b QueryParamFilter, err error) {

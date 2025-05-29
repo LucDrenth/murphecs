@@ -28,7 +28,6 @@ func MethodHasPointerReceiver(i any, methodName string) (bool, error) {
 
 	if !StringStartsWithUpper(methodName) {
 		return false, fmt.Errorf("method must be exported")
-
 	}
 
 	concreteType := reflect.TypeOf(i)

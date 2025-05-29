@@ -7,7 +7,6 @@ import "slices"
 func GetFirstDuplicate[T comparable](elements []T) (*T, int, int) {
 	for i := range len(elements) - 1 {
 		for j := i + 1; j < len(elements); j++ {
-
 			if elements[i] == elements[j] {
 				return &elements[i], i, j
 			}
@@ -21,7 +20,6 @@ func GetFirstDuplicate[T comparable](elements []T) (*T, int, int) {
 func IsUnique[T comparable](elements []T) bool {
 	for i := range len(elements) - 1 {
 		for j := i + 1; j < len(elements); j++ {
-
 			if elements[i] == elements[j] {
 				return false
 			}
