@@ -15,7 +15,7 @@ benchmark:
 benchmark-ecs:
 	go test -bench=. ./benchmark/ | grep -E "\bBenchmark"
 
-lint:
+lint: verify-lint-config
 	go tool golangci-lint run
 
 fix-lint:
