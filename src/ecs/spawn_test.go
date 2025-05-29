@@ -10,30 +10,33 @@ func TestSpawn(t *testing.T) {
 	type componentA struct{ Component }
 	type componentB struct{ Component }
 
-	t.Run("successfully spawns", func(t *testing.T) {
+	t.Run("error when passing component by value", func(t *testing.T) {
+		assert := assert.New(t)
 		world := NewDefaultWorld()
 
-		entity, err := Spawn(world)
-		assert.Nil(t, err)
-		assert.Equal(t, entity, EntityId(1))
-		entity, err = Spawn(world, &componentA{})
-		assert.Nil(t, err)
-		assert.Equal(t, entity, EntityId(2))
-		entity, err = Spawn(world, &componentA{})
-		assert.Nil(t, err)
-		assert.Equal(t, entity, EntityId(3))
-		entity, err = Spawn(world, &componentB{})
-		assert.Nil(t, err)
-		assert.Equal(t, entity, EntityId(4))
-		entity, err = Spawn(world, &componentA{}, &componentB{})
-		assert.Nil(t, err)
-		assert.Equal(t, entity, EntityId(5))
-		entity, err = Spawn(world, &componentB{}, &componentA{})
-		assert.Nil(t, err)
-		assert.Equal(t, entity, EntityId(6))
+		entity, err := Spawn(world, componentA{})
+		assert.ErrorIs(err, ErrComponentIsNotAPointer)
+		assert.Equal(nonExistingEntity, entity)
 
-		assert.Equal(t, 6, world.CountEntities())
-		assert.Equal(t, 7, world.CountComponents())
+		assert.Equal(0, world.CountEntities())
+		assert.Equal(0, world.CountComponents())
+	})
+
+	t.Run("error when passing 1 component correctly and passing component by value", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewDefaultWorld()
+
+		entity, err := Spawn(world, componentA{}, &componentB{})
+		assert.ErrorIs(err, ErrComponentIsNotAPointer)
+		assert.Equal(nonExistingEntity, entity)
+
+		// retry with different component order
+		entity, err = Spawn(world, &componentA{}, componentB{})
+		assert.ErrorIs(err, ErrComponentIsNotAPointer)
+		assert.Equal(nonExistingEntity, entity)
+
+		assert.Equal(0, world.CountEntities())
+		assert.Equal(0, world.CountComponents())
 	})
 
 	t.Run("returns error if there are duplicate components", func(t *testing.T) {
@@ -53,6 +56,33 @@ func TestSpawn(t *testing.T) {
 
 		assert.Equal(0, world.CountEntities())
 		assert.Equal(0, world.CountComponents())
+	})
+
+	t.Run("successfully spawns", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewDefaultWorld()
+
+		entity, err := Spawn(world)
+		assert.Nil(err)
+		assert.Equal(entity, EntityId(1))
+		entity, err = Spawn(world, &componentA{})
+		assert.Nil(err)
+		assert.Equal(entity, EntityId(2))
+		entity, err = Spawn(world, &componentA{})
+		assert.Nil(err)
+		assert.Equal(entity, EntityId(3))
+		entity, err = Spawn(world, &componentB{})
+		assert.Nil(err)
+		assert.Equal(entity, EntityId(4))
+		entity, err = Spawn(world, &componentA{}, &componentB{})
+		assert.Nil(err)
+		assert.Equal(entity, EntityId(5))
+		entity, err = Spawn(world, &componentB{}, &componentA{})
+		assert.Nil(err)
+		assert.Equal(entity, EntityId(6))
+
+		assert.Equal(6, world.CountEntities())
+		assert.Equal(7, world.CountComponents())
 	})
 }
 

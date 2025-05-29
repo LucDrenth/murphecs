@@ -2,6 +2,7 @@ package ecs
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/lucdrenth/murphecs/src/utils"
 )
@@ -9,12 +10,10 @@ import (
 // Spawn spawns the given components and all their required components that are not declared in the component parameters.
 // Return the associated entityId of the newly created entity on success.
 //
-// Returns an ErrDuplicateComponent error when any of the given components are of the same type.
-//
-// Returns an ErrComponentIsNotAPointer error when any of the given component or their required components are not passed as
-// a reference, while still inserting all other components that are valid.
-//
-// Calling Spawn without any components to generate an entityId is allowed.
+// Can return the following errors:
+//   - Returns an ErrDuplicateComponent error when any of the given components are of the same type.
+//   - Returns an ErrComponentIsNotAPointer error when any of the given component or their required components are not passed as
+//     a reference.
 func Spawn(world *World, components ...IComponent) (EntityId, error) {
 	componentIds := toComponentIds(components, world)
 
@@ -38,21 +37,31 @@ func Spawn(world *World, components ...IComponent) (EntityId, error) {
 	if err != nil {
 		return nonExistingEntity, err
 	}
-	world.archetypeStorage.entityIdToArchetype[entityId] = archetype
-	archetype.entities = append(archetype.entities, entityId)
+
+	componentValues := make([]reflect.Value, len(components))
+	for i, component := range components {
+		componentValue := reflect.ValueOf(component)
+		if componentValue.Kind() != reflect.Pointer {
+			return nonExistingEntity, fmt.Errorf("%w: %s", ErrComponentIsNotAPointer, ComponentDebugStringOf(component))
+		}
+
+		componentValues[i] = componentValue
+	}
 
 	var row uint
-	for _, component := range components {
+	for i, component := range components {
 		// We can not reuse componentIds because it is not in the same order as components
 		componentId := ComponentIdOf(component, world)
 
 		storage := archetype.components[componentId]
-		row, err = storage.insert(world, component)
+		row, err = storage.insertValue(world, &componentValues[i])
 		if err != nil {
-			returnedErr = fmt.Errorf("failed to insert component %s in to component registry: %w", componentId.DebugString(), err)
-			continue
+			return nonExistingEntity, fmt.Errorf("failed to insert component %s in to component registry: %w", componentId.DebugString(), err)
 		}
 	}
+
+	world.archetypeStorage.entityIdToArchetype[entityId] = archetype
+	archetype.entities = append(archetype.entities, entityId)
 
 	world.entities[entityId] = &EntityData{
 		row:       row,

@@ -1,6 +1,7 @@
 package ecs
 
 import (
+	"reflect"
 	"runtime"
 	"testing"
 
@@ -101,6 +102,73 @@ func TestComponentStorageInsert(t *testing.T) {
 		{
 			item := CreateComponentWithPointers()
 			componentStorage.insert(world, item)
+		}
+
+		{
+			// assert that component matches what we inserted
+			item, err := getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 0)
+			assert.NoError(err)
+			err = item.Validate()
+			assert.NoError(err)
+		}
+
+		runtime.GC()
+
+		{
+			// assert that component matches what we inserted after garbage collection has run
+			item, err := getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 0)
+			assert.NoError(err)
+			err = item.Validate()
+			assert.NoError(err)
+		}
+	})
+}
+
+func TestComponentStorageInsertValue(t *testing.T) {
+	type componentA struct{ Component }
+
+	t.Run("successfully inserts when there is enough capacity", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewDefaultWorld()
+		capacity := uint(4)
+		componentStorage, err := createComponentStorage(capacity, ComponentIdFor[componentA](world))
+		assert.NoError(err)
+
+		componentValue := reflect.ValueOf(&componentA{})
+		_, err = componentStorage.insertValue(world, &componentValue)
+		assert.NoError(err)
+
+		assert.Equal(capacity, componentStorage.capacity)
+	})
+
+	t.Run("increases capacity and inserts the component when overstepping capacity", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewDefaultWorld()
+		capacity := uint(4)
+		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](world))
+		assert.NoError(err)
+
+		for range 10 {
+			componentValue := reflect.ValueOf(&componentA{})
+			_, err = componentStorage.insertValue(world, &componentValue)
+			assert.NoError(err)
+		}
+
+		assert.True(componentStorage.capacity > capacity)
+	})
+
+	t.Run("works well with garbage collector", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewDefaultWorld()
+		componentStorage, err := createComponentStorage(4, ComponentIdFor[ComponentWithPointers](world))
+		assert.NoError(err)
+
+		{
+			item := reflect.ValueOf(CreateComponentWithPointers())
+			componentStorage.insertValue(world, &item)
 		}
 
 		{

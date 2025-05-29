@@ -73,7 +73,7 @@ func (storage *componentStorage) insert(world *World, component IComponent) (uin
 	return insertIndex, nil
 }
 
-// Returns an ErrComponentIsNotAPointer when component is not passed as a reference (e.g. componentA{}, instead of &componentA{})
+// set returns an ErrComponentIsNotAPointer when component is not passed as a pointer (e.g. componentA{}, instead of &componentA{})
 func (storage *componentStorage) set(component IComponent, index uint) error {
 	if index >= storage.capacity {
 		return fmt.Errorf("%w: %d", ErrComponentStorageIndexOutOfBounds, index)
@@ -123,6 +123,47 @@ func (storage *componentStorage) insertRaw(world *World, componentPointer unsafe
 	storage.numberOfComponents += 1
 
 	return insertIndex, nil
+}
+
+// insertValue returns the index at which the component was inserted.
+func (storage *componentStorage) insertValue(world *World, component *reflect.Value) (uint, error) {
+	insertIndex := storage.nextItemIndex
+
+	if storage.capacity == insertIndex {
+		extraCapacity := world.componentCapacityGrowthStrategy.GetExtraCapacity(storage.capacity)
+		if extraCapacity == 0 {
+			return 0, fmt.Errorf("component capacity growth is 0")
+		}
+		storage.increaseCapacity(extraCapacity)
+	}
+
+	err := storage.setValue(component, insertIndex)
+	if err != nil {
+		return 0, err
+	}
+
+	storage.nextItemIndex += 1
+	storage.numberOfComponents += 1
+
+	return insertIndex, nil
+}
+
+func (storage *componentStorage) setValue(component *reflect.Value, index uint) error {
+	if index >= storage.capacity {
+		return fmt.Errorf("%w: %d", ErrComponentStorageIndexOutOfBounds, index)
+	}
+
+	componentPointer := component.UnsafePointer()
+
+	destination, err := storage.getComponentPointer(index)
+	if err != nil {
+		// this error should never happen because we always make sure we have enough capacity.
+		return fmt.Errorf("unexpected error when getting component pointer: %w", err)
+	}
+
+	utils.CopyPointerData(componentPointer, destination, storage.componentSize)
+
+	return nil
 }
 
 // indicates that a component should be moved to another index to free up space
