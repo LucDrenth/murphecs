@@ -125,11 +125,13 @@ func TestGetAllRequiredComponents(t *testing.T) {
 
 	for _, scenario := range scenarios {
 		t.Run(scenario.description, func(t *testing.T) {
+			assert := assert.New(t)
+
 			world := NewDefaultWorld()
 
 			typesToExclude := toComponentIds(scenario.components, world)
 			result := getAllRequiredComponents(&typesToExclude, scenario.components, world)
-			assert.Equal(t, scenario.nrExpectedResults, len(result))
+			assert.Len(result, scenario.nrExpectedResults)
 		})
 	}
 }

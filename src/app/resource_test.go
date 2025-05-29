@@ -165,7 +165,7 @@ func TestRegisterBlacklistedResource(t *testing.T) {
 		assert.NoError(err)
 		err = registerBlacklistedResource[*resourceA](&storage)
 		assert.ErrorIs(err, ErrResourceAlreadyPresent)
-		assert.Equal(1, len(storage.blacklistedResources))
+		assert.Len(storage.blacklistedResources, 1)
 	})
 
 	t.Run("successfully registers blacklisted resource", func(t *testing.T) {
@@ -174,7 +174,7 @@ func TestRegisterBlacklistedResource(t *testing.T) {
 		storage := newResourceStorage()
 		err := registerBlacklistedResource[*resourceA](&storage)
 		assert.NoError(err)
-		assert.Equal(1, len(storage.blacklistedResources))
+		assert.Len(storage.blacklistedResources, 1)
 	})
 }
 

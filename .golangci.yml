@@ -10,16 +10,34 @@ linters:
     - govet
     - staticcheck
     - whitespace
+    - usestdlibvars
+    - testifylint
 
   exclusions:
     rules:
+      # do not run errcheck for examples folder to keep examples as simple as possible
       - path: examples
         linters:
-          - errcheck # do not run errcheck for examples folder to keep examples as simple as possible
+          - errcheck
+
+      # do not run errcheck for ecs benchmarks
       - path: benchmark/ecs_benchmark_test.go
         linters:
-          - errcheck # do not run errcheck for ecs benchmarks
+          - errcheck
+
+      # do not run testifylint its useless-assert archetype_test because it has a test to check that a function is deterministic
+      - path: src/ecs/archetype_test.go
+        linters:
+          - testifylint
+        text: "useless-assert:"
 
     # do not run any lints for the following paths:
     paths-except:
       - sandbox
+
+  settings:
+    testifylint:
+      disable:
+        - require-error
+        - empty
+        - compares

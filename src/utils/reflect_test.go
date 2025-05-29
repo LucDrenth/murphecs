@@ -6,6 +6,7 @@ import (
 	"unsafe"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestAlignedSize(t *testing.T) {
@@ -130,9 +131,10 @@ func TestMethodHasPointerReceiver(t *testing.T) {
 
 	t.Run("returns true if method has pointer receiver", func(t *testing.T) {
 		assert := assert.New(t)
+		require := require.New(t)
 
 		result, err := MethodHasPointerReceiver(someStructB{}, "SomeMethod")
-		assert.NoError(err)
+		require.NoError(err)
 		assert.True(result)
 
 		var input someInterface = &someStructB{}

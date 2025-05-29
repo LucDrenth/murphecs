@@ -13,7 +13,7 @@ func TestDelete(t *testing.T) {
 		world := NewDefaultWorld()
 		err := Delete(world, nonExistingEntity)
 
-		assert.Error(err, ErrEntityNotFound)
+		assert.ErrorIs(err, ErrEntityNotFound)
 	})
 
 	t.Run("successfully removes the entity", func(t *testing.T) {
