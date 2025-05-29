@@ -4,6 +4,9 @@
 test:
 	go test ./... 2>&1 | grep -v "\[no test files\]" | grep -v "no tests to run"
 
+count-tests:
+	go test -v ./... | grep "\-\-\- PASS: Test" | wc -l
+
 # run all benchmarks and only display the benchmark results
 benchmark:
 	go test -bench=. ./... | grep -E "\bBenchmark"
@@ -12,5 +15,5 @@ benchmark:
 benchmark-ecs:
 	go test -bench=. ./benchmark/ | grep -E "\bBenchmark"
 
-count-tests:
-	go test -v ./... | grep "\-\-\- PASS: Test" | wc -l
+lint:
+	go tool golangci-lint run

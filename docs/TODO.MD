@@ -16,7 +16,6 @@
 - [tests] More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
 
 # Project
-- [feature] Linter
 - [feature] Pipeline in Github that automatically runs:
     - tests - fail if any fails
     - linter - fail if project is not linted
