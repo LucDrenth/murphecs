@@ -2,6 +2,7 @@
 **Must have**
 - [feature] Observers
 - [feature] Relationships (like parent/child)
+- [bug] Wrongly spawning a component results in a query result (should be 0 results)
 
 **Nice-to-have**
 - [performance] Generational entities. EntityId would become {id: uint, generation: uint}. World its entityList would becomes a slice instead of a map, and entityId would correlate with the slice index. This provides faster lookups. We'd need an deadEntityPool to choose from when creating a new EntityId which would increment its generation and repurpose it.
@@ -15,6 +16,7 @@
 - [feature] Add Query5..Query16 and Optional5..Optional16
 - [tests] More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
 - [quality-of-life] handle spawning/inserting nil
+- [quality-of-life] make Iter func not return anything and add IterUntil with the current error returning functionality
 
 # Project
 - [feature] Linter

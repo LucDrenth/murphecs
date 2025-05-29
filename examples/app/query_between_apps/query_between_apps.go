@@ -1,4 +1,4 @@
-// Demonstrate how to query the world of another SubApp.
+// Demonstrate how to query the world of another SubApp. Querying between sub apps is thread-safe.
 package main
 
 import (
@@ -86,5 +86,5 @@ func main() {
 		return nil
 	})
 
-	run.RunApp(&appFoo, &appBar)
+	run.RunApps(appFoo, appBar)
 }

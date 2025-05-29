@@ -1,4 +1,4 @@
-// Demonstrate how to run an app
+// Demonstrate how to run 1 or multiple apps
 package run
 
 import (
@@ -9,7 +9,7 @@ import (
 	"github.com/lucdrenth/murphecs/src/app"
 )
 
-func RunApp(subApps ...*app.SubApp) {
+func RunApps(subApps ...*app.SubApp) {
 	// run apps
 	exitChannel := make(chan struct{})
 	isDoneChannels := []chan bool{}

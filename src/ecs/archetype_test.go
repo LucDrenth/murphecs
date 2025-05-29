@@ -19,30 +19,30 @@ func TestHashComponentIds(t *testing.T) {
 		componentHashes := []string{
 			hashComponentIds([]ComponentId{}),
 			hashComponentIds([]ComponentId{
-				ComponentIdFor[componentA](&world),
+				ComponentIdFor[componentA](world),
 			}),
 			hashComponentIds([]ComponentId{
-				ComponentIdFor[componentB](&world),
+				ComponentIdFor[componentB](world),
 			}),
 			hashComponentIds([]ComponentId{
-				ComponentIdFor[componentC](&world),
+				ComponentIdFor[componentC](world),
 			}),
 			hashComponentIds([]ComponentId{
-				ComponentIdFor[componentA](&world),
-				ComponentIdFor[componentB](&world),
+				ComponentIdFor[componentA](world),
+				ComponentIdFor[componentB](world),
 			}),
 			hashComponentIds([]ComponentId{
-				ComponentIdFor[componentA](&world),
-				ComponentIdFor[componentC](&world),
+				ComponentIdFor[componentA](world),
+				ComponentIdFor[componentC](world),
 			}),
 			hashComponentIds([]ComponentId{
-				ComponentIdFor[componentB](&world),
-				ComponentIdFor[componentC](&world),
+				ComponentIdFor[componentB](world),
+				ComponentIdFor[componentC](world),
 			}),
 			hashComponentIds([]ComponentId{
-				ComponentIdFor[componentA](&world),
-				ComponentIdFor[componentB](&world),
-				ComponentIdFor[componentC](&world),
+				ComponentIdFor[componentA](world),
+				ComponentIdFor[componentB](world),
+				ComponentIdFor[componentC](world),
 			}),
 		}
 
@@ -55,32 +55,32 @@ func TestHashComponentIds(t *testing.T) {
 
 		assert.Equal(
 			hashComponentIds([]ComponentId{
-				ComponentIdFor[componentA](&world),
+				ComponentIdFor[componentA](world),
 			}),
 			hashComponentIds([]ComponentId{
-				ComponentIdFor[componentA](&world),
-			}),
-		)
-		assert.Equal(
-			hashComponentIds([]ComponentId{
-				ComponentIdFor[componentA](&world),
-				ComponentIdFor[componentB](&world),
-			}),
-			hashComponentIds([]ComponentId{
-				ComponentIdFor[componentA](&world),
-				ComponentIdFor[componentB](&world),
+				ComponentIdFor[componentA](world),
 			}),
 		)
 		assert.Equal(
 			hashComponentIds([]ComponentId{
-				ComponentIdFor[componentA](&world),
-				ComponentIdFor[componentB](&world),
-				ComponentIdFor[componentC](&world),
+				ComponentIdFor[componentA](world),
+				ComponentIdFor[componentB](world),
 			}),
 			hashComponentIds([]ComponentId{
-				ComponentIdFor[componentA](&world),
-				ComponentIdFor[componentB](&world),
-				ComponentIdFor[componentC](&world),
+				ComponentIdFor[componentA](world),
+				ComponentIdFor[componentB](world),
+			}),
+		)
+		assert.Equal(
+			hashComponentIds([]ComponentId{
+				ComponentIdFor[componentA](world),
+				ComponentIdFor[componentB](world),
+				ComponentIdFor[componentC](world),
+			}),
+			hashComponentIds([]ComponentId{
+				ComponentIdFor[componentA](world),
+				ComponentIdFor[componentB](world),
+				ComponentIdFor[componentC](world),
 			}),
 		)
 		assert.Equal(
@@ -107,14 +107,14 @@ func TestArchetypeIsFromComponents(t *testing.T) {
 			description:           "returns false when archetype does not contain any of given input components",
 			archeTypeComponentIds: []ComponentId{},
 			componentIdsToCheck: []ComponentId{
-				ComponentIdFor[componentA](&world),
+				ComponentIdFor[componentA](world),
 			},
 			expected: false,
 		},
 		{
 			description: "returns false when archetype has a component that the input does not have",
 			archeTypeComponentIds: []ComponentId{
-				ComponentIdFor[componentA](&world),
+				ComponentIdFor[componentA](world),
 			},
 			componentIdsToCheck: []ComponentId{},
 			expected:            false,
@@ -122,28 +122,28 @@ func TestArchetypeIsFromComponents(t *testing.T) {
 		{
 			description: "archetype components are the same",
 			archeTypeComponentIds: []ComponentId{
-				ComponentIdFor[componentA](&world),
-				ComponentIdFor[componentB](&world),
-				ComponentIdFor[componentC](&world),
+				ComponentIdFor[componentA](world),
+				ComponentIdFor[componentB](world),
+				ComponentIdFor[componentC](world),
 			},
 			componentIdsToCheck: []ComponentId{
-				ComponentIdFor[componentA](&world),
-				ComponentIdFor[componentB](&world),
-				ComponentIdFor[componentC](&world),
+				ComponentIdFor[componentA](world),
+				ComponentIdFor[componentB](world),
+				ComponentIdFor[componentC](world),
 			},
 			expected: true,
 		},
 		{
 			description: "archetype components are the same but in different order",
 			archeTypeComponentIds: []ComponentId{
-				ComponentIdFor[componentA](&world),
-				ComponentIdFor[componentB](&world),
-				ComponentIdFor[componentC](&world),
+				ComponentIdFor[componentA](world),
+				ComponentIdFor[componentB](world),
+				ComponentIdFor[componentC](world),
 			},
 			componentIdsToCheck: []ComponentId{
-				ComponentIdFor[componentC](&world),
-				ComponentIdFor[componentA](&world),
-				ComponentIdFor[componentB](&world),
+				ComponentIdFor[componentC](world),
+				ComponentIdFor[componentA](world),
+				ComponentIdFor[componentB](world),
 			},
 			expected: true,
 		},
@@ -161,7 +161,7 @@ func TestArchetypeIsFromComponents(t *testing.T) {
 
 			world := NewDefaultWorld()
 			archetypeStorage := newArchetypeStorage()
-			archetype, err := archetypeStorage.getArchetype(&world, scenario.archeTypeComponentIds)
+			archetype, err := archetypeStorage.getArchetype(world, scenario.archeTypeComponentIds)
 			assert.NoError(err)
 
 			result := archetype.IsFromComponents(scenario.componentIdsToCheck)

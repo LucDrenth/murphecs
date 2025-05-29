@@ -30,10 +30,10 @@ func main() {
 	myApp.
 		AddResource(&logger).
 		AddResource(&delta{}).
-		AddSystem(beforeUpdate, createSetDeltaResourceSystem(&myApp)).
+		AddSystem(beforeUpdate, createSetDeltaResourceSystem(myApp)).
 		AddSystem(update, logCurrentDelta)
 
-	run.RunApp(&myApp)
+	run.RunApps(myApp)
 }
 
 func createSetDeltaResourceSystem(app *app.SubApp) func(delta *delta) {

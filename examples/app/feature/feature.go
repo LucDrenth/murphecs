@@ -37,7 +37,7 @@ func main() {
 		AppName: "MyApp",
 	})
 
-	run.RunApp(&myApp)
+	run.RunApps(myApp)
 }
 
 type appNameResource struct {

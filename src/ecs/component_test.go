@@ -127,8 +127,8 @@ func TestGetAllRequiredComponents(t *testing.T) {
 		t.Run(scenario.description, func(t *testing.T) {
 			world := NewDefaultWorld()
 
-			typesToExclude := toComponentIds(scenario.components, &world)
-			result := getAllRequiredComponents(&typesToExclude, scenario.components, &world)
+			typesToExclude := toComponentIds(scenario.components, world)
+			result := getAllRequiredComponents(&typesToExclude, scenario.components, world)
 			assert.Equal(t, scenario.nrExpectedResults, len(result))
 		})
 	}
@@ -144,12 +144,12 @@ func TestComponentIdConversions(t *testing.T) {
 		world := NewDefaultWorld()
 
 		assert.NotEqual(
-			ComponentIdOf(componentA{}, &world),
-			ComponentIdOf(componentB{}, &world),
+			ComponentIdOf(componentA{}, world),
+			ComponentIdOf(componentB{}, world),
 		)
 		assert.NotEqual(
-			ComponentIdFor[componentA](&world),
-			ComponentIdFor[componentB](&world),
+			ComponentIdFor[componentA](world),
+			ComponentIdFor[componentB](world),
 		)
 	})
 
@@ -172,12 +172,12 @@ func TestComponentIdConversions(t *testing.T) {
 		world := NewDefaultWorld()
 
 		assert.Equal(
-			ComponentIdOf(componentA{}, &world),
-			ComponentIdFor[componentA](&world),
+			ComponentIdOf(componentA{}, world),
+			ComponentIdFor[componentA](world),
 		)
 		assert.NotEqual(
-			ComponentIdFor[componentA](&world),
-			ComponentIdFor[componentB](&world),
+			ComponentIdFor[componentA](world),
+			ComponentIdFor[componentB](world),
 		)
 	})
 
@@ -187,8 +187,8 @@ func TestComponentIdConversions(t *testing.T) {
 		world := NewDefaultWorld()
 		var iComponent IComponent = componentA{}
 
-		a := ComponentIdOf(iComponent, &world)
-		b := ComponentIdFor[componentA](&world)
+		a := ComponentIdOf(iComponent, world)
+		b := ComponentIdFor[componentA](world)
 
 		assert.Equal(
 			a.DebugString(),
@@ -202,12 +202,12 @@ func TestComponentIdConversions(t *testing.T) {
 		world := NewDefaultWorld()
 
 		assert.Equal(
-			ComponentIdOf(&componentA{}, &world),
-			ComponentIdOf(componentA{}, &world),
+			ComponentIdOf(&componentA{}, world),
+			ComponentIdOf(componentA{}, world),
 		)
 		assert.Equal(
-			ComponentIdFor[componentA](&world),
-			ComponentIdFor[*componentA](&world),
+			ComponentIdFor[componentA](world),
+			ComponentIdFor[*componentA](world),
 		)
 	})
 }

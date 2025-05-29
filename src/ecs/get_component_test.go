@@ -69,10 +69,10 @@ func TestGet(t *testing.T) {
 	setup := func(component IComponent) (EntityId, *World, *assert.Assertions) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
-		entity, err := Spawn(&world, component, &anotherComponent{})
+		entity, err := Spawn(world, component, &anotherComponent{})
 		assert.NoError(err)
 
-		return entity, &world, assert
+		return entity, world, assert
 	}
 
 	t.Run("returns the expected component", func(t *testing.T) {
@@ -116,10 +116,10 @@ func TestGet2(t *testing.T) {
 	setup := func() (EntityId, *World, *assert.Assertions) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
-		entity, err := Spawn(&world, &componentA{value: expectedValueA}, &anotherComponent{}, &componentB{value: expectedValueB})
+		entity, err := Spawn(world, &componentA{value: expectedValueA}, &anotherComponent{}, &componentB{value: expectedValueB})
 		assert.NoError(err)
 
-		return entity, &world, assert
+		return entity, world, assert
 	}
 
 	t.Run("returns the expected components regardless of the component order", func(t *testing.T) {
@@ -167,14 +167,14 @@ func TestGet3(t *testing.T) {
 	setup := func() (EntityId, *World, *assert.Assertions) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
-		entity, err := Spawn(&world,
+		entity, err := Spawn(world,
 			&componentA{value: expectedValueA},
 			&componentB{value: expectedValueB},
 			&componentC{value: expectedValueC},
 		)
 		assert.NoError(err)
 
-		return entity, &world, assert
+		return entity, world, assert
 	}
 
 	t.Run("returns the expected components", func(t *testing.T) {
@@ -206,7 +206,7 @@ func TestGet4(t *testing.T) {
 	t.Run("returns the expected components", func(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
-		entity, err := Spawn(&world,
+		entity, err := Spawn(world,
 			&componentA{value: expectedValueA},
 			&componentB{value: expectedValueB},
 			&componentC{value: expectedValueC},
@@ -214,7 +214,7 @@ func TestGet4(t *testing.T) {
 		)
 		assert.NoError(err)
 
-		a, b, c, d, err := Get4[componentA, componentB, componentC, componentD](&world, entity)
+		a, b, c, d, err := Get4[componentA, componentB, componentC, componentD](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)
@@ -231,7 +231,7 @@ func TestGet5(t *testing.T) {
 	t.Run("returns the expected components", func(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
-		entity, err := Spawn(&world,
+		entity, err := Spawn(world,
 			&componentA{value: expectedValueA},
 			&componentB{value: expectedValueB},
 			&componentC{value: expectedValueC},
@@ -240,7 +240,7 @@ func TestGet5(t *testing.T) {
 		)
 		assert.NoError(err)
 
-		a, b, c, d, e, err := Get5[componentA, componentB, componentC, componentD, componentE](&world, entity)
+		a, b, c, d, e, err := Get5[componentA, componentB, componentC, componentD, componentE](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)
@@ -259,7 +259,7 @@ func TestGet6(t *testing.T) {
 	t.Run("returns the expected components", func(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
-		entity, err := Spawn(&world,
+		entity, err := Spawn(world,
 			&componentA{value: expectedValueA},
 			&componentB{value: expectedValueB},
 			&componentC{value: expectedValueC},
@@ -269,7 +269,7 @@ func TestGet6(t *testing.T) {
 		)
 		assert.NoError(err)
 
-		a, b, c, d, e, f, err := Get6[componentA, componentB, componentC, componentD, componentE, componentF](&world, entity)
+		a, b, c, d, e, f, err := Get6[componentA, componentB, componentC, componentD, componentE, componentF](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)
@@ -290,7 +290,7 @@ func TestGet7(t *testing.T) {
 	t.Run("returns the expected components", func(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
-		entity, err := Spawn(&world,
+		entity, err := Spawn(world,
 			&componentA{value: expectedValueA},
 			&componentB{value: expectedValueB},
 			&componentC{value: expectedValueC},
@@ -301,7 +301,7 @@ func TestGet7(t *testing.T) {
 		)
 		assert.NoError(err)
 
-		a, b, c, d, e, f, g, err := Get7[componentA, componentB, componentC, componentD, componentE, componentF, componentG](&world, entity)
+		a, b, c, d, e, f, g, err := Get7[componentA, componentB, componentC, componentD, componentE, componentF, componentG](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)
@@ -324,7 +324,7 @@ func TestGet8(t *testing.T) {
 	t.Run("returns the expected components", func(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
-		entity, err := Spawn(&world,
+		entity, err := Spawn(world,
 			&componentA{value: expectedValueA},
 			&componentB{value: expectedValueB},
 			&componentC{value: expectedValueC},
@@ -336,7 +336,7 @@ func TestGet8(t *testing.T) {
 		)
 		assert.NoError(err)
 
-		a, b, c, d, e, f, g, h, err := Get8[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH](&world, entity)
+		a, b, c, d, e, f, g, h, err := Get8[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)

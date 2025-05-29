@@ -14,17 +14,17 @@ func TestQueryFilter(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(&world, &componentA{})
+		entity, err := Spawn(world, &componentA{})
 		assert.NoError(err)
 		entityData := world.entities[entity]
 
 		filter := queryFilterWith{c: []ComponentId{
-			ComponentIdFor[componentA](&world),
+			ComponentIdFor[componentA](world),
 		}}
 		assert.True(filter.EntityMeetsCriteria(entityData))
 
 		filter = queryFilterWith{c: []ComponentId{
-			ComponentIdFor[componentB](&world),
+			ComponentIdFor[componentB](world),
 		}}
 		assert.False(filter.EntityMeetsCriteria(entityData))
 	})
@@ -33,17 +33,17 @@ func TestQueryFilter(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(&world, &componentA{})
+		entity, err := Spawn(world, &componentA{})
 		assert.NoError(err)
 		entityData := world.entities[entity]
 
 		filter := queryFilterWithout{c: []ComponentId{
-			ComponentIdFor[componentA](&world),
+			ComponentIdFor[componentA](world),
 		}}
 		assert.False(filter.EntityMeetsCriteria(entityData))
 
 		filter = queryFilterWithout{c: []ComponentId{
-			ComponentIdFor[componentB](&world),
+			ComponentIdFor[componentB](world),
 		}}
 		assert.True(filter.EntityMeetsCriteria(entityData))
 	})
@@ -52,17 +52,17 @@ func TestQueryFilter(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(&world, &componentA{})
+		entity, err := Spawn(world, &componentA{})
 		assert.NoError(err)
 		entityData := world.entities[entity]
 
 		// both are true
 		filter := queryFilterAnd{
 			a: &queryFilterWith{c: []ComponentId{
-				ComponentIdFor[componentA](&world),
+				ComponentIdFor[componentA](world),
 			}},
 			b: &queryFilterWithout{c: []ComponentId{
-				ComponentIdFor[componentB](&world),
+				ComponentIdFor[componentB](world),
 			}},
 		}
 		assert.True(filter.EntityMeetsCriteria(entityData))
@@ -70,10 +70,10 @@ func TestQueryFilter(t *testing.T) {
 		// one is true, 1 is false
 		filter = queryFilterAnd{
 			a: &queryFilterWith{c: []ComponentId{
-				ComponentIdFor[componentA](&world),
+				ComponentIdFor[componentA](world),
 			}},
 			b: &queryFilterWith{c: []ComponentId{
-				ComponentIdFor[componentB](&world),
+				ComponentIdFor[componentB](world),
 			}},
 		}
 		assert.False(filter.EntityMeetsCriteria(entityData))
@@ -81,10 +81,10 @@ func TestQueryFilter(t *testing.T) {
 		// both are false
 		filter = queryFilterAnd{
 			a: &queryFilterWith{c: []ComponentId{
-				ComponentIdFor[componentB](&world),
+				ComponentIdFor[componentB](world),
 			}},
 			b: &queryFilterWith{c: []ComponentId{
-				ComponentIdFor[componentC](&world),
+				ComponentIdFor[componentC](world),
 			}},
 		}
 		assert.False(filter.EntityMeetsCriteria(entityData))
@@ -94,17 +94,17 @@ func TestQueryFilter(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(&world, &componentA{}, &componentB{})
+		entity, err := Spawn(world, &componentA{}, &componentB{})
 		assert.NoError(err)
 		entityData := world.entities[entity]
 
 		// both are true
 		filter := queryFilterOr{
 			a: &queryFilterWith{c: []ComponentId{
-				ComponentIdFor[componentA](&world),
+				ComponentIdFor[componentA](world),
 			}},
 			b: &queryFilterWith{c: []ComponentId{
-				ComponentIdFor[componentB](&world),
+				ComponentIdFor[componentB](world),
 			}},
 		}
 		assert.True(filter.EntityMeetsCriteria(entityData))
@@ -112,10 +112,10 @@ func TestQueryFilter(t *testing.T) {
 		// one is true, one is false
 		filter = queryFilterOr{
 			a: &queryFilterWith{c: []ComponentId{
-				ComponentIdFor[componentA](&world),
+				ComponentIdFor[componentA](world),
 			}},
 			b: &queryFilterWith{c: []ComponentId{
-				ComponentIdFor[componentC](&world),
+				ComponentIdFor[componentC](world),
 			}},
 		}
 		assert.True(filter.EntityMeetsCriteria(entityData))
@@ -123,10 +123,10 @@ func TestQueryFilter(t *testing.T) {
 		// both are false
 		filter = queryFilterOr{
 			a: &queryFilterWith{c: []ComponentId{
-				ComponentIdFor[componentC](&world),
+				ComponentIdFor[componentC](world),
 			}},
 			b: &queryFilterWith{c: []ComponentId{
-				ComponentIdFor[componentD](&world),
+				ComponentIdFor[componentD](world),
 			}},
 		}
 		assert.False(filter.EntityMeetsCriteria(entityData))

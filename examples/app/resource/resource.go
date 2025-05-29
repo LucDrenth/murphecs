@@ -116,5 +116,5 @@ func main() {
 
 	myApp.AddSystem(update, func() { fmt.Println() })
 
-	run.RunApp(&myApp)
+	run.RunApps(myApp)
 }

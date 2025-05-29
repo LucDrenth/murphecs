@@ -11,7 +11,7 @@ func TestDelete(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		err := Delete(&world, nonExistingEntity)
+		err := Delete(world, nonExistingEntity)
 
 		assert.Error(err, ErrEntityNotFound)
 	})
@@ -22,20 +22,20 @@ func TestDelete(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity1, err := Spawn(&world, &structA{})
+		entity1, err := Spawn(world, &structA{})
 		assert.NoError(err)
-		entity2, err := Spawn(&world, &structA{})
+		entity2, err := Spawn(world, &structA{})
 		assert.NoError(err)
-		entity3, err := Spawn(&world, &structA{})
+		entity3, err := Spawn(world, &structA{})
 		assert.NoError(err)
 
-		err = Delete(&world, entity2)
+		err = Delete(world, entity2)
 		assert.NoError(err)
 
 		// check that we can still get entity1 and entity3
-		_, err = Get1[structA](&world, entity1)
+		_, err = Get1[structA](world, entity1)
 		assert.NoError(err)
-		_, err = Get1[structA](&world, entity3)
+		_, err = Get1[structA](world, entity3)
 		assert.NoError(err)
 	})
 }

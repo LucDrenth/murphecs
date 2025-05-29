@@ -24,7 +24,7 @@ const (
 // For example: if the tickRate is 1 second and a tick suddenly takes 4 seconds, the next tick will be run immediately
 // after, and then after 1 second.
 type SubApp struct {
-	world       ecs.World
+	world       *ecs.World
 	schedules   map[scheduleType]*Scheduler
 	resources   resourceStorage // resources that can be pulled by system params.
 	logger      Logger
@@ -35,7 +35,7 @@ type SubApp struct {
 	outerWorlds map[ecs.WorldId]*ecs.World
 }
 
-func New(logger Logger, worldConfigs ecs.WorldConfigs) (SubApp, error) {
+func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
 	if logger == nil {
 		noOpLogger := NoOpLogger{}
 		logger = &noOpLogger
@@ -43,7 +43,7 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (SubApp, error) {
 
 	world, err := ecs.NewWorld(worldConfigs)
 	if err != nil {
-		return SubApp{}, fmt.Errorf("failed to create world: %w", err)
+		return nil, fmt.Errorf("failed to create world: %w", err)
 	}
 
 	resourceStorage := newResourceStorage()
@@ -54,7 +54,7 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (SubApp, error) {
 	registerBlacklistedResource[*ecs.World](&resourceStorage)
 
 	subApp := SubApp{
-		world: world,
+		world: &world,
 		schedules: map[scheduleType]*Scheduler{
 			ScheduleTypeStartup:   utils.PointerTo(NewScheduler()),
 			ScheduleTypeRepeating: utils.PointerTo(NewScheduler()),
@@ -69,7 +69,7 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (SubApp, error) {
 	}
 	subApp.UseFixedRunner()
 
-	return subApp, nil
+	return &subApp, nil
 }
 
 // AddSystem adds a system that will be run when the schedule is run. Systems must be a function.
@@ -84,7 +84,7 @@ func (app *SubApp) AddSystem(schedule Schedule, system System) *SubApp {
 		return app
 	}
 
-	err := scheduler.AddSystem(schedule, system, &app.world, &app.outerWorlds, app.logger, &app.resources)
+	err := scheduler.AddSystem(schedule, system, app.world, &app.outerWorlds, app.logger, &app.resources)
 	if err != nil {
 		app.logger.Error(fmt.Sprintf("%s - failed to add system %s: %v",
 			app.name,
@@ -245,7 +245,7 @@ func (app *SubApp) NumberOfSchedules() uint {
 }
 
 func (app *SubApp) World() *ecs.World {
-	return &app.world
+	return app.world
 }
 
 func (app *SubApp) OuterWorlds() *map[ecs.WorldId]*ecs.World {
@@ -277,7 +277,7 @@ func (app *SubApp) UseFixedRunner() {
 	app.runner = &fixedRunner{
 		tickRate:    app.tickRate,
 		delta:       app.lastDelta,
-		world:       &app.world,
+		world:       app.world,
 		outerWorlds: &app.outerWorlds,
 		logger:      app.logger,
 		appName:     app.name,
@@ -288,7 +288,7 @@ func (app *SubApp) UseFixedRunner() {
 func (app *SubApp) UseUncappedRunner() {
 	app.runner = &uncappedRunner{
 		delta:       app.lastDelta,
-		world:       &app.world,
+		world:       app.world,
 		outerWorlds: &app.outerWorlds,
 		logger:      app.logger,
 		appName:     app.name,
@@ -298,7 +298,7 @@ func (app *SubApp) UseUncappedRunner() {
 // newOnceRunner creates a runner that runs systems only once.
 func (app *SubApp) newOnceRunner() onceRunner {
 	return onceRunner{
-		world:       &app.world,
+		world:       app.world,
 		outerWorlds: &app.outerWorlds,
 		logger:      app.logger,
 		appName:     app.name,

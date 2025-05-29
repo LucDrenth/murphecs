@@ -13,7 +13,7 @@ func TestHasComponent(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		_, err := HasComponent[componentA](&world, nonExistingEntity)
+		_, err := HasComponent[componentA](world, nonExistingEntity)
 		assert.ErrorIs(err, ErrEntityNotFound)
 	})
 
@@ -21,10 +21,10 @@ func TestHasComponent(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(&world)
+		entity, err := Spawn(world)
 		assert.NoError(err)
 
-		result, err := HasComponent[componentA](&world, entity)
+		result, err := HasComponent[componentA](world, entity)
 		assert.NoError(err)
 		assert.False(result)
 	})
@@ -33,10 +33,10 @@ func TestHasComponent(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(&world, &componentA{})
+		entity, err := Spawn(world, &componentA{})
 		assert.NoError(err)
 
-		result, err := HasComponent[componentA](&world, entity)
+		result, err := HasComponent[componentA](world, entity)
 		assert.NoError(err)
 		assert.True(result)
 	})
@@ -49,9 +49,9 @@ func TestHasComponentId(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		componentId := ComponentIdFor[componentA](&world)
+		componentId := ComponentIdFor[componentA](world)
 
-		_, err := HasComponentId(&world, nonExistingEntity, componentId)
+		_, err := HasComponentId(world, nonExistingEntity, componentId)
 		assert.ErrorIs(err, ErrEntityNotFound)
 	})
 
@@ -59,11 +59,11 @@ func TestHasComponentId(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(&world)
+		entity, err := Spawn(world)
 		assert.NoError(err)
-		componentId := ComponentIdFor[componentA](&world)
+		componentId := ComponentIdFor[componentA](world)
 
-		result, err := HasComponentId(&world, entity, componentId)
+		result, err := HasComponentId(world, entity, componentId)
 		assert.NoError(err)
 		assert.False(result)
 	})
@@ -72,11 +72,11 @@ func TestHasComponentId(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(&world, &componentA{})
+		entity, err := Spawn(world, &componentA{})
 		assert.NoError(err)
-		componentId := ComponentIdFor[componentA](&world)
+		componentId := ComponentIdFor[componentA](world)
 
-		result, err := HasComponentId(&world, entity, componentId)
+		result, err := HasComponentId(world, entity, componentId)
 		assert.NoError(err)
 		assert.True(result)
 	})

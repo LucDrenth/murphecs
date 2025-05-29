@@ -19,15 +19,15 @@ type Dialog struct {
 
 func main() {
 	world := ecs.NewDefaultWorld()
-	ecs.Spawn(&world, &NPC{name: "Murphy"}, &Friendly{}, &Dialog{text: "hi my name is Murphy"})
-	ecs.Spawn(&world, &NPC{name: "Yuki"}, &Dialog{text: "my name is Yuki"})
-	ecs.Spawn(&world, &NPC{name: "Fiona"}, &Friendly{}, &Dialog{text: "hi my name is Fiona"})
-	ecs.Spawn(&world, &NPC{name: "Bob"})
+	ecs.Spawn(world, &NPC{name: "Murphy"}, &Friendly{}, &Dialog{text: "hi my name is Murphy"})
+	ecs.Spawn(world, &NPC{name: "Yuki"}, &Dialog{text: "my name is Yuki"})
+	ecs.Spawn(world, &NPC{name: "Fiona"}, &Friendly{}, &Dialog{text: "hi my name is Fiona"})
+	ecs.Spawn(world, &NPC{name: "Bob"})
 
 	// Query all NPC components
 	query := ecs.Query1[NPC, ecs.Default]{}
-	query.Prepare(&world)
-	query.Exec(&world)
+	query.Prepare(world)
+	query.Exec(world)
 	query.Result().Iter(func(entityId ecs.EntityId, npc *NPC) error {
 		fmt.Printf("simple query: %d: %s \n", entityId, npc.name)
 		return nil
@@ -35,8 +35,8 @@ func main() {
 
 	// Query all NPC components of entities that have the Friendly component
 	query2 := ecs.Query1[NPC, ecs.With[Friendly]]{}
-	query2.Prepare(&world)
-	query2.Exec(&world)
+	query2.Prepare(world)
+	query2.Exec(world)
 	query2.Result().Iter(func(entityId ecs.EntityId, npc *NPC) error {
 		fmt.Printf("query with Friendly: %d: %s \n", entityId, npc.name)
 		return nil
@@ -44,8 +44,8 @@ func main() {
 
 	// Query all NPC and Dialog components of entities that do not have the Friendly component
 	query3 := ecs.Query2[NPC, Dialog, ecs.Without[Friendly]]{}
-	query3.Prepare(&world)
-	query3.Exec(&world)
+	query3.Prepare(world)
+	query3.Exec(world)
 	query3.Result().Iter(func(entityId ecs.EntityId, npc *NPC, dialog *Dialog) error {
 		fmt.Printf("query without Friendly: %d: %s says %s \n", entityId, npc.name, dialog.text)
 		return nil
@@ -80,9 +80,9 @@ func main() {
 
 	// You can set query options using functions instead of with generics. You won't have to call Prepare
 	dynamicallyBuildQuery := ecs.Query1[NPC, ecs.Default]{}
-	ecs.QueryWith[Dialog](&world, &dynamicallyBuildQuery)
-	ecs.QueryWithout[Friendly](&world, &dynamicallyBuildQuery)
+	ecs.QueryWith[Dialog](world, &dynamicallyBuildQuery)
+	ecs.QueryWithout[Friendly](world, &dynamicallyBuildQuery)
 	ecs.QueryWithAllReadOnly(&dynamicallyBuildQuery)
-	ecs.QueryWithOptional[NPC](&world, &dynamicallyBuildQuery)
-	dynamicallyBuildQuery.Exec(&world)
+	ecs.QueryWithOptional[NPC](world, &dynamicallyBuildQuery)
+	dynamicallyBuildQuery.Exec(world)
 }

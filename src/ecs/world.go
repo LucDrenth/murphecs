@@ -3,6 +3,7 @@ package ecs
 import (
 	"errors"
 	"reflect"
+	"sync"
 )
 
 type WorldId int
@@ -18,10 +19,12 @@ type World struct {
 
 	initialComponentCapacityStrategy initialComponentCapacityStrategy
 	componentCapacityGrowthStrategy  componentCapacityGrowthStrategy
+
+	Mutex sync.RWMutex
 }
 
 // NewDefaultWorld returns a World with default configs.
-func NewDefaultWorld() World {
+func NewDefaultWorld() *World {
 	world, err := NewWorld(DefaultWorldConfigs())
 	if err != nil {
 		// Creating a world with default configs should never result in an error.
@@ -30,7 +33,7 @@ func NewDefaultWorld() World {
 		panic(err)
 	}
 
-	return world
+	return &world
 }
 
 // NewWorld returns a world that can contain entities and components.

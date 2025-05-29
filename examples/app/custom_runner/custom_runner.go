@@ -69,5 +69,5 @@ func main() {
 			log.Info("running system 2!")
 		})
 
-	run.RunApp(&myApp)
+	run.RunApps(myApp)
 }

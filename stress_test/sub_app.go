@@ -61,7 +61,7 @@ func main() {
 		AddSystem(update, runQuery).
 		AddSystem(update, printTPS)
 
-	run.RunApp(&myApp)
+	run.RunApps(myApp)
 }
 
 // Fills the world with 7 different archetypes

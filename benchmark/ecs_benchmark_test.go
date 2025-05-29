@@ -11,39 +11,39 @@ func BenchmarkSpawn(b *testing.B) {
 	b.Run("VariadicOneComponent", func(b *testing.B) {
 		for b.Loop() {
 			world := ecs.NewDefaultWorld()
-			ecs.Spawn(&world, &emptyComponentA{})
+			ecs.Spawn(world, &emptyComponentA{})
 		}
 	})
 
 	b.Run("VariadicTwoComponents", func(b *testing.B) {
 		for b.Loop() {
 			world := ecs.NewDefaultWorld()
-			ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{})
+			ecs.Spawn(world, &emptyComponentA{}, &emptyComponentB{})
 		}
 	})
 
 	b.Run("VariadicThreeComponents", func(b *testing.B) {
 		for b.Loop() {
 			world := ecs.NewDefaultWorld()
-			ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{})
+			ecs.Spawn(world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{})
 		}
 	})
 
 	b.Run("VariadicFourComponents", func(b *testing.B) {
 		for b.Loop() {
 			world := ecs.NewDefaultWorld()
-			ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+			ecs.Spawn(world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 		}
 	})
 }
 
 func BenchmarkInsert(b *testing.B) {
 	for _, size := range []int{10, 100, 1_000, 10_000} {
-		setupWorld := func() ecs.World {
+		setupWorld := func() *ecs.World {
 			world := ecs.NewDefaultWorld()
 
 			for range size {
-				if err := fillWorld(&world); err != nil {
+				if err := fillWorld(world); err != nil {
 					b.FailNow()
 				}
 			}
@@ -55,8 +55,8 @@ func BenchmarkInsert(b *testing.B) {
 			world := setupWorld()
 
 			for b.Loop() {
-				entity, _ := ecs.Spawn(&world)
-				ecs.Insert(&world, entity, &emptyComponentA{})
+				entity, _ := ecs.Spawn(world)
+				ecs.Insert(world, entity, &emptyComponentA{})
 			}
 		})
 
@@ -64,8 +64,8 @@ func BenchmarkInsert(b *testing.B) {
 			world := setupWorld()
 
 			for b.Loop() {
-				entity, _ := ecs.Spawn(&world)
-				ecs.Insert(&world, entity, &emptyComponentA{}, &emptyComponentB{})
+				entity, _ := ecs.Spawn(world)
+				ecs.Insert(world, entity, &emptyComponentA{}, &emptyComponentB{})
 			}
 		})
 
@@ -73,8 +73,8 @@ func BenchmarkInsert(b *testing.B) {
 			world := setupWorld()
 
 			for b.Loop() {
-				entity, _ := ecs.Spawn(&world)
-				ecs.Insert(&world, entity, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{})
+				entity, _ := ecs.Spawn(world)
+				ecs.Insert(world, entity, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{})
 			}
 		})
 
@@ -82,8 +82,8 @@ func BenchmarkInsert(b *testing.B) {
 			world := setupWorld()
 
 			for b.Loop() {
-				entity, _ := ecs.Spawn(&world)
-				ecs.Insert(&world, entity, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+				entity, _ := ecs.Spawn(world)
+				ecs.Insert(world, entity, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 			}
 		})
 	}
@@ -91,11 +91,11 @@ func BenchmarkInsert(b *testing.B) {
 
 func BenchmarkRemove(b *testing.B) {
 	for _, size := range []int{10, 100, 1_000, 10_000} {
-		setupWorld := func() ecs.World {
+		setupWorld := func() *ecs.World {
 			world := ecs.NewDefaultWorld()
 
 			for range size {
-				if err := fillWorld(&world); err != nil {
+				if err := fillWorld(world); err != nil {
 					b.FailNow()
 				}
 			}
@@ -107,8 +107,8 @@ func BenchmarkRemove(b *testing.B) {
 			world := setupWorld()
 
 			for b.Loop() {
-				entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
-				ecs.Remove1[emptyComponentA](&world, entity)
+				entity, _ := ecs.Spawn(world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+				ecs.Remove1[emptyComponentA](world, entity)
 			}
 		})
 
@@ -116,8 +116,8 @@ func BenchmarkRemove(b *testing.B) {
 			world := setupWorld()
 
 			for b.Loop() {
-				entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
-				ecs.Remove2[emptyComponentA, emptyComponentB](&world, entity)
+				entity, _ := ecs.Spawn(world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+				ecs.Remove2[emptyComponentA, emptyComponentB](world, entity)
 			}
 		})
 
@@ -125,8 +125,8 @@ func BenchmarkRemove(b *testing.B) {
 			world := setupWorld()
 
 			for b.Loop() {
-				entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
-				ecs.Remove3[emptyComponentA, emptyComponentB, emptyComponentC](&world, entity)
+				entity, _ := ecs.Spawn(world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+				ecs.Remove3[emptyComponentA, emptyComponentB, emptyComponentC](world, entity)
 			}
 		})
 
@@ -134,8 +134,8 @@ func BenchmarkRemove(b *testing.B) {
 			world := setupWorld()
 
 			for b.Loop() {
-				entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
-				ecs.Remove4[emptyComponentA, emptyComponentB, emptyComponentC, emptyComponentD](&world, entity)
+				entity, _ := ecs.Spawn(world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+				ecs.Remove4[emptyComponentA, emptyComponentB, emptyComponentC, emptyComponentD](world, entity)
 			}
 		})
 	}
@@ -143,49 +143,49 @@ func BenchmarkRemove(b *testing.B) {
 
 func BenchmarkDelete(b *testing.B) {
 	world := ecs.NewDefaultWorld()
-	if err := fillWorld(&world); err != nil {
+	if err := fillWorld(world); err != nil {
 		b.FailNow()
 	}
 
 	for b.Loop() {
-		entity, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
-		ecs.Delete(&world, entity)
+		entity, _ := ecs.Spawn(world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+		ecs.Delete(world, entity)
 	}
 }
 
 func BenchmarkGet(b *testing.B) {
 	world := ecs.NewDefaultWorld()
-	if err := fillWorld(&world); err != nil {
+	if err := fillWorld(world); err != nil {
 		b.FailNow()
 	}
 
-	target, _ := ecs.Spawn(&world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+	target, _ := ecs.Spawn(world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
 
-	if err := fillWorld(&world); err != nil {
+	if err := fillWorld(world); err != nil {
 		b.FailNow()
 	}
 
 	b.Run("Get1", func(b *testing.B) {
 		for b.Loop() {
-			ecs.Get1[emptyComponentA](&world, target)
+			ecs.Get1[emptyComponentA](world, target)
 		}
 	})
 
 	b.Run("Get2", func(b *testing.B) {
 		for b.Loop() {
-			ecs.Get2[emptyComponentA, emptyComponentB](&world, target)
+			ecs.Get2[emptyComponentA, emptyComponentB](world, target)
 		}
 	})
 
 	b.Run("Get3", func(b *testing.B) {
 		for b.Loop() {
-			ecs.Get3[emptyComponentA, emptyComponentB, emptyComponentC](&world, target)
+			ecs.Get3[emptyComponentA, emptyComponentB, emptyComponentC](world, target)
 		}
 	})
 
 	b.Run("Get4", func(b *testing.B) {
 		for b.Loop() {
-			ecs.Get4[emptyComponentA, emptyComponentB, emptyComponentC, emptyComponentD](&world, target)
+			ecs.Get4[emptyComponentA, emptyComponentB, emptyComponentC, emptyComponentD](world, target)
 		}
 	})
 }
@@ -195,20 +195,20 @@ func BenchmarkHasComponent(b *testing.B) {
 		world := ecs.NewDefaultWorld()
 
 		for range numberOfEntities {
-			if err := fillWorld(&world); err != nil {
+			if err := fillWorld(world); err != nil {
 				b.FailNow()
 			}
 
-			if _, err := ecs.Spawn(&world, &emptyComponentA{}); err != nil {
+			if _, err := ecs.Spawn(world, &emptyComponentA{}); err != nil {
 				b.Fatal(err)
 			}
 
-			if _, err := ecs.Spawn(&world); err != nil {
+			if _, err := ecs.Spawn(world); err != nil {
 				b.Fatal(err)
 			}
 		}
 
-		entity, err := ecs.Spawn(&world, &emptyComponentA{})
+		entity, err := ecs.Spawn(world, &emptyComponentA{})
 		if err != nil {
 			b.Fatal(err)
 		}
@@ -217,7 +217,7 @@ func BenchmarkHasComponent(b *testing.B) {
 			var componentFound bool
 
 			for b.Loop() {
-				componentFound, err = ecs.HasComponent[emptyComponentA](&world, entity)
+				componentFound, err = ecs.HasComponent[emptyComponentA](world, entity)
 			}
 
 			if err != nil {
@@ -232,7 +232,7 @@ func BenchmarkHasComponent(b *testing.B) {
 			var componentFound bool
 
 			for b.Loop() {
-				componentFound, err = ecs.HasComponent[emptyComponentB](&world, entity)
+				componentFound, err = ecs.HasComponent[emptyComponentB](world, entity)
 			}
 
 			if err != nil {
@@ -249,32 +249,32 @@ func BenchmarkHasComponentId(b *testing.B) {
 	for _, numberOfEntities := range []int{10, 100, 1_000, 10_000} {
 		world := ecs.NewDefaultWorld()
 		for range numberOfEntities {
-			if err := fillWorld(&world); err != nil {
+			if err := fillWorld(world); err != nil {
 				b.FailNow()
 			}
 
-			if _, err := ecs.Spawn(&world, &emptyComponentA{}); err != nil {
+			if _, err := ecs.Spawn(world, &emptyComponentA{}); err != nil {
 				b.Fatal(err)
 			}
 
-			if _, err := ecs.Spawn(&world); err != nil {
+			if _, err := ecs.Spawn(world); err != nil {
 				b.Fatal(err)
 			}
 		}
 
-		entity, err := ecs.Spawn(&world, &emptyComponentA{})
+		entity, err := ecs.Spawn(world, &emptyComponentA{})
 		if err != nil {
 			b.Fatal(err)
 		}
 
-		componentIdA := ecs.ComponentIdFor[emptyComponentA](&world)
-		componentIdB := ecs.ComponentIdFor[emptyComponentB](&world)
+		componentIdA := ecs.ComponentIdFor[emptyComponentA](world)
+		componentIdB := ecs.ComponentIdFor[emptyComponentB](world)
 
 		b.Run(fmt.Sprintf("ComponentFound-%d-Entities", numberOfEntities), func(b *testing.B) {
 			var componentFound bool
 
 			for b.Loop() {
-				componentFound, err = ecs.HasComponentId(&world, entity, componentIdA)
+				componentFound, err = ecs.HasComponentId(world, entity, componentIdA)
 			}
 
 			if err != nil {
@@ -289,7 +289,7 @@ func BenchmarkHasComponentId(b *testing.B) {
 			var componentFound bool
 
 			for b.Loop() {
-				componentFound, err = ecs.HasComponentId(&world, entity, componentIdB)
+				componentFound, err = ecs.HasComponentId(world, entity, componentIdB)
 			}
 
 			if err != nil {
@@ -307,7 +307,7 @@ func BenchmarkQuery(b *testing.B) {
 		world := ecs.NewDefaultWorld()
 
 		for range size {
-			if err := fillWorld(&world); err != nil {
+			if err := fillWorld(world); err != nil {
 				b.FailNow()
 			}
 		}
@@ -315,299 +315,299 @@ func BenchmarkQuery(b *testing.B) {
 		b.Run(fmt.Sprintf("Query0-Basic-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query0[ecs.Default]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query0-With1-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query0[ecs.With[emptyComponentC]]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query0-Without1-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query0[ecs.Without[emptyComponentC]]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query1-Basic-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query1[emptyComponentA, ecs.Default]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query1-Optional-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query1[emptyComponentA, ecs.Optional1[emptyComponentA]]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query1-ReadOnly-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query1[emptyComponentA, ecs.AllReadOnly]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query1-With1-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query1[emptyComponentA, ecs.With[emptyComponentC]]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query1-Without1-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query1[emptyComponentA, ecs.Without[emptyComponentC]]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query2-Basic-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.Default]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query2-Optional-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.Optional1[emptyComponentA]]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query2-ReadOnly-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.AllReadOnly]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query2-With1-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.With[emptyComponentC]]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query2-Without1-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.Without[emptyComponentC]]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query3-Basic-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query3[emptyComponentA, emptyComponentD, emptyComponentC, ecs.Default]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query3-Optional-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query3[emptyComponentA, emptyComponentD, emptyComponentC, ecs.Optional1[emptyComponentA]]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query3-ReadOnly-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query3[emptyComponentA, emptyComponentD, emptyComponentC, ecs.AllReadOnly]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query3-With1-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query3[emptyComponentA, emptyComponentD, emptyComponentC, ecs.With[componentWithValue]]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query3-Without1-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query3[emptyComponentA, emptyComponentD, emptyComponentC, ecs.Without[componentWithValue]]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query4-Basic-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query4[emptyComponentA, emptyComponentD, emptyComponentB, emptyComponentC, ecs.Default]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query4-Optional-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query4[emptyComponentA, emptyComponentD, emptyComponentB, emptyComponentC, ecs.Optional1[emptyComponentA]]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query4-ReadOnly-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query4[emptyComponentA, emptyComponentD, emptyComponentB, emptyComponentC, ecs.AllReadOnly]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query4-With1-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query4[emptyComponentA, emptyComponentD, emptyComponentB, emptyComponentC, ecs.With[componentWithValue]]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 
 		b.Run(fmt.Sprintf("Query4-Without1-Size-%d", size), func(b *testing.B) {
 			query := ecs.Query4[emptyComponentA, emptyComponentD, emptyComponentB, emptyComponentC, ecs.Without[componentWithValue]]{}
 
-			err := query.Prepare(&world)
+			err := query.Prepare(world)
 			if err != nil {
 				b.FailNow()
 			}
 
 			for b.Loop() {
-				query.Exec(&world)
+				query.Exec(world)
 			}
 		})
 	}

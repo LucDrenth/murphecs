@@ -11,7 +11,7 @@ func BenchmarkToComponentId(b *testing.B) {
 	component := componentA{}
 
 	for b.Loop() {
-		ComponentIdOf(component, &world)
+		ComponentIdOf(component, world)
 	}
 }
 
@@ -21,7 +21,7 @@ func BenchmarkGetComponentId(b *testing.B) {
 	world := NewDefaultWorld()
 
 	for b.Loop() {
-		ComponentIdFor[componentA](&world)
-		ComponentIdFor[*componentA](&world)
+		ComponentIdFor[componentA](world)
+		ComponentIdFor[*componentA](world)
 	}
 }
