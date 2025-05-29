@@ -39,7 +39,7 @@ func TestQuery0(t *testing.T) {
 
 		foundExpectedEntity1 := false
 		foundExpectedEntity2 := false
-		query.results.Iter(func(entityId EntityId) error {
+		query.results.Iter(func(entityId EntityId) {
 			if entityId == expectedEntity1 {
 				foundExpectedEntity1 = true
 			} else if entityId == expectedEntity2 {
@@ -47,7 +47,6 @@ func TestQuery0(t *testing.T) {
 			} else {
 				assert.FailNow("returned unexpected entity", entityId)
 			}
-			return nil
 		})
 
 		assert.True(foundExpectedEntity1)
@@ -98,7 +97,7 @@ func TestQuery1(t *testing.T) {
 		err = query.Exec(world)
 		assert.NoError(err)
 		assert.Equal(uint(2), query.Result().NumberOfResult())
-		query.results.Iter(func(entityId EntityId, a *componentA) error {
+		query.results.Iter(func(entityId EntityId, a *componentA) {
 			if entityId == expectedEntity1 {
 				assert.Equal(expectedValue1, a.value)
 			} else if entityId == expectedEntity2 {
@@ -106,7 +105,6 @@ func TestQuery1(t *testing.T) {
 			} else {
 				assert.FailNow("returned unexpected entity", entityId)
 			}
-			return nil
 		})
 
 		query.Result().Clear()
@@ -193,9 +191,8 @@ func TestQuery1(t *testing.T) {
 		assert.NoError(err)
 
 		assert.Equal(uint(1), query.Result().NumberOfResult())
-		query.results.Iter(func(entityId EntityId, _ *componentA) error {
+		query.results.Iter(func(entityId EntityId, _ *componentA) {
 			assert.Equal(expected, entityId)
-			return nil
 		})
 	})
 
@@ -266,16 +263,14 @@ func TestQuery1(t *testing.T) {
 
 		err = query.Exec(world)
 		assert.NoError(err)
-		query.results.Iter(func(entityId EntityId, a *componentA) error {
+		query.results.Iter(func(entityId EntityId, a *componentA) {
 			a.value = expectedValue
-			return nil
 		})
 
 		err = query.Exec(world)
 		assert.NoError(err)
-		query.results.Iter(func(entityId EntityId, a *componentA) error {
+		query.results.Iter(func(entityId EntityId, a *componentA) {
 			assert.Equal(expectedValue, a.value)
-			return nil
 		})
 	})
 
@@ -294,16 +289,14 @@ func TestQuery1(t *testing.T) {
 
 		err = query.Exec(world)
 		assert.NoError(err)
-		query.results.Iter(func(entityId EntityId, a *componentA) error {
+		query.results.Iter(func(entityId EntityId, a *componentA) {
 			a.value = 10
-			return nil
 		})
 
 		err = query.Exec(world)
 		assert.NoError(err)
-		query.results.Iter(func(entityId EntityId, a *componentA) error {
+		query.results.Iter(func(entityId EntityId, a *componentA) {
 			assert.Equal(expectedValue, a.value)
-			return nil
 		})
 	})
 
@@ -323,7 +316,7 @@ func TestQuery1(t *testing.T) {
 
 		assert.Equal(uint(2), query.Result().NumberOfResult())
 		numberOfIterations := 0
-		query.Result().Iter(func(_ EntityId, _ *componentA) error {
+		query.Result().IterUntil(func(_ EntityId, _ *componentA) error {
 			numberOfIterations++
 			return errors.New("oops")
 		})

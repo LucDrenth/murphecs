@@ -28,27 +28,24 @@ func main() {
 	query := ecs.Query1[NPC, ecs.Default]{}
 	query.Prepare(world)
 	query.Exec(world)
-	query.Result().Iter(func(entityId ecs.EntityId, npc *NPC) error {
+	query.Result().Iter(func(entityId ecs.EntityId, npc *NPC) {
 		fmt.Printf("simple query: %d: %s \n", entityId, npc.name)
-		return nil
 	})
 
 	// Query all NPC components of entities that have the Friendly component
 	query2 := ecs.Query1[NPC, ecs.With[Friendly]]{}
 	query2.Prepare(world)
 	query2.Exec(world)
-	query2.Result().Iter(func(entityId ecs.EntityId, npc *NPC) error {
+	query2.Result().Iter(func(entityId ecs.EntityId, npc *NPC) {
 		fmt.Printf("query with Friendly: %d: %s \n", entityId, npc.name)
-		return nil
 	})
 
 	// Query all NPC and Dialog components of entities that do not have the Friendly component
 	query3 := ecs.Query2[NPC, Dialog, ecs.Without[Friendly]]{}
 	query3.Prepare(world)
 	query3.Exec(world)
-	query3.Result().Iter(func(entityId ecs.EntityId, npc *NPC, dialog *Dialog) error {
+	query3.Result().Iter(func(entityId ecs.EntityId, npc *NPC, dialog *Dialog) {
 		fmt.Printf("query without Friendly: %d: %s says %s \n", entityId, npc.name, dialog.text)
-		return nil
 	})
 
 	// You can specify multiple query options with ecs.QueryOptions2, ecs.QueryOptions3 ...

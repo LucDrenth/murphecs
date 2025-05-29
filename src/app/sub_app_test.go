@@ -336,21 +336,19 @@ func TestConcurrency(t *testing.T) {
 				return err
 			}).
 			AddSystem(update, func(query *ecs.Query1[component, ecs.Default]) {
-				query.Result().Iter(func(entityId ecs.EntityId, a *component) error {
+				query.Result().Iter(func(entityId ecs.EntityId, a *component) {
 					target := len(a.data)
 					a.data[strconv.Itoa(target)] = target
-					return nil
 				})
 			})
 
 		subAppB.
 			AddResource(logger).
 			AddSystem(update, func(log *testLogger, query *ecs.Query1[component, ecs.TestCustomTargetWorld]) {
-				query.Result().Iter(func(entityId ecs.EntityId, a *component) error {
+				query.Result().Iter(func(entityId ecs.EntityId, a *component) {
 					for k, v := range a.data {
 						log.Info(fmt.Sprintf("%s=%d\t", k, v))
 					}
-					return nil
 				})
 			})
 

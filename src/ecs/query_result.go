@@ -101,9 +101,44 @@ func (q *Query2Result[A, B]) Range() func(yield func(*A, *B) bool) {
 	}
 }
 
-// Iter executes function f on each entity that the query returned, until f returns an error.
+// Iter executes function f on each entity that the query returned
+func (q *Query0Result) Iter(f func(entityId EntityId)) {
+	for i := range q.entityIds {
+		f(q.entityIds[i])
+	}
+}
+
+// Iter executes function f on each entity that the query returned
+func (q *Query1Result[A]) Iter(f func(entityId EntityId, a *A)) {
+	for i := range q.entityIds {
+		f(q.entityIds[i], q.componentsA[i])
+	}
+}
+
+// Iter executes function f on each entity that the query returned
+func (q *Query2Result[A, B]) Iter(f func(entityId EntityId, a *A, b *B)) {
+	for i := range q.entityIds {
+		f(q.entityIds[i], q.componentsA[i], q.componentsB[i])
+	}
+}
+
+// Iter executes function f on each entity that the query returned
+func (q *Query3Result[A, B, C]) Iter(f func(entityId EntityId, a *A, b *B, c *C)) {
+	for i := range q.entityIds {
+		f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i])
+	}
+}
+
+// Iter executes function f on each entity that the query returned
+func (q *Query4Result[A, B, C, D]) Iter(f func(entityId EntityId, a *A, b *B, c *C, d *D)) {
+	for i := range q.entityIds {
+		f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i])
+	}
+}
+
+// IterUntil executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
-func (q *Query0Result) Iter(f func(entityId EntityId) error) error {
+func (q *Query0Result) IterUntil(f func(entityId EntityId) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i]); err != nil {
 			return err
@@ -113,9 +148,9 @@ func (q *Query0Result) Iter(f func(entityId EntityId) error) error {
 	return nil
 }
 
-// Iter executes function f on each entity that the query returned, until f returns an error.
+// IterUntil executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
-func (q *Query1Result[A]) Iter(f func(entityId EntityId, a *A) error) error {
+func (q *Query1Result[A]) IterUntil(f func(entityId EntityId, a *A) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i]); err != nil {
 			return err
@@ -125,9 +160,9 @@ func (q *Query1Result[A]) Iter(f func(entityId EntityId, a *A) error) error {
 	return nil
 }
 
-// Iter executes function f on each entity that the query returned, until f returns an error.
+// IterUntil executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
-func (q *Query2Result[A, B]) Iter(f func(entityId EntityId, a *A, b *B) error) error {
+func (q *Query2Result[A, B]) IterUntil(f func(entityId EntityId, a *A, b *B) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i]); err != nil {
 			return err
@@ -137,9 +172,9 @@ func (q *Query2Result[A, B]) Iter(f func(entityId EntityId, a *A, b *B) error) e
 	return nil
 }
 
-// Iter executes function f on each entity that the query returned, until f returns an error.
+// IterUntil executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
-func (q *Query3Result[A, B, C]) Iter(f func(entityId EntityId, a *A, b *B, c *C) error) error {
+func (q *Query3Result[A, B, C]) IterUntil(f func(entityId EntityId, a *A, b *B, c *C) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i]); err != nil {
 			return err
@@ -149,9 +184,9 @@ func (q *Query3Result[A, B, C]) Iter(f func(entityId EntityId, a *A, b *B, c *C)
 	return nil
 }
 
-// Iter executes function f on each entity that the query returned, until f returns an error.
+// IterUntil executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
-func (q *Query4Result[A, B, C, D]) Iter(f func(entityId EntityId, a *A, b *B, c *C, d *D) error) error {
+func (q *Query4Result[A, B, C, D]) IterUntil(f func(entityId EntityId, a *A, b *B, c *C, d *D) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i]); err != nil {
 			return err

@@ -15,7 +15,6 @@
 - [feature] Add Query5..Query16 and Optional5..Optional16
 - [tests] More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
 - [quality-of-life] handle spawning/inserting nil
-- [quality-of-life] make Iter func not return anything and add IterUntil with the current error returning functionality
 
 # Project
 - [feature] Linter
