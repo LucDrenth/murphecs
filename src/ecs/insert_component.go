@@ -82,7 +82,7 @@ func Insert(world *World, entity EntityId, components ...IComponent) (resultErr 
 			return err
 		}
 
-		err, removeResult := oldStorage.remove(entityData.row)
+		removeResult, err := oldStorage.remove(entityData.row)
 		if err != nil {
 			return err
 		}
@@ -160,7 +160,10 @@ func InsertOrOverwrite(world *World, entity EntityId, components ...IComponent) 
 	componentsToAdd := make([]IComponent, 0, len(components))
 	for i, componentId := range componentIds {
 		if oldArchetype.HasComponent(componentId) {
-			oldArchetype.components[componentId].set(components[i], entityData.row)
+			err := oldArchetype.components[componentId].set(components[i], entityData.row)
+			if err != nil {
+				resultErr = err
+			}
 		} else {
 			componentIdsToAdd = append(componentIdsToAdd, componentId)
 			componentsToAdd = append(componentsToAdd, components[i])
@@ -194,7 +197,7 @@ func InsertOrOverwrite(world *World, entity EntityId, components ...IComponent) 
 			return err
 		}
 
-		err, removeResult := oldStorage.remove(entityData.row)
+		removeResult, err := oldStorage.remove(entityData.row)
 		if err != nil {
 			return err
 		}

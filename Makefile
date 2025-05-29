@@ -17,3 +17,9 @@ benchmark-ecs:
 
 lint:
 	go tool golangci-lint run
+
+fix-lint:
+	go tool golangci-lint run --fix
+
+verify-lint-config:
+	go tool golangci-lint config verify

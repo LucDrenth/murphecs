@@ -51,7 +51,10 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
 	// The following resources are reserved by this app. If a user would add them, systems would
 	// use the reserved resource instead if the inserted resource, which could cause confusion. So
 	// we register them as blacklisted so that an error is logged when the user tries to add them.
-	registerBlacklistedResource[*ecs.World](&resourceStorage)
+	err = registerBlacklistedResource[*ecs.World](&resourceStorage)
+	if err != nil {
+		logger.Warn(fmt.Sprintf("App - failed to register blacklisted resource: %v", err))
+	}
 
 	subApp := SubApp{
 		world: &world,

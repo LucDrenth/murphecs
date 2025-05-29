@@ -174,9 +174,9 @@ type movedComponent struct {
 
 // remove moves the last item of the component storage to the index of the removed component and returns the indices
 // of its old and new spot. This should be used to update the entity data.
-func (storage *componentStorage) remove(index uint) (error, *movedComponent) {
+func (storage *componentStorage) remove(index uint) (*movedComponent, error) {
 	if index >= storage.nextItemIndex {
-		return fmt.Errorf("%w: %d", ErrComponentStorageIndexOutOfBounds, index), nil
+		return nil, fmt.Errorf("%w: %d", ErrComponentStorageIndexOutOfBounds, index)
 	}
 
 	storage.numberOfComponents -= 1
@@ -194,12 +194,12 @@ func (storage *componentStorage) remove(index uint) (error, *movedComponent) {
 
 	err := storage.copyComponent(result.fromIndex, result.toIndex)
 	if err != nil {
-		return fmt.Errorf("failed to move component: %w", err), &result
+		return &result, fmt.Errorf("failed to move component: %w", err)
 	}
 
 	storage.nextItemIndex -= 1
 
-	return nil, &result
+	return &result, nil
 }
 
 // copyComponent copies a component from one index in the storage to another. Both indices must already be

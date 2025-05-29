@@ -42,17 +42,6 @@ func TestAddSystem(t *testing.T) {
 		assert.NoError(err)
 	})
 
-	t.Run("returns an error when using non-pointer world as system param", func(t *testing.T) {
-		assert := assert.New(t)
-		systemSet := SystemSet{}
-		world := ecs.NewDefaultWorld()
-		logger := NoOpLogger{}
-		resourceStorage := newResourceStorage()
-
-		err := systemSet.add(func(world ecs.World) {}, world, nil, &logger, &resourceStorage)
-		assert.ErrorIs(err, ErrSystemParamWorldNotAPointer)
-	})
-
 	t.Run("returns an error when using non-pointer ecs.Query as system param", func(t *testing.T) {
 		type componentA struct{ ecs.Component }
 

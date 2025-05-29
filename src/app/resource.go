@@ -88,13 +88,11 @@ func getResourceFromStorage[T Resource](s *resourceStorage) (result T, err error
 		return result, ErrResourceTypeNotValid
 	}
 
-	ok := false
-
 	if resourceType.Kind() != reflect.Pointer {
 		untypedResource = reflect.ValueOf(untypedResource).Elem().Interface()
 	}
 
-	result, ok = untypedResource.(T)
+	result, ok := untypedResource.(T)
 	if !ok {
 		return result, fmt.Errorf("%w: failed to cast resource to %s", ErrResourceTypeNotValid, resourceId.String())
 	}

@@ -10,7 +10,6 @@ import (
 func TestQuery0(t *testing.T) {
 	type componentA struct{ Component }
 	type componentB struct{ Component }
-	type componentC struct{ Component }
 
 	t.Run("query with default options return the expected results", func(t *testing.T) {
 		assert := assert.New(t)
@@ -40,11 +39,12 @@ func TestQuery0(t *testing.T) {
 		foundExpectedEntity1 := false
 		foundExpectedEntity2 := false
 		query.results.Iter(func(entityId EntityId) {
-			if entityId == expectedEntity1 {
+			switch entityId {
+			case expectedEntity1:
 				foundExpectedEntity1 = true
-			} else if entityId == expectedEntity2 {
+			case expectedEntity2:
 				foundExpectedEntity2 = true
-			} else {
+			default:
 				assert.FailNow("returned unexpected entity", entityId)
 			}
 		})
@@ -98,11 +98,12 @@ func TestQuery1(t *testing.T) {
 		assert.NoError(err)
 		assert.Equal(uint(2), query.Result().NumberOfResult())
 		query.results.Iter(func(entityId EntityId, a *componentA) {
-			if entityId == expectedEntity1 {
+			switch entityId {
+			case expectedEntity1:
 				assert.Equal(expectedValue1, a.value)
-			} else if entityId == expectedEntity2 {
+			case expectedEntity2:
 				assert.Equal(expectedValue2, a.value)
-			} else {
+			default:
 				assert.FailNow("returned unexpected entity", entityId)
 			}
 		})
@@ -316,11 +317,12 @@ func TestQuery1(t *testing.T) {
 
 		assert.Equal(uint(2), query.Result().NumberOfResult())
 		numberOfIterations := 0
-		query.Result().IterUntil(func(_ EntityId, _ *componentA) error {
+		err = query.Result().IterUntil(func(_ EntityId, _ *componentA) error {
 			numberOfIterations++
 			return errors.New("oops")
 		})
 
+		assert.Error(err)
 		assert.Equal(1, numberOfIterations)
 	})
 }

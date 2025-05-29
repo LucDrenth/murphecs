@@ -101,7 +101,8 @@ func TestComponentStorageInsert(t *testing.T) {
 
 		{
 			item := CreateComponentWithPointers()
-			componentStorage.insert(world, item)
+			_, err := componentStorage.insert(world, item)
+			assert.NoError(err)
 		}
 
 		{
@@ -168,7 +169,8 @@ func TestComponentStorageInsertValue(t *testing.T) {
 
 		{
 			item := reflect.ValueOf(CreateComponentWithPointers())
-			componentStorage.insertValue(world, &item)
+			_, err := componentStorage.insertValue(world, &item)
+			assert.NoError(err)
 		}
 
 		{
@@ -299,7 +301,7 @@ func TestRemoveFromComponentStorage(t *testing.T) {
 		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](world))
 		assert.NoError(err)
 
-		err, _ = componentStorage.remove(0)
+		_, err = componentStorage.remove(0)
 		assert.ErrorIs(err, ErrComponentStorageIndexOutOfBounds)
 	})
 
@@ -312,7 +314,7 @@ func TestRemoveFromComponentStorage(t *testing.T) {
 		index, err := componentStorage.insert(world, &componentA{})
 		assert.NoError(err)
 
-		err, _ = componentStorage.remove(index)
+		_, err = componentStorage.remove(index)
 		assert.NoError(err)
 	})
 
@@ -329,7 +331,7 @@ func TestRemoveFromComponentStorage(t *testing.T) {
 			assert.NoError(err)
 		}
 
-		err, movedComponent := componentStorage.remove(nrComponents - 1)
+		movedComponent, err := componentStorage.remove(nrComponents - 1)
 		assert.NoError(err)
 		assert.Nil(movedComponent)
 	})
@@ -347,7 +349,7 @@ func TestRemoveFromComponentStorage(t *testing.T) {
 			assert.NoError(err)
 		}
 
-		err, movedComponent := componentStorage.remove(5)
+		movedComponent, err := componentStorage.remove(5)
 		assert.NoError(err)
 		assert.NotNil(movedComponent)
 		assert.Equal(nrComponents-1, movedComponent.fromIndex)
@@ -367,7 +369,7 @@ func TestRemoveFromComponentStorage(t *testing.T) {
 			assert.NoError(err)
 		}
 
-		err, _ = componentStorage.remove(5)
+		_, err = componentStorage.remove(5)
 		assert.NoError(err)
 		_, err = componentStorage.insert(world, &emptyComponentA{})
 		assert.NoError(err)
@@ -422,13 +424,16 @@ func TestComponentStorageCopyComponent(t *testing.T) {
 		err = componentStorage.copyComponent(1, 0)
 		assert.NoError(err)
 		component, err := getComponentFromComponentStorage[componentA](&componentStorage, 0) // copied-over component
+		assert.NoError(err)
 		assert.Equal(20, component.value)
 		component, err = getComponentFromComponentStorage[componentA](&componentStorage, 1) // original component
+		assert.NoError(err)
 		assert.Equal(20, component.value)
 
 		// changing the original should not change the copy
 		component.value = 30
 		component, err = getComponentFromComponentStorage[componentA](&componentStorage, 0) // copied-over component
+		assert.NoError(err)
 		assert.Equal(20, component.value)
 	})
 

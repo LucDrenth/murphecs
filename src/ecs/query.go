@@ -182,7 +182,7 @@ func (q *Query1[ComponentA, QueryOptions]) Exec(world *World) (err error) {
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.queryOptions.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
 		if skip {
 			continue
 		}
@@ -211,11 +211,11 @@ func (q *Query2[ComponentA, ComponentB, QueryOptions]) Exec(world *World) (err e
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.queryOptions.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.queryOptions.options)
+		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.options)
 		if skip {
 			continue
 		}
@@ -253,15 +253,15 @@ func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Exec(world *W
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.queryOptions.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.queryOptions.options)
+		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.queryOptions.options)
+		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.options)
 		if skip {
 			continue
 		}
@@ -308,19 +308,19 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) E
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.queryOptions.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.queryOptions.options)
+		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.queryOptions.options)
+		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchD, skip := shouldHandleQueryComponent(q.componentIdD, archetype, &q.queryOptions.options)
+		fetchD, skip := shouldHandleQueryComponent(q.componentIdD, archetype, &q.options)
 		if skip {
 			continue
 		}

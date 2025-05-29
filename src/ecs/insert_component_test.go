@@ -195,10 +195,6 @@ func TestInsertOrOverwrite(t *testing.T) {
 	type componentB struct{ Component }
 	type componentC struct{ Component }
 	type componentD struct{ Component }
-	type componentWithValue struct {
-		Component
-		value int
-	}
 
 	t.Run("no error when passing an empty list of components", func(t *testing.T) {
 		assert := assert.New(t)
@@ -223,19 +219,19 @@ func TestInsertOrOverwrite(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(world, &componentA{}, &componentWithValue{value: 10})
+		entity, err := Spawn(world, &componentA{}, &componentWithValueA{value: 10})
 		assert.NoError(err)
 
-		err = InsertOrOverwrite(world, entity, &componentB{}, &componentWithValue{value: 20})
+		err = InsertOrOverwrite(world, entity, &componentB{}, &componentWithValueA{value: 20})
 		assert.NoError(err)
-		component, err := Get1[componentWithValue](world, entity)
+		component, err := Get1[componentWithValueA](world, entity)
 		assert.NoError(err)
 		assert.Equal(20, component.value)
 
 		// try again with different component order
-		err = InsertOrOverwrite(world, entity, &componentWithValue{value: 30}, &componentC{})
+		err = InsertOrOverwrite(world, entity, &componentWithValueA{value: 30}, &componentC{})
 		assert.NoError(err)
-		component, err = Get1[componentWithValue](world, entity)
+		component, err = Get1[componentWithValueA](world, entity)
 		assert.NoError(err)
 		assert.Equal(30, component.value)
 	})

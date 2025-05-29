@@ -324,7 +324,8 @@ func TestConcurrency(t *testing.T) {
 		assert.NoError(err)
 		subAppB.AddSchedule(startup, ScheduleTypeStartup)
 		subAppB.AddSchedule(update, ScheduleTypeRepeating)
-		subAppB.RegisterOuterWorld(ecs.TestCustomTargetWorldId, subAppA.World())
+		err = subAppB.RegisterOuterWorld(ecs.TestCustomTargetWorldId, subAppA.World())
+		assert.NoError(err)
 		runner = subAppB.NewNTimesRunner(numberOfRuns)
 		subAppB.SetRunner(&runner)
 

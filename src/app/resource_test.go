@@ -89,8 +89,6 @@ func TestAddStructToResourceStorage(t *testing.T) {
 }
 
 func TestAddInterfaceToResourceStorage(t *testing.T) {
-	type resourceA struct{}
-
 	t.Run("interface resource and its struct implementation are treated as the same resource type", func(t *testing.T) {
 		assert := assert.New(t)
 

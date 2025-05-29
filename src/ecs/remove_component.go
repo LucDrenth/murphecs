@@ -115,7 +115,7 @@ func removeComponents(world *World, entityId EntityId, componentIds []ComponentI
 			}
 		}
 
-		err, removeResult := oldStorage.remove(entity.row)
+		removeResult, err := oldStorage.remove(entity.row)
 		if err != nil {
 			resultErr = err
 			continue

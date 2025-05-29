@@ -23,10 +23,6 @@ type componentWithValueA struct {
 	Component
 	value int
 }
-type componentWithValueB struct {
-	Component
-	value int
-}
 
 type emptyComponentA struct{ Component }
 type emptyComponentB struct{ Component }

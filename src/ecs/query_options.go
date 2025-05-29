@@ -16,16 +16,6 @@ type CombinedQueryOptions struct {
 	TargetWorld        *WorldId
 }
 
-func (o *CombinedQueryOptions) isEntityFilteredOut(entityData *EntityData) bool {
-	for i := range o.Filters {
-		if !o.Filters[i].EntityMeetsCriteria(entityData) {
-			return true
-		}
-	}
-
-	return false
-}
-
 func (o *CombinedQueryOptions) isArchetypeFilteredOut(archetype *Archetype) bool {
 	for i := range o.Filters {
 		if !o.Filters[i].ArchetypeMeetsCriteria(archetype) {
