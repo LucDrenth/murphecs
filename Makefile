@@ -23,3 +23,9 @@ fix-lint:
 
 verify-lint-config:
 	go tool golangci-lint config verify
+
+# run all verifications that are recommended to run before pushing code
+verify: 
+	make lint
+	make test
+	go mod tidy -diff
