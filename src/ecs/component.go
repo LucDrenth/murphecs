@@ -45,6 +45,14 @@ func (c *ComponentId) Is(other *ComponentId) bool {
 	return other.id == c.id
 }
 
+func (c *ComponentId) Id() uint {
+	return c.id
+}
+
+func (c *ComponentId) ReflectType() reflect.Type {
+	return c.componentType
+}
+
 // ComponentIdOf returns a unique representation of the component ID
 func ComponentIdOf(component IComponent, world *World) ComponentId {
 	componentType := reflect.TypeOf(component)
