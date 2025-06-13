@@ -28,10 +28,14 @@ func (s *systemEntry) exec() error {
 	return nil
 }
 
+type SystemSetId int
+
 type SystemSet struct {
 	systems                         []systemEntry
 	systemParamQueries              []ecs.Query
 	systemParamQueriesToOuterWorlds []queryToOuterWorld
+	id                              SystemSetId
+	eventWriters                    []iEventWriter
 }
 
 type queryToOuterWorld struct {
@@ -39,7 +43,12 @@ type queryToOuterWorld struct {
 	query   ecs.Query
 }
 
-func (s *SystemSet) Exec(world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World) []error {
+func (s *SystemSet) Exec(world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, eventStorage *EventStorage) []error {
+	for _, eventWriters := range s.eventWriters {
+		eventWriters.setSystemSetId(s.id)
+	}
+	defer eventStorage.ProcessEvents(s.id)
+
 	world.Mutex.Lock()
 	defer world.Mutex.Unlock()
 
@@ -96,9 +105,11 @@ func (s *SystemSet) execSystems() []error {
 	return errors
 }
 
-func (s *SystemSet) add(sys System, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, resources *resourceStorage) error {
+func (s *SystemSet) add(sys System, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, resources *resourceStorage, eventStorage *EventStorage) error {
 	systemValue := reflect.ValueOf(sys)
 	queryType := reflect.TypeOf((*ecs.Query)(nil)).Elem()
+	eventReaderType := reflect.TypeOf((*iEventReader)(nil)).Elem()
+	eventWriterType := reflect.TypeOf((*iEventWriter)(nil)).Elem()
 
 	if err := validateSystem(systemValue); err != nil {
 		return fmt.Errorf("system is not valid: %w", err)
@@ -133,14 +144,23 @@ func (s *SystemSet) add(sys System, world *ecs.World, outerWorlds *map[ecs.World
 			//	1. it is a potentially big object and copying it could give bad performance
 			//	2. it is probably unintended and would cause unexpected behavior
 			return fmt.Errorf("system parameter %d: %w", i+1, ErrSystemParamWorldNotAPointer)
-		} else { // assume its a resource
+		} else if parameterType.Implements(eventReaderType) {
+			eventReader := reflect.New(parameterType.Elem()).Interface().(iEventReader)
+			params[i] = *eventStorage.getReader(eventReader)
+		} else if parameterType.Implements(eventWriterType) {
+			eventWriter := reflect.New(parameterType.Elem()).Interface().(iEventWriter)
+
+			eventWriterParam := *eventStorage.getWriter(eventWriter)
+			s.eventWriters = append(s.eventWriters, eventWriterParam.Interface().(iEventWriter))
+			params[i] = eventWriterParam
+		} else {
+			// check if its a resource
 			resource, err := resources.getReflectResource(parameterType)
 			if err != nil {
-				if parameterType.Kind() != reflect.Pointer && reflect.PointerTo(parameterType).Implements(reflect.TypeFor[ecs.Query]()) {
-					return fmt.Errorf("system parameter %d: %w", i+1, ErrSystemParamQueryNotAPointer)
-				}
+				// err just means its not a resource, no need to return this specific error.
 
-				return fmt.Errorf("system parameter %d: %w", i+1, ErrSystemParamNotValid)
+				err = handleInvalidSystemParam(parameterType)
+				return fmt.Errorf("system parameter %d: %w", i+1, err)
 			}
 
 			if parameterType.Kind() == reflect.Pointer {
@@ -157,6 +177,24 @@ func (s *SystemSet) add(sys System, world *ecs.World, outerWorlds *map[ecs.World
 	}
 	s.systems = append(s.systems, entry)
 	return nil
+}
+
+func handleInvalidSystemParam(parameterType reflect.Type) error {
+	if parameterType.Kind() != reflect.Pointer && reflect.PointerTo(parameterType).Implements(reflect.TypeFor[ecs.Query]()) {
+		return ErrSystemParamQueryNotAPointer
+	}
+
+	// TODO do a proper check for the parameter being an EventReader
+	if strings.HasPrefix(parameterType.Name(), "EventReader") {
+		return fmt.Errorf("EventReader: %w", ErrSystemParamEventReaderNotAPointer)
+	}
+
+	// TODO do a proper check for the parameter being an EventWriter
+	if strings.HasPrefix(parameterType.Name(), "EventWriter") {
+		return fmt.Errorf("EventWriter: %w", ErrSystemParamEventWriterNotAPointer)
+	}
+
+	return ErrSystemParamNotValid
 }
 
 func parseQueryParam(parameterType reflect.Type, world *ecs.World, logger Logger, outerWorlds *map[ecs.WorldId]*ecs.World) (ecs.Query, error) {

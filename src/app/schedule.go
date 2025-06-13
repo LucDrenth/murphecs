@@ -20,24 +20,24 @@ func NewScheduler() Scheduler {
 	}
 }
 
-func (s *Scheduler) AddSchedule(schedule Schedule) error {
+func (s *Scheduler) AddSchedule(schedule Schedule, systemSetId SystemSetId) error {
 	if _, exists := s.systems[schedule]; exists {
 		return fmt.Errorf("schedule already exists")
 	}
 
-	s.systems[schedule] = &SystemSet{}
+	s.systems[schedule] = &SystemSet{id: systemSetId}
 	s.order = append(s.order, schedule)
 
 	return nil
 }
 
-func (s *Scheduler) AddSystem(schedule Schedule, system System, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, resources *resourceStorage) error {
+func (s *Scheduler) AddSystem(schedule Schedule, system System, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, resources *resourceStorage, eventStorage *EventStorage) error {
 	systemSet, exists := s.systems[schedule]
 	if !exists {
 		return fmt.Errorf("schedule %s does not exist", schedule)
 	}
 
-	return systemSet.add(system, world, outerWorlds, logger, resources)
+	return systemSet.add(system, world, outerWorlds, logger, resources, eventStorage)
 }
 
 func (s *Scheduler) GetSystemSets() ([]*SystemSet, error) {

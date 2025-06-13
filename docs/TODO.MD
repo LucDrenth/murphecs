@@ -1,7 +1,8 @@
 # ECS
 **Must have**
 - [feature] Observers
-- [feature] Relationships (like parent/child)
+- [tests] Add tests for the event system
+- [crash] Panic if we execute with an event that has an EventWriter but not an EventReader. We could solve it by ensuring an EventReader when adding an EventWriter param. Also check the other way around (EventReader but no EventWriter)!
 
 **Nice-to-have**
 - [performance] Generational entities. EntityId would become {id: uint, generation: uint}. World its entityList would becomes a slice instead of a map, and entityId would correlate with the slice index. This provides faster lookups. We'd need an deadEntityPool to choose from when creating a new EntityId which would increment its generation and repurpose it.
@@ -11,7 +12,7 @@
     2. Each query stores a list of possible combinations of component hashes and only checks archetypes with those hashes (using world.archetypeStorage.componentsHashToArchetype). The downside of this approach is that this list could potentially get very large.
     3. Each query stores a list of all involved components (queried + from filters) and gets a union of archetypes from `world.archetypeStorage.componentIdToArchetypes`. We could initially do this every Exec call and add cache it in a later step (using dirty flags for archetypes when new archetypes are created).
 - [performance] Cache Queries
-- [feature] Events
+- [feature] Relationships (like parent/child)
 - [feature] Add Query5..Query16 and Optional5..Optional16
 - [tests] More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
 

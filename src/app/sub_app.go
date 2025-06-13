@@ -24,15 +24,17 @@ const (
 // For example: if the tickRate is 1 second and a tick suddenly takes 4 seconds, the next tick will be run immediately
 // after, and then after 1 second.
 type SubApp struct {
-	world       *ecs.World
-	schedules   map[scheduleType]*Scheduler
-	resources   resourceStorage // resources that can be pulled by system params.
-	logger      Logger
-	name        string
-	tickRate    *time.Duration // the rate at which the repeating systems run
-	lastDelta   *float64       // delta time of the last tick
-	runner      Runner
-	outerWorlds map[ecs.WorldId]*ecs.World
+	world              *ecs.World
+	schedules          map[scheduleType]*Scheduler
+	resources          resourceStorage // resources that can be pulled by system params.
+	logger             Logger
+	name               string
+	tickRate           *time.Duration // the rate at which the repeating systems run
+	lastDelta          *float64       // delta time of the last tick
+	runner             Runner
+	outerWorlds        map[ecs.WorldId]*ecs.World
+	eventStorage       EventStorage
+	systemSetIdCounter SystemSetId
 }
 
 func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
@@ -63,12 +65,13 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
 			ScheduleTypeRepeating: utils.PointerTo(NewScheduler()),
 			ScheduleTypeCleanup:   utils.PointerTo(NewScheduler()),
 		},
-		resources:   resourceStorage,
-		logger:      logger,
-		name:        "App",
-		tickRate:    utils.PointerTo(time.Second / 60.0),
-		lastDelta:   utils.PointerTo(0.0),
-		outerWorlds: map[ecs.WorldId]*ecs.World{},
+		resources:    resourceStorage,
+		logger:       logger,
+		name:         "App",
+		tickRate:     utils.PointerTo(time.Second / 60.0),
+		lastDelta:    utils.PointerTo(0.0),
+		outerWorlds:  map[ecs.WorldId]*ecs.World{},
+		eventStorage: newEventStorage(),
 	}
 	subApp.UseFixedRunner()
 
@@ -87,7 +90,7 @@ func (app *SubApp) AddSystem(schedule Schedule, system System) *SubApp {
 		return app
 	}
 
-	err := scheduler.AddSystem(schedule, system, app.world, &app.outerWorlds, app.logger, &app.resources)
+	err := scheduler.AddSystem(schedule, system, app.world, &app.outerWorlds, app.logger, &app.resources, &app.eventStorage)
 	if err != nil {
 		app.logger.Error(fmt.Sprintf("%s - failed to add system %s: %v",
 			app.name,
@@ -122,7 +125,8 @@ func (app *SubApp) AddSchedule(schedule Schedule, scheduleType scheduleType) *Su
 		return app
 	}
 
-	err := scheduler.AddSchedule(schedule)
+	app.systemSetIdCounter++
+	err := scheduler.AddSchedule(schedule, app.systemSetIdCounter)
 	if err != nil {
 		app.logger.Error(fmt.Sprintf("%s - failed to add schedule %s: %v", app.name, schedule, err))
 	}
@@ -205,6 +209,18 @@ func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 	onceRunner := app.NewNTimesRunner(1)
 
 	onceRunner.Run(exitChannel, startupSystems)
+
+	// Events written by EventWriter's in startup systems do not get cleared by default so
+	// that they can be read by the repeated schedules.
+	//
+	// To enable the runner that runs the repeated schedules to clear them, we pass the systemSetIds
+	// of the startup schedules.
+	startupSystemSetIds := make([]SystemSetId, len(startupSystems))
+	for i, startupSystemSet := range startupSystems {
+		startupSystemSetIds[i] = startupSystemSet.id
+	}
+	app.runner.SetStartupSystemSetIds(startupSystemSetIds)
+
 	app.runner.Run(exitChannel, repeatedSystems)
 	onceRunner.Run(exitChannel, cleanupSystems)
 	isDoneChannel <- true
@@ -255,6 +271,10 @@ func (app *SubApp) OuterWorlds() *map[ecs.WorldId]*ecs.World {
 	return &app.outerWorlds
 }
 
+func (app *SubApp) EventStorage() *EventStorage {
+	return &app.eventStorage
+}
+
 // RegisterOuterWorld lets you use the outer world in system param queries.
 func (app *SubApp) RegisterOuterWorld(id ecs.WorldId, world *ecs.World) error {
 	if _, exists := app.outerWorlds[id]; exists {
@@ -278,23 +298,25 @@ func (app *SubApp) SetRunner(runner Runner) {
 // SetFixedRunner makes the systems run repeatedly, at a fixed interval. To control the interval time, use `app.SetTickRate`.
 func (app *SubApp) UseFixedRunner() {
 	app.runner = &fixedRunner{
-		tickRate:    app.tickRate,
-		delta:       app.lastDelta,
-		world:       app.world,
-		outerWorlds: &app.outerWorlds,
-		logger:      app.logger,
-		appName:     app.name,
+		tickRate:     app.tickRate,
+		delta:        app.lastDelta,
+		world:        app.world,
+		outerWorlds:  &app.outerWorlds,
+		logger:       app.logger,
+		appName:      app.name,
+		eventStorage: &app.eventStorage,
 	}
 }
 
 // UseUncappedRunner makes the systems run repeatedly, as frequent possible
 func (app *SubApp) UseUncappedRunner() {
 	app.runner = &uncappedRunner{
-		delta:       app.lastDelta,
-		world:       app.world,
-		outerWorlds: &app.outerWorlds,
-		logger:      app.logger,
-		appName:     app.name,
+		delta:        app.lastDelta,
+		world:        app.world,
+		outerWorlds:  &app.outerWorlds,
+		logger:       app.logger,
+		appName:      app.name,
+		eventStorage: &app.eventStorage,
 	}
 }
 
@@ -306,5 +328,6 @@ func (app *SubApp) NewNTimesRunner(numberOfRuns int) nTimesRunner {
 		outerWorlds:  &app.outerWorlds,
 		logger:       app.logger,
 		appName:      app.name,
+		eventStorage: &app.eventStorage,
 	}
 }

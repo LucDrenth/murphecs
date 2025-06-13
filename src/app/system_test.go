@@ -15,8 +15,9 @@ func TestAddSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
-		err := systemSet.add("not a func", world, nil, &logger, &resourceStorage)
+		err := systemSet.add("not a func", world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.ErrorIs(err, ErrSystemNotAFunction)
 	})
 
@@ -26,8 +27,9 @@ func TestAddSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
-		err := systemSet.add(func() {}, world, nil, &logger, &resourceStorage)
+		err := systemSet.add(func() {}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 	})
 
@@ -37,8 +39,9 @@ func TestAddSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
-		err := systemSet.add(func(world *ecs.World) {}, world, nil, &logger, &resourceStorage)
+		err := systemSet.add(func(world *ecs.World) {}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 	})
 
@@ -51,8 +54,9 @@ func TestAddSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
-		err := systemSet.add(func(_ ecs.Query1[componentA, ecs.Default]) {}, world, nil, &logger, &resourceStorage)
+		err := systemSet.add(func(_ ecs.Query1[componentA, ecs.Default]) {}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.ErrorIs(err, ErrSystemParamQueryNotAPointer)
 	})
 
@@ -63,8 +67,9 @@ func TestAddSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
-		err := systemSet.add(func(_ ecs.Query) {}, world, nil, &logger, &resourceStorage)
+		err := systemSet.add(func(_ ecs.Query) {}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.ErrorIs(err, ErrSystemParamQueryNotValid)
 	})
 
@@ -77,8 +82,9 @@ func TestAddSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
-		err := systemSet.add(func(_ *ecs.Query1[componentA, ecs.Default]) {}, world, nil, &logger, &resourceStorage)
+		err := systemSet.add(func(_ *ecs.Query1[componentA, ecs.Default]) {}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 	})
 
@@ -92,8 +98,9 @@ func TestAddSystem(t *testing.T) {
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 		outerWorlds := map[ecs.WorldId]*ecs.World{}
+		eventStorage := newEventStorage()
 
-		err := systemSet.add(func(_ *ecs.Query1[componentA, ecs.TestCustomTargetWorld]) {}, world, &outerWorlds, &logger, &resourceStorage)
+		err := systemSet.add(func(_ *ecs.Query1[componentA, ecs.TestCustomTargetWorld]) {}, world, &outerWorlds, &logger, &resourceStorage, &eventStorage)
 		assert.ErrorIs(err, ErrSystemParamQueryNotValid)
 		assert.ErrorIs(err, ErrTargetWorldNotKnown)
 	})
@@ -115,8 +122,9 @@ func TestAddSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
-		err = systemSet.add(func(_ *ecs.Query1[componentA, ecs.QueryOptions2[ecs.TestCustomTargetWorld, ecs.Lazy]]) {}, world, &outerWorlds, &logger, &resourceStorage)
+		err = systemSet.add(func(_ *ecs.Query1[componentA, ecs.QueryOptions2[ecs.TestCustomTargetWorld, ecs.Lazy]]) {}, world, &outerWorlds, &logger, &resourceStorage, &eventStorage)
 		assert.ErrorIs(err, ErrSystemParamQueryNotValid)
 	})
 
@@ -137,8 +145,9 @@ func TestAddSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
-		err = systemSet.add(func(_ *ecs.Query1[componentA, ecs.TestCustomTargetWorld]) {}, world, &outerWorlds, &logger, &resourceStorage)
+		err = systemSet.add(func(_ *ecs.Query1[componentA, ecs.TestCustomTargetWorld]) {}, world, &outerWorlds, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 	})
 
@@ -150,8 +159,9 @@ func TestAddSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
-		err := systemSet.add(func(_ resourceA) {}, world, nil, &logger, &resourceStorage)
+		err := systemSet.add(func(_ resourceA) {}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.ErrorIs(err, ErrSystemParamNotValid)
 	})
 
@@ -166,8 +176,9 @@ func TestAddSystem(t *testing.T) {
 		resourceStorage := newResourceStorage()
 		err := resourceStorage.add(&resourceA{})
 		assert.NoError(err)
+		eventStorage := newEventStorage()
 
-		err = systemSet.add(func(_ resourceA) {}, world, nil, &logger, &resourceStorage)
+		err = systemSet.add(func(_ resourceA) {}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 	})
 
@@ -182,8 +193,9 @@ func TestAddSystem(t *testing.T) {
 		resourceStorage := newResourceStorage()
 		err := resourceStorage.add(&resourceA{})
 		assert.NoError(err)
+		eventStorage := newEventStorage()
 
-		err = systemSet.add(func(_ *resourceA) {}, world, nil, &logger, &resourceStorage)
+		err = systemSet.add(func(_ *resourceA) {}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 	})
 
@@ -194,8 +206,9 @@ func TestAddSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
-		err := systemSet.add(func() int { return 10 }, world, nil, &logger, &resourceStorage)
+		err := systemSet.add(func() int { return 10 }, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.ErrorIs(err, ErrSystemInvalidReturnType)
 	})
 
@@ -206,8 +219,9 @@ func TestAddSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
-		err := systemSet.add(func() error { return nil }, world, nil, &logger, &resourceStorage)
+		err := systemSet.add(func() error { return nil }, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 	})
 }
@@ -220,12 +234,13 @@ func TestExecSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
 		didRun := false
-		err := systemSet.add(func() { didRun = true }, world, nil, &logger, &resourceStorage)
+		err := systemSet.add(func() { didRun = true }, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
-		systemSet.Exec(world, nil)
+		systemSet.Exec(world, nil, &eventStorage)
 		assert.True(didRun)
 	})
 
@@ -238,15 +253,16 @@ func TestExecSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
 		resource := resourceA{value: 10}
 
 		err := resourceStorage.add(&resource)
 		assert.NoError(err)
 
-		err = systemSet.add(func(r *resourceA) { r.value = 20 }, world, nil, &logger, &resourceStorage)
+		err = systemSet.add(func(r *resourceA) { r.value = 20 }, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
-		systemSet.Exec(world, nil)
+		systemSet.Exec(world, nil, &eventStorage)
 		assert.Equal(20, resource.value)
 	})
 
@@ -258,6 +274,7 @@ func TestExecSystem(t *testing.T) {
 		systemSet := SystemSet{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
+		eventStorage := newEventStorage()
 		resourceStorage := newResourceStorage()
 
 		resource := resourceA{value: 10}
@@ -265,9 +282,9 @@ func TestExecSystem(t *testing.T) {
 		err := resourceStorage.add(&resource)
 		assert.NoError(err)
 
-		err = systemSet.add(func(r resourceA) { r.value = 20 }, world, nil, &logger, &resourceStorage)
+		err = systemSet.add(func(r resourceA) { r.value = 20 }, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
-		systemSet.Exec(world, nil)
+		systemSet.Exec(world, nil, &eventStorage)
 		assert.Equal(10, resource.value)
 	})
 
@@ -279,6 +296,7 @@ func TestExecSystem(t *testing.T) {
 		systemSet := SystemSet{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
+		eventStorage := newEventStorage()
 		resourceStorage := newResourceStorage()
 
 		resource := resourceA{value: 10}
@@ -287,36 +305,36 @@ func TestExecSystem(t *testing.T) {
 		assert.NoError(err)
 
 		// first system updates the resource
-		err = systemSet.add(func(r *resourceA) { r.value = 20 }, world, nil, &logger, &resourceStorage)
+		err = systemSet.add(func(r *resourceA) { r.value = 20 }, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
 		// second system should have the updated resource value
 		err = systemSet.add(func(r resourceA) {
 			assert.Equal(20, r.value)
 			r.value = 30 // should not do anything
-		}, world, nil, &logger, &resourceStorage)
+		}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
 		// third system should have the updated resource value from the first system
 		err = systemSet.add(func(r resourceA) {
 			assert.Equal(20, r.value)
-		}, world, nil, &logger, &resourceStorage)
+		}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
 		// fourth system should also have the updated resource value from the first system
 		err = systemSet.add(func(r *resourceA) {
 			assert.Equal(20, r.value)
 			r.value = 40
-		}, world, nil, &logger, &resourceStorage)
+		}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
 		// fifth system should have an updated value from the fourth system
 		err = systemSet.add(func(r resourceA) {
 			assert.Equal(40, r.value)
-		}, world, nil, &logger, &resourceStorage)
+		}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
-		systemSet.Exec(world, nil)
+		systemSet.Exec(world, nil, &eventStorage)
 	})
 
 	t.Run("returns no errors if the system does not return anything", func(t *testing.T) {
@@ -326,10 +344,11 @@ func TestExecSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
-		err := systemSet.add(func() {}, world, nil, &logger, &resourceStorage)
+		err := systemSet.add(func() {}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
-		errors := systemSet.Exec(world, nil)
+		errors := systemSet.Exec(world, nil, &eventStorage)
 
 		assert.Empty(errors)
 	})
@@ -341,10 +360,11 @@ func TestExecSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
-		err := systemSet.add(func() error { return nil }, world, nil, &logger, &resourceStorage)
+		err := systemSet.add(func() error { return nil }, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
-		errors := systemSet.Exec(world, nil)
+		errors := systemSet.Exec(world, nil, &eventStorage)
 
 		assert.Empty(errors)
 	})
@@ -356,10 +376,11 @@ func TestExecSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
-		err := systemSet.add(func() error { return errors.New("oops") }, world, nil, &logger, &resourceStorage)
+		err := systemSet.add(func() error { return errors.New("oops") }, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
-		errors := systemSet.Exec(world, nil)
+		errors := systemSet.Exec(world, nil, &eventStorage)
 
 		assert.Len(errors, 1)
 	})
@@ -373,6 +394,7 @@ func TestExecSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
 		_, err := ecs.Spawn(world, &componentA{})
 		assert.NoError(err)
@@ -380,10 +402,10 @@ func TestExecSystem(t *testing.T) {
 		numberOfResults := 0
 		err = systemSet.add(func(q *ecs.Query1[componentA, ecs.Default]) {
 			numberOfResults = int(q.Result().NumberOfResult())
-		}, world, nil, &logger, &resourceStorage)
+		}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
-		errors := systemSet.Exec(world, nil)
+		errors := systemSet.Exec(world, nil, &eventStorage)
 		assert.Empty(errors)
 
 		assert.Equal(1, numberOfResults)
@@ -398,6 +420,7 @@ func TestExecSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
 		_, err := ecs.Spawn(world, &componentA{})
 		assert.NoError(err)
@@ -405,10 +428,10 @@ func TestExecSystem(t *testing.T) {
 		numberOfResults := 0
 		err = systemSet.add(func(q *ecs.Query1[componentA, ecs.Lazy]) {
 			numberOfResults = int(q.Result().NumberOfResult())
-		}, world, nil, &logger, &resourceStorage)
+		}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
-		errors := systemSet.Exec(world, nil)
+		errors := systemSet.Exec(world, nil, &eventStorage)
 		assert.Empty(errors)
 
 		assert.Equal(0, numberOfResults)
@@ -431,6 +454,7 @@ func TestExecSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
 
 		_, err = ecs.Spawn(&outerWorld, &componentA{})
 		assert.NoError(err)
@@ -438,10 +462,10 @@ func TestExecSystem(t *testing.T) {
 		numberOfResults := 0
 		err = systemSet.add(func(q *ecs.Query1[componentA, ecs.TestCustomTargetWorld]) {
 			numberOfResults = int(q.Result().NumberOfResult())
-		}, world, &outerWorlds, &logger, &resourceStorage)
+		}, world, &outerWorlds, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
-		errors := systemSet.Exec(world, &outerWorlds)
+		errors := systemSet.Exec(world, &outerWorlds, &eventStorage)
 		assert.Empty(errors)
 
 		assert.Equal(1, numberOfResults)
