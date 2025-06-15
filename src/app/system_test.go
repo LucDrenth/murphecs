@@ -593,4 +593,53 @@ func TestExecSystem(t *testing.T) {
 		assert.Empty(errors)
 		assert.Empty(events) // no need events read
 	})
+
+	t.Run("EventReader without an EventWriter", func(t *testing.T) {
+		type testEvent struct{ Event }
+
+		assert := assert.New(t)
+
+		systemSet := SystemSet{id: 1}
+		world := ecs.NewDefaultWorld()
+		logger := NoOpLogger{}
+		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
+		err := systemSet.add(
+			func(eventReader *EventReader[*testEvent]) {
+				for range eventReader.Read {
+				}
+			},
+			world, nil, &logger, &resourceStorage, &eventStorage)
+		assert.NoError(err)
+
+		errors := systemSet.Exec(world, nil, &eventStorage)
+		assert.Empty(errors)
+		eventStorage.ProcessEvents(systemSet.id + 1)
+		errors = systemSet.Exec(world, nil, &eventStorage)
+		assert.Empty(errors)
+	})
+
+	t.Run("EventWriter without an EventReader", func(t *testing.T) {
+		type testEvent struct{ Event }
+
+		assert := assert.New(t)
+
+		systemSet := SystemSet{id: 1}
+		world := ecs.NewDefaultWorld()
+		logger := NoOpLogger{}
+		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
+		err := systemSet.add(
+			func(eventWriter *EventWriter[*testEvent]) {
+				eventWriter.Write(&testEvent{})
+			},
+			world, nil, &logger, &resourceStorage, &eventStorage)
+		assert.NoError(err)
+
+		errors := systemSet.Exec(world, nil, &eventStorage)
+		assert.Empty(errors)
+		eventStorage.ProcessEvents(systemSet.id + 1)
+		errors = systemSet.Exec(world, nil, &eventStorage)
+		assert.Empty(errors)
+	})
 }

@@ -49,11 +49,18 @@ func (s *EventStorage) getWriter(writer iEventWriter) *reflect.Value {
 func (s *EventStorage) ProcessEvents(systemSetId SystemSetId) {
 	for eventId, reflectWriter := range s.eventWriters {
 		writer := reflectWriter.Interface().(iEventWriter)
-		reader := s.eventReaders[eventId].Interface().(iEventReader)
+		writerEvents := writer.extractEvents()
 
+		readerEntry, ok := s.eventReaders[eventId]
+		if !ok {
+			// This event does not have any readers
+			continue
+		}
+
+		reader := readerEntry.Interface().(iEventReader)
 		reader.clearEvents(systemSetId)
 
-		for _, reflectEvent := range writer.extractEvents() {
+		for _, reflectEvent := range writerEvents {
 			reader.addEvent(reflectEvent)
 		}
 	}

@@ -1,7 +1,6 @@
 # ECS
 **Must have**
 - [feature] Observers
-- [crash] Panic if we execute with an event that has an EventWriter but not an EventReader. We could solve it by ensuring an EventReader when adding an EventWriter param. Also check the other way around (EventReader but no EventWriter)!
 
 **Nice-to-have**
 - [performance] Generational entities. EntityId would become {id: uint, generation: uint}. World its entityList would becomes a slice instead of a map, and entityId would correlate with the slice index. This provides faster lookups. We'd need an deadEntityPool to choose from when creating a new EntityId which would increment its generation and repurpose it.
