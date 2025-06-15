@@ -1,7 +1,6 @@
 # ECS
 **Must have**
 - [feature] Observers
-- [tests] Add tests for the event system
 - [crash] Panic if we execute with an event that has an EventWriter but not an EventReader. We could solve it by ensuring an EventReader when adding an EventWriter param. Also check the other way around (EventReader but no EventWriter)!
 
 **Nice-to-have**

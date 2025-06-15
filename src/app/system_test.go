@@ -199,6 +199,66 @@ func TestAddSystem(t *testing.T) {
 		assert.NoError(err)
 	})
 
+	t.Run("returns err if system param EventReader is not a pointer", func(t *testing.T) {
+		type testEvent struct{ Event }
+
+		assert := assert.New(t)
+
+		systemSet := SystemSet{}
+		world := ecs.NewDefaultWorld()
+		logger := NoOpLogger{}
+		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
+
+		err := systemSet.add(func(EventReader[*testEvent]) {}, world, nil, &logger, &resourceStorage, &eventStorage)
+		assert.ErrorIs(err, ErrSystemParamEventReaderNotAPointer)
+	})
+
+	t.Run("can use system param *EventReader", func(t *testing.T) {
+		type testEvent struct{ Event }
+
+		assert := assert.New(t)
+
+		systemSet := SystemSet{}
+		world := ecs.NewDefaultWorld()
+		logger := NoOpLogger{}
+		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
+
+		err := systemSet.add(func(*EventReader[*testEvent]) {}, world, nil, &logger, &resourceStorage, &eventStorage)
+		assert.NoError(err)
+	})
+
+	t.Run("returns err if system param EventWriter is not a pointer", func(t *testing.T) {
+		type testEvent struct{ Event }
+
+		assert := assert.New(t)
+
+		systemSet := SystemSet{}
+		world := ecs.NewDefaultWorld()
+		logger := NoOpLogger{}
+		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
+
+		err := systemSet.add(func(EventWriter[*testEvent]) {}, world, nil, &logger, &resourceStorage, &eventStorage)
+		assert.ErrorIs(err, ErrSystemParamEventWriterNotAPointer)
+	})
+
+	t.Run("can use system param *EventWriter", func(t *testing.T) {
+		type testEvent struct{ Event }
+
+		assert := assert.New(t)
+
+		systemSet := SystemSet{}
+		world := ecs.NewDefaultWorld()
+		logger := NoOpLogger{}
+		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
+
+		err := systemSet.add(func(*EventWriter[*testEvent]) {}, world, nil, &logger, &resourceStorage, &eventStorage)
+		assert.NoError(err)
+	})
+
 	t.Run("returns an error if the system returns something that is not an error", func(t *testing.T) {
 		assert := assert.New(t)
 
@@ -240,7 +300,8 @@ func TestExecSystem(t *testing.T) {
 		err := systemSet.add(func() { didRun = true }, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
-		systemSet.Exec(world, nil, &eventStorage)
+		errors := systemSet.Exec(world, nil, &eventStorage)
+		assert.Empty(errors)
 		assert.True(didRun)
 	})
 
@@ -262,7 +323,8 @@ func TestExecSystem(t *testing.T) {
 
 		err = systemSet.add(func(r *resourceA) { r.value = 20 }, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
-		systemSet.Exec(world, nil, &eventStorage)
+		errors := systemSet.Exec(world, nil, &eventStorage)
+		assert.Empty(errors)
 		assert.Equal(20, resource.value)
 	})
 
@@ -284,7 +346,8 @@ func TestExecSystem(t *testing.T) {
 
 		err = systemSet.add(func(r resourceA) { r.value = 20 }, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
-		systemSet.Exec(world, nil, &eventStorage)
+		errors := systemSet.Exec(world, nil, &eventStorage)
+		assert.Empty(errors)
 		assert.Equal(10, resource.value)
 	})
 
@@ -469,5 +532,65 @@ func TestExecSystem(t *testing.T) {
 		assert.Empty(errors)
 
 		assert.Equal(1, numberOfResults)
+	})
+
+	t.Run("event system", func(t *testing.T) {
+		type testEvent struct {
+			Event
+			id int
+		}
+
+		const eventId = 3
+
+		assert := assert.New(t)
+
+		systemSet := SystemSet{id: 1}
+		world := ecs.NewDefaultWorld()
+		logger := NoOpLogger{}
+		resourceStorage := newResourceStorage()
+		eventStorage := newEventStorage()
+
+		var events []*testEvent
+		var doWriteEvent = true
+
+		err := systemSet.add(
+			func(eventWriter *EventWriter[*testEvent]) {
+				if doWriteEvent {
+					eventWriter.Write(&testEvent{id: 3})
+				}
+			},
+			world, nil, &logger, &resourceStorage, &eventStorage)
+		assert.NoError(err)
+		err = systemSet.add(
+			func(eventReader *EventReader[*testEvent]) {
+				events = []*testEvent{}
+
+				for event := range eventReader.Read {
+					events = append(events, event)
+				}
+			},
+			world, nil, &logger, &resourceStorage, &eventStorage)
+		assert.NoError(err)
+
+		// first run
+		errors := systemSet.Exec(world, nil, &eventStorage)
+		assert.Empty(errors)
+		assert.Empty(events)
+
+		eventStorage.ProcessEvents(systemSet.id + 1) // pretend that next systemSet has run
+		doWriteEvent = false
+
+		// second run
+		errors = systemSet.Exec(world, nil, &eventStorage)
+		assert.Empty(errors)
+		assert.Len(events, 1)
+		assert.Equal(eventId, events[0].id)
+
+		eventStorage.ProcessEvents(systemSet.id + 1) // pretend that next systemSet has run
+
+		// third run
+		errors = systemSet.Exec(world, nil, &eventStorage)
+		assert.Empty(errors)
+		assert.Empty(events) // no need events read
 	})
 }

@@ -6,6 +6,52 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestEventWriter(t *testing.T) {
+	type testEvent struct {
+		Event
+		id int
+	}
+
+	t.Run("Write adds an event with the EventWriter its current systemSetId", func(t *testing.T) {
+		assert := assert.New(t)
+
+		const numberOfEvents int = 5
+		const systemSetId SystemSetId = SystemSetId(10)
+
+		eventWriter := EventWriter[*testEvent]{}
+		eventWriter.setSystemSetId(systemSetId)
+
+		for i := range numberOfEvents {
+			eventWriter.Write(&testEvent{id: i})
+			assert.Len(eventWriter.events, i+1)
+			assert.Equal(systemSetId, eventWriter.events[i].systemSetId)
+		}
+	})
+
+	t.Run("extractEvents returns all events in EventWriter and clears the events", func(t *testing.T) {
+		assert := assert.New(t)
+
+		const numberOfEvents int = 3
+		const systemSetId SystemSetId = SystemSetId(11)
+
+		eventWriter := EventWriter[*testEvent]{}
+		eventWriter.setSystemSetId(systemSetId)
+		for i := range numberOfEvents {
+			eventWriter.Write(&testEvent{id: i})
+		}
+
+		extractedEvents := eventWriter.extractEvents()
+		assert.Len(extractedEvents, numberOfEvents)
+		assert.Len(eventWriter.events, 0)
+		for i, event := range extractedEvents {
+			event, ok := event.Interface().(*testEvent)
+			assert.True(ok)
+			assert.Equal(systemSetId, event.systemSetId)
+			assert.Equal(i, event.id)
+		}
+	})
+}
+
 func TestEventReader(t *testing.T) {
 	type testEvent struct {
 		Event
