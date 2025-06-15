@@ -19,12 +19,12 @@ func TestEventWriter(t *testing.T) {
 		const systemSetId SystemSetId = SystemSetId(10)
 
 		eventWriter := EventWriter[*testEvent]{}
-		eventWriter.setSystemSetId(systemSetId)
+		eventWriter.setSystemSetWriter(systemSetId)
 
 		for i := range numberOfEvents {
 			eventWriter.Write(&testEvent{id: i})
 			assert.Len(eventWriter.events, i+1)
-			assert.Equal(systemSetId, eventWriter.events[i].systemSetId)
+			assert.Equal(systemSetId, eventWriter.events[i].systemSetWriter)
 		}
 	})
 
@@ -35,18 +35,18 @@ func TestEventWriter(t *testing.T) {
 		const systemSetId SystemSetId = SystemSetId(11)
 
 		eventWriter := EventWriter[*testEvent]{}
-		eventWriter.setSystemSetId(systemSetId)
+		eventWriter.setSystemSetWriter(systemSetId)
 		for i := range numberOfEvents {
 			eventWriter.Write(&testEvent{id: i})
 		}
 
-		extractedEvents := eventWriter.extractEvents()
+		extractedEvents := eventWriter.extractEvents(0)
 		assert.Len(extractedEvents, numberOfEvents)
 		assert.Len(eventWriter.events, 0)
 		for i, event := range extractedEvents {
 			event, ok := event.Interface().(*testEvent)
 			assert.True(ok)
-			assert.Equal(systemSetId, event.systemSetId)
+			assert.Equal(systemSetId, event.systemSetWriter)
 			assert.Equal(i, event.id)
 		}
 	})
@@ -186,16 +186,24 @@ func TestEventReader(t *testing.T) {
 
 		eventReader := EventReader[*testEvent]{
 			events: []*testEvent{
-				{id: 10, Event: Event{remove: true}},
-				{id: 20, Event: Event{systemSetId: 1}},
-				{id: 30, Event: Event{systemSetId: 2}},
-				{id: 40, Event: Event{systemSetId: 3}},
+				{id: 1, Event: Event{tickAddedToEventReader: 1, systemSetWriter: 0, remove: true}},
+				{id: 2, Event: Event{tickAddedToEventReader: 1, systemSetWriter: 1}},
+				{id: 3, Event: Event{tickAddedToEventReader: 1, systemSetWriter: 2}},
+				{id: 4, Event: Event{tickAddedToEventReader: 1, systemSetWriter: 3}},
 			},
 		}
-		eventReader.clearEvents(2)
 
-		assert.Len(eventReader.events, 2)
-		assert.Equal(20, eventReader.events[0].id)
-		assert.Equal(40, eventReader.events[1].id)
+		eventReader.clearEvents(2, 0)
+		assert.Len(eventReader.events, 3)
+		eventReader.clearEvents(2, 1)
+		assert.Len(eventReader.events, 3)
+
+		eventReader.clearEvents(2, 3)
+		expectedEventIds := []int{2, 4}
+		assert.Len(eventReader.events, len(expectedEventIds))
+
+		for i := range eventReader.events {
+			assert.Equal(expectedEventIds[i], eventReader.events[i].id)
+		}
 	})
 }

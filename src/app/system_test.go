@@ -300,7 +300,7 @@ func TestExecSystem(t *testing.T) {
 		err := systemSet.add(func() { didRun = true }, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
-		errors := systemSet.Exec(world, nil, &eventStorage)
+		errors := systemSet.Exec(world, nil, &eventStorage, 1)
 		assert.Empty(errors)
 		assert.True(didRun)
 	})
@@ -323,7 +323,7 @@ func TestExecSystem(t *testing.T) {
 
 		err = systemSet.add(func(r *resourceA) { r.value = 20 }, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
-		errors := systemSet.Exec(world, nil, &eventStorage)
+		errors := systemSet.Exec(world, nil, &eventStorage, 1)
 		assert.Empty(errors)
 		assert.Equal(20, resource.value)
 	})
@@ -346,7 +346,7 @@ func TestExecSystem(t *testing.T) {
 
 		err = systemSet.add(func(r resourceA) { r.value = 20 }, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
-		errors := systemSet.Exec(world, nil, &eventStorage)
+		errors := systemSet.Exec(world, nil, &eventStorage, 1)
 		assert.Empty(errors)
 		assert.Equal(10, resource.value)
 	})
@@ -397,7 +397,7 @@ func TestExecSystem(t *testing.T) {
 		}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
-		systemSet.Exec(world, nil, &eventStorage)
+		systemSet.Exec(world, nil, &eventStorage, 1)
 	})
 
 	t.Run("returns no errors if the system does not return anything", func(t *testing.T) {
@@ -411,7 +411,7 @@ func TestExecSystem(t *testing.T) {
 
 		err := systemSet.add(func() {}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
-		errors := systemSet.Exec(world, nil, &eventStorage)
+		errors := systemSet.Exec(world, nil, &eventStorage, 1)
 
 		assert.Empty(errors)
 	})
@@ -427,7 +427,7 @@ func TestExecSystem(t *testing.T) {
 
 		err := systemSet.add(func() error { return nil }, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
-		errors := systemSet.Exec(world, nil, &eventStorage)
+		errors := systemSet.Exec(world, nil, &eventStorage, 1)
 
 		assert.Empty(errors)
 	})
@@ -443,7 +443,7 @@ func TestExecSystem(t *testing.T) {
 
 		err := systemSet.add(func() error { return errors.New("oops") }, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
-		errors := systemSet.Exec(world, nil, &eventStorage)
+		errors := systemSet.Exec(world, nil, &eventStorage, 1)
 
 		assert.Len(errors, 1)
 	})
@@ -468,7 +468,7 @@ func TestExecSystem(t *testing.T) {
 		}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
-		errors := systemSet.Exec(world, nil, &eventStorage)
+		errors := systemSet.Exec(world, nil, &eventStorage, 1)
 		assert.Empty(errors)
 
 		assert.Equal(1, numberOfResults)
@@ -494,7 +494,7 @@ func TestExecSystem(t *testing.T) {
 		}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
-		errors := systemSet.Exec(world, nil, &eventStorage)
+		errors := systemSet.Exec(world, nil, &eventStorage, 1)
 		assert.Empty(errors)
 
 		assert.Equal(0, numberOfResults)
@@ -528,7 +528,7 @@ func TestExecSystem(t *testing.T) {
 		}, world, &outerWorlds, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
-		errors := systemSet.Exec(world, &outerWorlds, &eventStorage)
+		errors := systemSet.Exec(world, &outerWorlds, &eventStorage, 1)
 		assert.Empty(errors)
 
 		assert.Equal(1, numberOfResults)
@@ -544,16 +544,31 @@ func TestExecSystem(t *testing.T) {
 
 		assert := assert.New(t)
 
-		systemSet := SystemSet{id: 1}
+		systemSet1 := &SystemSet{id: 1}
+		systemSet2 := &SystemSet{id: 2}
+		systemSet3 := &SystemSet{id: 3}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		resourceStorage := newResourceStorage()
 		eventStorage := newEventStorage()
 
-		var events []*testEvent
-		var doWriteEvent = true
+		eventsFromSystemSet1 := []*testEvent{}
+		eventsFromSystemSet2 := []*testEvent{}
+		eventsFromSystemSet3 := []*testEvent{}
+		doWriteEvent := true
 
-		err := systemSet.add(
+		err := systemSet1.add(
+			func(eventReader *EventReader[*testEvent]) {
+				eventsFromSystemSet1 = []*testEvent{}
+
+				for event := range eventReader.Read {
+					eventsFromSystemSet1 = append(eventsFromSystemSet1, event)
+				}
+			},
+			world, nil, &logger, &resourceStorage, &eventStorage)
+		assert.NoError(err)
+
+		err = systemSet2.add(
 			func(eventWriter *EventWriter[*testEvent]) {
 				if doWriteEvent {
 					eventWriter.Write(&testEvent{id: 3})
@@ -561,37 +576,59 @@ func TestExecSystem(t *testing.T) {
 			},
 			world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
-		err = systemSet.add(
+		err = systemSet2.add(
 			func(eventReader *EventReader[*testEvent]) {
-				events = []*testEvent{}
+				eventsFromSystemSet2 = []*testEvent{}
 
 				for event := range eventReader.Read {
-					events = append(events, event)
+					eventsFromSystemSet2 = append(eventsFromSystemSet2, event)
 				}
 			},
 			world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
-		// first run
-		errors := systemSet.Exec(world, nil, &eventStorage)
-		assert.Empty(errors)
-		assert.Empty(events)
+		err = systemSet3.add(
+			func(eventReader *EventReader[*testEvent]) {
+				eventsFromSystemSet3 = []*testEvent{}
 
-		eventStorage.ProcessEvents(systemSet.id + 1) // pretend that next systemSet has run
+				for event := range eventReader.Read {
+					eventsFromSystemSet3 = append(eventsFromSystemSet3, event)
+				}
+			},
+			world, nil, &logger, &resourceStorage, &eventStorage)
+		assert.NoError(err)
+
+		executeSystemSets := func(tick uint) {
+			for _, systemSet := range []*SystemSet{systemSet1, systemSet2, systemSet3} {
+				errors := systemSet.Exec(world, nil, &eventStorage, tick)
+				assert.Empty(errors)
+			}
+		}
+
+		// first run (event written by systemSet1)
+		executeSystemSets(1)
+
+		assert.Empty(eventsFromSystemSet1)
+		assert.Empty(eventsFromSystemSet2)
+		assert.Len(eventsFromSystemSet3, 1)
+		assert.Equal(eventId, eventsFromSystemSet3[0].id)
+
 		doWriteEvent = false
 
 		// second run
-		errors = systemSet.Exec(world, nil, &eventStorage)
-		assert.Empty(errors)
-		assert.Len(events, 1)
-		assert.Equal(eventId, events[0].id)
+		executeSystemSets(2)
 
-		eventStorage.ProcessEvents(systemSet.id + 1) // pretend that next systemSet has run
+		assert.Len(eventsFromSystemSet1, 1)
+		assert.Equal(eventId, eventsFromSystemSet1[0].id)
+		assert.Len(eventsFromSystemSet2, 1)
+		assert.Equal(eventId, eventsFromSystemSet2[0].id)
+		assert.Empty(eventsFromSystemSet3)
 
 		// third run
-		errors = systemSet.Exec(world, nil, &eventStorage)
-		assert.Empty(errors)
-		assert.Empty(events) // no need events read
+		executeSystemSets(3)
+		assert.Empty(eventsFromSystemSet1)
+		assert.Empty(eventsFromSystemSet2)
+		assert.Empty(eventsFromSystemSet3)
 	})
 
 	t.Run("EventReader without an EventWriter", func(t *testing.T) {
@@ -612,10 +649,9 @@ func TestExecSystem(t *testing.T) {
 			world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
-		errors := systemSet.Exec(world, nil, &eventStorage)
+		errors := systemSet.Exec(world, nil, &eventStorage, 1)
 		assert.Empty(errors)
-		eventStorage.ProcessEvents(systemSet.id + 1)
-		errors = systemSet.Exec(world, nil, &eventStorage)
+		errors = systemSet.Exec(world, nil, &eventStorage, 2)
 		assert.Empty(errors)
 	})
 
@@ -636,10 +672,9 @@ func TestExecSystem(t *testing.T) {
 			world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
-		errors := systemSet.Exec(world, nil, &eventStorage)
+		errors := systemSet.Exec(world, nil, &eventStorage, 1)
 		assert.Empty(errors)
-		eventStorage.ProcessEvents(systemSet.id + 1)
-		errors = systemSet.Exec(world, nil, &eventStorage)
+		errors = systemSet.Exec(world, nil, &eventStorage, 2)
 		assert.Empty(errors)
 	})
 }

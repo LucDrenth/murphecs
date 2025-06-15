@@ -19,10 +19,12 @@ import (
 const update app.Schedule = "Update"
 
 type customRunner struct {
-	world               *ecs.World
-	eventStorage        *app.EventStorage
-	logger              app.Logger
-	startupSystemSetIds []app.SystemSetId
+	world          *ecs.World
+	eventStorage   *app.EventStorage
+	logger         app.Logger
+	onFirstRunDone func() // do not set this yourself
+	onRunDone      func() // do not set this yourself
+	currentTick    *uint  // do not update this yourself
 }
 
 // Run systems when pressing enter in the console
@@ -41,28 +43,28 @@ func (runner *customRunner) Run(exitChannel <-chan struct{}, systems []*app.Syst
 		}
 
 		for _, systemSet := range systems {
-			errors := systemSet.Exec(runner.world, nil, runner.eventStorage)
+			errors := systemSet.Exec(runner.world, nil, runner.eventStorage, *runner.currentTick)
 			for _, err := range errors {
 				runner.logger.Error(fmt.Sprintf("system returned error: %v", err))
 			}
 		}
 
 		if isFirstRun {
-			// clear events that got written during the startup schedules
-			for _, id := range runner.startupSystemSetIds {
-				runner.eventStorage.ProcessEvents(id)
-			}
+			runner.onFirstRunDone()
+			isFirstRun = false
 		}
-		isFirstRun = false
+		runner.onRunDone()
 	}
 }
 
-func (runner *customRunner) SetStartupSystemSetIds([]app.SystemSetId) {
-	// Events written by EventWriter's in startup schedules do not get cleared by default
-	// so that they can be read by the repeated schedules.
-	//
-	// To solve this, we store the systemSetIds of the startup schedules and clear them after
-	// the first run of the repeated schedules.
+// This method will be called by the SubApp before running the repeated schedules
+func (runner *customRunner) SetOnFirstRunDone(handler func()) {
+	runner.onFirstRunDone = handler
+}
+
+// This method will be called by the SubApp before running the repeated schedules
+func (runner *customRunner) SetOnRunDone(handler func()) {
+	runner.onRunDone = handler
 }
 
 func main() {
@@ -75,6 +77,7 @@ func main() {
 	runner := customRunner{
 		world:        myApp.World(),
 		eventStorage: myApp.EventStorage(),
+		currentTick:  myApp.GetCurrentTick(),
 		logger:       logger,
 	}
 	myApp.SetRunner(&runner) // <--- Use our custom runner

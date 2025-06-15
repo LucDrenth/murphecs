@@ -9,19 +9,22 @@ import (
 
 type Runner interface {
 	Run(exitChannel <-chan struct{}, systems []*SystemSet)
-	SetStartupSystemSetIds([]SystemSetId)
+	SetOnFirstRunDone(func())
+	SetOnRunDone(func())
 }
 
 // fixedRunner runs systems at a fixed interval
 type fixedRunner struct {
-	tickRate            *time.Duration
-	delta               *float64
-	world               *ecs.World
-	outerWorlds         *map[ecs.WorldId]*ecs.World
-	logger              Logger
-	appName             string
-	eventStorage        *EventStorage
-	startupSystemSetIds []SystemSetId
+	tickRate       *time.Duration
+	delta          *float64
+	world          *ecs.World
+	outerWorlds    *map[ecs.WorldId]*ecs.World
+	logger         Logger
+	appName        string
+	eventStorage   *EventStorage
+	onFirstRunDone func()
+	onRunDone      func()
+	currentTick    *uint
 }
 
 func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet) {
@@ -41,15 +44,17 @@ func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet
 			*runner.delta = float64(now-start) / 1_000_000_000.0
 			start = now
 
-			runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage)
+			runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage, *runner.currentTick)
 
 			if isFirstRun {
-				// clear events that got written during the startup schedules
-				for _, id := range runner.startupSystemSetIds {
-					runner.eventStorage.ProcessEvents(id)
+				if runner.onFirstRunDone != nil {
+					runner.onFirstRunDone()
 				}
+				isFirstRun = false
 			}
-			isFirstRun = false
+			if runner.onRunDone != nil {
+				runner.onRunDone()
+			}
 
 			if currentTickRate != *runner.tickRate {
 				runner.Run(exitChannel, systems)
@@ -59,19 +64,25 @@ func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet
 	}
 }
 
-func (runner *fixedRunner) SetStartupSystemSetIds(ids []SystemSetId) {
-	runner.startupSystemSetIds = ids
+func (runner *fixedRunner) SetOnFirstRunDone(handler func()) {
+	runner.onFirstRunDone = handler
+}
+
+func (runner *fixedRunner) SetOnRunDone(handler func()) {
+	runner.onRunDone = handler
 }
 
 // uncappedRunner runs systems repeatedly and as fast as it can
 type uncappedRunner struct {
-	delta               *float64
-	world               *ecs.World
-	outerWorlds         *map[ecs.WorldId]*ecs.World
-	logger              Logger
-	appName             string
-	eventStorage        *EventStorage
-	startupSystemSetIds []SystemSetId
+	delta          *float64
+	world          *ecs.World
+	outerWorlds    *map[ecs.WorldId]*ecs.World
+	logger         Logger
+	appName        string
+	eventStorage   *EventStorage
+	onFirstRunDone func()
+	onRunDone      func()
+	currentTick    *uint
 }
 
 func (runner *uncappedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet) {
@@ -90,56 +101,76 @@ func (runner *uncappedRunner) Run(exitChannel <-chan struct{}, systems []*System
 		*runner.delta = float64(now-start) / 1_000_000_000
 		start = now
 
-		runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage)
+		runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage, *runner.currentTick)
 
 		if isFirstRun {
-			// clear events that got written during the startup schedules
-			for _, id := range runner.startupSystemSetIds {
-				runner.eventStorage.ProcessEvents(id)
+			if runner.onFirstRunDone != nil {
+				runner.onFirstRunDone()
 			}
+			isFirstRun = false
 		}
-		isFirstRun = false
+		if runner.onRunDone != nil {
+			runner.onRunDone()
+		}
 	}
 }
 
-func (runner *uncappedRunner) SetStartupSystemSetIds(ids []SystemSetId) {
-	runner.startupSystemSetIds = ids
+func (runner *uncappedRunner) SetOnFirstRunDone(handler func()) {
+	runner.onFirstRunDone = handler
+}
+
+func (runner *uncappedRunner) SetOnRunDone(handler func()) {
+	runner.onRunDone = handler
 }
 
 // nTimesRunner runs systems n amount of times and then returns
 type nTimesRunner struct {
-	numberOfRuns        int
-	world               *ecs.World
-	outerWorlds         *map[ecs.WorldId]*ecs.World
-	logger              Logger
-	appName             string
-	eventStorage        *EventStorage
-	startupSystemSetIds []SystemSetId
+	numberOfRuns   int
+	world          *ecs.World
+	outerWorlds    *map[ecs.WorldId]*ecs.World
+	logger         Logger
+	appName        string
+	eventStorage   *EventStorage
+	onFirstRunDone func()
+	onRunDone      func()
+	currentTick    *uint
 }
 
 func (runner *nTimesRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet) {
 	isFirstRun := true
 
 	for range runner.numberOfRuns {
-		runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage)
+		select {
+		case <-exitChannel:
+			return
+		default:
+		}
+
+		runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage, *runner.currentTick)
 
 		if isFirstRun {
-			// clear events that got written during the startup schedules
-			for _, id := range runner.startupSystemSetIds {
-				runner.eventStorage.ProcessEvents(id)
+			if runner.onFirstRunDone != nil {
+				runner.onFirstRunDone()
 			}
+			isFirstRun = false
 		}
-		isFirstRun = false
+		if runner.onRunDone != nil {
+			runner.onRunDone()
+		}
 	}
 }
 
-func (runner *nTimesRunner) SetStartupSystemSetIds(ids []SystemSetId) {
-	runner.startupSystemSetIds = ids
+func (runner *nTimesRunner) SetOnFirstRunDone(handler func()) {
+	runner.onFirstRunDone = handler
 }
 
-func runSystemSet(systems []*SystemSet, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, appName string, eventStorage *EventStorage) {
+func (runner *nTimesRunner) SetOnRunDone(handler func()) {
+	runner.onRunDone = handler
+}
+
+func runSystemSet(systems []*SystemSet, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, appName string, eventStorage *EventStorage, currentTick uint) {
 	for _, systemSet := range systems {
-		errors := systemSet.Exec(world, outerWorlds, eventStorage)
+		errors := systemSet.Exec(world, outerWorlds, eventStorage, currentTick)
 		for _, err := range errors {
 			logger.Error(fmt.Sprintf("%s - system returned error: %v", appName, err))
 		}

@@ -43,11 +43,11 @@ type queryToOuterWorld struct {
 	query   ecs.Query
 }
 
-func (s *SystemSet) Exec(world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, eventStorage *EventStorage) []error {
+func (s *SystemSet) Exec(world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, eventStorage *EventStorage, currentTick uint) []error {
 	for _, eventWriters := range s.eventWriters {
-		eventWriters.setSystemSetId(s.id)
+		eventWriters.setSystemSetWriter(s.id)
 	}
-	defer eventStorage.ProcessEvents(s.id)
+	defer eventStorage.ProcessEvents(s.id, currentTick)
 
 	world.Mutex.Lock()
 	defer world.Mutex.Unlock()

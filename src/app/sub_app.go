@@ -30,7 +30,8 @@ type SubApp struct {
 	logger             Logger
 	name               string
 	tickRate           *time.Duration // the rate at which the repeating systems run
-	lastDelta          *float64       // delta time of the last tick
+	currentTick        uint
+	lastDelta          *float64 // delta time of the last tick
 	runner             Runner
 	outerWorlds        map[ecs.WorldId]*ecs.World
 	eventStorage       EventStorage
@@ -206,20 +207,19 @@ func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 		return
 	}
 
-	onceRunner := app.NewNTimesRunner(1)
-
+	onceRunner := app.newNTimesRunner(1)
 	onceRunner.Run(exitChannel, startupSystems)
 
-	// Events written by EventWriter's in startup systems do not get cleared by default so
-	// that they can be read by the repeated schedules.
-	//
-	// To enable the runner that runs the repeated schedules to clear them, we pass the systemSetIds
-	// of the startup schedules.
-	startupSystemSetIds := make([]SystemSetId, len(startupSystems))
-	for i, startupSystemSet := range startupSystems {
-		startupSystemSetIds[i] = startupSystemSet.id
-	}
-	app.runner.SetStartupSystemSetIds(startupSystemSetIds)
+	app.runner.SetOnFirstRunDone(func() {
+		// Events written by EventWriter's in startup systems do not get cleared by default so
+		// that they can be read by the repeated schedules.
+		for _, startupSystem := range startupSystems {
+			app.eventStorage.ProcessEvents(startupSystem.id, app.currentTick)
+		}
+	})
+	app.runner.SetOnRunDone(func() {
+		app.currentTick++
+	})
 
 	app.runner.Run(exitChannel, repeatedSystems)
 	onceRunner.Run(exitChannel, cleanupSystems)
@@ -234,6 +234,10 @@ func (app *SubApp) SetName(name string) {
 // the app is already running, in which case it will be picked up after the next run.
 func (app *SubApp) SetTickRate(tickRate time.Duration) {
 	*app.tickRate = tickRate
+}
+
+func (app *SubApp) GetCurrentTick() *uint {
+	return &app.currentTick
 }
 
 func (app *SubApp) Delta() float64 {
@@ -305,6 +309,7 @@ func (app *SubApp) UseFixedRunner() {
 		logger:       app.logger,
 		appName:      app.name,
 		eventStorage: &app.eventStorage,
+		currentTick:  &app.currentTick,
 	}
 }
 
@@ -317,11 +322,17 @@ func (app *SubApp) UseUncappedRunner() {
 		logger:       app.logger,
 		appName:      app.name,
 		eventStorage: &app.eventStorage,
+		currentTick:  &app.currentTick,
 	}
 }
 
+func (app *SubApp) UseNTimesRunner(numberOfRuns int) {
+	runner := app.newNTimesRunner(numberOfRuns)
+	app.runner = &runner
+}
+
 // NewNTimesRunner creates a runner that runs systems [numberOfRuns] amount of  times
-func (app *SubApp) NewNTimesRunner(numberOfRuns int) nTimesRunner {
+func (app *SubApp) newNTimesRunner(numberOfRuns int) nTimesRunner {
 	return nTimesRunner{
 		numberOfRuns: numberOfRuns,
 		world:        app.world,
@@ -329,5 +340,6 @@ func (app *SubApp) NewNTimesRunner(numberOfRuns int) nTimesRunner {
 		logger:       app.logger,
 		appName:      app.name,
 		eventStorage: &app.eventStorage,
+		currentTick:  &app.currentTick,
 	}
 }

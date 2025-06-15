@@ -234,7 +234,7 @@ func TestRun(t *testing.T) {
 			AddSystem(update, func() { numberOfSystemRuns++ }).
 			AddSystem(cleanup, func() { numberOfSystemRuns++ })
 
-		runner := app.NewNTimesRunner(1)
+		runner := app.newNTimesRunner(1)
 		app.SetRunner(&runner)
 
 		isDoneChannel := make(chan bool)
@@ -288,6 +288,42 @@ func TestRun(t *testing.T) {
 		<-isDoneChannel
 		assert.Equal(uint(0), logger.err)
 	})
+
+	t.Run("n times runner stops when closing exit channel", func(t *testing.T) {
+		const update Schedule = "Update"
+		const targetNumberOfRuns = 10
+
+		assert := assert.New(t)
+
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+		app.AddSchedule(update, ScheduleTypeRepeating)
+		app.UseNTimesRunner(targetNumberOfRuns)
+		numberOfRunsDone := 0
+		app.AddSystem(update, func() {
+			time.Sleep(time.Millisecond * 150)
+			numberOfRunsDone++
+		})
+
+		exitChannel := make(chan struct{})
+		isDoneChannel := make(chan bool)
+
+		go app.Run(exitChannel, isDoneChannel)
+		go func() {
+			time.Sleep(100 * time.Millisecond)
+			close(exitChannel)
+		}()
+
+		<-isDoneChannel
+		assert.Equal(uint(0), logger.err)
+
+		// We expect numberOfRunsDone to be 1, but we simply check if it didn't complete all target runs
+		// to keep the outcome of this test consistent.
+		// Not sure if this is true, but I'm not sure how exact the time.Sleep mechanisms are, especially
+		// considering running this test on a (temporary) slower device.
+		assert.Less(numberOfRunsDone, targetNumberOfRuns)
+	})
 }
 
 func TestConcurrency(t *testing.T) {
@@ -317,7 +353,7 @@ func TestConcurrency(t *testing.T) {
 		assert.NoError(err)
 		subAppA.AddSchedule(startup, ScheduleTypeStartup)
 		subAppA.AddSchedule(update, ScheduleTypeRepeating)
-		runner := subAppA.NewNTimesRunner(numberOfRuns)
+		runner := subAppA.newNTimesRunner(numberOfRuns)
 		subAppA.SetRunner(&runner)
 
 		subAppB, err := New(logger, ecs.DefaultWorldConfigs())
@@ -326,7 +362,7 @@ func TestConcurrency(t *testing.T) {
 		subAppB.AddSchedule(update, ScheduleTypeRepeating)
 		err = subAppB.RegisterOuterWorld(ecs.TestCustomTargetWorldId, subAppA.World())
 		assert.NoError(err)
-		runner = subAppB.NewNTimesRunner(numberOfRuns)
+		runner = subAppB.newNTimesRunner(numberOfRuns)
 		subAppB.SetRunner(&runner)
 
 		subAppA.
