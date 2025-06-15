@@ -180,4 +180,22 @@ func TestEventReader(t *testing.T) {
 		}
 		assert.True(eventReader.IsEmpty())
 	})
+
+	t.Run("clearEvents", func(t *testing.T) {
+		assert := assert.New(t)
+
+		eventReader := EventReader[*testEvent]{
+			events: []*testEvent{
+				{id: 10, Event: Event{remove: true}},
+				{id: 20, Event: Event{systemSetId: 1}},
+				{id: 30, Event: Event{systemSetId: 2}},
+				{id: 40, Event: Event{systemSetId: 3}},
+			},
+		}
+		eventReader.clearEvents(2)
+
+		assert.Len(eventReader.events, 2)
+		assert.Equal(20, eventReader.events[0].id)
+		assert.Equal(40, eventReader.events[1].id)
+	})
 }

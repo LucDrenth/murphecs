@@ -227,11 +227,12 @@ func (reader *EventReader[E]) readerEventId() eventId {
 	return reflect.TypeFor[E]()
 }
 
+// clearEvents removes all events that are marked to be removed or are not written by [SystemSet] with given [SystemSetId]
 func (reader *EventReader[E]) clearEvents(systemSetId SystemSetId) {
 	newEvents := []E{}
 
 	for _, event := range reader.events {
-		if event.getSystemSetId() != systemSetId {
+		if event.getSystemSetId() != systemSetId && !event.shouldRemove() {
 			newEvents = append(newEvents, event)
 		}
 	}
