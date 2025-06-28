@@ -81,7 +81,7 @@ func TestEventReader(t *testing.T) {
 
 		element, found := eventReader.First()
 		assert.True(found)
-		assert.Equal(element.id, 1)
+		assert.Equal(1, element.id)
 	})
 
 	t.Run("First returns the first element that is not marked as removed", func(t *testing.T) {
@@ -97,7 +97,7 @@ func TestEventReader(t *testing.T) {
 
 		element, found := eventReader.First()
 		assert.True(found)
-		assert.Equal(element.id, 2)
+		assert.Equal(2, element.id)
 	})
 
 	t.Run("Last returns false if there are no elements", func(t *testing.T) {
@@ -123,7 +123,7 @@ func TestEventReader(t *testing.T) {
 
 		element, found := eventReader.Last()
 		assert.True(found)
-		assert.Equal(element.id, 2)
+		assert.Equal(2, element.id)
 	})
 
 	t.Run("Last returns the last element that is not marked as removed", func(t *testing.T) {
@@ -139,7 +139,7 @@ func TestEventReader(t *testing.T) {
 
 		element, found := eventReader.Last()
 		assert.True(found)
-		assert.Equal(element.id, 1)
+		assert.Equal(1, element.id)
 	})
 
 	t.Run("Len returns the number of elements that are not marked as removed", func(t *testing.T) {
@@ -154,7 +154,7 @@ func TestEventReader(t *testing.T) {
 		}
 		eventReader.events[1].Remove()
 
-		assert.Equal(eventReader.Len(), 2)
+		assert.Equal(2, eventReader.Len())
 	})
 
 	t.Run("Empty returns true if all elements are marked as removed", func(t *testing.T) {
