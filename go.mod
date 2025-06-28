@@ -4,6 +4,11 @@ go 1.24.3
 
 require github.com/stretchr/testify v1.10.0
 
+tool (
+	github.com/golangci/golangci-lint/v2/cmd/golangci-lint
+	golang.org/x/perf/cmd/benchstat
+)
+
 require (
 	4d63.com/gocheckcompilerdirectives v1.3.0 // indirect
 	4d63.com/gochecknoglobals v0.2.2 // indirect
@@ -204,9 +209,4 @@ require (
 	honnef.co/go/tools v0.6.1 // indirect
 	mvdan.cc/gofumpt v0.8.0 // indirect
 	mvdan.cc/unparam v0.0.0-20250301125049-0df0534333a4 // indirect
-)
-
-tool (
-	github.com/golangci/golangci-lint/v2/cmd/golangci-lint
-	golang.org/x/perf/cmd/benchstat
 )
