@@ -45,7 +45,7 @@ func (runner *customRunner) Run(exitChannel <-chan struct{}, systems []*app.Syst
 		for _, systemSet := range systems {
 			errors := systemSet.Exec(runner.world, nil, runner.eventStorage, *runner.currentTick)
 			for _, err := range errors {
-				runner.logger.Error(fmt.Sprintf("system returned error: %v", err))
+				runner.logger.Error("system returned error: %v", err)
 			}
 		}
 

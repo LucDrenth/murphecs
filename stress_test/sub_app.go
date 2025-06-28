@@ -100,7 +100,7 @@ func runQuery(log app.Logger, query ecs.Query2[emptyComponentA, componentWithVal
 		total += b.value
 	})
 
-	log.Debug(fmt.Sprintf("got: %d", total))
+	log.Debug("got: %d", total)
 }
 
 func printTPS(counter *ticks, startTime timeStarted, lastPrintTime *lastPrintTime) {

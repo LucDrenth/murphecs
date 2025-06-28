@@ -229,7 +229,7 @@ func parseQueryParam(parameterType reflect.Type, world *ecs.World, logger Logger
 
 	warning := query.Validate()
 	if warning != nil {
-		logger.Warn(fmt.Sprintf("query %s is not optimized: %v", parameterType.String(), warning))
+		logger.Warn("query %s is not optimized: %v", parameterType.String(), warning)
 	}
 
 	return query, nil

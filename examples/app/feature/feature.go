@@ -8,8 +8,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/lucdrenth/murphecs/examples/app/run"
 	"github.com/lucdrenth/murphecs/src/app"
 	"github.com/lucdrenth/murphecs/src/ecs"
@@ -64,14 +62,14 @@ func (feature *debugPrinterFeature) Init() {
 }
 
 func startupPrinter(logger app.Logger, appName appNameResource) {
-	logger.Info(fmt.Sprintf("%s - Starting up", appName.name))
+	logger.Info("%s - Starting up", appName.name)
 }
 
 func tickPrinter(logger app.Logger, tickCounter *tickCounter, appName appNameResource) {
 	tickCounter.count += 1
-	logger.Info(fmt.Sprintf("%s - Tick number %d", appName.name, tickCounter.count))
+	logger.Info("%s - Tick number %d", appName.name, tickCounter.count)
 }
 
 func cleanupPrinter(logger app.Logger, appName appNameResource) {
-	logger.Info(fmt.Sprintf("%s - Cleaning up", appName.name))
+	logger.Info("%s - Cleaning up", appName.name)
 }

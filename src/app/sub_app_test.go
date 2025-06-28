@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"strconv"
 	"testing"
 	"time"
@@ -384,7 +383,7 @@ func TestConcurrency(t *testing.T) {
 			AddSystem(update, func(log *testLogger, query *ecs.Query1[component, ecs.TestCustomTargetWorld]) {
 				query.Result().Iter(func(entityId ecs.EntityId, a *component) {
 					for k, v := range a.data {
-						log.Info(fmt.Sprintf("%s=%d\t", k, v))
+						log.Info("%s=%d\t", k, v)
 					}
 				})
 			})

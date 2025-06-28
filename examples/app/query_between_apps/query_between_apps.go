@@ -64,13 +64,13 @@ func main() {
 		if err != nil {
 			return err
 		}
-		log.Info(fmt.Sprintf("spawned entity %d with value 100", entity))
+		log.Info("spawned entity %d with value 100", entity)
 
 		entity, err = ecs.Spawn(world, &myComponent{value: 200})
 		if err != nil {
 			return err
 		}
-		log.Info(fmt.Sprintf("spawned entity %d with value 200", entity))
+		log.Info("spawned entity %d with value 200", entity)
 
 		return nil
 	})
@@ -78,7 +78,7 @@ func main() {
 	// 5. Now register a system for appBar that queries appFoo
 	appBar.AddSystem(update, func(query *ecs.Query1[myComponent, targetWorldAppFoo], log app.Logger) error {
 		query.Result().Iter(func(entityId ecs.EntityId, a *myComponent) {
-			log.Info(fmt.Sprintf("%d: %d", entityId, a.value))
+			log.Info("%d: %d", entityId, a.value)
 		})
 
 		fmt.Println()

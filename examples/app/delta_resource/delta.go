@@ -2,8 +2,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/lucdrenth/murphecs/examples/app/run"
 	"github.com/lucdrenth/murphecs/src/app"
 	"github.com/lucdrenth/murphecs/src/ecs"
@@ -43,5 +41,5 @@ func createSetDeltaResourceSystem(app *app.SubApp) func(delta *delta) {
 }
 
 func logCurrentDelta(log app.Logger, delta *delta) {
-	log.Info(fmt.Sprintf("delta: %f", delta.secs))
+	log.Info("delta: %f", delta.secs)
 }

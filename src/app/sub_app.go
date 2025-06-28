@@ -56,7 +56,7 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
 	// we register them as blacklisted so that an error is logged when the user tries to add them.
 	err = registerBlacklistedResource[*ecs.World](&resourceStorage)
 	if err != nil {
-		logger.Warn(fmt.Sprintf("App - failed to register blacklisted resource: %v", err))
+		logger.Warn("App - failed to register blacklisted resource: %v", err)
 	}
 
 	subApp := SubApp{
@@ -83,21 +83,21 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
 func (app *SubApp) AddSystem(schedule Schedule, system System) *SubApp {
 	scheduler := app.getScheduler(schedule)
 	if scheduler == nil {
-		app.logger.Error(fmt.Sprintf("%s - failed to add system %s: schedule %s not found",
+		app.logger.Error("%s - failed to add system %s: schedule %s not found",
 			app.name,
 			systemToDebugString(system),
 			schedule,
-		))
+		)
 		return app
 	}
 
 	err := scheduler.AddSystem(schedule, system, app.world, &app.outerWorlds, app.logger, &app.resources, &app.eventStorage)
 	if err != nil {
-		app.logger.Error(fmt.Sprintf("%s - failed to add system %s: %v",
+		app.logger.Error("%s - failed to add system %s: %v",
 			app.name,
 			systemToDebugString(system),
 			err,
-		))
+		)
 	}
 
 	return app
@@ -122,14 +122,14 @@ func (app *SubApp) getScheduler(schedule Schedule) *Scheduler {
 func (app *SubApp) AddSchedule(schedule Schedule, scheduleType scheduleType) *SubApp {
 	scheduler, ok := app.schedules[scheduleType]
 	if !ok {
-		app.logger.Error(fmt.Sprintf("%s - failed to add schedule %s: invalid schedule type", app.name, schedule))
+		app.logger.Error("%s - failed to add schedule %s: invalid schedule type", app.name, schedule)
 		return app
 	}
 
 	app.systemSetIdCounter++
 	err := scheduler.AddSchedule(schedule, app.systemSetIdCounter)
 	if err != nil {
-		app.logger.Error(fmt.Sprintf("%s - failed to add schedule %s: %v", app.name, schedule, err))
+		app.logger.Error("%s - failed to add schedule %s: %v", app.name, schedule, err)
 	}
 
 	return app
@@ -149,7 +149,7 @@ func (app *SubApp) AddSchedule(schedule Schedule, scheduleType scheduleType) *Su
 func (app *SubApp) AddResource(resource Resource) *SubApp {
 	err := app.resources.add(resource)
 	if err != nil {
-		app.logger.Error(fmt.Sprintf("%s - failed to add resource %s: %v", app.name, getResourceDebugType(resource), err))
+		app.logger.Error("%s - failed to add resource %s: %v", app.name, getResourceDebugType(resource), err)
 	}
 
 	return app
@@ -164,7 +164,7 @@ func (app *SubApp) AddFeature(feature IFeature) *SubApp {
 	for _, feature := range features {
 		err := validateFeature(feature)
 		if err != nil {
-			app.logger.Error(fmt.Sprintf("%s - %v", app.name, err))
+			app.logger.Error("%s - %v", app.name, err)
 			continue
 		}
 
@@ -191,19 +191,19 @@ func (app *SubApp) AddFeature(feature IFeature) *SubApp {
 func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 	startupSystems, err := app.schedules[ScheduleTypeStartup].GetSystemSets()
 	if err != nil {
-		app.logger.Error(fmt.Sprintf("%s - failed to get startup systems: %v", app.name, err))
+		app.logger.Error("%s - failed to get startup systems: %v", app.name, err)
 		return
 	}
 
 	repeatedSystems, err := app.schedules[ScheduleTypeRepeating].GetSystemSets()
 	if err != nil {
-		app.logger.Error(fmt.Sprintf("%s - failed to get repeated systems: %v", app.name, err))
+		app.logger.Error("%s - failed to get repeated systems: %v", app.name, err)
 		return
 	}
 
 	cleanupSystems, err := app.schedules[ScheduleTypeCleanup].GetSystemSets()
 	if err != nil {
-		app.logger.Error(fmt.Sprintf("%s - failed to get cleanup systems: %v", app.name, err))
+		app.logger.Error("%s - failed to get cleanup systems: %v", app.name, err)
 		return
 	}
 
@@ -292,7 +292,7 @@ func (app *SubApp) RegisterOuterWorld(id ecs.WorldId, world *ecs.World) error {
 // SetRunner sets the runner for the repeated systems
 func (app *SubApp) SetRunner(runner Runner) {
 	if runner == nil {
-		app.logger.Error(fmt.Sprintf("%s - failed to set runner: can not be nil", app.name))
+		app.logger.Error("%s - failed to set runner: can not be nil", app.name)
 		return
 	}
 

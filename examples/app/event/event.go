@@ -18,7 +18,6 @@
 package main
 
 import (
-	"fmt"
 	"math/rand/v2"
 	"time"
 
@@ -66,6 +65,6 @@ func rollDice(eventWriter *app.EventWriter[*highRollEvent]) {
 // logHighRolls logs every highRollEvent that we receive
 func logHighRolls(logger app.Logger, eventReader *app.EventReader[*highRollEvent]) {
 	for highRollEvent := range eventReader.Read {
-		logger.Info(fmt.Sprintf("high dice roll: %d", highRollEvent.number))
+		logger.Info("high dice roll: %d", highRollEvent.number)
 	}
 }

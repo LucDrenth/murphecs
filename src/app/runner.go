@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/lucdrenth/murphecs/src/ecs"
@@ -172,7 +171,7 @@ func runSystemSet(systems []*SystemSet, world *ecs.World, outerWorlds *map[ecs.W
 	for _, systemSet := range systems {
 		errors := systemSet.Exec(world, outerWorlds, eventStorage, currentTick)
 		for _, err := range errors {
-			logger.Error(fmt.Sprintf("%s - system returned error: %v", appName, err))
+			logger.Error("%s - system returned error: %v", appName, err)
 		}
 	}
 }
