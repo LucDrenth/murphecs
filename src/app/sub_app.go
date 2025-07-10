@@ -24,18 +24,19 @@ const (
 // For example: if the tickRate is 1 second and a tick suddenly takes 4 seconds, the next tick will be run immediately
 // after, and then after 1 second.
 type SubApp struct {
-	world              *ecs.World
-	schedules          map[scheduleType]*Scheduler
-	resources          resourceStorage // resources that can be pulled by system params.
-	logger             Logger
-	name               string
-	tickRate           *time.Duration // the rate at which the repeating systems run
-	currentTick        uint
-	lastDelta          *float64 // delta time of the last tick
-	runner             Runner
-	outerWorlds        map[ecs.WorldId]*ecs.World
-	eventStorage       EventStorage
-	systemSetIdCounter SystemSetId
+	world                  *ecs.World
+	schedules              map[scheduleType]*Scheduler
+	resources              resourceStorage // resources that can be pulled by system params.
+	logger                 Logger
+	name                   string
+	tickRate               *time.Duration // the rate at which the repeating systems run
+	currentTick            uint
+	lastDelta              *float64 // delta time of the last tick
+	runner                 Runner
+	outerWorlds            map[ecs.WorldId]*ecs.World
+	eventStorage           EventStorage
+	systemSetIdCounter     SystemSetId
+	OnStartupSchedulesDone func()
 }
 
 func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
@@ -209,6 +210,9 @@ func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 
 	onceRunner := app.newNTimesRunner(1)
 	onceRunner.Run(exitChannel, startupSystems)
+	if app.OnStartupSchedulesDone != nil {
+		app.OnStartupSchedulesDone()
+	}
 
 	app.runner.SetOnFirstRunDone(func() {
 		// Events written by EventWriter's in startup systems do not get cleared by default so

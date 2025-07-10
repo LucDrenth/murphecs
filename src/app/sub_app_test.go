@@ -208,13 +208,44 @@ func TestSetRunner(t *testing.T) {
 }
 
 func TestRun(t *testing.T) {
+	t.Run("calls OnStartupSchedulesDone after startup schedules and before repeated schedules", func(t *testing.T) {
+		assert := assert.New(t)
+
+		const (
+			startup Schedule = "Startup"
+			update  Schedule = "Update"
+		)
+
+		numberOfSystemsRun := 0
+
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+		app.AddSchedule(startup, ScheduleTypeStartup)
+		app.AddSchedule(update, ScheduleTypeRepeating)
+		runner := app.newNTimesRunner(1)
+		app.SetRunner(&runner)
+
+		app.OnStartupSchedulesDone = func() {
+			assert.Equal(1, numberOfSystemsRun)
+		}
+		app.AddSystem(startup, func() { numberOfSystemsRun++ })
+		app.AddSystem(update, func() { numberOfSystemsRun++ })
+
+		isDoneChannel := make(chan bool)
+		go app.Run(make(chan struct{}), isDoneChannel)
+		<-isDoneChannel
+
+		assert.Equal(2, numberOfSystemsRun)
+	})
+
 	t.Run("runs all systems once and then exists", func(t *testing.T) {
 		assert := assert.New(t)
 
 		const (
-			startup Schedule = "startup"
-			update  Schedule = "startup"
-			cleanup Schedule = "cleanup"
+			startup Schedule = "Startup"
+			update  Schedule = "Update"
+			cleanup Schedule = "Cleanup"
 		)
 
 		numberOfSystemRuns := 0
