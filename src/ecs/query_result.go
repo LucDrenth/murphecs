@@ -5,6 +5,8 @@ package ecs
 
 type QueryResult interface {
 	NumberOfResult() uint
+
+	// Clear removes the query results but reuses the allocated slices.
 	Clear()
 }
 type Query0Result struct {
@@ -34,29 +36,44 @@ type Query4Result[A, B, C, D IComponent] struct {
 }
 
 func (q *Query0Result) Clear() {
-	q.entityIds = []EntityId{}
+	clear(q.entityIds)
+	q.entityIds = q.entityIds[:0]
 }
 func (q *Query1Result[A]) Clear() {
-	q.componentsA = []*A{}
-	q.entityIds = []EntityId{}
+	clear(q.componentsA)
+	q.componentsA = q.componentsA[:0]
+	clear(q.entityIds)
+	q.entityIds = q.entityIds[:0]
 }
 func (q *Query2Result[A, B]) Clear() {
-	q.componentsA = []*A{}
-	q.componentsB = []*B{}
-	q.entityIds = []EntityId{}
+	clear(q.componentsA)
+	q.componentsA = q.componentsA[:0]
+	clear(q.componentsB)
+	q.componentsB = q.componentsB[:0]
+	clear(q.entityIds)
+	q.entityIds = q.entityIds[:0]
 }
 func (q *Query3Result[A, B, C]) Clear() {
-	q.componentsA = []*A{}
-	q.componentsB = []*B{}
-	q.componentsC = []*C{}
-	q.entityIds = []EntityId{}
+	clear(q.componentsA)
+	q.componentsA = q.componentsA[:0]
+	clear(q.componentsB)
+	q.componentsB = q.componentsB[:0]
+	clear(q.componentsC)
+	q.componentsC = q.componentsC[:0]
+	clear(q.entityIds)
+	q.entityIds = q.entityIds[:0]
 }
 func (q *Query4Result[A, B, C, D]) Clear() {
-	q.componentsA = []*A{}
-	q.componentsB = []*B{}
-	q.componentsC = []*C{}
-	q.componentsD = []*D{}
-	q.entityIds = []EntityId{}
+	clear(q.componentsA)
+	q.componentsA = q.componentsA[:0]
+	clear(q.componentsB)
+	q.componentsB = q.componentsB[:0]
+	clear(q.componentsC)
+	q.componentsC = q.componentsC[:0]
+	clear(q.componentsD)
+	q.componentsD = q.componentsD[:0]
+	clear(q.entityIds)
+	q.entityIds = q.entityIds[:0]
 }
 
 func (q *Query0Result) NumberOfResult() uint {
