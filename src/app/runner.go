@@ -8,22 +8,57 @@ import (
 
 type Runner interface {
 	Run(exitChannel <-chan struct{}, systems []*SystemSet)
-	SetOnFirstRunDone(func())
-	SetOnRunDone(func())
+	setOnFirstRunDone(func())
+	setOnRunDone(func())
+}
+
+type RunnerBasis struct {
+	onFirstRunDone func()
+	onRunDone      func()
+	currentTick    *uint
+	isFirstRun     bool
+}
+
+func NewRunnerBasis(app *SubApp) RunnerBasis {
+	return RunnerBasis{
+		onFirstRunDone: func() {},
+		onRunDone:      func() {},
+		currentTick:    &app.currentTick,
+		isFirstRun:     true,
+	}
+}
+
+func (runner *RunnerBasis) setOnFirstRunDone(handler func()) {
+	runner.onFirstRunDone = handler
+}
+
+func (runner *RunnerBasis) setOnRunDone(handler func()) {
+	runner.onRunDone = handler
+}
+
+func (runner *RunnerBasis) CurrentTick() uint {
+	return *runner.currentTick
+}
+
+func (runner *RunnerBasis) Done() {
+	if runner.isFirstRun {
+		runner.onFirstRunDone()
+		runner.isFirstRun = false
+	}
+
+	runner.onRunDone()
 }
 
 // fixedRunner runs systems at a fixed interval
 type fixedRunner struct {
-	tickRate       *time.Duration
-	delta          *float64
-	world          *ecs.World
-	outerWorlds    *map[ecs.WorldId]*ecs.World
-	logger         Logger
-	appName        string
-	eventStorage   *EventStorage
-	onFirstRunDone func()
-	onRunDone      func()
-	currentTick    *uint
+	RunnerBasis
+	tickRate     *time.Duration
+	delta        *float64
+	world        *ecs.World
+	outerWorlds  *map[ecs.WorldId]*ecs.World
+	logger       Logger
+	appName      string
+	eventStorage *EventStorage
 }
 
 func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet) {
@@ -31,7 +66,6 @@ func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet
 	currentTickRate := *runner.tickRate
 	var now int64
 	start := time.Now().UnixNano()
-	isFirstRun := true
 
 	for {
 		select {
@@ -45,15 +79,7 @@ func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet
 
 			runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage, *runner.currentTick)
 
-			if isFirstRun {
-				if runner.onFirstRunDone != nil {
-					runner.onFirstRunDone()
-				}
-				isFirstRun = false
-			}
-			if runner.onRunDone != nil {
-				runner.onRunDone()
-			}
+			runner.Done()
 
 			if currentTickRate != *runner.tickRate {
 				runner.Run(exitChannel, systems)
@@ -63,31 +89,20 @@ func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet
 	}
 }
 
-func (runner *fixedRunner) SetOnFirstRunDone(handler func()) {
-	runner.onFirstRunDone = handler
-}
-
-func (runner *fixedRunner) SetOnRunDone(handler func()) {
-	runner.onRunDone = handler
-}
-
 // uncappedRunner runs systems repeatedly and as fast as it can
 type uncappedRunner struct {
-	delta          *float64
-	world          *ecs.World
-	outerWorlds    *map[ecs.WorldId]*ecs.World
-	logger         Logger
-	appName        string
-	eventStorage   *EventStorage
-	onFirstRunDone func()
-	onRunDone      func()
-	currentTick    *uint
+	RunnerBasis
+	delta        *float64
+	world        *ecs.World
+	outerWorlds  *map[ecs.WorldId]*ecs.World
+	logger       Logger
+	appName      string
+	eventStorage *EventStorage
 }
 
 func (runner *uncappedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet) {
 	var now int64
 	start := time.Now().UnixNano()
-	isFirstRun := true
 
 	for {
 		select {
@@ -102,42 +117,30 @@ func (runner *uncappedRunner) Run(exitChannel <-chan struct{}, systems []*System
 
 		runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage, *runner.currentTick)
 
-		if isFirstRun {
-			if runner.onFirstRunDone != nil {
-				runner.onFirstRunDone()
-			}
-			isFirstRun = false
-		}
-		if runner.onRunDone != nil {
-			runner.onRunDone()
-		}
+		runner.Done()
 	}
 }
 
-func (runner *uncappedRunner) SetOnFirstRunDone(handler func()) {
+func (runner *uncappedRunner) setOnFirstRunDone(handler func()) {
 	runner.onFirstRunDone = handler
 }
 
-func (runner *uncappedRunner) SetOnRunDone(handler func()) {
+func (runner *uncappedRunner) setOnRunDone(handler func()) {
 	runner.onRunDone = handler
 }
 
 // nTimesRunner runs systems n amount of times and then returns
 type nTimesRunner struct {
-	numberOfRuns   int
-	world          *ecs.World
-	outerWorlds    *map[ecs.WorldId]*ecs.World
-	logger         Logger
-	appName        string
-	eventStorage   *EventStorage
-	onFirstRunDone func()
-	onRunDone      func()
-	currentTick    *uint
+	RunnerBasis
+	numberOfRuns int
+	world        *ecs.World
+	outerWorlds  *map[ecs.WorldId]*ecs.World
+	logger       Logger
+	appName      string
+	eventStorage *EventStorage
 }
 
 func (runner *nTimesRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet) {
-	isFirstRun := true
-
 	for range runner.numberOfRuns {
 		select {
 		case <-exitChannel:
@@ -147,23 +150,15 @@ func (runner *nTimesRunner) Run(exitChannel <-chan struct{}, systems []*SystemSe
 
 		runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage, *runner.currentTick)
 
-		if isFirstRun {
-			if runner.onFirstRunDone != nil {
-				runner.onFirstRunDone()
-			}
-			isFirstRun = false
-		}
-		if runner.onRunDone != nil {
-			runner.onRunDone()
-		}
+		runner.Done()
 	}
 }
 
-func (runner *nTimesRunner) SetOnFirstRunDone(handler func()) {
+func (runner *nTimesRunner) setOnFirstRunDone(handler func()) {
 	runner.onFirstRunDone = handler
 }
 
-func (runner *nTimesRunner) SetOnRunDone(handler func()) {
+func (runner *nTimesRunner) setOnRunDone(handler func()) {
 	runner.onRunDone = handler
 }
 

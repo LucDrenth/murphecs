@@ -19,18 +19,15 @@ import (
 const update app.Schedule = "Update"
 
 type customRunner struct {
-	world          *ecs.World
-	eventStorage   *app.EventStorage
-	logger         app.Logger
-	onFirstRunDone func() // do not set this yourself
-	onRunDone      func() // do not set this yourself
-	currentTick    *uint  // do not update this yourself
+	app.RunnerBasis
+	world        *ecs.World
+	eventStorage *app.EventStorage
+	logger       app.Logger
 }
 
 // Run systems when pressing enter in the console
 func (runner *customRunner) Run(exitChannel <-chan struct{}, systems []*app.SystemSet) {
 	scanner := bufio.NewScanner(os.Stdin)
-	isFirstRun := true
 
 	for {
 		fmt.Print("Press enter to run systems")
@@ -43,28 +40,14 @@ func (runner *customRunner) Run(exitChannel <-chan struct{}, systems []*app.Syst
 		}
 
 		for _, systemSet := range systems {
-			errors := systemSet.Exec(runner.world, nil, runner.eventStorage, *runner.currentTick)
+			errors := systemSet.Exec(runner.world, nil, runner.eventStorage, runner.CurrentTick())
 			for _, err := range errors {
 				runner.logger.Error("system returned error: %v", err)
 			}
 		}
 
-		if isFirstRun {
-			runner.onFirstRunDone()
-			isFirstRun = false
-		}
-		runner.onRunDone()
+		runner.Done()
 	}
-}
-
-// This method will be called by the SubApp before running the repeated schedules
-func (runner *customRunner) SetOnFirstRunDone(handler func()) {
-	runner.onFirstRunDone = handler
-}
-
-// This method will be called by the SubApp before running the repeated schedules
-func (runner *customRunner) SetOnRunDone(handler func()) {
-	runner.onRunDone = handler
 }
 
 func main() {
@@ -75,9 +58,9 @@ func main() {
 	}
 
 	runner := customRunner{
+		RunnerBasis:  app.NewRunnerBasis(myApp),
 		world:        myApp.World(),
 		eventStorage: myApp.EventStorage(),
-		currentTick:  myApp.GetCurrentTick(),
 		logger:       logger,
 	}
 	myApp.SetRunner(&runner) // <--- Use our custom runner

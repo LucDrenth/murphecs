@@ -214,14 +214,14 @@ func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 		app.OnStartupSchedulesDone()
 	}
 
-	app.runner.SetOnFirstRunDone(func() {
+	app.runner.setOnFirstRunDone(func() {
 		// Events written by EventWriter's in startup systems do not get cleared by default so
 		// that they can be read by the repeated schedules.
 		for _, startupSystem := range startupSystems {
 			app.eventStorage.ProcessEvents(startupSystem.id, app.currentTick)
 		}
 	})
-	app.runner.SetOnRunDone(func() {
+	app.runner.setOnRunDone(func() {
 		app.currentTick++
 	})
 
@@ -313,7 +313,7 @@ func (app *SubApp) UseFixedRunner() {
 		logger:       app.logger,
 		appName:      app.name,
 		eventStorage: &app.eventStorage,
-		currentTick:  &app.currentTick,
+		RunnerBasis:  NewRunnerBasis(app),
 	}
 }
 
@@ -326,7 +326,7 @@ func (app *SubApp) UseUncappedRunner() {
 		logger:       app.logger,
 		appName:      app.name,
 		eventStorage: &app.eventStorage,
-		currentTick:  &app.currentTick,
+		RunnerBasis:  NewRunnerBasis(app),
 	}
 }
 
@@ -344,6 +344,6 @@ func (app *SubApp) newNTimesRunner(numberOfRuns int) nTimesRunner {
 		logger:       app.logger,
 		appName:      app.name,
 		eventStorage: &app.eventStorage,
-		currentTick:  &app.currentTick,
+		RunnerBasis:  NewRunnerBasis(app),
 	}
 }
