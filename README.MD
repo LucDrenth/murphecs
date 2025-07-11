@@ -56,7 +56,7 @@ func main() {
 		query.Prepare(world)
 		query.Exec(world)
 
-		for position, velocity := range query.Result().Range() {
+		for position, velocity := range query.Range() {
 			position.X += velocity.X
 			position.Y += velocity.Y
 		}

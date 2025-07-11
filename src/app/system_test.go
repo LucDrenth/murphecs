@@ -464,7 +464,7 @@ func TestExecSystem(t *testing.T) {
 
 		numberOfResults := 0
 		err = systemSet.add(func(q *ecs.Query1[componentA, ecs.Default]) {
-			numberOfResults = int(q.Result().NumberOfResult())
+			numberOfResults = int(q.NumberOfResult())
 		}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
@@ -490,7 +490,7 @@ func TestExecSystem(t *testing.T) {
 
 		numberOfResults := 0
 		err = systemSet.add(func(q *ecs.Query1[componentA, ecs.Lazy]) {
-			numberOfResults = int(q.Result().NumberOfResult())
+			numberOfResults = int(q.NumberOfResult())
 		}, world, nil, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 
@@ -524,7 +524,7 @@ func TestExecSystem(t *testing.T) {
 
 		numberOfResults := 0
 		err = systemSet.add(func(q *ecs.Query1[componentA, ecs.TestCustomTargetWorld]) {
-			numberOfResults = int(q.Result().NumberOfResult())
+			numberOfResults = int(q.NumberOfResult())
 		}, world, &outerWorlds, &logger, &resourceStorage, &eventStorage)
 		assert.NoError(err)
 

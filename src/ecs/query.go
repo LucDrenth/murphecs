@@ -68,8 +68,8 @@ func (o *queryOptions) Validate() error {
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query0[_ QueryOption] struct {
+	Query0Result
 	queryOptions
-	results Query0Result
 }
 
 // Query1 queries 1 component.
@@ -87,8 +87,9 @@ type Query0[_ QueryOption] struct {
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query1[ComponentA IComponent, _ QueryOption] struct {
+	Query1Result[ComponentA]
 	queryOptions
-	results      Query1Result[ComponentA]
+
 	componentIdA ComponentId
 }
 
@@ -107,8 +108,9 @@ type Query1[ComponentA IComponent, _ QueryOption] struct {
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query2[ComponentA, ComponentB IComponent, _ QueryOption] struct {
+	Query2Result[ComponentA, ComponentB]
 	queryOptions
-	results      Query2Result[ComponentA, ComponentB]
+
 	componentIdA ComponentId
 	componentIdB ComponentId
 }
@@ -129,8 +131,9 @@ type Query2[ComponentA, ComponentB IComponent, _ QueryOption] struct {
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query3[ComponentA, ComponentB, ComponentC IComponent, _ QueryOption] struct {
+	Query3Result[ComponentA, ComponentB, ComponentC]
 	queryOptions
-	results      Query3Result[ComponentA, ComponentB, ComponentC]
+
 	componentIdA ComponentId
 	componentIdB ComponentId
 	componentIdC ComponentId
@@ -152,8 +155,9 @@ type Query3[ComponentA, ComponentB, ComponentC IComponent, _ QueryOption] struct
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query4[ComponentA, ComponentB, ComponentC, ComponentD IComponent, _ QueryOption] struct {
+	Query4Result[ComponentA, ComponentB, ComponentC, ComponentD]
 	queryOptions
-	results      Query4Result[ComponentA, ComponentB, ComponentC, ComponentD]
+
 	componentIdA ComponentId
 	componentIdB ComponentId
 	componentIdC ComponentId
@@ -168,7 +172,7 @@ func (q *Query0[QueryOptions]) Exec(world *World) error {
 			continue
 		}
 
-		q.results.entityIds = append(q.results.entityIds, archetype.entities...)
+		q.entityIds = append(q.entityIds, archetype.entities...)
 	}
 
 	return nil
@@ -196,8 +200,8 @@ func (q *Query1[ComponentA, QueryOptions]) Exec(world *World) (err error) {
 				}
 			}
 
-			q.results.componentsA = append(q.results.componentsA, a)
-			q.results.entityIds = append(q.results.entityIds, entity)
+			q.componentsA = append(q.componentsA, a)
+			q.entityIds = append(q.entityIds, entity)
 		}
 	}
 
@@ -237,9 +241,9 @@ func (q *Query2[ComponentA, ComponentB, QueryOptions]) Exec(world *World) (err e
 				}
 			}
 
-			q.results.componentsA = append(q.results.componentsA, a)
-			q.results.componentsB = append(q.results.componentsB, b)
-			q.results.entityIds = append(q.results.entityIds, entity)
+			q.componentsA = append(q.componentsA, a)
+			q.componentsB = append(q.componentsB, b)
+			q.entityIds = append(q.entityIds, entity)
 		}
 	}
 
@@ -291,10 +295,10 @@ func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Exec(world *W
 				}
 			}
 
-			q.results.componentsA = append(q.results.componentsA, a)
-			q.results.componentsB = append(q.results.componentsB, b)
-			q.results.componentsC = append(q.results.componentsC, c)
-			q.results.entityIds = append(q.results.entityIds, entity)
+			q.componentsA = append(q.componentsA, a)
+			q.componentsB = append(q.componentsB, b)
+			q.componentsC = append(q.componentsC, c)
+			q.entityIds = append(q.entityIds, entity)
 		}
 	}
 
@@ -358,11 +362,11 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) E
 				}
 			}
 
-			q.results.componentsA = append(q.results.componentsA, a)
-			q.results.componentsB = append(q.results.componentsB, b)
-			q.results.componentsC = append(q.results.componentsC, c)
-			q.results.componentsD = append(q.results.componentsD, d)
-			q.results.entityIds = append(q.results.entityIds, entity)
+			q.componentsA = append(q.componentsA, a)
+			q.componentsB = append(q.componentsB, b)
+			q.componentsC = append(q.componentsC, c)
+			q.componentsD = append(q.componentsD, d)
+			q.entityIds = append(q.entityIds, entity)
 		}
 	}
 
@@ -424,36 +428,20 @@ func (q *Query4[A, B, C, D, QueryOptions]) Prepare(world *World) (err error) {
 	return err
 }
 
-func (q *Query0[QueryOptions]) Result() *Query0Result {
-	return &q.results
-}
-func (q *Query1[ComponentA, QueryOptions]) Result() *Query1Result[ComponentA] {
-	return &q.results
-}
-func (q *Query2[ComponentA, ComponentB, QueryOptions]) Result() *Query2Result[ComponentA, ComponentB] {
-	return &q.results
-}
-func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Result() *Query3Result[ComponentA, ComponentB, ComponentC] {
-	return &q.results
-}
-func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) Result() *Query4Result[ComponentA, ComponentB, ComponentC, ComponentD] {
-	return &q.results
-}
-
 func (q *Query0[QueryOptions]) ClearResults() {
-	q.results.Clear()
+	q.Clear()
 }
 func (q *Query1[ComponentA, QueryOptions]) ClearResults() {
-	q.results.Clear()
+	q.Clear()
 }
 func (q *Query2[ComponentA, ComponentB, QueryOptions]) ClearResults() {
-	q.results.Clear()
+	q.Clear()
 }
 func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) ClearResults() {
-	q.results.Clear()
+	q.Clear()
 }
 func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) ClearResults() {
-	q.results.Clear()
+	q.Clear()
 }
 
 // shouldHandleQueryComponent returns wether a component should be fetched and/or skipped:

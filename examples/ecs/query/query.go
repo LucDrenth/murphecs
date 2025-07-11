@@ -28,7 +28,7 @@ func main() {
 	query := ecs.Query1[NPC, ecs.Default]{}
 	query.Prepare(world)
 	query.Exec(world)
-	query.Result().Iter(func(entityId ecs.EntityId, npc *NPC) {
+	query.Iter(func(entityId ecs.EntityId, npc *NPC) {
 		fmt.Printf("simple query: %d: %s \n", entityId, npc.name)
 	})
 
@@ -36,7 +36,7 @@ func main() {
 	query2 := ecs.Query1[NPC, ecs.With[Friendly]]{}
 	query2.Prepare(world)
 	query2.Exec(world)
-	query2.Result().Iter(func(entityId ecs.EntityId, npc *NPC) {
+	query2.Iter(func(entityId ecs.EntityId, npc *NPC) {
 		fmt.Printf("query with Friendly: %d: %s \n", entityId, npc.name)
 	})
 
@@ -44,7 +44,7 @@ func main() {
 	query3 := ecs.Query2[NPC, Dialog, ecs.Without[Friendly]]{}
 	query3.Prepare(world)
 	query3.Exec(world)
-	query3.Result().Iter(func(entityId ecs.EntityId, npc *NPC, dialog *Dialog) {
+	query3.Iter(func(entityId ecs.EntityId, npc *NPC, dialog *Dialog) {
 		fmt.Printf("query without Friendly: %d: %s says %s \n", entityId, npc.name, dialog.text)
 	})
 

@@ -22,7 +22,7 @@ func TestQuery0(t *testing.T) {
 		// assert that exec on empty world query returns no results
 		err = query.Exec(world)
 		assert.NoError(err)
-		assert.Equal(uint(0), query.Result().NumberOfResult())
+		assert.Equal(uint(0), query.NumberOfResult())
 
 		// spawn 2 entities that are expected to be returned from the query and 1 decoy entity that should be skipped
 		expectedEntity1, err := Spawn(world, &componentA{}, &componentB{})
@@ -34,11 +34,11 @@ func TestQuery0(t *testing.T) {
 
 		err = query.Exec(world)
 		assert.NoError(err)
-		assert.Equal(uint(2), query.Result().NumberOfResult())
+		assert.Equal(uint(2), query.NumberOfResult())
 
 		foundExpectedEntity1 := false
 		foundExpectedEntity2 := false
-		query.results.Iter(func(entityId EntityId) {
+		query.Iter(func(entityId EntityId) {
 			switch entityId {
 			case expectedEntity1:
 				foundExpectedEntity1 = true
@@ -53,8 +53,8 @@ func TestQuery0(t *testing.T) {
 		assert.True(foundExpectedEntity2)
 
 		// assert that clearing the query results works as expected
-		query.Result().Clear()
-		assert.Equal(uint(0), query.results.NumberOfResult())
+		query.Clear()
+		assert.Equal(uint(0), query.NumberOfResult())
 	})
 
 	t.Run("Query0 satisfies Query", func(t *testing.T) {
@@ -85,7 +85,7 @@ func TestQuery1(t *testing.T) {
 
 		err = query.Exec(world)
 		assert.NoError(err)
-		assert.Equal(uint(0), query.Result().NumberOfResult())
+		assert.Equal(uint(0), query.NumberOfResult())
 
 		expectedEntity1, err := Spawn(world, &componentA{value: expectedValue1}, &componentB{})
 		assert.NoError(err)
@@ -96,8 +96,8 @@ func TestQuery1(t *testing.T) {
 
 		err = query.Exec(world)
 		assert.NoError(err)
-		assert.Equal(uint(2), query.Result().NumberOfResult())
-		query.results.Iter(func(entityId EntityId, a *componentA) {
+		assert.Equal(uint(2), query.NumberOfResult())
+		query.Iter(func(entityId EntityId, a *componentA) {
 			switch entityId {
 			case expectedEntity1:
 				assert.Equal(expectedValue1, a.value)
@@ -108,8 +108,8 @@ func TestQuery1(t *testing.T) {
 			}
 		})
 
-		query.Result().Clear()
-		assert.Equal(uint(0), query.results.NumberOfResult())
+		query.Clear()
+		assert.Equal(uint(0), query.NumberOfResult())
 	})
 
 	t.Run("Query1 satisfies Query", func(t *testing.T) {
@@ -139,7 +139,7 @@ func TestQuery1(t *testing.T) {
 		err = query.Exec(world)
 		assert.NoError(err)
 
-		assert.Equal(uint(2), query.Result().NumberOfResult())
+		assert.Equal(uint(2), query.NumberOfResult())
 	})
 
 	t.Run("query with Without filter returns the expected results", func(t *testing.T) {
@@ -165,7 +165,7 @@ func TestQuery1(t *testing.T) {
 		err = query.Exec(world)
 		assert.NoError(err)
 
-		assert.Equal(uint(1), query.Result().NumberOfResult())
+		assert.Equal(uint(1), query.NumberOfResult())
 	})
 
 	t.Run("query with AND filter returns the expected results", func(t *testing.T) {
@@ -191,8 +191,8 @@ func TestQuery1(t *testing.T) {
 		err = query.Exec(world)
 		assert.NoError(err)
 
-		assert.Equal(uint(1), query.Result().NumberOfResult())
-		query.results.Iter(func(entityId EntityId, _ *componentA) {
+		assert.Equal(uint(1), query.NumberOfResult())
+		query.Iter(func(entityId EntityId, _ *componentA) {
 			assert.Equal(expected, entityId)
 		})
 	})
@@ -220,7 +220,7 @@ func TestQuery1(t *testing.T) {
 		err = query.Exec(world)
 		assert.NoError(err)
 
-		assert.Equal(uint(2), query.Result().NumberOfResult())
+		assert.Equal(uint(2), query.NumberOfResult())
 	})
 
 	t.Run("query with With filter and all optional components returns the expected results", func(t *testing.T) {
@@ -246,7 +246,7 @@ func TestQuery1(t *testing.T) {
 		err = query.Exec(world)
 		assert.NoError(err)
 
-		assert.Equal(uint(4), query.Result().NumberOfResult())
+		assert.Equal(uint(4), query.NumberOfResult())
 	})
 
 	t.Run("queried component can be mutated", func(t *testing.T) {
@@ -264,13 +264,13 @@ func TestQuery1(t *testing.T) {
 
 		err = query.Exec(world)
 		assert.NoError(err)
-		query.results.Iter(func(entityId EntityId, a *componentA) {
+		query.Iter(func(entityId EntityId, a *componentA) {
 			a.value = expectedValue
 		})
 
 		err = query.Exec(world)
 		assert.NoError(err)
-		query.results.Iter(func(entityId EntityId, a *componentA) {
+		query.Iter(func(entityId EntityId, a *componentA) {
 			assert.Equal(expectedValue, a.value)
 		})
 	})
@@ -290,13 +290,13 @@ func TestQuery1(t *testing.T) {
 
 		err = query.Exec(world)
 		assert.NoError(err)
-		query.results.Iter(func(entityId EntityId, a *componentA) {
+		query.Iter(func(entityId EntityId, a *componentA) {
 			a.value = 10
 		})
 
 		err = query.Exec(world)
 		assert.NoError(err)
-		query.results.Iter(func(entityId EntityId, a *componentA) {
+		query.Iter(func(entityId EntityId, a *componentA) {
 			assert.Equal(expectedValue, a.value)
 		})
 	})
@@ -315,9 +315,9 @@ func TestQuery1(t *testing.T) {
 		err = query.Exec(world)
 		assert.NoError(err)
 
-		assert.Equal(uint(2), query.Result().NumberOfResult())
+		assert.Equal(uint(2), query.NumberOfResult())
 		numberOfIterations := 0
-		err = query.Result().IterUntil(func(_ EntityId, _ *componentA) error {
+		err = query.IterUntil(func(_ EntityId, _ *componentA) error {
 			numberOfIterations++
 			return errors.New("oops")
 		})
