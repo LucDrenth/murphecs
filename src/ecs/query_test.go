@@ -60,6 +60,41 @@ func TestQuery0(t *testing.T) {
 	t.Run("Query0 satisfies Query", func(t *testing.T) {
 		var _ Query = &Query0[Default]{}
 	})
+
+	t.Run("Single() works as expected", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewDefaultWorld()
+		query := Query0[Default]{}
+		err := query.Prepare(world)
+		assert.NoError(err)
+
+		// 0 results
+		err = query.Exec(world)
+		assert.NoError(err)
+		assert.Equal(uint(0), query.NumberOfResult())
+		_, err = query.Single()
+		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
+
+		// 1 result
+		entity, err := Spawn(world)
+		assert.NoError(err)
+		err = query.Exec(world)
+		assert.NoError(err)
+		assert.Equal(uint(1), query.NumberOfResult())
+		queryResultEntity, err := query.Single()
+		assert.NoError(err)
+		assert.Equal(entity, queryResultEntity)
+
+		// 2 results
+		_, err = Spawn(world)
+		assert.NoError(err)
+		err = query.Exec(world)
+		assert.NoError(err)
+		assert.Equal(uint(2), query.NumberOfResult())
+		_, err = query.Single()
+		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
+	})
 }
 
 func TestQuery1(t *testing.T) {
@@ -325,34 +360,211 @@ func TestQuery1(t *testing.T) {
 		assert.Error(err)
 		assert.Equal(1, numberOfIterations)
 	})
+
+	t.Run("Single() works as expected", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewDefaultWorld()
+		query := Query1[componentA, Default]{}
+		err := query.Prepare(world)
+		assert.NoError(err)
+
+		// 0 results
+		err = query.Exec(world)
+		assert.NoError(err)
+		assert.Equal(uint(0), query.NumberOfResult())
+		_, _, err = query.Single()
+		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
+
+		// 1 result
+		entity, err := Spawn(world, &componentA{value: 3})
+		assert.NoError(err)
+		err = query.Exec(world)
+		assert.NoError(err)
+		assert.Equal(uint(1), query.NumberOfResult())
+		queryResultEntity, queryResultComponentA, err := query.Single()
+		assert.NoError(err)
+		assert.Equal(entity, queryResultEntity)
+		assert.Equal(3, queryResultComponentA.value)
+
+		// 2 results
+		_, err = Spawn(world, &componentA{value: 5})
+		assert.NoError(err)
+		err = query.Exec(world)
+		assert.NoError(err)
+		assert.Equal(uint(2), query.NumberOfResult())
+		_, _, err = query.Single()
+		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
+	})
 }
 
 func TestQuery2(t *testing.T) {
-	type componentA struct{ Component }
-	type componentB struct{ Component }
+	type componentA struct {
+		Component
+		value int
+	}
+	type componentB struct {
+		Component
+		value int
+	}
 
 	t.Run("Query2 satisfies Query", func(t *testing.T) {
 		var _ Query = &Query2[componentA, componentB, Default]{}
 	})
+
+	t.Run("Single() works as expected", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewDefaultWorld()
+		query := Query2[componentA, componentB, Default]{}
+		err := query.Prepare(world)
+		assert.NoError(err)
+
+		// 0 results
+		err = query.Exec(world)
+		assert.NoError(err)
+		assert.Equal(uint(0), query.NumberOfResult())
+		_, _, _, err = query.Single()
+		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
+
+		// 1 result
+		entity, err := Spawn(world, &componentA{value: 3}, &componentB{value: 30})
+		assert.NoError(err)
+		err = query.Exec(world)
+		assert.NoError(err)
+		assert.Equal(uint(1), query.NumberOfResult())
+		queryResultEntity, queryResultComponentA, queryResultComponentB, err := query.Single()
+		assert.NoError(err)
+		assert.Equal(entity, queryResultEntity)
+		assert.Equal(3, queryResultComponentA.value)
+		assert.Equal(30, queryResultComponentB.value)
+
+		// 2 results
+		_, err = Spawn(world, &componentA{value: 5}, &componentB{value: 50})
+		assert.NoError(err)
+		err = query.Exec(world)
+		assert.NoError(err)
+		assert.Equal(uint(2), query.NumberOfResult())
+		_, _, _, err = query.Single()
+		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
+	})
 }
 
 func TestQuery3(t *testing.T) {
-	type componentA struct{ Component }
-	type componentB struct{ Component }
-	type componentC struct{ Component }
+	type componentA struct {
+		Component
+		value int
+	}
+	type componentB struct {
+		Component
+		value int
+	}
+	type componentC struct {
+		Component
+		value int
+	}
 
 	t.Run("Query3 satisfies Query", func(t *testing.T) {
 		var _ Query = &Query3[componentA, componentB, componentC, Default]{}
 	})
+
+	t.Run("Single() works as expected", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewDefaultWorld()
+		query := Query3[componentA, componentB, componentC, Default]{}
+		err := query.Prepare(world)
+		assert.NoError(err)
+
+		// 0 results
+		err = query.Exec(world)
+		assert.NoError(err)
+		assert.Equal(uint(0), query.NumberOfResult())
+		_, _, _, _, err = query.Single()
+		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
+
+		// 1 result
+		entity, err := Spawn(world, &componentA{value: 3}, &componentB{value: 30}, &componentC{value: 300})
+		assert.NoError(err)
+		err = query.Exec(world)
+		assert.NoError(err)
+		assert.Equal(uint(1), query.NumberOfResult())
+		queryResultEntity, queryResultComponentA, queryResultComponentB, queryResultComponentC, err := query.Single()
+		assert.NoError(err)
+		assert.Equal(entity, queryResultEntity)
+		assert.Equal(3, queryResultComponentA.value)
+		assert.Equal(30, queryResultComponentB.value)
+		assert.Equal(300, queryResultComponentC.value)
+
+		// 2 results
+		_, err = Spawn(world, &componentA{value: 5}, &componentB{value: 50}, &componentC{value: 500})
+		assert.NoError(err)
+		err = query.Exec(world)
+		assert.NoError(err)
+		assert.Equal(uint(2), query.NumberOfResult())
+		_, _, _, _, err = query.Single()
+		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
+	})
 }
 
 func TestQuery4(t *testing.T) {
-	type componentA struct{ Component }
-	type componentB struct{ Component }
-	type componentC struct{ Component }
-	type componentD struct{ Component }
+	type componentA struct {
+		Component
+		value int
+	}
+	type componentB struct {
+		Component
+		value int
+	}
+	type componentC struct {
+		Component
+		value int
+	}
+	type componentD struct {
+		Component
+		value int
+	}
 
 	t.Run("Query4 satisfies Query", func(t *testing.T) {
 		var _ Query = &Query4[componentA, componentB, componentC, componentD, Default]{}
+	})
+
+	t.Run("Single() works as expected", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewDefaultWorld()
+		query := Query4[componentA, componentB, componentC, componentD, Default]{}
+		err := query.Prepare(world)
+		assert.NoError(err)
+
+		// 0 results
+		err = query.Exec(world)
+		assert.NoError(err)
+		assert.Equal(uint(0), query.NumberOfResult())
+		_, _, _, _, _, err = query.Single()
+		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
+
+		// 1 result
+		entity, err := Spawn(world, &componentA{value: 3}, &componentB{value: 30}, &componentC{value: 300}, &componentD{value: 3000})
+		assert.NoError(err)
+		err = query.Exec(world)
+		assert.NoError(err)
+		assert.Equal(uint(1), query.NumberOfResult())
+		queryResultEntity, queryResultComponentA, queryResultComponentB, queryResultComponentC, queryResultComponentD, err := query.Single()
+		assert.NoError(err)
+		assert.Equal(entity, queryResultEntity)
+		assert.Equal(3, queryResultComponentA.value)
+		assert.Equal(30, queryResultComponentB.value)
+		assert.Equal(300, queryResultComponentC.value)
+		assert.Equal(3000, queryResultComponentD.value)
+
+		// 2 results
+		_, err = Spawn(world, &componentA{value: 5}, &componentB{value: 50}, &componentC{value: 500}, &componentD{value: 5000})
+		assert.NoError(err)
+		err = query.Exec(world)
+		assert.NoError(err)
+		assert.Equal(uint(2), query.NumberOfResult())
+		_, _, _, _, _, err = query.Single()
+		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
 	})
 }

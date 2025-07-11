@@ -1,5 +1,7 @@
 package ecs
 
+import "fmt"
+
 // Due to yield only being able to return 2 params, it can not be implemented for queries that return
 // more than 2 components.
 
@@ -211,4 +213,49 @@ func (q *Query4Result[A, B, C, D]) IterUntil(f func(entityId EntityId, a *A, b *
 	}
 
 	return nil
+}
+
+// Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
+func (q *Query0Result) Single() (EntityId, error) {
+	if q.NumberOfResult() != 1 {
+		return nonExistingEntity, fmt.Errorf("%w: expected 1, got %d", ErrUnexpectedNumberOfQueryResults, q.NumberOfResult())
+	}
+
+	return q.entityIds[0], nil
+}
+
+// Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
+func (q *Query1Result[A]) Single() (EntityId, *A, error) {
+	if q.NumberOfResult() != 1 {
+		return nonExistingEntity, nil, fmt.Errorf("%w: expected 1, got %d", ErrUnexpectedNumberOfQueryResults, q.NumberOfResult())
+	}
+
+	return q.entityIds[0], q.componentsA[0], nil
+}
+
+// Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
+func (q *Query2Result[A, B]) Single() (EntityId, *A, *B, error) {
+	if q.NumberOfResult() != 1 {
+		return nonExistingEntity, nil, nil, fmt.Errorf("%w: expected 1, got %d", ErrUnexpectedNumberOfQueryResults, q.NumberOfResult())
+	}
+
+	return q.entityIds[0], q.componentsA[0], q.componentsB[0], nil
+}
+
+// Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
+func (q *Query3Result[A, B, C]) Single() (EntityId, *A, *B, *C, error) {
+	if q.NumberOfResult() != 1 {
+		return nonExistingEntity, nil, nil, nil, fmt.Errorf("%w: expected 1, got %d", ErrUnexpectedNumberOfQueryResults, q.NumberOfResult())
+	}
+
+	return q.entityIds[0], q.componentsA[0], q.componentsB[0], q.componentsC[0], nil
+}
+
+// Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
+func (q *Query4Result[A, B, C, D]) Single() (EntityId, *A, *B, *C, *D, error) {
+	if q.NumberOfResult() != 1 {
+		return nonExistingEntity, nil, nil, nil, nil, fmt.Errorf("%w: expected 1, got %d", ErrUnexpectedNumberOfQueryResults, q.NumberOfResult())
+	}
+
+	return q.entityIds[0], q.componentsA[0], q.componentsB[0], q.componentsC[0], q.componentsD[0], nil
 }

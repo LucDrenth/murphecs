@@ -13,4 +13,6 @@ var (
 
 	ErrInvalidComponentStorageCapacity  error = errors.New("invalid component storage capacity")
 	ErrComponentStorageIndexOutOfBounds error = errors.New("component storage index is out of bounds")
+
+	ErrUnexpectedNumberOfQueryResults error = errors.New("unexpected number of query results")
 )
