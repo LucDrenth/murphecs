@@ -44,6 +44,9 @@ func (feature *Feature) AddResource(resource Resource) *Feature {
 	return feature
 }
 
+// AddFeature adds a nested feature.
+//
+// Systems of the nested feature will be added after that of the parent feature.
 func (feature *Feature) AddFeature(f IFeature) *Feature {
 	feature.features = append(feature.features, f)
 	return feature
