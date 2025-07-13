@@ -19,6 +19,4 @@ var (
 
 	ErrSystemParamEventReaderNotAPointer error = errors.New("must be a pointer")
 	ErrSystemParamEventWriterNotAPointer error = errors.New("must be a pointer")
-
-	ErrTargetWorldNotKnown error = errors.New("target world not known")
 )

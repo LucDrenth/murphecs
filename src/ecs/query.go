@@ -14,7 +14,9 @@ type Query interface {
 	//
 	// This step is necessary because the way that queries are created is optimized for users, and not
 	// for the computer. This method closes that gap.
-	Prepare(*World) error
+	//
+	// Pass the otherWorld parameter if the Query targets another world.
+	Prepare(defaultWorld *World, otherWorlds *map[WorldId]*World) error
 
 	// Validate checks if there are any unexpected or unoptimized things. It returns an error if there
 	// is something that can be optimized. The error should be treated as a warning, and does not mean
@@ -373,51 +375,75 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) E
 	return nil
 }
 
-func (q *Query0[QueryOptions]) Prepare(world *World) (err error) {
-	q.options, err = toCombinedQueryOptions[QueryOptions](world)
+func (q *Query0[QueryOptions]) Prepare(world *World, otherWorlds *map[WorldId]*World) (err error) {
+	_, q.options, err = getQueryOptions[QueryOptions](world, otherWorlds)
+	if err != nil {
+		return err
+	}
+
 	q.components = []ComponentId{}
 	q.options.optimize(q.components)
-	return err
+	return nil
 }
-func (q *Query1[A, QueryOptions]) Prepare(world *World) (err error) {
-	q.options, err = toCombinedQueryOptions[QueryOptions](world)
-	q.componentIdA = ComponentIdFor[A](world)
+func (q *Query1[A, QueryOptions]) Prepare(world *World, otherWorlds *map[WorldId]*World) (err error) {
+	var targetWorld *World
+	targetWorld, q.options, err = getQueryOptions[QueryOptions](world, otherWorlds)
+	if err != nil {
+		return err
+	}
+
+	q.componentIdA = ComponentIdFor[A](targetWorld)
 	q.components = []ComponentId{
 		q.componentIdA,
 	}
 	q.options.optimize(q.components)
-	return err
+	return nil
 }
-func (q *Query2[A, B, QueryOptions]) Prepare(world *World) (err error) {
-	q.options, err = toCombinedQueryOptions[QueryOptions](world)
-	q.componentIdA = ComponentIdFor[A](world)
-	q.componentIdB = ComponentIdFor[B](world)
+func (q *Query2[A, B, QueryOptions]) Prepare(world *World, otherWorlds *map[WorldId]*World) (err error) {
+	var targetWorld *World
+	targetWorld, q.options, err = getQueryOptions[QueryOptions](world, otherWorlds)
+	if err != nil {
+		return err
+	}
+
+	q.componentIdA = ComponentIdFor[A](targetWorld)
+	q.componentIdB = ComponentIdFor[B](targetWorld)
 	q.components = []ComponentId{
 		q.componentIdA,
 		q.componentIdB,
 	}
 	q.options.optimize(q.components)
-	return err
+	return nil
 }
-func (q *Query3[A, B, C, QueryOptions]) Prepare(world *World) (err error) {
-	q.options, err = toCombinedQueryOptions[QueryOptions](world)
-	q.componentIdA = ComponentIdFor[A](world)
-	q.componentIdB = ComponentIdFor[B](world)
-	q.componentIdC = ComponentIdFor[C](world)
+func (q *Query3[A, B, C, QueryOptions]) Prepare(world *World, otherWorlds *map[WorldId]*World) (err error) {
+	var targetWorld *World
+	targetWorld, q.options, err = getQueryOptions[QueryOptions](world, otherWorlds)
+	if err != nil {
+		return err
+	}
+
+	q.componentIdA = ComponentIdFor[A](targetWorld)
+	q.componentIdB = ComponentIdFor[B](targetWorld)
+	q.componentIdC = ComponentIdFor[C](targetWorld)
 	q.components = []ComponentId{
 		q.componentIdA,
 		q.componentIdB,
 		q.componentIdC,
 	}
 	q.options.optimize(q.components)
-	return err
+	return nil
 }
-func (q *Query4[A, B, C, D, QueryOptions]) Prepare(world *World) (err error) {
-	q.options, err = toCombinedQueryOptions[QueryOptions](world)
-	q.componentIdA = ComponentIdFor[A](world)
-	q.componentIdB = ComponentIdFor[B](world)
-	q.componentIdC = ComponentIdFor[C](world)
-	q.componentIdD = ComponentIdFor[D](world)
+func (q *Query4[A, B, C, D, QueryOptions]) Prepare(world *World, otherWorlds *map[WorldId]*World) (err error) {
+	var targetWorld *World
+	targetWorld, q.options, err = getQueryOptions[QueryOptions](world, otherWorlds)
+	if err != nil {
+		return err
+	}
+
+	q.componentIdA = ComponentIdFor[A](targetWorld)
+	q.componentIdB = ComponentIdFor[B](targetWorld)
+	q.componentIdC = ComponentIdFor[C](targetWorld)
+	q.componentIdD = ComponentIdFor[D](targetWorld)
 	q.components = []ComponentId{
 		q.componentIdA,
 		q.componentIdB,
@@ -425,7 +451,29 @@ func (q *Query4[A, B, C, D, QueryOptions]) Prepare(world *World) (err error) {
 		q.componentIdD,
 	}
 	q.options.optimize(q.components)
-	return err
+	return nil
+}
+
+func getQueryOptions[QueryOptions QueryOption](world *World, otherWorlds *map[WorldId]*World) (*World, CombinedQueryOptions, error) {
+	queryOptions, err := toCombinedQueryOptions[QueryOptions](world)
+	if err != nil {
+		return nil, queryOptions, err
+	}
+
+	if queryOptions.TargetWorld == nil {
+		return world, queryOptions, nil
+	}
+
+	// If the query targets another world, the stored componentIDs are retrieved from the wrong world. Unfortunately,
+	// we need to get all query options before we can know if this query targets another world. We now get the queryOptions
+	// again, this time with the correct target world.
+	targetWorld := (*otherWorlds)[*queryOptions.TargetWorld]
+	if targetWorld == nil {
+		return nil, queryOptions, ErrTargetWorldNotFound
+	}
+
+	queryOptions, err = toCombinedQueryOptions[QueryOptions](targetWorld)
+	return targetWorld, queryOptions, err
 }
 
 func (q *Query0[QueryOptions]) ClearResults() {

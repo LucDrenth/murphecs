@@ -207,24 +207,18 @@ func parseQueryParam(parameterType reflect.Type, world *ecs.World, logger Logger
 		return nil, fmt.Errorf("failed to cast param to query")
 	}
 
-	err := query.Prepare(world)
+	err := query.Prepare(world, outerWorlds)
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare query param: %w", err)
 	}
 
-	if query.TargetWorld() != nil {
-		if _, exists := (*outerWorlds)[*query.TargetWorld()]; !exists {
-			return nil, fmt.Errorf("%w: %d", ErrTargetWorldNotKnown, query.TargetWorld())
-		}
-
-		if query.IsLazy() {
-			// We have this limitation because there would be no way to Execute such a query from inside
-			// the system param because there is no way to use another world as a system param.
-			//
-			// We could easily implement this by having some OuterWorld[ecs.TargetWorld] struct that we can
-			// use as a system parameter. For now there is no valid use case for it.
-			return nil, fmt.Errorf("an not target an outer world and be lazy")
-		}
+	if query.TargetWorld() != nil && query.IsLazy() {
+		// We have this limitation because there would be no way to Execute such a query from inside
+		// the system param because there is no way to use another world as a system param.
+		//
+		// We could easily implement this by having some OuterWorld[ecs.TargetWorld] struct that we can
+		// use as a system parameter. For now there is no valid use case for it.
+		return nil, fmt.Errorf("query cannot target an outer world if its lazy")
 	}
 
 	warning := query.Validate()

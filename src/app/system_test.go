@@ -102,7 +102,7 @@ func TestAddSystem(t *testing.T) {
 
 		err := systemSet.add(func(_ *ecs.Query1[componentA, ecs.TestCustomTargetWorld]) {}, world, &outerWorlds, &logger, &resourceStorage, &eventStorage)
 		assert.ErrorIs(err, ErrSystemParamQueryNotValid)
-		assert.ErrorIs(err, ErrTargetWorldNotKnown)
+		assert.ErrorIs(err, ecs.ErrTargetWorldNotFound)
 	})
 
 	t.Run("fails when app is not aware of the outer world in the ecs.Query", func(t *testing.T) {
