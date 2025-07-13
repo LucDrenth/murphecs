@@ -90,7 +90,7 @@ func (storage *componentStorage) set(component IComponent, index uint) error {
 	destination, err := storage.getComponentPointer(index)
 	if err != nil {
 		// this error should never happen because we always make sure we have enough capacity.
-		return fmt.Errorf("unexpected error when getting component pointer: %w", err)
+		panic(err)
 	}
 
 	utils.CopyPointerData(componentPointer, destination, storage.componentSize)
@@ -115,7 +115,7 @@ func (storage *componentStorage) insertRaw(world *World, componentPointer unsafe
 	destination, err := storage.getComponentPointer(insertIndex)
 	if err != nil {
 		// this error should never happen because we always make sure we have enough capacity.
-		return 0, fmt.Errorf("unexpected error when getting component pointer: %w", err)
+		panic(err)
 	}
 
 	utils.CopyPointerData(componentPointer, destination, storage.componentSize)
@@ -158,7 +158,7 @@ func (storage *componentStorage) setValue(component *reflect.Value, index uint) 
 	destination, err := storage.getComponentPointer(index)
 	if err != nil {
 		// this error should never happen because we always make sure we have enough capacity.
-		return fmt.Errorf("unexpected error when getting component pointer: %w", err)
+		panic(err)
 	}
 
 	utils.CopyPointerData(componentPointer, destination, storage.componentSize)
@@ -219,14 +219,12 @@ func (storage *componentStorage) copyComponent(fromIndex uint, toIndex uint) err
 
 	source, err := storage.getComponentPointer(fromIndex)
 	if err != nil {
-		// this should never happen because we already check index bounds above
-		return err
+		panic(err)
 	}
 
 	destination, err := storage.getComponentPointer(toIndex)
 	if err != nil {
-		// this should never happen because we already check index bounds above
-		return err
+		panic(err)
 	}
 
 	utils.CopyPointerData(source, destination, storage.componentSize)
