@@ -158,8 +158,8 @@ func (app *SubApp) AddResource(resource Resource) *SubApp {
 
 func (app *SubApp) AddFeature(feature IFeature) *SubApp {
 	feature.Init()
-	features := feature.GetAndInitNestedFeatures()
-	features = append(features, feature)
+	features := []IFeature{feature}
+	features = append(features, feature.GetAndInitNestedFeatures()...)
 
 	validatedFeatures := make([]IFeature, 0, len(features))
 	for _, feature := range features {
