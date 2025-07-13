@@ -27,7 +27,7 @@ func (c targetWorldAppFoo) GetWorldId() *ecs.WorldId {
 	return &appFooId
 }
 
-// 2. Now we implement QueryOption for it so that we use it as a query parameter
+// 2. Now we implement QueryOption for it so that we can use it as a query parameter
 func (targetWorldAppFoo) GetCombinedQueryOptions(world *ecs.World) (ecs.CombinedQueryOptions, error) {
 	return ecs.CombinedQueryOptions{TargetWorld: &appFooId}, nil
 }
