@@ -12,11 +12,15 @@ type Runner interface {
 	setOnRunDone(func())
 }
 
+// RunnerBasis provides base functionality of a runner. This includes tracking delta time.
 type RunnerBasis struct {
 	onFirstRunDone func()
 	onRunDone      func()
 	currentTick    *uint
 	isFirstRun     bool
+
+	delta           *float64
+	timeLoopStarted int64 // in nano seconds
 }
 
 func NewRunnerBasis(app *SubApp) RunnerBasis {
@@ -25,6 +29,7 @@ func NewRunnerBasis(app *SubApp) RunnerBasis {
 		onRunDone:      func() {},
 		currentTick:    &app.currentTick,
 		isFirstRun:     true,
+		delta:          app.lastDelta,
 	}
 }
 
@@ -40,6 +45,12 @@ func (runner *RunnerBasis) CurrentTick() uint {
 	return *runner.currentTick
 }
 
+func (runner *RunnerBasis) Start() {
+	now := time.Now().UnixNano()
+	*runner.delta = float64(now-runner.timeLoopStarted) / 1_000_000_000.0
+	runner.timeLoopStarted = now
+}
+
 func (runner *RunnerBasis) Done() {
 	if runner.isFirstRun {
 		runner.onFirstRunDone()
@@ -53,7 +64,6 @@ func (runner *RunnerBasis) Done() {
 type fixedRunner struct {
 	RunnerBasis
 	tickRate     *time.Duration
-	delta        *float64
 	world        *ecs.World
 	outerWorlds  *map[ecs.WorldId]*ecs.World
 	logger       Logger
@@ -64,8 +74,6 @@ type fixedRunner struct {
 func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet) {
 	ticker := time.NewTicker(*runner.tickRate)
 	currentTickRate := *runner.tickRate
-	var now int64
-	start := time.Now().UnixNano()
 
 	for {
 		select {
@@ -73,12 +81,8 @@ func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet
 			return
 
 		case <-ticker.C:
-			now = time.Now().UnixNano()
-			*runner.delta = float64(now-start) / 1_000_000_000.0
-			start = now
-
+			runner.Start()
 			runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage, *runner.currentTick)
-
 			runner.Done()
 
 			if currentTickRate != *runner.tickRate {
@@ -92,7 +96,6 @@ func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet
 // uncappedRunner runs systems repeatedly and as fast as it can
 type uncappedRunner struct {
 	RunnerBasis
-	delta        *float64
 	world        *ecs.World
 	outerWorlds  *map[ecs.WorldId]*ecs.World
 	logger       Logger
@@ -101,9 +104,6 @@ type uncappedRunner struct {
 }
 
 func (runner *uncappedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet) {
-	var now int64
-	start := time.Now().UnixNano()
-
 	for {
 		select {
 		case <-exitChannel:
@@ -111,12 +111,8 @@ func (runner *uncappedRunner) Run(exitChannel <-chan struct{}, systems []*System
 		default:
 		}
 
-		now = time.Now().UnixNano()
-		*runner.delta = float64(now-start) / 1_000_000_000
-		start = now
-
+		runner.Start()
 		runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage, *runner.currentTick)
-
 		runner.Done()
 	}
 }
@@ -148,8 +144,8 @@ func (runner *nTimesRunner) Run(exitChannel <-chan struct{}, systems []*SystemSe
 		default:
 		}
 
+		runner.Start()
 		runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage, *runner.currentTick)
-
 		runner.Done()
 	}
 }

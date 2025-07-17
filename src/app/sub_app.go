@@ -307,7 +307,6 @@ func (app *SubApp) SetRunner(runner Runner) {
 func (app *SubApp) UseFixedRunner() {
 	app.runner = &fixedRunner{
 		tickRate:     app.tickRate,
-		delta:        app.lastDelta,
 		world:        app.world,
 		outerWorlds:  &app.outerWorlds,
 		logger:       app.logger,
@@ -320,7 +319,6 @@ func (app *SubApp) UseFixedRunner() {
 // UseUncappedRunner makes the systems run repeatedly, as frequent possible
 func (app *SubApp) UseUncappedRunner() {
 	app.runner = &uncappedRunner{
-		delta:        app.lastDelta,
 		world:        app.world,
 		outerWorlds:  &app.outerWorlds,
 		logger:       app.logger,

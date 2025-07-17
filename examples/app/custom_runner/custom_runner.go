@@ -36,6 +36,8 @@ func (runner *customRunner) Run(exitChannel <-chan struct{}, systems []*app.Syst
 		default:
 		}
 
+		runner.Start()
+
 		for _, systemSet := range systems {
 			errors := systemSet.Exec(runner.world, runner.outerWorlds, runner.eventStorage, runner.CurrentTick())
 			for _, err := range errors {
