@@ -47,6 +47,11 @@ func (runner *RunnerBasis) CurrentTick() uint {
 
 func (runner *RunnerBasis) Start() {
 	now := time.Now().UnixNano()
+
+	if runner.isFirstRun {
+		runner.timeLoopStarted = now
+	}
+
 	*runner.delta = float64(now-runner.timeLoopStarted) / 1_000_000_000.0
 	runner.timeLoopStarted = now
 }
