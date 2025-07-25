@@ -282,7 +282,7 @@ func mergeQueryOptions(queryOptions []QueryOption, world *World) (result Combine
 		}
 
 		result.Filters = append(result.Filters, options.Filters...)
-		result.OptionalComponents = append(result.OptionalComponents, result.OptionalComponents...)
+		result.OptionalComponents = append(result.OptionalComponents, options.OptionalComponents...)
 
 		result.ReadOnlyComponents.ComponentIds = append(result.ReadOnlyComponents.ComponentIds, options.ReadOnlyComponents.ComponentIds...)
 

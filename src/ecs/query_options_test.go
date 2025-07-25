@@ -295,6 +295,7 @@ func TestValidateCombinedQueryOptions(t *testing.T) {
 func TestMergeQueryOptions(t *testing.T) {
 	type componentA struct{ Component }
 	type componentB struct{ Component }
+	type componentC struct{ Component }
 
 	t.Run("has IsAllReadOnly set to true if there is any AllReadOnly option", func(t *testing.T) {
 		assert := assert.New(t)
@@ -323,7 +324,7 @@ func TestMergeQueryOptions(t *testing.T) {
 		assert.True(result.isLazy)
 	})
 
-	t.Run("has the set to the custom target world", func(t *testing.T) {
+	t.Run("has the world set to the custom target world", func(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
@@ -341,6 +342,24 @@ func TestMergeQueryOptions(t *testing.T) {
 		}, world)
 		assert.NoError(err)
 		assert.Equal(TestCustomTargetWorldId, *result.TargetWorld)
+	})
+
+	t.Run("optional components", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewDefaultWorld()
+
+		result, err := mergeQueryOptions([]QueryOption{
+			Optional1[componentA]{},
+			Optional2[componentB, componentC]{},
+		}, world)
+		assert.NoError(err)
+
+		assert.Equal([]ComponentId{
+			ComponentIdFor[componentA](world),
+			ComponentIdFor[componentB](world),
+			ComponentIdFor[componentC](world),
+		}, result.OptionalComponents)
 	})
 }
 
