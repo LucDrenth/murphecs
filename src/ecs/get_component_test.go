@@ -57,7 +57,7 @@ const (
 	expectedValueH = 108
 )
 
-func TestGet(t *testing.T) {
+func TestGet1(t *testing.T) {
 	type componentB struct{ Component }
 	type componentLikeB struct{ Component }
 
@@ -74,15 +74,6 @@ func TestGet(t *testing.T) {
 
 		return entity, world, assert
 	}
-
-	t.Run("returns the expected component", func(t *testing.T) {
-		entity, world, assert := setup(&componentA{value: expectedValue})
-
-		a, err := Get1[componentA](world, entity)
-		assert.NoError(err)
-		assert.NotNil(a)
-		assert.Equal(expectedValue, (*a).value)
-	})
 
 	t.Run("returns an error if the component does not exist on the entity", func(t *testing.T) {
 		entity, world, assert := setup(&componentA{value: expectedValue})
@@ -103,6 +94,31 @@ func TestGet(t *testing.T) {
 
 		_, err := Get1[componentLikeB](world, entity)
 		assert.Error(err)
+	})
+
+	t.Run("returns the expected component", func(t *testing.T) {
+		entity, world, assert := setup(&componentA{value: expectedValue})
+
+		a, err := Get1[componentA](world, entity)
+		assert.NoError(err)
+		assert.NotNil(a)
+		assert.Equal(expectedValue, (*a).value)
+	})
+
+	t.Run("retrieved component is mutable", func(t *testing.T) {
+		entity, world, assert := setup(&componentA{value: expectedValue})
+
+		a, err := Get1[componentA](world, entity)
+		assert.NoError(err)
+		assert.NotNil(a)
+		assert.Equal(expectedValue, (*a).value)
+
+		a.value += 1
+
+		a, err = Get1[componentA](world, entity)
+		assert.NoError(err)
+		assert.NotNil(a)
+		assert.Equal(expectedValue+1, (*a).value)
 	})
 }
 
