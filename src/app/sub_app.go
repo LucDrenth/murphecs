@@ -24,19 +24,19 @@ const (
 // For example: if the tickRate is 1 second and a tick suddenly takes 4 seconds, the next tick will be run immediately
 // after, and then after 1 second.
 type SubApp struct {
-	world                  *ecs.World
-	schedules              map[scheduleType]*Scheduler
-	resources              resourceStorage // resources that can be pulled by system params.
-	logger                 Logger
-	name                   string
-	tickRate               *time.Duration // the rate at which the repeating systems run
-	currentTick            uint
-	lastDelta              *float64 // delta time of the last tick
-	runner                 Runner
-	outerWorlds            map[ecs.WorldId]*ecs.World
-	eventStorage           EventStorage
-	systemSetIdCounter     SystemSetId
-	OnStartupSchedulesDone func()
+	world                    *ecs.World
+	schedules                map[scheduleType]*Scheduler
+	resources                resourceStorage // resources that can be pulled by system params.
+	logger                   Logger
+	name                     string
+	tickRate                 *time.Duration // the rate at which the repeating systems run
+	currentTick              uint
+	lastDelta                *float64 // delta time of the last tick
+	runner                   Runner
+	outerWorlds              map[ecs.WorldId]*ecs.World
+	eventStorage             EventStorage
+	scheduleSystemsIdCounter ScheduleSystemsId
+	OnStartupSchedulesDone   func()
 }
 
 func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
@@ -127,8 +127,8 @@ func (app *SubApp) AddSchedule(schedule Schedule, scheduleType scheduleType) *Su
 		return app
 	}
 
-	app.systemSetIdCounter++
-	err := scheduler.AddSchedule(schedule, app.systemSetIdCounter)
+	app.scheduleSystemsIdCounter++
+	err := scheduler.AddSchedule(schedule, app.scheduleSystemsIdCounter)
 	if err != nil {
 		app.logger.Error("%s - failed to add schedule %s: %v", app.name, schedule, err)
 	}
@@ -190,19 +190,19 @@ func (app *SubApp) AddFeature(feature IFeature) *SubApp {
 }
 
 func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
-	startupSystems, err := app.schedules[ScheduleTypeStartup].GetSystemSets()
+	startupSystems, err := app.schedules[ScheduleTypeStartup].GetScheduleSystems()
 	if err != nil {
 		app.logger.Error("%s - failed to get startup systems: %v", app.name, err)
 		return
 	}
 
-	repeatedSystems, err := app.schedules[ScheduleTypeRepeating].GetSystemSets()
+	repeatedSystems, err := app.schedules[ScheduleTypeRepeating].GetScheduleSystems()
 	if err != nil {
 		app.logger.Error("%s - failed to get repeated systems: %v", app.name, err)
 		return
 	}
 
-	cleanupSystems, err := app.schedules[ScheduleTypeCleanup].GetSystemSets()
+	cleanupSystems, err := app.schedules[ScheduleTypeCleanup].GetScheduleSystems()
 	if err != nil {
 		app.logger.Error("%s - failed to get cleanup systems: %v", app.name, err)
 		return

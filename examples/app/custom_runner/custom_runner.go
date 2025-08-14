@@ -23,7 +23,7 @@ type customRunner struct {
 }
 
 // Run systems when pressing enter in the console
-func (runner *customRunner) Run(exitChannel <-chan struct{}, systems []*app.SystemSet) {
+func (runner *customRunner) Run(exitChannel <-chan struct{}, systems []*app.ScheduleSystems) {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for {
@@ -38,8 +38,8 @@ func (runner *customRunner) Run(exitChannel <-chan struct{}, systems []*app.Syst
 
 		runner.Start()
 
-		for _, systemSet := range systems {
-			errors := systemSet.Exec(runner.world, runner.outerWorlds, runner.eventStorage, runner.CurrentTick())
+		for _, scheduleSystems := range systems {
+			errors := scheduleSystems.Exec(runner.world, runner.outerWorlds, runner.eventStorage, runner.CurrentTick())
 			for _, err := range errors {
 				runner.logger.Error("system returned error: %v", err)
 			}

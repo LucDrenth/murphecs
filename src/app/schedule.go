@@ -9,51 +9,51 @@ import (
 type Schedule string
 
 type Scheduler struct {
-	systems map[Schedule]*SystemSet
+	systems map[Schedule]*ScheduleSystems
 	order   []Schedule
 }
 
 func NewScheduler() Scheduler {
 	return Scheduler{
-		systems: map[Schedule]*SystemSet{},
+		systems: map[Schedule]*ScheduleSystems{},
 		order:   []Schedule{},
 	}
 }
 
-func (s *Scheduler) AddSchedule(schedule Schedule, systemSetId SystemSetId) error {
+func (s *Scheduler) AddSchedule(schedule Schedule, scheduleSystemsId ScheduleSystemsId) error {
 	if _, exists := s.systems[schedule]; exists {
 		return fmt.Errorf("schedule already exists")
 	}
 
-	s.systems[schedule] = &SystemSet{id: systemSetId}
+	s.systems[schedule] = &ScheduleSystems{id: scheduleSystemsId}
 	s.order = append(s.order, schedule)
 
 	return nil
 }
 
 func (s *Scheduler) AddSystem(schedule Schedule, system System, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, resources *resourceStorage, eventStorage *EventStorage) error {
-	systemSet, exists := s.systems[schedule]
+	scheduleSystems, exists := s.systems[schedule]
 	if !exists {
 		return fmt.Errorf("schedule %s does not exist", schedule)
 	}
 
-	return systemSet.add(system, world, outerWorlds, logger, resources, eventStorage)
+	return scheduleSystems.add(system, world, outerWorlds, logger, resources, eventStorage)
 }
 
-func (s *Scheduler) GetSystemSets() ([]*SystemSet, error) {
+func (s *Scheduler) GetScheduleSystems() ([]*ScheduleSystems, error) {
 	if len(s.order) != len(s.systems) {
 		return nil, fmt.Errorf("order of length %d does not match schedules of length %d", len(s.order), len(s.systems))
 	}
 
-	result := make([]*SystemSet, len(s.order))
+	result := make([]*ScheduleSystems, len(s.order))
 
 	for i, schedule := range s.order {
-		systemSet, ok := s.systems[schedule]
+		scheduleSystems, ok := s.systems[schedule]
 		if !ok {
 			return nil, fmt.Errorf("schedule %s from schedule order does not exist", schedule)
 		}
 
-		result[i] = systemSet
+		result[i] = scheduleSystems
 	}
 
 	return result, nil
@@ -61,8 +61,10 @@ func (s *Scheduler) GetSystemSets() ([]*SystemSet, error) {
 
 func (s *Scheduler) NumberOfSystems() uint {
 	result := uint(0)
-	for _, systems := range s.systems {
-		result += uint(len(systems.systems))
+	for _, scheduleSystems := range s.systems {
+		for _, systemGroup := range scheduleSystems.systemGroups {
+			result += uint(len(systemGroup.systems))
+		}
 	}
 	return result
 }

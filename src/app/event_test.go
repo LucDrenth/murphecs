@@ -13,19 +13,19 @@ func TestEventWriter(t *testing.T) {
 		id int
 	}
 
-	t.Run("Write adds an event with the EventWriter its current systemSetId", func(t *testing.T) {
+	t.Run("Write adds an event with the EventWriter its current ScheduleSystemsId", func(t *testing.T) {
 		assert := assert.New(t)
 
 		const numberOfEvents int = 5
-		const systemSetId SystemSetId = SystemSetId(10)
+		const scheduleSystemsId ScheduleSystemsId = ScheduleSystemsId(10)
 
 		eventWriter := EventWriter[*testEvent]{}
-		eventWriter.setSystemSetWriter(systemSetId)
+		eventWriter.setScheduleSystemsWriter(scheduleSystemsId)
 
 		for i := range numberOfEvents {
 			eventWriter.Write(&testEvent{id: i})
 			assert.Len(eventWriter.events, i+1)
-			assert.Equal(systemSetId, eventWriter.events[i].systemSetWriter)
+			assert.Equal(scheduleSystemsId, eventWriter.events[i].scheduleSystemsWriter)
 		}
 	})
 
@@ -33,10 +33,10 @@ func TestEventWriter(t *testing.T) {
 		assert := assert.New(t)
 
 		const numberOfEvents int = 3
-		const systemSetId SystemSetId = SystemSetId(11)
+		const scheduleSystemsId ScheduleSystemsId = ScheduleSystemsId(11)
 
 		eventWriter := EventWriter[*testEvent]{}
-		eventWriter.setSystemSetWriter(systemSetId)
+		eventWriter.setScheduleSystemsWriter(scheduleSystemsId)
 		for i := range numberOfEvents {
 			eventWriter.Write(&testEvent{id: i})
 		}
@@ -47,7 +47,7 @@ func TestEventWriter(t *testing.T) {
 		for i, event := range extractedEvents {
 			event, ok := reflect.TypeAssert[*testEvent](event)
 			assert.True(ok)
-			assert.Equal(systemSetId, event.systemSetWriter)
+			assert.Equal(scheduleSystemsId, event.scheduleSystemsWriter)
 			assert.Equal(i, event.id)
 		}
 	})
@@ -187,10 +187,10 @@ func TestEventReader(t *testing.T) {
 
 		eventReader := EventReader[*testEvent]{
 			events: []*testEvent{
-				{id: 1, Event: Event{tickAddedToEventReader: 1, systemSetWriter: 0, remove: true}},
-				{id: 2, Event: Event{tickAddedToEventReader: 1, systemSetWriter: 1}},
-				{id: 3, Event: Event{tickAddedToEventReader: 1, systemSetWriter: 2}},
-				{id: 4, Event: Event{tickAddedToEventReader: 1, systemSetWriter: 3}},
+				{id: 1, Event: Event{tickAddedToEventReader: 1, scheduleSystemsWriter: 0, remove: true}},
+				{id: 2, Event: Event{tickAddedToEventReader: 1, scheduleSystemsWriter: 1}},
+				{id: 3, Event: Event{tickAddedToEventReader: 1, scheduleSystemsWriter: 2}},
+				{id: 4, Event: Event{tickAddedToEventReader: 1, scheduleSystemsWriter: 3}},
 			},
 		}
 

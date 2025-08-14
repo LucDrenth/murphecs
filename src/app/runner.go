@@ -7,7 +7,7 @@ import (
 )
 
 type Runner interface {
-	Run(exitChannel <-chan struct{}, systems []*SystemSet)
+	Run(exitChannel <-chan struct{}, systems []*ScheduleSystems)
 	setOnFirstRunDone(func())
 	setOnRunDone(func())
 }
@@ -76,7 +76,7 @@ type fixedRunner struct {
 	eventStorage *EventStorage
 }
 
-func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet) {
+func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*ScheduleSystems) {
 	ticker := time.NewTicker(*runner.tickRate)
 	currentTickRate := *runner.tickRate
 
@@ -87,7 +87,7 @@ func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet
 
 		case <-ticker.C:
 			runner.Start()
-			runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage, *runner.currentTick)
+			runScheduleSystems(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage, *runner.currentTick)
 			runner.Done()
 
 			if currentTickRate != *runner.tickRate {
@@ -108,7 +108,7 @@ type uncappedRunner struct {
 	eventStorage *EventStorage
 }
 
-func (runner *uncappedRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet) {
+func (runner *uncappedRunner) Run(exitChannel <-chan struct{}, systems []*ScheduleSystems) {
 	for {
 		select {
 		case <-exitChannel:
@@ -117,7 +117,7 @@ func (runner *uncappedRunner) Run(exitChannel <-chan struct{}, systems []*System
 		}
 
 		runner.Start()
-		runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage, *runner.currentTick)
+		runScheduleSystems(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage, *runner.currentTick)
 		runner.Done()
 	}
 }
@@ -141,7 +141,7 @@ type nTimesRunner struct {
 	eventStorage *EventStorage
 }
 
-func (runner *nTimesRunner) Run(exitChannel <-chan struct{}, systems []*SystemSet) {
+func (runner *nTimesRunner) Run(exitChannel <-chan struct{}, systems []*ScheduleSystems) {
 	for range runner.numberOfRuns {
 		select {
 		case <-exitChannel:
@@ -150,7 +150,7 @@ func (runner *nTimesRunner) Run(exitChannel <-chan struct{}, systems []*SystemSe
 		}
 
 		runner.Start()
-		runSystemSet(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage, *runner.currentTick)
+		runScheduleSystems(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage, *runner.currentTick)
 		runner.Done()
 	}
 }
@@ -163,9 +163,9 @@ func (runner *nTimesRunner) setOnRunDone(handler func()) {
 	runner.onRunDone = handler
 }
 
-func runSystemSet(systems []*SystemSet, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, appName string, eventStorage *EventStorage, currentTick uint) {
-	for _, systemSet := range systems {
-		errors := systemSet.Exec(world, outerWorlds, eventStorage, currentTick)
+func runScheduleSystems(systems []*ScheduleSystems, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, appName string, eventStorage *EventStorage, currentTick uint) {
+	for _, scheduleSystems := range systems {
+		errors := scheduleSystems.Exec(world, outerWorlds, eventStorage, currentTick)
 		for _, err := range errors {
 			logger.Error("%s - system returned error: %v", appName, err)
 		}

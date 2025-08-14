@@ -45,7 +45,7 @@ func (s *EventStorage) getWriter(writer iEventWriter) *reflect.Value {
 }
 
 // ProcessEvents moves events from writers to readers and cleans up reader events.
-func (s *EventStorage) ProcessEvents(systemSetId SystemSetId, currentTick uint) {
+func (s *EventStorage) ProcessEvents(scheduleSystemsId ScheduleSystemsId, currentTick uint) {
 	for eventId, reflectWriter := range s.eventWriters {
 		writer, ok := reflect.TypeAssert[iEventWriter](*reflectWriter)
 		if !ok {
@@ -63,7 +63,7 @@ func (s *EventStorage) ProcessEvents(systemSetId SystemSetId, currentTick uint) 
 		if !ok {
 			panic("failed to type assert iEventReader")
 		}
-		reader.clearEvents(systemSetId, currentTick)
+		reader.clearEvents(scheduleSystemsId, currentTick)
 
 		for _, reflectEvent := range writerEvents {
 			reader.addEvent(reflectEvent)
@@ -73,8 +73,8 @@ func (s *EventStorage) ProcessEvents(systemSetId SystemSetId, currentTick uint) 
 
 type IEvent interface {
 	shouldRemove() bool
-	getSystemSetWriter() SystemSetId
-	setSystemSetWriter(SystemSetId)
+	getScheduleSystemsWriter() ScheduleSystemsId
+	setScheduleSystemsWriter(ScheduleSystemsId)
 	setTickAddedToEventReader(uint)
 	getTickAddedToEventReader() uint
 }
@@ -84,20 +84,20 @@ type eventId reflect.Type
 type Event struct {
 	// If true, this event should not be read anymore and should be removed
 	remove                 bool
-	systemSetWriter        SystemSetId // the SystemSetId of the SystemSet during which this event was written to an EventWriter
-	tickAddedToEventReader uint        // the tick number during which this event was added to an EventReader
+	scheduleSystemsWriter  ScheduleSystemsId // the [ScheduleSystemsId] of the [ScheduleSystems] during which this event was written to an EventWriter
+	tickAddedToEventReader uint              // the tick number during which this event was added to an EventReader
 }
 
 func (e *Event) shouldRemove() bool {
 	return e.remove
 }
 
-func (e *Event) setSystemSetWriter(id SystemSetId) {
-	e.systemSetWriter = id
+func (e *Event) setScheduleSystemsWriter(id ScheduleSystemsId) {
+	e.scheduleSystemsWriter = id
 }
 
-func (e *Event) getSystemSetWriter() SystemSetId {
-	return e.systemSetWriter
+func (e *Event) getScheduleSystemsWriter() ScheduleSystemsId {
+	return e.scheduleSystemsWriter
 }
 
 func (e *Event) setTickAddedToEventReader(currentTick uint) {
@@ -114,8 +114,8 @@ func (e *Event) Remove() {
 }
 
 type EventWriter[E IEvent] struct {
-	events      []E
-	SystemSetId // this will be updated every systemSet run that this event writer is in
+	events            []E
+	ScheduleSystemsId // this will be updated every [ScheduleSystems] run that this event writer is in
 }
 
 // Write adds event if it is not nil.
@@ -143,7 +143,7 @@ type EventWriter[E IEvent] struct {
 //
 //   - post-update 	system 1:	[event cleared] not readable
 func (writer *EventWriter[E]) Write(event E) {
-	event.setSystemSetWriter(writer.SystemSetId)
+	event.setScheduleSystemsWriter(writer.ScheduleSystemsId)
 	writer.events = append(writer.events, event)
 }
 
@@ -164,14 +164,14 @@ func (writer *EventWriter[E]) extractEvents(tick uint) []reflect.Value {
 	return result
 }
 
-func (writer *EventWriter[E]) setSystemSetWriter(id SystemSetId) {
-	writer.SystemSetId = id
+func (writer *EventWriter[E]) setScheduleSystemsWriter(id ScheduleSystemsId) {
+	writer.ScheduleSystemsId = id
 }
 
 type iEventWriter interface {
 	writerEventId() eventId
 	extractEvents(tick uint) []reflect.Value
-	setSystemSetWriter(SystemSetId)
+	setScheduleSystemsWriter(ScheduleSystemsId)
 }
 
 var _ iEventReader = &EventReader[*Event]{}
@@ -250,8 +250,8 @@ func (reader *EventReader[E]) readerEventId() eventId {
 
 // clearEvents removes all events that satisfy one of the following:
 //   - marked to be removed
-//   - written by [SystemSet] with given [SystemSetId] AND added to reader at least 1 tick back
-func (reader *EventReader[E]) clearEvents(systemSetId SystemSetId, currentTick uint) {
+//   - written by [ScheduleSystems] with given [ScheduleSystemsId] AND added to reader at least 1 tick back
+func (reader *EventReader[E]) clearEvents(scheduleSystemsId ScheduleSystemsId, currentTick uint) {
 	newEvents := []E{}
 
 	for _, event := range reader.events {
@@ -259,7 +259,7 @@ func (reader *EventReader[E]) clearEvents(systemSetId SystemSetId, currentTick u
 			continue
 		}
 
-		if event.getSystemSetWriter() == systemSetId && currentTick > event.getTickAddedToEventReader() {
+		if event.getScheduleSystemsWriter() == scheduleSystemsId && currentTick > event.getTickAddedToEventReader() {
 			continue
 		}
 
@@ -272,7 +272,7 @@ func (reader *EventReader[E]) clearEvents(systemSetId SystemSetId, currentTick u
 type iEventReader interface {
 	readerEventId() eventId
 	addEvent(event reflect.Value)
-	clearEvents(systemSetId SystemSetId, currentTick uint)
+	clearEvents(scheduleSystemsId ScheduleSystemsId, currentTick uint)
 }
 
 var _ iEventReader = &EventReader[*Event]{}
