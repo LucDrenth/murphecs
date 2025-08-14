@@ -308,11 +308,11 @@ func TestGetReflectResource(t *testing.T) {
 		reflectedResource, err := storage.getReflectResource(reflect.TypeFor[resourceA]())
 		assert.NoError(err)
 
-		resourceReference, ok := reflectedResource.Interface().(*resourceA)
+		resourceReference, ok := reflect.TypeAssert[*resourceA](reflectedResource)
 		assert.True(ok)
 		assert.Equal(10, resourceReference.value)
 
-		resourceCopy, ok := reflectedResource.Elem().Interface().(resourceA)
+		resourceCopy, ok := reflect.TypeAssert[resourceA](reflectedResource.Elem())
 		assert.True(ok)
 		assert.Equal(10, resourceCopy.value)
 	})
@@ -326,13 +326,13 @@ func TestGetReflectResource(t *testing.T) {
 
 		reflectedResource, err := storage.getReflectResource(reflect.TypeFor[*resourceA]())
 		assert.NoError(err)
-		resource, ok := reflectedResource.Interface().(*resourceA)
+		resource, ok := reflect.TypeAssert[*resourceA](reflectedResource)
 		assert.True(ok)
 		resource.value = 10
 
 		reflectedResource, err = storage.getReflectResource(reflect.TypeFor[*resourceA]())
 		assert.NoError(err)
-		resource, ok = reflectedResource.Interface().(*resourceA)
+		resource, ok = reflect.TypeAssert[*resourceA](reflectedResource)
 		assert.True(ok)
 		assert.Equal(10, resource.value)
 	})

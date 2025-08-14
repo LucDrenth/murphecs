@@ -19,7 +19,7 @@ func (s *systemEntry) exec() error {
 	result := s.system.Call(s.params)
 
 	if len(result) == 1 {
-		returnedError, isErr := result[0].Interface().(error)
+		returnedError, isErr := reflect.TypeAssert[error](result[0])
 		if isErr {
 			return returnedError
 		}
@@ -145,14 +145,24 @@ func (s *SystemSet) add(sys System, world *ecs.World, outerWorlds *map[ecs.World
 			//	2. it is probably unintended and would cause unexpected behavior
 			return fmt.Errorf("system parameter %d: %w", i+1, ErrSystemParamWorldNotAPointer)
 		} else if parameterType.Implements(eventReaderType) {
-			eventReader := reflect.New(parameterType.Elem()).Interface().(iEventReader)
+			eventReader, ok := reflect.TypeAssert[iEventReader](reflect.New(parameterType.Elem()))
+			if !ok {
+				panic("failed to type assert iEventReader")
+			}
 			params[i] = *eventStorage.getReader(eventReader)
 		} else if parameterType.Implements(eventWriterType) {
-			eventWriter := reflect.New(parameterType.Elem()).Interface().(iEventWriter)
+			eventWriter, ok := reflect.TypeAssert[iEventWriter](reflect.New(parameterType.Elem()))
+			if !ok {
+				panic("failed to type assert iEventWriter")
+			}
 
-			eventWriterParam := *eventStorage.getWriter(eventWriter)
-			s.eventWriters = append(s.eventWriters, eventWriterParam.Interface().(iEventWriter))
-			params[i] = eventWriterParam
+			reflectedEventWriter := *eventStorage.getWriter(eventWriter)
+			eventWriterParam, ok := reflect.TypeAssert[iEventWriter](reflectedEventWriter)
+			if !ok {
+				panic("failed to type assert iEventWriter")
+			}
+			s.eventWriters = append(s.eventWriters, eventWriterParam)
+			params[i] = reflectedEventWriter
 		} else {
 			// check if its a resource
 			resource, err := resources.getReflectResource(parameterType)
@@ -202,7 +212,7 @@ func parseQueryParam(parameterType reflect.Type, world *ecs.World, logger Logger
 		return nil, fmt.Errorf("can not be an interface")
 	}
 
-	query, ok := reflect.New(parameterType.Elem()).Interface().(ecs.Query)
+	query, ok := reflect.TypeAssert[ecs.Query](reflect.New(parameterType.Elem()))
 	if !ok {
 		return nil, fmt.Errorf("failed to cast param to query")
 	}

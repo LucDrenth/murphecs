@@ -1,6 +1,7 @@
 package app
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -44,7 +45,7 @@ func TestEventWriter(t *testing.T) {
 		assert.Len(extractedEvents, numberOfEvents)
 		assert.Len(eventWriter.events, 0)
 		for i, event := range extractedEvents {
-			event, ok := event.Interface().(*testEvent)
+			event, ok := reflect.TypeAssert[*testEvent](event)
 			assert.True(ok)
 			assert.Equal(systemSetId, event.systemSetWriter)
 			assert.Equal(i, event.id)

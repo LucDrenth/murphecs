@@ -47,7 +47,10 @@ func (s *EventStorage) getWriter(writer iEventWriter) *reflect.Value {
 // ProcessEvents moves events from writers to readers and cleans up reader events.
 func (s *EventStorage) ProcessEvents(systemSetId SystemSetId, currentTick uint) {
 	for eventId, reflectWriter := range s.eventWriters {
-		writer := reflectWriter.Interface().(iEventWriter)
+		writer, ok := reflect.TypeAssert[iEventWriter](*reflectWriter)
+		if !ok {
+			panic("failed to type assert iEventWriter")
+		}
 		writerEvents := writer.extractEvents(currentTick)
 
 		readerEntry, ok := s.eventReaders[eventId]
@@ -56,7 +59,10 @@ func (s *EventStorage) ProcessEvents(systemSetId SystemSetId, currentTick uint) 
 			continue
 		}
 
-		reader := readerEntry.Interface().(iEventReader)
+		reader, ok := reflect.TypeAssert[iEventReader](*readerEntry)
+		if !ok {
+			panic("failed to type assert iEventReader")
+		}
 		reader.clearEvents(systemSetId, currentTick)
 
 		for _, reflectEvent := range writerEvents {
@@ -226,7 +232,11 @@ func (reader *EventReader[E]) Len() int {
 }
 
 func (writer *EventReader[E]) addEvent(event reflect.Value) {
-	writer.events = append(writer.events, event.Interface().(E))
+	element, ok := reflect.TypeAssert[E](event)
+	if !ok {
+		panic("failed to type assert event")
+	}
+	writer.events = append(writer.events, element)
 }
 
 // Len returns wether there are any events in the reader
