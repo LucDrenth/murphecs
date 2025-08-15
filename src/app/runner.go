@@ -2,12 +2,10 @@ package app
 
 import (
 	"time"
-
-	"github.com/lucdrenth/murphecs/src/ecs"
 )
 
 type Runner interface {
-	Run(exitChannel <-chan struct{}, systems []*ScheduleSystems)
+	Run(exitChannel <-chan struct{}, executor Executor)
 	setOnFirstRunDone(func())
 	setOnRunDone(func())
 }
@@ -68,15 +66,10 @@ func (runner *RunnerBasis) Done() {
 // fixedRunner runs systems at a fixed interval
 type fixedRunner struct {
 	RunnerBasis
-	tickRate     *time.Duration
-	world        *ecs.World
-	outerWorlds  *map[ecs.WorldId]*ecs.World
-	logger       Logger
-	appName      string
-	eventStorage *EventStorage
+	tickRate *time.Duration
 }
 
-func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*ScheduleSystems) {
+func (runner *fixedRunner) Run(exitChannel <-chan struct{}, executor Executor) {
 	ticker := time.NewTicker(*runner.tickRate)
 	currentTickRate := *runner.tickRate
 
@@ -87,11 +80,11 @@ func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*ScheduleS
 
 		case <-ticker.C:
 			runner.Start()
-			runScheduleSystems(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage, *runner.currentTick)
+			executor.Run(*runner.currentTick)
 			runner.Done()
 
 			if currentTickRate != *runner.tickRate {
-				runner.Run(exitChannel, systems)
+				runner.Run(exitChannel, executor)
 				return
 			}
 		}
@@ -101,14 +94,9 @@ func (runner *fixedRunner) Run(exitChannel <-chan struct{}, systems []*ScheduleS
 // uncappedRunner runs systems repeatedly and as fast as it can
 type uncappedRunner struct {
 	RunnerBasis
-	world        *ecs.World
-	outerWorlds  *map[ecs.WorldId]*ecs.World
-	logger       Logger
-	appName      string
-	eventStorage *EventStorage
 }
 
-func (runner *uncappedRunner) Run(exitChannel <-chan struct{}, systems []*ScheduleSystems) {
+func (runner *uncappedRunner) Run(exitChannel <-chan struct{}, executor Executor) {
 	for {
 		select {
 		case <-exitChannel:
@@ -117,7 +105,7 @@ func (runner *uncappedRunner) Run(exitChannel <-chan struct{}, systems []*Schedu
 		}
 
 		runner.Start()
-		runScheduleSystems(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage, *runner.currentTick)
+		executor.Run(*runner.currentTick)
 		runner.Done()
 	}
 }
@@ -134,14 +122,9 @@ func (runner *uncappedRunner) setOnRunDone(handler func()) {
 type nTimesRunner struct {
 	RunnerBasis
 	numberOfRuns int
-	world        *ecs.World
-	outerWorlds  *map[ecs.WorldId]*ecs.World
-	logger       Logger
-	appName      string
-	eventStorage *EventStorage
 }
 
-func (runner *nTimesRunner) Run(exitChannel <-chan struct{}, systems []*ScheduleSystems) {
+func (runner *nTimesRunner) Run(exitChannel <-chan struct{}, executor Executor) {
 	for range runner.numberOfRuns {
 		select {
 		case <-exitChannel:
@@ -150,7 +133,7 @@ func (runner *nTimesRunner) Run(exitChannel <-chan struct{}, systems []*Schedule
 		}
 
 		runner.Start()
-		runScheduleSystems(systems, runner.world, runner.outerWorlds, runner.logger, runner.appName, runner.eventStorage, *runner.currentTick)
+		executor.Run(*runner.currentTick)
 		runner.Done()
 	}
 }
@@ -161,13 +144,4 @@ func (runner *nTimesRunner) setOnFirstRunDone(handler func()) {
 
 func (runner *nTimesRunner) setOnRunDone(handler func()) {
 	runner.onRunDone = handler
-}
-
-func runScheduleSystems(systems []*ScheduleSystems, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, appName string, eventStorage *EventStorage, currentTick uint) {
-	for _, scheduleSystems := range systems {
-		errors := scheduleSystems.Exec(world, outerWorlds, eventStorage, currentTick)
-		for _, err := range errors {
-			logger.Error("%s - system returned error: %v", appName, err)
-		}
-	}
 }

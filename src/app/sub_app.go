@@ -37,6 +37,10 @@ type SubApp struct {
 	eventStorage             EventStorage
 	scheduleSystemsIdCounter ScheduleSystemsId
 	OnStartupSchedulesDone   func()
+
+	startupExecutor  Executor
+	repeatedExecutor Executor
+	cleanupExecutor  Executor
 }
 
 func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
@@ -67,13 +71,16 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
 			ScheduleTypeRepeating: utils.PointerTo(NewScheduler()),
 			ScheduleTypeCleanup:   utils.PointerTo(NewScheduler()),
 		},
-		resources:    resourceStorage,
-		logger:       logger,
-		name:         "App",
-		tickRate:     utils.PointerTo(time.Second / 60.0),
-		lastDelta:    utils.PointerTo(0.0),
-		outerWorlds:  map[ecs.WorldId]*ecs.World{},
-		eventStorage: newEventStorage(),
+		resources:        resourceStorage,
+		logger:           logger,
+		name:             "App",
+		tickRate:         utils.PointerTo(time.Second / 60.0),
+		lastDelta:        utils.PointerTo(0.0),
+		outerWorlds:      map[ecs.WorldId]*ecs.World{},
+		eventStorage:     newEventStorage(),
+		startupExecutor:  &ConsecutiveExecutor{},
+		repeatedExecutor: &ConsecutiveExecutor{},
+		cleanupExecutor:  &ConsecutiveExecutor{},
 	}
 	subApp.UseFixedRunner()
 
@@ -193,21 +200,24 @@ func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 		app.logger.Error("%s - failed to get startup systems: %v", app.name, err)
 		return
 	}
+	app.startupExecutor.Load(startupSystems, app.world, &app.outerWorlds, app.logger, app.name, &app.eventStorage)
 
 	repeatedSystems, err := app.schedules[ScheduleTypeRepeating].GetScheduleSystems()
 	if err != nil {
 		app.logger.Error("%s - failed to get repeated systems: %v", app.name, err)
 		return
 	}
+	app.repeatedExecutor.Load(repeatedSystems, app.world, &app.outerWorlds, app.logger, app.name, &app.eventStorage)
 
 	cleanupSystems, err := app.schedules[ScheduleTypeCleanup].GetScheduleSystems()
 	if err != nil {
 		app.logger.Error("%s - failed to get cleanup systems: %v", app.name, err)
 		return
 	}
+	app.cleanupExecutor.Load(cleanupSystems, app.world, &app.outerWorlds, app.logger, app.name, &app.eventStorage)
 
 	onceRunner := app.newNTimesRunner(1)
-	onceRunner.Run(exitChannel, startupSystems)
+	onceRunner.Run(exitChannel, app.startupExecutor)
 	if app.OnStartupSchedulesDone != nil {
 		app.OnStartupSchedulesDone()
 	}
@@ -223,8 +233,8 @@ func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 		app.currentTick++
 	})
 
-	app.runner.Run(exitChannel, repeatedSystems)
-	onceRunner.Run(exitChannel, cleanupSystems)
+	app.runner.Run(exitChannel, app.repeatedExecutor)
+	onceRunner.Run(exitChannel, app.cleanupExecutor)
 	isDoneChannel <- true
 }
 
@@ -304,25 +314,15 @@ func (app *SubApp) SetRunner(runner Runner) {
 // SetFixedRunner makes the systems run repeatedly, at a fixed interval. To control the interval time, use `app.SetTickRate`.
 func (app *SubApp) UseFixedRunner() {
 	app.runner = &fixedRunner{
-		tickRate:     app.tickRate,
-		world:        app.world,
-		outerWorlds:  &app.outerWorlds,
-		logger:       app.logger,
-		appName:      app.name,
-		eventStorage: &app.eventStorage,
-		RunnerBasis:  NewRunnerBasis(app),
+		tickRate:    app.tickRate,
+		RunnerBasis: NewRunnerBasis(app),
 	}
 }
 
 // UseUncappedRunner makes the systems run repeatedly, as frequent possible
 func (app *SubApp) UseUncappedRunner() {
 	app.runner = &uncappedRunner{
-		world:        app.world,
-		outerWorlds:  &app.outerWorlds,
-		logger:       app.logger,
-		appName:      app.name,
-		eventStorage: &app.eventStorage,
-		RunnerBasis:  NewRunnerBasis(app),
+		RunnerBasis: NewRunnerBasis(app),
 	}
 }
 
@@ -335,11 +335,6 @@ func (app *SubApp) UseNTimesRunner(numberOfRuns int) {
 func (app *SubApp) newNTimesRunner(numberOfRuns int) nTimesRunner {
 	return nTimesRunner{
 		numberOfRuns: numberOfRuns,
-		world:        app.world,
-		outerWorlds:  &app.outerWorlds,
-		logger:       app.logger,
-		appName:      app.name,
-		eventStorage: &app.eventStorage,
 		RunnerBasis:  NewRunnerBasis(app),
 	}
 }

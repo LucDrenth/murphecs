@@ -16,14 +16,10 @@ const update app.Schedule = "Update"
 
 type customRunner struct {
 	app.RunnerBasis
-	world        *ecs.World
-	eventStorage *app.EventStorage
-	logger       app.Logger
-	outerWorlds  *map[ecs.WorldId]*ecs.World
 }
 
 // Run systems when pressing enter in the console
-func (runner *customRunner) Run(exitChannel <-chan struct{}, systems []*app.ScheduleSystems) {
+func (runner *customRunner) Run(exitChannel <-chan struct{}, executor app.Executor) {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for {
@@ -37,14 +33,7 @@ func (runner *customRunner) Run(exitChannel <-chan struct{}, systems []*app.Sche
 		}
 
 		runner.Start()
-
-		for _, scheduleSystems := range systems {
-			errors := scheduleSystems.Exec(runner.world, runner.outerWorlds, runner.eventStorage, runner.CurrentTick())
-			for _, err := range errors {
-				runner.logger.Error("system returned error: %v", err)
-			}
-		}
-
+		executor.Run(runner.CurrentTick())
 		runner.Done()
 	}
 }
@@ -57,11 +46,7 @@ func main() {
 	}
 
 	runner := customRunner{
-		RunnerBasis:  app.NewRunnerBasis(myApp),
-		world:        myApp.World(),
-		eventStorage: myApp.EventStorage(),
-		logger:       logger,
-		outerWorlds:  myApp.OuterWorlds(),
+		RunnerBasis: app.NewRunnerBasis(myApp),
 	}
 	myApp.SetRunner(&runner) // <--- Use our custom runner
 
