@@ -90,8 +90,8 @@ func TestEventReader(t *testing.T) {
 
 		eventReader := EventReader[*testEvent]{
 			events: []*testEvent{
-				&testEvent{id: 1},
-				&testEvent{id: 2},
+				{id: 1},
+				{id: 2},
 			},
 		}
 		eventReader.events[0].Remove()
