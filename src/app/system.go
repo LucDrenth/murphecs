@@ -119,12 +119,12 @@ func (s *ScheduleSystems) add(sys System, world *ecs.World, outerWorlds *map[ecs
 		panic("failed to type assert *systemGroup")
 	}
 	if err := systemGroupBuilder.validate(); err != nil {
-		return fmt.Errorf("systems not valid: %w", err)
+		return err
 	}
 
 	systemGroup, err := systemGroupBuilder.build(world, outerWorlds, logger, resources, eventStorage)
 	if err != nil {
-		return fmt.Errorf("failed to build system group: %w", err)
+		return err
 	}
 	s.systemGroups = append(s.systemGroups, systemGroup)
 

@@ -84,9 +84,8 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
 func (app *SubApp) AddSystem(schedule Schedule, system System) *SubApp {
 	scheduler := app.getScheduler(schedule)
 	if scheduler == nil {
-		app.logger.Error("%s - failed to add system %s: schedule %s not found",
+		app.logger.Error("%s - failed to add system: schedule %s not found",
 			app.name,
-			systemToDebugString(system),
 			schedule,
 		)
 		return app
@@ -94,9 +93,8 @@ func (app *SubApp) AddSystem(schedule Schedule, system System) *SubApp {
 
 	err := scheduler.AddSystem(schedule, system, app.world, &app.outerWorlds, app.logger, &app.resources, &app.eventStorage)
 	if err != nil {
-		app.logger.Error("%s - failed to add system %s: %v",
+		app.logger.Error("%s - failed to add system: %v",
 			app.name,
-			systemToDebugString(system),
 			err,
 		)
 	}
