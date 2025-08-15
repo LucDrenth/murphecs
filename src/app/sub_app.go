@@ -195,26 +195,11 @@ func (app *SubApp) AddFeature(feature IFeature) *SubApp {
 }
 
 func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
-	startupSystems, err := app.schedules[ScheduleTypeStartup].GetScheduleSystems()
+	err := app.prepareExecutors()
 	if err != nil {
-		app.logger.Error("%s - failed to get startup systems: %v", app.name, err)
+		app.logger.Error("%s - %v", err)
 		return
 	}
-	app.startupExecutor.Load(startupSystems, app.world, &app.outerWorlds, app.logger, app.name, &app.eventStorage)
-
-	repeatedSystems, err := app.schedules[ScheduleTypeRepeating].GetScheduleSystems()
-	if err != nil {
-		app.logger.Error("%s - failed to get repeated systems: %v", app.name, err)
-		return
-	}
-	app.repeatedExecutor.Load(repeatedSystems, app.world, &app.outerWorlds, app.logger, app.name, &app.eventStorage)
-
-	cleanupSystems, err := app.schedules[ScheduleTypeCleanup].GetScheduleSystems()
-	if err != nil {
-		app.logger.Error("%s - failed to get cleanup systems: %v", app.name, err)
-		return
-	}
-	app.cleanupExecutor.Load(cleanupSystems, app.world, &app.outerWorlds, app.logger, app.name, &app.eventStorage)
 
 	onceRunner := app.newNTimesRunner(1)
 	onceRunner.Run(exitChannel, app.startupExecutor)
@@ -225,9 +210,7 @@ func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 	app.runner.setOnFirstRunDone(func() {
 		// Events written by EventWriter's in startup systems do not get cleared by default so
 		// that they can be read by the repeated schedules.
-		for _, startupSystem := range startupSystems {
-			app.eventStorage.ProcessEvents(startupSystem.id, app.currentTick)
-		}
+		app.startupExecutor.ProcessEvents(app.currentTick)
 	})
 	app.runner.setOnRunDone(func() {
 		app.currentTick++
@@ -236,6 +219,30 @@ func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 	app.runner.Run(exitChannel, app.repeatedExecutor)
 	onceRunner.Run(exitChannel, app.cleanupExecutor)
 	isDoneChannel <- true
+}
+
+func (app *SubApp) prepareExecutors() error {
+	startupSystems, err := app.schedules[ScheduleTypeStartup].GetScheduleSystems()
+	if err != nil {
+		return fmt.Errorf("failed to get startup systems: %v", err)
+	}
+	app.startupExecutor.Load(startupSystems, app.world, &app.outerWorlds, app.logger, app.name, &app.eventStorage)
+
+	repeatedSystems, err := app.schedules[ScheduleTypeRepeating].GetScheduleSystems()
+	if err != nil {
+		return fmt.Errorf("failed to get repeated systems: %v", err)
+	}
+	app.repeatedExecutor.Load(repeatedSystems, app.world, &app.outerWorlds, app.logger, app.name, &app.eventStorage)
+
+	cleanupSystems, err := app.schedules[ScheduleTypeCleanup].GetScheduleSystems()
+	if err != nil {
+		return fmt.Errorf("failed to get cleanup systems: %v", err)
+	}
+	app.cleanupExecutor.Load(cleanupSystems, app.world, &app.outerWorlds, app.logger, app.name, &app.eventStorage)
+
+	// free up memory
+	app.schedules = nil
+	return nil
 }
 
 func (app *SubApp) SetName(name string) {

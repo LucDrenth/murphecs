@@ -6,6 +6,7 @@ import "github.com/lucdrenth/murphecs/src/ecs"
 type Executor interface {
 	Load(systems []*ScheduleSystems, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, appName string, eventStorage *EventStorage)
 	Run(currentTick uint)
+	ProcessEvents(currentTick uint)
 }
 
 // ConsecutiveExecutor runs systems one after another, never running them in parallel.
@@ -34,5 +35,11 @@ func (executor *ConsecutiveExecutor) Run(currentTick uint) {
 		for _, err := range errors {
 			executor.logger.Error("%s - system returned error: %v", executor.appName, err)
 		}
+	}
+}
+
+func (executor *ConsecutiveExecutor) ProcessEvents(currentTick uint) {
+	for _, startupSystem := range executor.systems {
+		executor.eventStorage.ProcessEvents(startupSystem.id, currentTick)
 	}
 }
