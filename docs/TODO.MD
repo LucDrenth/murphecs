@@ -1,6 +1,7 @@
 # ECS
 **Must have**
 - [feature] Observers
+- [bug] Panic `fatal error: concurrent map read and map write` for method `componentRegistry.getId()`. Check how much of a performance degradation a sync.RWLock would give. Otherwise, see if there is another way to solve this.
 
 **Nice-to-have**
 - [performance] Generational entities. EntityId would become {id: uint, generation: uint}. World its entityList would becomes a slice instead of a map, and entityId would correlate with the slice index. This provides faster lookups. We'd need an deadEntityPool to choose from when creating a new EntityId which would increment its generation and repurpose it.
