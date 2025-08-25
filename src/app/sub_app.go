@@ -37,6 +37,7 @@ type SubApp struct {
 	eventStorage             EventStorage
 	scheduleSystemsIdCounter ScheduleSystemsId
 	OnStartupSchedulesDone   func()
+	features                 []IFeature // this slice will be process and emptied when starting this SubApp
 
 	startupExecutor  Executor
 	repeatedExecutor Executor
@@ -162,21 +163,31 @@ func (app *SubApp) AddResource(resource Resource) *SubApp {
 }
 
 func (app *SubApp) AddFeature(feature IFeature) *SubApp {
-	feature.Init()
-	features := []IFeature{feature}
-	features = append(features, feature.GetAndInitNestedFeatures()...)
+	app.features = append(app.features, feature)
+	return app
+}
 
-	validatedFeatures := make([]IFeature, 0, len(features))
-	for _, feature := range features {
-		err := validateFeature(feature)
-		if err != nil {
-			app.logger.Error("%s - %v", app.name, err)
-			continue
+func (app *SubApp) processFeatures() {
+	validatedFeatures := []IFeature{}
+
+	for _, feature := range app.features {
+		feature.Init()
+		features := []IFeature{feature}
+		features = append(features, feature.GetAndInitNestedFeatures()...)
+
+		for _, feature := range features {
+			err := validateFeature(feature)
+			if err != nil {
+				app.logger.Error("%s - %v", app.name, err)
+				continue
+			}
+
+			validatedFeatures = append(validatedFeatures, feature)
 		}
-
-		validatedFeatures = append(validatedFeatures, feature)
 	}
 
+	// add all resources before the systems so that when adding the systems, resources
+	// as system params can be validated.
 	for _, feature := range validatedFeatures {
 		resources := feature.GetResources()
 		for i := range resources {
@@ -190,11 +201,11 @@ func (app *SubApp) AddFeature(feature IFeature) *SubApp {
 			app.AddSystem(systems[i].schedule, systems[i].system)
 		}
 	}
-
-	return app
 }
 
 func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
+	app.processFeatures()
+
 	err := app.prepareExecutors()
 	if err != nil {
 		app.logger.Error("%s - %v", err)

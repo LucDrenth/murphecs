@@ -154,7 +154,7 @@ func TestAddSystemToSubApp(t *testing.T) {
 	})
 }
 
-func TestAddFeature(t *testing.T) {
+func TestProcessFeatures(t *testing.T) {
 	t.Run("logs error if a feature its Init method does not have pointer receiver", func(t *testing.T) {
 		assert := assert.New(t)
 
@@ -163,6 +163,7 @@ func TestAddFeature(t *testing.T) {
 		assert.NoError(err)
 
 		app.AddFeature(&invalidFeature{})
+		app.processFeatures()
 		assert.Equal(uint(1), logger.err)
 		assert.Equal(uint(0), app.NumberOfResources())
 		assert.Equal(uint(0), app.NumberOfSystems())
@@ -177,6 +178,7 @@ func TestAddFeature(t *testing.T) {
 
 		assert.NoError(err)
 		app.AddFeature(&testFeatureForSubAppA{})
+		app.processFeatures()
 		assert.Equal(uint(0), logger.err)
 		assert.Equal(uint(2), app.NumberOfResources())
 		assert.Equal(uint(1), app.NumberOfSystems())
