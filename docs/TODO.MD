@@ -1,7 +1,8 @@
 # ECS
 **Must have**
 - [feature] Observers
-- [bug] Panic `fatal error: concurrent map read and map write` for method `componentRegistry.getId()`. Check how much of a performance degradation a sync.RWLock would give. Otherwise, see if there is another way to solve this.
+- [bug] Panic `fatal error: concurrent map read and map write` for method `componentRegistry.getId()`. `Sync.RWMutex` seems to give an overhead of about 100-125 ns. This is a lot, considering that this call is made very often. Possible solutions:
+    - Maybe Have two maps: one without a mutex and the second with a mutex. It will first check the first map, and only if it doesn't exist it checks the second map and then if it still doesn't exist, add it to the second map. Then after each app tick, we move all elements from the second map to the first map. This way the mutex overhead will only be for components that first got added within that tick.
 
 **Nice-to-have**
 - [performance] Generational entities. EntityId would become {id: uint, generation: uint}. World its entityList would becomes a slice instead of a map, and entityId would correlate with the slice index. This provides faster lookups. We'd need an deadEntityPool to choose from when creating a new EntityId which would increment its generation and repurpose it.
