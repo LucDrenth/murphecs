@@ -21,10 +21,18 @@ type systemGroup struct {
 
 type systemGroupBuilder struct {
 	systems []System
+	// when true, these systems will be ran one after another, not running them in parallel.
+	chain bool
 }
 
 func Systems(systems ...System) *systemGroupBuilder {
 	return &systemGroupBuilder{systems: systems}
+}
+
+// Chain makes the systems run sequential (not in parallel)
+func (s *systemGroupBuilder) Chain() *systemGroupBuilder {
+	s.chain = true
+	return s
 }
 
 func (s *systemGroupBuilder) validate() error {
