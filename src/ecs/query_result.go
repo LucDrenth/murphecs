@@ -36,6 +36,44 @@ type Query4Result[A, B, C, D IComponent] struct {
 	componentsD []*D
 	entityIds   []EntityId
 }
+type Query5Result[A, B, C, D, E IComponent] struct {
+	componentsA []*A
+	componentsB []*B
+	componentsC []*C
+	componentsD []*D
+	componentsE []*E
+	entityIds   []EntityId
+}
+type Query6Result[A, B, C, D, E, F IComponent] struct {
+	componentsA []*A
+	componentsB []*B
+	componentsC []*C
+	componentsD []*D
+	componentsE []*E
+	componentsF []*F
+	entityIds   []EntityId
+}
+type Query7Result[A, B, C, D, E, F, G IComponent] struct {
+	componentsA []*A
+	componentsB []*B
+	componentsC []*C
+	componentsD []*D
+	componentsE []*E
+	componentsF []*F
+	componentsG []*G
+	entityIds   []EntityId
+}
+type Query8Result[A, B, C, D, E, F, G, H IComponent] struct {
+	componentsA []*A
+	componentsB []*B
+	componentsC []*C
+	componentsD []*D
+	componentsE []*E
+	componentsF []*F
+	componentsG []*G
+	componentsH []*H
+	entityIds   []EntityId
+}
 
 func (q *Query0Result) Clear() {
 	clear(q.entityIds)
@@ -77,6 +115,74 @@ func (q *Query4Result[A, B, C, D]) Clear() {
 	clear(q.entityIds)
 	q.entityIds = q.entityIds[:0]
 }
+func (q *Query5Result[A, B, C, D, E]) Clear() {
+	clear(q.componentsA)
+	q.componentsA = q.componentsA[:0]
+	clear(q.componentsB)
+	q.componentsB = q.componentsB[:0]
+	clear(q.componentsC)
+	q.componentsC = q.componentsC[:0]
+	clear(q.componentsD)
+	q.componentsD = q.componentsD[:0]
+	clear(q.componentsE)
+	q.componentsE = q.componentsE[:0]
+	clear(q.entityIds)
+	q.entityIds = q.entityIds[:0]
+}
+func (q *Query6Result[A, B, C, D, E, F]) Clear() {
+	clear(q.componentsA)
+	q.componentsA = q.componentsA[:0]
+	clear(q.componentsB)
+	q.componentsB = q.componentsB[:0]
+	clear(q.componentsC)
+	q.componentsC = q.componentsC[:0]
+	clear(q.componentsD)
+	q.componentsD = q.componentsD[:0]
+	clear(q.componentsE)
+	q.componentsE = q.componentsE[:0]
+	clear(q.componentsF)
+	q.componentsF = q.componentsF[:0]
+	clear(q.entityIds)
+	q.entityIds = q.entityIds[:0]
+}
+func (q *Query7Result[A, B, C, D, E, F, G]) Clear() {
+	clear(q.componentsA)
+	q.componentsA = q.componentsA[:0]
+	clear(q.componentsB)
+	q.componentsB = q.componentsB[:0]
+	clear(q.componentsC)
+	q.componentsC = q.componentsC[:0]
+	clear(q.componentsD)
+	q.componentsD = q.componentsD[:0]
+	clear(q.componentsE)
+	q.componentsE = q.componentsE[:0]
+	clear(q.componentsF)
+	q.componentsF = q.componentsF[:0]
+	clear(q.componentsG)
+	q.componentsG = q.componentsG[:0]
+	clear(q.entityIds)
+	q.entityIds = q.entityIds[:0]
+}
+func (q *Query8Result[A, B, C, D, E, F, G, H]) Clear() {
+	clear(q.componentsA)
+	q.componentsA = q.componentsA[:0]
+	clear(q.componentsB)
+	q.componentsB = q.componentsB[:0]
+	clear(q.componentsC)
+	q.componentsC = q.componentsC[:0]
+	clear(q.componentsD)
+	q.componentsD = q.componentsD[:0]
+	clear(q.componentsE)
+	q.componentsE = q.componentsE[:0]
+	clear(q.componentsF)
+	q.componentsF = q.componentsF[:0]
+	clear(q.componentsG)
+	q.componentsG = q.componentsG[:0]
+	clear(q.componentsH)
+	q.componentsH = q.componentsH[:0]
+	clear(q.entityIds)
+	q.entityIds = q.entityIds[:0]
+}
 
 func (q *Query0Result) NumberOfResult() uint {
 	return uint(len(q.entityIds))
@@ -91,6 +197,18 @@ func (q *Query3Result[A, B, C]) NumberOfResult() uint {
 	return uint(len(q.entityIds))
 }
 func (q *Query4Result[A, B, C, D]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
+}
+func (q *Query5Result[A, B, C, D, E]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
+}
+func (q *Query6Result[A, B, C, D, E, F]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
+}
+func (q *Query7Result[A, B, C, D, E, F, G]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
+}
+func (q *Query8Result[A, B, C, D, E, F, G, H]) NumberOfResult() uint {
 	return uint(len(q.entityIds))
 }
 
@@ -155,6 +273,34 @@ func (q *Query4Result[A, B, C, D]) Iter(f func(entityId EntityId, a *A, b *B, c 
 	}
 }
 
+// Iter executes function f on each entity that the query returned
+func (q *Query5Result[A, B, C, D, E]) Iter(f func(entityId EntityId, a *A, b *B, c *C, d *D, e *E)) {
+	for i := range q.entityIds {
+		f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i])
+	}
+}
+
+// Iter executes function f on each entity that the query returned
+func (q *Query6Result[A, B, C, D, E, F]) Iter(f func(entityId EntityId, a *A, b *B, c *C, d *D, e *E, f *F)) {
+	for i := range q.entityIds {
+		f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i])
+	}
+}
+
+// Iter executes function f on each entity that the query returned
+func (q *Query7Result[A, B, C, D, E, F, G]) Iter(f func(entityId EntityId, a *A, b *B, c *C, d *D, e *E, f *F, g *G)) {
+	for i := range q.entityIds {
+		f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i])
+	}
+}
+
+// Iter executes function f on each entity that the query returned
+func (q *Query8Result[A, B, C, D, E, F, G, H]) Iter(f func(entityId EntityId, a *A, b *B, c *C, d *D, e *E, f *F, g *G, h *H)) {
+	for i := range q.entityIds {
+		f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i])
+	}
+}
+
 // IterUntil executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
 func (q *Query0Result) IterUntil(f func(entityId EntityId) error) error {
@@ -215,6 +361,54 @@ func (q *Query4Result[A, B, C, D]) IterUntil(f func(entityId EntityId, a *A, b *
 	return nil
 }
 
+// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query5Result[A, B, C, D, E]) IterUntil(f func(entityId EntityId, a *A, b *B, c *C, d *D, e *E) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i]); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query6Result[A, B, C, D, E, F]) IterUntil(f func(entityId EntityId, a *A, b *B, c *C, d *D, e *E, f *F) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i]); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query7Result[A, B, C, D, E, F, G]) IterUntil(f func(entityId EntityId, a *A, b *B, c *C, d *D, e *E, f *F, g *G) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i]); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query8Result[A, B, C, D, E, F, G, H]) IterUntil(f func(entityId EntityId, a *A, b *B, c *C, d *D, e *E, f *F, g *G, h *H) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i]); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
 func (q *Query0Result) Single() (EntityId, error) {
 	if q.NumberOfResult() != 1 {
@@ -258,4 +452,40 @@ func (q *Query4Result[A, B, C, D]) Single() (EntityId, *A, *B, *C, *D, error) {
 	}
 
 	return q.entityIds[0], q.componentsA[0], q.componentsB[0], q.componentsC[0], q.componentsD[0], nil
+}
+
+// Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
+func (q *Query5Result[A, B, C, D, E]) Single() (EntityId, *A, *B, *C, *D, *E, error) {
+	if q.NumberOfResult() != 1 {
+		return nonExistingEntity, nil, nil, nil, nil, nil, fmt.Errorf("%w: expected 1, got %d", ErrUnexpectedNumberOfQueryResults, q.NumberOfResult())
+	}
+
+	return q.entityIds[0], q.componentsA[0], q.componentsB[0], q.componentsC[0], q.componentsD[0], q.componentsE[0], nil
+}
+
+// Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
+func (q *Query6Result[A, B, C, D, E, F]) Single() (EntityId, *A, *B, *C, *D, *E, *F, error) {
+	if q.NumberOfResult() != 1 {
+		return nonExistingEntity, nil, nil, nil, nil, nil, nil, fmt.Errorf("%w: expected 1, got %d", ErrUnexpectedNumberOfQueryResults, q.NumberOfResult())
+	}
+
+	return q.entityIds[0], q.componentsA[0], q.componentsB[0], q.componentsC[0], q.componentsD[0], q.componentsE[0], q.componentsF[0], nil
+}
+
+// Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
+func (q *Query7Result[A, B, C, D, E, F, G]) Single() (EntityId, *A, *B, *C, *D, *E, *F, *G, error) {
+	if q.NumberOfResult() != 1 {
+		return nonExistingEntity, nil, nil, nil, nil, nil, nil, nil, fmt.Errorf("%w: expected 1, got %d", ErrUnexpectedNumberOfQueryResults, q.NumberOfResult())
+	}
+
+	return q.entityIds[0], q.componentsA[0], q.componentsB[0], q.componentsC[0], q.componentsD[0], q.componentsE[0], q.componentsF[0], q.componentsG[0], nil
+}
+
+// Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
+func (q *Query8Result[A, B, C, D, E, F, G, H]) Single() (EntityId, *A, *B, *C, *D, *E, *F, *G, *H, error) {
+	if q.NumberOfResult() != 1 {
+		return nonExistingEntity, nil, nil, nil, nil, nil, nil, nil, nil, fmt.Errorf("%w: expected 1, got %d", ErrUnexpectedNumberOfQueryResults, q.NumberOfResult())
+	}
+
+	return q.entityIds[0], q.componentsA[0], q.componentsB[0], q.componentsC[0], q.componentsD[0], q.componentsE[0], q.componentsF[0], q.componentsG[0], q.componentsH[0], nil
 }

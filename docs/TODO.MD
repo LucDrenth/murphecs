@@ -13,7 +13,6 @@
     3. Each query stores a list of all involved components (queried + from filters) and gets a union of archetypes from `world.archetypeStorage.componentIdToArchetypes`. We could initially do this every Exec call and add cache it in a later step (using dirty flags for archetypes when new archetypes are created).
 - [performance] Cache Queries
 - [feature] Relationships (like parent/child)
-- [feature] Add Query5..Query16 and Optional5..Optional16
 - [tests] More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
 
 # Project
