@@ -1,14 +1,27 @@
 package ecs
 
 import (
+	"maps"
 	"reflect"
 	"slices"
 	"strings"
+	"sync"
+	"sync/atomic"
 )
 
 type componentRegistry struct {
-	components map[reflect.Type]uint
-	currentId  uint
+	currentId atomic.Uint64
+
+	components                     map[reflect.Type]uint
+	concurrencySafeComponentsMutex sync.RWMutex
+	concurrencySafeComponents      map[reflect.Type]uint
+}
+
+func newComponentRegistry() componentRegistry {
+	return componentRegistry{
+		components:                map[reflect.Type]uint{},
+		concurrencySafeComponents: map[reflect.Type]uint{},
+	}
 }
 
 func (c *componentRegistry) getId(componentType reflect.Type) uint {
@@ -16,9 +29,27 @@ func (c *componentRegistry) getId(componentType reflect.Type) uint {
 		return id
 	}
 
-	c.currentId += 1
-	c.components[componentType] = c.currentId
-	return c.currentId
+	c.concurrencySafeComponentsMutex.RLock()
+	id, exists := c.concurrencySafeComponents[componentType]
+	c.concurrencySafeComponentsMutex.RUnlock()
+	if exists {
+		return id
+	}
+
+	c.currentId.Add(1)
+	newId := c.currentId.Load()
+	c.concurrencySafeComponentsMutex.Lock()
+	c.concurrencySafeComponents[componentType] = uint(newId)
+	c.concurrencySafeComponentsMutex.Unlock()
+	return uint(newId)
+}
+
+// processComponentIdRegistries moves ids from the mutex protected map
+// to the non-mutex protected map.
+//
+// ! This call is not concurrency safe !
+func (c *componentRegistry) processComponentIdRegistries() {
+	maps.Copy(c.components, c.concurrencySafeComponents)
 }
 
 type IComponent interface {

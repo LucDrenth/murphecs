@@ -36,6 +36,8 @@ func (executor *ConsecutiveExecutor) Run(currentTick uint) {
 			executor.logger.Error("%s - system returned error: %v", executor.appName, err)
 		}
 	}
+
+	executor.world.Process()
 }
 
 func (executor *ConsecutiveExecutor) ProcessEvents(currentTick uint) {

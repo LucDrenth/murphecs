@@ -2,7 +2,6 @@ package ecs
 
 import (
 	"errors"
-	"reflect"
 	"sync"
 )
 
@@ -51,11 +50,16 @@ func NewWorld(configs WorldConfigs) (World, error) {
 		id:                               configs.Id,
 		initialComponentCapacityStrategy: configs.InitialComponentCapacityStrategy,
 		componentCapacityGrowthStrategy:  configs.ComponentCapacityGrowthStrategy,
-		componentRegistry: componentRegistry{
-			components: map[reflect.Type]uint{},
-		},
-		archetypeStorage: newArchetypeStorage(),
+		componentRegistry:                newComponentRegistry(),
+		archetypeStorage:                 newArchetypeStorage(),
 	}, nil
+}
+
+// Process should be called on a regular basis (such as every tick).
+//
+// ! This call is NOT concurrency safe !
+func (world *World) Process() {
+	world.componentRegistry.processComponentIdRegistries()
 }
 
 func (world *World) CountEntities() int {

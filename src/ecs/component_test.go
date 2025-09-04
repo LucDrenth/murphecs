@@ -2,6 +2,7 @@ package ecs
 
 import (
 	"reflect"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -215,17 +216,64 @@ func TestComponentIdConversions(t *testing.T) {
 }
 
 func TestComponentIdRegistry(t *testing.T) {
-	assert := assert.New(t)
-
 	type componentA struct{ Component }
 	type componentB struct{ Component }
+	type componentC struct{ Component }
+	type componentD struct{ Component }
+	type componentE struct{ Component }
 
-	componentIdRegistry := componentRegistry{
-		components: map[reflect.Type]uint{},
-		currentId:  0,
-	}
+	t.Run("returns the right ID's", func(t *testing.T) {
+		assert := assert.New(t)
 
-	assert.Equal(uint(1), componentIdRegistry.getId(reflect.TypeFor[componentA]()))
-	assert.Equal(uint(1), componentIdRegistry.getId(reflect.TypeFor[componentA]()))
-	assert.Equal(uint(2), componentIdRegistry.getId(reflect.TypeFor[componentB]()))
+		componentIdRegistry := newComponentRegistry()
+
+		check := func() {
+			assert.Equal(uint(1), componentIdRegistry.getId(reflect.TypeFor[componentA]()))
+			assert.Equal(uint(1), componentIdRegistry.getId(reflect.TypeFor[componentA]()))
+			assert.Equal(uint(2), componentIdRegistry.getId(reflect.TypeFor[componentB]()))
+		}
+
+		check()
+		componentIdRegistry.processComponentIdRegistries()
+		componentIdRegistry.concurrencySafeComponents = nil // set to nil to confirm that this map is not used anymore
+		check()
+	})
+
+	t.Run("handles concurrency", func(t *testing.T) {
+		// no asserts needed. Panic occurs when concurrency does not work as expected.
+
+		componentIdRegistry := newComponentRegistry()
+
+		check := func() {
+			var waitGroup sync.WaitGroup
+
+			waitGroup.Go(func() { componentIdRegistry.getId(reflect.TypeFor[componentA]()) })
+			waitGroup.Go(func() { componentIdRegistry.getId(reflect.TypeFor[componentB]()) })
+			waitGroup.Go(func() { componentIdRegistry.getId(reflect.TypeFor[componentC]()) })
+			waitGroup.Go(func() { componentIdRegistry.getId(reflect.TypeFor[componentD]()) })
+			waitGroup.Go(func() { componentIdRegistry.getId(reflect.TypeFor[componentE]()) })
+			waitGroup.Go(func() { componentIdRegistry.getId(reflect.TypeFor[componentF]()) })
+
+			waitGroup.Go(func() { componentIdRegistry.getId(reflect.TypeFor[componentA]()) })
+			waitGroup.Go(func() { componentIdRegistry.getId(reflect.TypeFor[componentB]()) })
+			waitGroup.Go(func() { componentIdRegistry.getId(reflect.TypeFor[componentC]()) })
+			waitGroup.Go(func() { componentIdRegistry.getId(reflect.TypeFor[componentD]()) })
+			waitGroup.Go(func() { componentIdRegistry.getId(reflect.TypeFor[componentE]()) })
+			waitGroup.Go(func() { componentIdRegistry.getId(reflect.TypeFor[componentF]()) })
+
+			waitGroup.Go(func() { componentIdRegistry.getId(reflect.TypeFor[componentA]()) })
+			waitGroup.Go(func() { componentIdRegistry.getId(reflect.TypeFor[componentB]()) })
+			waitGroup.Go(func() { componentIdRegistry.getId(reflect.TypeFor[componentC]()) })
+			waitGroup.Go(func() { componentIdRegistry.getId(reflect.TypeFor[componentD]()) })
+			waitGroup.Go(func() { componentIdRegistry.getId(reflect.TypeFor[componentE]()) })
+			waitGroup.Go(func() { componentIdRegistry.getId(reflect.TypeFor[componentF]()) })
+
+			waitGroup.Wait()
+		}
+
+		check()
+		componentIdRegistry.processComponentIdRegistries()
+		componentIdRegistry.concurrencySafeComponents = nil // set to nil to confirm that this map is not used anymore
+		check()
+	})
 }
