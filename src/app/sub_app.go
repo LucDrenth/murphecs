@@ -167,7 +167,7 @@ func (app *SubApp) AddFeature(feature IFeature) *SubApp {
 	return app
 }
 
-func (app *SubApp) processFeatures() {
+func (app *SubApp) ProcessFeatures() {
 	validatedFeatures := []IFeature{}
 
 	for _, feature := range app.features {
@@ -201,10 +201,12 @@ func (app *SubApp) processFeatures() {
 			app.AddSystem(systems[i].schedule, systems[i].system)
 		}
 	}
+
+	app.features = []IFeature{}
 }
 
 func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
-	app.processFeatures()
+	app.ProcessFeatures()
 
 	err := app.prepareExecutors()
 	if err != nil {

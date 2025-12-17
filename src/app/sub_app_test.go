@@ -163,7 +163,7 @@ func TestProcessFeatures(t *testing.T) {
 		assert.NoError(err)
 
 		app.AddFeature(&invalidFeature{})
-		app.processFeatures()
+		app.ProcessFeatures()
 		assert.Equal(uint(1), logger.err)
 		assert.Equal(uint(0), app.NumberOfResources())
 		assert.Equal(uint(0), app.NumberOfSystems())
@@ -178,10 +178,12 @@ func TestProcessFeatures(t *testing.T) {
 
 		assert.NoError(err)
 		app.AddFeature(&testFeatureForSubAppA{})
-		app.processFeatures()
+		app.ProcessFeatures()
 		assert.Equal(uint(0), logger.err)
 		assert.Equal(uint(2), app.NumberOfResources())
 		assert.Equal(uint(1), app.NumberOfSystems())
+
+		assert.Empty(app.features)
 	})
 }
 
