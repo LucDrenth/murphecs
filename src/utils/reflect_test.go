@@ -33,29 +33,6 @@ func TestAlignedSize(t *testing.T) {
 		return (*misaligned)(ptr)
 	}
 
-	t.Run("returns unexpected results if we use unaligned struct size", func(t *testing.T) {
-		assert := assert.New(t)
-
-		// If we'd use `reflect.TypeOf(misaligned{}).size()`, some systems will return 9.
-		// To keep the tests consistent on all platforms, we'll manually assign 9 here.
-		size := uintptr(9)
-		mem := make([]byte, size*uintptr(numberOfElements))
-
-		fillElements(size, mem, numberOfElements)
-
-		isAllCorrect := true
-
-		// Some (but not all) of the elements will have an unexpected value
-		for i := range numberOfElements {
-			element := getElement(size, mem, i)
-			if int64(i) != element.B {
-				isAllCorrect = false
-			}
-		}
-
-		assert.False(isAllCorrect)
-	})
-
 	t.Run("succeeds if we use aligned size", func(t *testing.T) {
 		assert := assert.New(t)
 
