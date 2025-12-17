@@ -36,15 +36,15 @@ func (s *systemGroupBuilder) Chain() *systemGroupBuilder {
 }
 
 func (s *systemGroupBuilder) validate() error {
-	for i, system := range s.systems {
+	for _, system := range s.systems {
 		systemValue := reflect.ValueOf(system)
 
 		if systemValue.Kind() != reflect.Func {
-			return fmt.Errorf("system at index %d: %s: %w", i, systemToDebugString(system), ErrSystemNotAFunction)
+			return fmt.Errorf("system  %s: %w", systemToDebugString(system), ErrSystemNotAFunction)
 		}
 
 		if err := validateSystemReturnTypes(systemValue); err != nil {
-			return fmt.Errorf("system at index %d: %s: %w: %w", i, systemToDebugString(system), ErrSystemInvalidReturnType, err)
+			return fmt.Errorf("system %s: %w: %w", systemToDebugString(system), ErrSystemInvalidReturnType, err)
 		}
 	}
 
@@ -70,7 +70,7 @@ func (s *systemGroupBuilder) build(world *ecs.World, outerWorlds *map[ecs.WorldI
 			if parameterType.Implements(queryType) {
 				query, err := parseQueryParam(parameterType, world, logger, outerWorlds)
 				if err != nil {
-					return systemGroup, fmt.Errorf("%s: parameter %d: %w: %w", systemToDebugString(sys), i+1, ErrSystemParamQueryNotValid, err)
+					return systemGroup, fmt.Errorf("%s: parameter %s: %w: %w", systemToDebugString(sys), systemParameterDebugString(sys, i), ErrSystemParamQueryNotValid, err)
 				}
 
 				if query.TargetWorld() != nil {
@@ -89,7 +89,7 @@ func (s *systemGroupBuilder) build(world *ecs.World, outerWorlds *map[ecs.WorldI
 				// ecs.World may not be used by-value because:
 				//	1. it is a potentially big object and copying it could give bad performance
 				//	2. it is probably unintended and would cause unexpected behavior
-				return systemGroup, fmt.Errorf("%s: system parameter %d: %w", systemToDebugString(sys), i+1, ErrSystemParamWorldNotAPointer)
+				return systemGroup, fmt.Errorf("%s: parameter %s: %w", systemToDebugString(sys), systemParameterDebugString(sys, i), ErrSystemParamWorldNotAPointer)
 			} else if parameterType.Implements(eventReaderType) {
 				eventReader, ok := reflect.TypeAssert[iEventReader](reflect.New(parameterType.Elem()))
 				if !ok {
@@ -116,7 +116,7 @@ func (s *systemGroupBuilder) build(world *ecs.World, outerWorlds *map[ecs.WorldI
 					// err just means its not a resource, no need to return this specific error.
 
 					err = handleInvalidSystemParam(parameterType)
-					return systemGroup, fmt.Errorf("%s: system parameter %d: %w", systemToDebugString(sys), i+1, err)
+					return systemGroup, fmt.Errorf("%s: parameter %s: %w", systemToDebugString(sys), systemParameterDebugString(sys, i), err)
 				}
 
 				if parameterType.Kind() == reflect.Pointer {

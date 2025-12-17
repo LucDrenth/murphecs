@@ -207,3 +207,11 @@ func systemToDebugString(system System) string {
 	result = strings.ReplaceAll(result, "github.com/lucdrenth/murphecs/src/", "murphecs/")
 	return result
 }
+
+func systemParameterDebugString(system System, index int) string {
+	systemType := reflect.TypeOf(system)
+	parameterType := systemType.In(index)
+	result := parameterType.String()
+	result = strings.ReplaceAll(result, "github.com/lucdrenth/murphecs/src/", "murphecs/")
+	return result
+}
