@@ -204,14 +204,28 @@ func validateSystemReturnTypes(systemValue reflect.Value) error {
 // systemToDebugString returns a reflection string of the system but with shortened paths.
 func systemToDebugString(system System) string {
 	result := reflect.TypeOf(system).String()
-	result = strings.ReplaceAll(result, "github.com/lucdrenth/murphecs/src/", "murphecs/")
+	result = applyDebugTypeReplacements(result)
+	result = strings.ReplaceAll(result, ",", ", ")
 	return result
 }
 
+// systemParameterDebugString returns a reflection string of the system but with shortened paths.
 func systemParameterDebugString(system System, index int) string {
 	systemType := reflect.TypeOf(system)
 	parameterType := systemType.In(index)
 	result := parameterType.String()
-	result = strings.ReplaceAll(result, "github.com/lucdrenth/murphecs/src/", "murphecs/")
+	result = applyDebugTypeReplacements(result)
 	return result
+}
+
+func applyDebugTypeReplacements(s string) string {
+	result := s
+	for k, v := range DebugTypeReplacements {
+		result = strings.ReplaceAll(result, k, v)
+	}
+	return result
+}
+
+var DebugTypeReplacements = map[string]string{
+	"github.com/lucdrenth/murphecs/src/": "murphecs/",
 }
