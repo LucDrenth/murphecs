@@ -51,12 +51,12 @@ func (s *systemGroupBuilder) validate() error {
 	return nil
 }
 
-func (s *systemGroupBuilder) build(world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, resources *resourceStorage, eventStorage *EventStorage) (systemGroup, error) {
+func (s *systemGroupBuilder) build(source string, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, resources *resourceStorage, eventStorage *EventStorage) (systemGroup, error) {
 	systemGroup := systemGroup{}
 
-	queryType := reflect.TypeOf((*ecs.Query)(nil)).Elem()
-	eventReaderType := reflect.TypeOf((*iEventReader)(nil)).Elem()
-	eventWriterType := reflect.TypeOf((*iEventWriter)(nil)).Elem()
+	queryType := reflect.TypeFor[ecs.Query]()
+	eventReaderType := reflect.TypeFor[iEventReader]()
+	eventWriterType := reflect.TypeFor[iEventWriter]()
 
 	for _, sys := range s.systems {
 		systemValue := reflect.ValueOf(sys)
@@ -128,8 +128,9 @@ func (s *systemGroupBuilder) build(world *ecs.World, outerWorlds *map[ecs.WorldI
 		}
 
 		entry := systemEntry{
-			system: systemValue,
-			params: params,
+			system:     systemValue,
+			params:     params,
+			sourcePath: source,
 		}
 		systemGroup.systems = append(systemGroup.systems, entry)
 	}

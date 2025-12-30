@@ -17,6 +17,10 @@ const (
 	ScheduleTypeCleanup                       // runs only once, before quitting
 )
 
+var (
+	SystemErrorPackageDepth = 3
+)
+
 // SubApp has startup systems, repeating systems and cleanup systems.
 //
 // The repeating systems run at a fixed time. If running the systems takes longer then the tickRate, missed ticks
@@ -90,6 +94,11 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
 
 // AddSystem adds a system that will be run when the schedule is run. Systems must be a function.
 func (app *SubApp) AddSystem(schedule Schedule, system System) *SubApp {
+	return app.addSystemWithSource(schedule, system, utils.Caller(2, SystemErrorPackageDepth))
+}
+
+// AddSystem adds a system that will be run when the schedule is run. Systems must be a function.
+func (app *SubApp) addSystemWithSource(schedule Schedule, system System, source string) *SubApp {
 	scheduler := app.getScheduler(schedule)
 	if scheduler == nil {
 		app.logger.Error("%s - failed to add system: schedule %s not found",
@@ -99,7 +108,7 @@ func (app *SubApp) AddSystem(schedule Schedule, system System) *SubApp {
 		return app
 	}
 
-	err := scheduler.AddSystem(schedule, system, app.world, &app.outerWorlds, app.logger, &app.resources, &app.eventStorage)
+	err := scheduler.AddSystem(schedule, system, source, app.world, &app.outerWorlds, app.logger, &app.resources, &app.eventStorage)
 	if err != nil {
 		app.logger.Error("%s - failed to add system: %v",
 			app.name,
@@ -198,7 +207,7 @@ func (app *SubApp) ProcessFeatures() {
 	for _, feature := range validatedFeatures {
 		systems := feature.GetSystems()
 		for i := range systems {
-			app.AddSystem(systems[i].schedule, systems[i].system)
+			app.addSystemWithSource(systems[i].schedule, systems[i].system, systems[i].source)
 		}
 	}
 

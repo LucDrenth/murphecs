@@ -32,10 +32,11 @@ type Feature struct {
 type FeatureSystem struct {
 	schedule Schedule
 	system   System
+	source   string
 }
 
 func (feature *Feature) AddSystem(schedule Schedule, system System) *Feature {
-	feature.systems = append(feature.systems, FeatureSystem{schedule, system})
+	feature.systems = append(feature.systems, FeatureSystem{schedule, system, utils.Caller(2, SystemErrorPackageDepth)})
 	return feature
 }
 

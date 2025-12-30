@@ -11,8 +11,9 @@ import (
 type System any
 
 type systemEntry struct {
-	system reflect.Value
-	params []reflect.Value
+	system     reflect.Value
+	params     []reflect.Value
+	sourcePath string
 }
 
 func (s *systemEntry) exec() error {
@@ -21,7 +22,7 @@ func (s *systemEntry) exec() error {
 	if len(result) == 1 {
 		returnedError, isErr := reflect.TypeAssert[error](result[0])
 		if isErr {
-			return returnedError
+			return fmt.Errorf("%s: %w", s.sourcePath, returnedError)
 		}
 	}
 
@@ -103,7 +104,7 @@ func (s *ScheduleSystems) execSystems() []error {
 	return errors
 }
 
-func (s *ScheduleSystems) add(sys System, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, resources *resourceStorage, eventStorage *EventStorage) error {
+func (s *ScheduleSystems) add(sys System, source string, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, resources *resourceStorage, eventStorage *EventStorage) error {
 	systemValue := reflect.ValueOf(sys)
 	systemGroupBuilderType2 := reflect.TypeFor[*systemGroupBuilder]()
 
@@ -122,7 +123,7 @@ func (s *ScheduleSystems) add(sys System, world *ecs.World, outerWorlds *map[ecs
 		return err
 	}
 
-	systemGroup, err := systemGroupBuilder.build(world, outerWorlds, logger, resources, eventStorage)
+	systemGroup, err := systemGroupBuilder.build(source, world, outerWorlds, logger, resources, eventStorage)
 	if err != nil {
 		return err
 	}
