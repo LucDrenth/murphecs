@@ -40,8 +40,8 @@ func main() {
 		panic(err)
 	}
 	appFoo.
-		AddSchedule(startup, app.ScheduleTypeStartup).
-		AddSchedule(update, app.ScheduleTypeRepeating).
+		AddSchedule(startup, app.ScheduleOptions{ScheduleType: app.ScheduleTypeStartup}).
+		AddSchedule(update, app.ScheduleOptions{ScheduleType: app.ScheduleTypeRepeating}).
 		AddResource(&logger)
 
 	appBar, err := app.New(logger, ecs.DefaultWorldConfigs())
@@ -51,8 +51,8 @@ func main() {
 	appBar.SetTickRate(time.Second * 2)
 
 	appBar.
-		AddSchedule(startup, app.ScheduleTypeStartup).
-		AddSchedule(update, app.ScheduleTypeRepeating).
+		AddSchedule(startup, app.ScheduleOptions{ScheduleType: app.ScheduleTypeStartup}).
+		AddSchedule(update, app.ScheduleOptions{ScheduleType: app.ScheduleTypeRepeating}).
 		AddResource(&logger)
 
 	// 3. Register appFoo to appBar so that we can query appFoo from a appBar system

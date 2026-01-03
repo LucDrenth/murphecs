@@ -44,7 +44,7 @@ func main() {
 	myApp.SetTickRate(time.Millisecond * 100)
 
 	myApp.
-		AddSchedule(update, app.ScheduleTypeRepeating).
+		AddSchedule(update, app.ScheduleOptions{ScheduleType: app.ScheduleTypeRepeating}).
 		AddResource(&logger)
 
 	myApp.

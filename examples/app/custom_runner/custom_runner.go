@@ -51,7 +51,7 @@ func main() {
 	myApp.SetRunner(&runner) // <--- Use our custom runner
 
 	myApp.
-		AddSchedule(update, app.ScheduleTypeRepeating).
+		AddSchedule(update, app.ScheduleOptions{ScheduleType: app.ScheduleTypeRepeating}).
 		AddResource(&logger).
 		AddSystem(update, func(log app.Logger) {
 			log.Info("running system 1!")

@@ -45,8 +45,8 @@ func main() {
 	myApp.UseUncappedRunner()
 
 	myApp.
-		AddSchedule(startup, app.ScheduleTypeStartup).
-		AddSchedule(update, app.ScheduleTypeRepeating).
+		AddSchedule(startup, app.ScheduleOptions{ScheduleType: app.ScheduleTypeStartup}).
+		AddSchedule(update, app.ScheduleOptions{ScheduleType: app.ScheduleTypeRepeating}).
 		AddResource(&logger).
 		AddResource(&ticks{total: 0}).
 		AddResource(&timeStarted{

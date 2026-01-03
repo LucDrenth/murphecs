@@ -22,8 +22,8 @@ func main() {
 	}
 
 	myApp.
-		AddSchedule(beforeUpdate, app.ScheduleTypeRepeating).
-		AddSchedule(update, app.ScheduleTypeRepeating)
+		AddSchedule(beforeUpdate, app.ScheduleOptions{ScheduleType: app.ScheduleTypeRepeating}).
+		AddSchedule(update, app.ScheduleOptions{ScheduleType: app.ScheduleTypeRepeating})
 
 	myApp.
 		AddResource(&logger).

@@ -49,7 +49,7 @@ func main() {
 		panic(err)
 	}
 	myApp.SetTickRate(time.Second)
-	myApp.AddSchedule(update, app.ScheduleTypeRepeating)
+	myApp.AddSchedule(update, app.ScheduleOptions{ScheduleType: app.ScheduleTypeRepeating})
 
 	// Add a struct resource to use it in system parameters
 	counterA := doublingCounter{value: 1}

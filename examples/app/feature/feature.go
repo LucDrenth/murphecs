@@ -26,9 +26,9 @@ func main() {
 		panic(err)
 	}
 
-	myApp.AddSchedule(startup, app.ScheduleTypeStartup).
-		AddSchedule(update, app.ScheduleTypeRepeating).
-		AddSchedule(cleanup, app.ScheduleTypeCleanup).
+	myApp.AddSchedule(startup, app.ScheduleOptions{ScheduleType: app.ScheduleTypeStartup}).
+		AddSchedule(update, app.ScheduleOptions{ScheduleType: app.ScheduleTypeRepeating}).
+		AddSchedule(cleanup, app.ScheduleOptions{ScheduleType: app.ScheduleTypeCleanup}).
 		AddResource(&logger)
 
 	myApp.AddFeature(&debugPrinterFeature{

@@ -129,14 +129,18 @@ func (app *SubApp) getScheduler(schedule Schedule) *Scheduler {
 	return nil
 }
 
+type ScheduleOptions struct {
+	ScheduleType scheduleType
+}
+
 // AddSchedule adds a schedule that systems can be added to.
 //
 // scheduleType can be one of:
 //   - [ScheduleTypeStartup] - systems in a schedule with this schedule type run once, when starting the app
 //   - [ScheduleTypeRepeating] - systems in a schedule with this schedule type run repeatedly, after startup
 //   - [ScheduleTypeCleanup] - systems in a schedule with this schedule type run once, when closing the app
-func (app *SubApp) AddSchedule(schedule Schedule, scheduleType scheduleType) *SubApp {
-	scheduler, ok := app.schedules[scheduleType]
+func (app *SubApp) AddSchedule(schedule Schedule, options ScheduleOptions) *SubApp {
+	scheduler, ok := app.schedules[options.ScheduleType]
 	if !ok {
 		app.logger.Error("%s - failed to add schedule %s: invalid schedule type", app.name, schedule)
 		return app

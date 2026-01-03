@@ -81,7 +81,7 @@ func TestAddSchedule(t *testing.T) {
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
-		app.AddSchedule(schedule, invalidScheduleType)
+		app.AddSchedule(schedule, ScheduleOptions{ScheduleType: invalidScheduleType})
 		assert.Equal(uint(1), logger.err)
 		assert.Equal(uint(0), app.NumberOfSchedules())
 	})
@@ -93,8 +93,8 @@ func TestAddSchedule(t *testing.T) {
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
-		app.AddSchedule(schedule, ScheduleTypeStartup)
-		app.AddSchedule(schedule, ScheduleTypeStartup) // <-- already added, so not valid
+		app.AddSchedule(schedule, ScheduleOptions{ScheduleType: ScheduleTypeStartup})
+		app.AddSchedule(schedule, ScheduleOptions{ScheduleType: ScheduleTypeStartup}) // <-- already added, so not valid
 		assert.Equal(uint(1), logger.err)
 		assert.Equal(uint(1), app.NumberOfSchedules())
 	})
@@ -106,7 +106,7 @@ func TestAddSchedule(t *testing.T) {
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
-		app.AddSchedule(schedule, ScheduleTypeStartup)
+		app.AddSchedule(schedule, ScheduleOptions{ScheduleType: ScheduleTypeStartup})
 		assert.Equal(uint(0), logger.err)
 		assert.Equal(uint(1), app.NumberOfSchedules())
 	})
@@ -133,7 +133,7 @@ func TestAddSystemToSubApp(t *testing.T) {
 		logger := testLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
-		app.AddSchedule(schedule, ScheduleTypeStartup)
+		app.AddSchedule(schedule, ScheduleOptions{ScheduleType: ScheduleTypeStartup})
 
 		app.AddSystem(schedule, "a string is not a valid system")
 		assert.Equal(uint(1), logger.err)
@@ -146,7 +146,7 @@ func TestAddSystemToSubApp(t *testing.T) {
 		logger := testLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
-		app.AddSchedule(schedule, ScheduleTypeStartup)
+		app.AddSchedule(schedule, ScheduleOptions{ScheduleType: ScheduleTypeStartup})
 
 		app.AddSystem(schedule, func() {})
 		assert.Equal(uint(0), logger.err)
@@ -174,7 +174,7 @@ func TestProcessFeatures(t *testing.T) {
 
 		logger := testLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
-		app.AddSchedule(testSchedule, ScheduleTypeRepeating)
+		app.AddSchedule(testSchedule, ScheduleOptions{ScheduleType: ScheduleTypeRepeating})
 
 		assert.NoError(err)
 		app.AddFeature(&testFeatureForSubAppA{})
@@ -225,8 +225,8 @@ func TestRun(t *testing.T) {
 		logger := testLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
-		app.AddSchedule(startup, ScheduleTypeStartup)
-		app.AddSchedule(update, ScheduleTypeRepeating)
+		app.AddSchedule(startup, ScheduleOptions{ScheduleType: ScheduleTypeStartup})
+		app.AddSchedule(update, ScheduleOptions{ScheduleType: ScheduleTypeRepeating})
 		runner := app.newNTimesRunner(1)
 		app.SetRunner(&runner)
 
@@ -243,7 +243,7 @@ func TestRun(t *testing.T) {
 		assert.Equal(2, numberOfSystemsRun)
 	})
 
-	t.Run("runs all systems once and then exists", func(t *testing.T) {
+	t.Run("runs all systems once and then exits", func(t *testing.T) {
 		assert := assert.New(t)
 
 		const (
@@ -259,9 +259,9 @@ func TestRun(t *testing.T) {
 		assert.NoError(err)
 
 		app.
-			AddSchedule(startup, ScheduleTypeStartup).
-			AddSchedule(update, ScheduleTypeRepeating).
-			AddSchedule(cleanup, ScheduleTypeCleanup)
+			AddSchedule(startup, ScheduleOptions{ScheduleType: ScheduleTypeStartup}).
+			AddSchedule(update, ScheduleOptions{ScheduleType: ScheduleTypeRepeating}).
+			AddSchedule(cleanup, ScheduleOptions{ScheduleType: ScheduleTypeCleanup})
 
 		app.
 			AddSystem(startup, func() { numberOfSystemRuns++ }).
@@ -332,7 +332,7 @@ func TestRun(t *testing.T) {
 		logger := testLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
-		app.AddSchedule(update, ScheduleTypeRepeating)
+		app.AddSchedule(update, ScheduleOptions{ScheduleType: ScheduleTypeRepeating})
 		app.UseNTimesRunner(targetNumberOfRuns)
 		numberOfRunsDone := 0
 		app.AddSystem(update, func() {
@@ -385,15 +385,15 @@ func TestConcurrency(t *testing.T) {
 		worldConfigs.Id = &ecs.TestCustomTargetWorldId
 		subAppA, err := New(logger, worldConfigs)
 		assert.NoError(err)
-		subAppA.AddSchedule(startup, ScheduleTypeStartup)
-		subAppA.AddSchedule(update, ScheduleTypeRepeating)
+		subAppA.AddSchedule(startup, ScheduleOptions{ScheduleType: ScheduleTypeStartup})
+		subAppA.AddSchedule(update, ScheduleOptions{ScheduleType: ScheduleTypeRepeating})
 		runner := subAppA.newNTimesRunner(numberOfRuns)
 		subAppA.SetRunner(&runner)
 
 		subAppB, err := New(logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
-		subAppB.AddSchedule(startup, ScheduleTypeStartup)
-		subAppB.AddSchedule(update, ScheduleTypeRepeating)
+		subAppB.AddSchedule(startup, ScheduleOptions{ScheduleType: ScheduleTypeStartup})
+		subAppB.AddSchedule(update, ScheduleOptions{ScheduleType: ScheduleTypeRepeating})
 		err = subAppB.RegisterOuterWorld(ecs.TestCustomTargetWorldId, subAppA.World())
 		assert.NoError(err)
 		runner = subAppB.newNTimesRunner(numberOfRuns)
