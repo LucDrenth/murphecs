@@ -37,13 +37,11 @@ func TestScheduleOrder(t *testing.T) {
 		assert := assert.New(t)
 
 		order := ScheduleBefore{Other: schedule2}
-		var err error
-		var schedules []Schedule
 
-		schedules, err = order.insert(schedule1, []Schedule{})
-		assert.Error(err) // Other does not exist
+		_, err := order.insert(schedule1, []Schedule{})
+		assert.ErrorIs(err, ErrScheduleNotFound)
 
-		schedules, err = order.insert(schedule1, []Schedule{schedule2})
+		schedules, err := order.insert(schedule1, []Schedule{schedule2})
 		assert.NoError(err)
 		assert.Equal([]Schedule{schedule1, schedule2}, schedules)
 	})
@@ -52,13 +50,11 @@ func TestScheduleOrder(t *testing.T) {
 		assert := assert.New(t)
 
 		order := ScheduleAfter{Other: schedule2}
-		var err error
-		var schedules []Schedule
 
-		schedules, err = order.insert(schedule3, []Schedule{})
-		assert.Error(err) // Other does not exist
+		_, err := order.insert(schedule3, []Schedule{})
+		assert.ErrorIs(err, ErrScheduleNotFound)
 
-		schedules, err = order.insert(schedule3, []Schedule{schedule2})
+		schedules, err := order.insert(schedule3, []Schedule{schedule2})
 		assert.NoError(err)
 		assert.Equal([]Schedule{schedule2, schedule3}, schedules)
 	})

@@ -147,7 +147,7 @@ type ScheduleOptions struct {
 func (app *SubApp) AddSchedule(schedule Schedule, options ScheduleOptions) *SubApp {
 	scheduler, ok := app.schedules[options.ScheduleType]
 	if !ok {
-		app.logger.Error("%s - failed to add schedule %s: invalid schedule type", app.name, schedule)
+		app.logger.Error("%s - failed to add schedule %s: %w: %d", app.name, schedule, ErrScheduleTypeNotFound, options.ScheduleType)
 		return app
 	}
 
@@ -162,6 +162,22 @@ func (app *SubApp) AddSchedule(schedule Schedule, options ScheduleOptions) *SubA
 	}
 
 	return app
+}
+
+func (app *SubApp) SetSchedulePaused(schedule Schedule, scheduleType scheduleType, isPaused bool) error {
+	scheduler, exists := app.schedules[scheduleType]
+	if !exists {
+		return fmt.Errorf("%w: %d", ErrScheduleTypeNotFound, scheduleType)
+	}
+
+	systems, exists := scheduler.systems[schedule]
+	if !exists {
+		return fmt.Errorf("%w: %s", ErrScheduleNotFound, schedule)
+	}
+
+	systems.isPaused.Store(isPaused)
+
+	return nil
 }
 
 // AddResource adds a resource that can then be used in system params. There can only be 1 one of each resource type.
@@ -275,8 +291,6 @@ func (app *SubApp) prepareExecutors() error {
 	}
 	app.cleanupExecutor.Load(cleanupSystems, app.world, &app.outerWorlds, app.logger, app.name, &app.eventStorage)
 
-	// free up memory
-	app.schedules = nil
 	return nil
 }
 

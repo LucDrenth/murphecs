@@ -4,6 +4,7 @@
 test:
 	go test ./... 2>&1 | grep -v "\[no test files\]" | grep -v "no tests to run"
 
+# count-tests print the number of unit tests in this repo, not including tests of dependencies.
 count-tests:
 	go test -v ./... | grep "\-\-\- PASS: Test" | wc -l
 

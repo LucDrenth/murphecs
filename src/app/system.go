@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"sync/atomic"
 
 	"github.com/lucdrenth/murphecs/src/ecs"
 )
@@ -34,6 +35,7 @@ type ScheduleSystemsId int
 type ScheduleSystems struct {
 	systemGroups []systemGroup
 	id           ScheduleSystemsId
+	isPaused     atomic.Bool
 }
 
 func (s *ScheduleSystems) Exec(world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, eventStorage *EventStorage, currentTick uint) []error {

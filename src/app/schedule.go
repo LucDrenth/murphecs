@@ -23,7 +23,7 @@ func NewScheduler() Scheduler {
 
 func (s *Scheduler) AddSchedule(schedule Schedule, scheduleSystemsId ScheduleSystemsId, order ScheduleOrder) (err error) {
 	if _, exists := s.systems[schedule]; exists {
-		return fmt.Errorf("schedule already exists")
+		return ErrScheduleAlreadyExists
 	}
 
 	s.systems[schedule] = &ScheduleSystems{id: scheduleSystemsId}
@@ -38,7 +38,7 @@ func (s *Scheduler) AddSchedule(schedule Schedule, scheduleSystemsId ScheduleSys
 func (s *Scheduler) AddSystem(schedule Schedule, system System, source string, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, resources *resourceStorage, eventStorage *EventStorage) error {
 	scheduleSystems, exists := s.systems[schedule]
 	if !exists {
-		return fmt.Errorf("schedule %s does not exist", schedule)
+		return fmt.Errorf("%w: %s", ErrScheduleNotFound, schedule)
 	}
 
 	return scheduleSystems.add(system, source, world, outerWorlds, logger, resources, eventStorage)
@@ -96,7 +96,7 @@ type ScheduleBefore struct {
 func (scheduleOrder ScheduleBefore) insert(schedule Schedule, schedules []Schedule) ([]Schedule, error) {
 	i := slices.Index(schedules, scheduleOrder.Other)
 	if i == -1 {
-		return schedules, fmt.Errorf("schedule to insert before not found: %s", scheduleOrder.Other)
+		return schedules, fmt.Errorf("%w: '%s'", ErrScheduleNotFound, scheduleOrder.Other)
 	}
 
 	return slices.Insert(schedules, i, schedule), nil
@@ -109,7 +109,7 @@ type ScheduleAfter struct {
 func (scheduleOrder ScheduleAfter) insert(schedule Schedule, schedules []Schedule) ([]Schedule, error) {
 	i := slices.Index(schedules, scheduleOrder.Other)
 	if i == -1 {
-		return schedules, fmt.Errorf("schedule to insert after not found: %s", scheduleOrder.Other)
+		return schedules, fmt.Errorf("%w: '%s'", ErrScheduleNotFound, scheduleOrder.Other)
 	}
 
 	return slices.Insert(schedules, i+1, schedule), nil

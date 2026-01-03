@@ -20,4 +20,8 @@ var (
 
 	ErrSystemParamEventReaderNotAPointer error = errors.New("must be a pointer")
 	ErrSystemParamEventWriterNotAPointer error = errors.New("must be a pointer")
+
+	ErrScheduleAlreadyExists error = errors.New("schedule already exists")
+	ErrScheduleNotFound      error = errors.New("schedule not found")
+	ErrScheduleTypeNotFound  error = errors.New("schedule type not found")
 )

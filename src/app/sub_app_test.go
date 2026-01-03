@@ -112,6 +112,44 @@ func TestAddSchedule(t *testing.T) {
 	})
 }
 
+func TestSetSchedulePaused(t *testing.T) {
+	t.Run("returns error when schedule type not found", func(t *testing.T) {
+		assert := assert.New(t)
+
+		app, err := New(nil, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+
+		err = app.SetSchedulePaused(testSchedule, 100, true)
+		assert.ErrorIs(err, ErrScheduleTypeNotFound)
+	})
+
+	t.Run("returns error when schedule not found", func(t *testing.T) {
+		assert := assert.New(t)
+
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+		app.AddSchedule(testSchedule, ScheduleOptions{ScheduleType: ScheduleTypeRepeating})
+		assert.Equal(uint(0), logger.err)
+
+		err = app.SetSchedulePaused("nonExistingSchedule", ScheduleTypeRepeating, true)
+		assert.ErrorIs(err, ErrScheduleNotFound)
+	})
+
+	t.Run("succeeds", func(t *testing.T) {
+		assert := assert.New(t)
+
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+		app.AddSchedule(testSchedule, ScheduleOptions{ScheduleType: ScheduleTypeRepeating})
+		assert.Equal(uint(0), logger.err)
+
+		err = app.SetSchedulePaused(testSchedule, ScheduleTypeRepeating, true)
+		assert.NoError(err)
+	})
+}
+
 func TestAddSystemToSubApp(t *testing.T) {
 	const schedule Schedule = "schedule"
 
@@ -357,6 +395,48 @@ func TestRun(t *testing.T) {
 		// Not sure if this is true, but I'm not sure how exact the time.Sleep mechanisms are, especially
 		// considering running this test on a (temporary) slower device.
 		assert.Less(numberOfRunsDone, targetNumberOfRuns)
+	})
+
+	t.Run("schedule does not run when it's paused", func(t *testing.T) {
+		assert := assert.New(t)
+
+		const (
+			update1 Schedule = "Update1"
+			update2 Schedule = "Update2"
+		)
+
+		numberOfSystemsRun1 := 0
+		numberOfSystemsRun2 := 0
+
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+		app.AddSchedule(update1, ScheduleOptions{ScheduleType: ScheduleTypeRepeating})
+		app.AddSchedule(update2, ScheduleOptions{ScheduleType: ScheduleTypeRepeating})
+		runner := app.newNTimesRunner(5)
+		app.SetRunner(&runner)
+		app.AddSystem(update1, func() {
+			err := app.SetSchedulePaused(update1, ScheduleTypeRepeating, true)
+			assert.NoError(err)
+			numberOfSystemsRun1++
+		})
+
+		app.AddSystem(update2, func() {
+			numberOfSystemsRun2++
+
+			if numberOfSystemsRun2 == 4 {
+				// unpause update1, making it run one more time before the app exists
+				err := app.SetSchedulePaused(update1, ScheduleTypeRepeating, false)
+				assert.NoError(err)
+			}
+		})
+
+		isDoneChannel := make(chan bool)
+		go app.Run(make(chan struct{}), isDoneChannel)
+		<-isDoneChannel
+
+		assert.Equal(2, numberOfSystemsRun1)
+		assert.Equal(uint(0), logger.err)
 	})
 }
 
