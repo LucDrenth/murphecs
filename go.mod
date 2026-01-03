@@ -2,7 +2,7 @@ module github.com/lucdrenth/murphecs
 
 go 1.25.0
 
-require github.com/stretchr/testify v1.10.0
+require github.com/stretchr/testify v1.11.1
 
 tool (
 	github.com/golangci/golangci-lint/v2/cmd/golangci-lint
