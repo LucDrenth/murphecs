@@ -35,10 +35,25 @@ type ScheduleSystemsId int
 type ScheduleSystems struct {
 	systemGroups []systemGroup
 	id           ScheduleSystemsId
-	isPaused     atomic.Bool
+
+	isPaused               atomic.Bool
+	isFirstExecSincePaused bool
 }
 
 func (s *ScheduleSystems) Exec(world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, eventStorage *EventStorage, currentTick uint) []error {
+	if s.isPaused.Load() {
+		if s.isFirstExecSincePaused {
+			// The first exec since the schedule is paused needs to call ProcessEvents
+			// to clear the event readers.
+			// If we don't do this, the event in the readers will never be cleared and
+			// can be infinitely read.
+			eventStorage.ProcessEvents(s.id, currentTick)
+			s.isFirstExecSincePaused = false
+		}
+
+		return []error{}
+	}
+
 	for _, systemGroup := range s.systemGroups {
 		for _, eventWriters := range systemGroup.eventWriters {
 			eventWriters.setScheduleSystemsWriter(s.id)

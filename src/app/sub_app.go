@@ -178,6 +178,14 @@ func (app *SubApp) SetSchedulePaused(schedule Schedule, scheduleType scheduleTyp
 		return fmt.Errorf("%w: %s", ErrScheduleNotFound, schedule)
 	}
 
+	currentlyPaused := systems.isPaused.Load()
+	if currentlyPaused == isPaused {
+		return nil
+	}
+
+	if !currentlyPaused && isPaused {
+		systems.isFirstExecSincePaused = true
+	}
 	systems.isPaused.Store(isPaused)
 
 	return nil

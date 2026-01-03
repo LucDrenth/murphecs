@@ -31,10 +31,6 @@ func (executor *ConsecutiveExecutor) Load(systems []*ScheduleSystems, world *ecs
 
 func (executor *ConsecutiveExecutor) Run(currentTick uint) {
 	for _, scheduleSystems := range executor.systems {
-		if scheduleSystems.isPaused.Load() {
-			continue
-		}
-
 		errors := scheduleSystems.Exec(executor.world, executor.outerWorlds, executor.eventStorage, currentTick)
 		for _, err := range errors {
 			executor.logger.Error("%s - system returned error: %v", executor.appName, err)
