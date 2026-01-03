@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/lucdrenth/murphecs/src/ecs"
 )
@@ -20,13 +21,16 @@ func NewScheduler() Scheduler {
 	}
 }
 
-func (s *Scheduler) AddSchedule(schedule Schedule, scheduleSystemsId ScheduleSystemsId) error {
+func (s *Scheduler) AddSchedule(schedule Schedule, scheduleSystemsId ScheduleSystemsId, order ScheduleOrder) (err error) {
 	if _, exists := s.systems[schedule]; exists {
 		return fmt.Errorf("schedule already exists")
 	}
 
 	s.systems[schedule] = &ScheduleSystems{id: scheduleSystemsId}
-	s.order = append(s.order, schedule)
+	s.order, err = order.insert(schedule, s.order)
+	if err != nil {
+		return fmt.Errorf("ScheduleOrder failed to insert: %w", err)
+	}
 
 	return nil
 }
@@ -67,4 +71,46 @@ func (s *Scheduler) NumberOfSystems() uint {
 		}
 	}
 	return result
+}
+
+type ScheduleOrder interface {
+	insert(Schedule, []Schedule) ([]Schedule, error)
+}
+
+var (
+	_ ScheduleOrder = &ScheduleLast{}
+	_ ScheduleOrder = &ScheduleBefore{}
+	_ ScheduleOrder = &ScheduleAfter{}
+)
+
+type ScheduleLast struct{}
+
+func (scheduleOrder ScheduleLast) insert(schedule Schedule, schedules []Schedule) ([]Schedule, error) {
+	return append(schedules, schedule), nil
+}
+
+type ScheduleBefore struct {
+	Other Schedule
+}
+
+func (scheduleOrder ScheduleBefore) insert(schedule Schedule, schedules []Schedule) ([]Schedule, error) {
+	i := slices.Index(schedules, scheduleOrder.Other)
+	if i == -1 {
+		return schedules, fmt.Errorf("schedule to insert before not found: %s", scheduleOrder.Other)
+	}
+
+	return slices.Insert(schedules, i, schedule), nil
+}
+
+type ScheduleAfter struct {
+	Other Schedule
+}
+
+func (scheduleOrder ScheduleAfter) insert(schedule Schedule, schedules []Schedule) ([]Schedule, error) {
+	i := slices.Index(schedules, scheduleOrder.Other)
+	if i == -1 {
+		return schedules, fmt.Errorf("schedule to insert after not found: %s", scheduleOrder.Other)
+	}
+
+	return slices.Insert(schedules, i+1, schedule), nil
 }

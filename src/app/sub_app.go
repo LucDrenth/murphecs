@@ -130,15 +130,20 @@ func (app *SubApp) getScheduler(schedule Schedule) *Scheduler {
 }
 
 type ScheduleOptions struct {
+	// ScheduleType can be one of:
+	//   - [ScheduleTypeStartup] - systems in a schedule with this schedule type run once, when starting the app
+	//   - [ScheduleTypeRepeating] - systems in a schedule with this schedule type run repeatedly, after startup
+	//   - [ScheduleTypeCleanup] - systems in a schedule with this schedule type run once, when closing the app
 	ScheduleType scheduleType
+
+	// Order decides when the schedule systems should run, relative to schedules. It can be one of:
+	//	- [ScheduleLast] - this is also the default if this field is left nil
+	// 	- [ScheduleBefore]
+	// 	- [ScheduleAfter]
+	Order ScheduleOrder
 }
 
 // AddSchedule adds a schedule that systems can be added to.
-//
-// scheduleType can be one of:
-//   - [ScheduleTypeStartup] - systems in a schedule with this schedule type run once, when starting the app
-//   - [ScheduleTypeRepeating] - systems in a schedule with this schedule type run repeatedly, after startup
-//   - [ScheduleTypeCleanup] - systems in a schedule with this schedule type run once, when closing the app
 func (app *SubApp) AddSchedule(schedule Schedule, options ScheduleOptions) *SubApp {
 	scheduler, ok := app.schedules[options.ScheduleType]
 	if !ok {
@@ -146,8 +151,12 @@ func (app *SubApp) AddSchedule(schedule Schedule, options ScheduleOptions) *SubA
 		return app
 	}
 
+	if options.Order == nil {
+		options.Order = ScheduleLast{}
+	}
+
 	app.scheduleSystemsIdCounter++
-	err := scheduler.AddSchedule(schedule, app.scheduleSystemsIdCounter)
+	err := scheduler.AddSchedule(schedule, app.scheduleSystemsIdCounter, options.Order)
 	if err != nil {
 		app.logger.Error("%s - failed to add schedule %s: %v", app.name, schedule, err)
 	}
