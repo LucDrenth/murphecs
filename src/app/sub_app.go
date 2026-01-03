@@ -141,6 +141,9 @@ type ScheduleOptions struct {
 	// 	- [ScheduleBefore]
 	// 	- [ScheduleAfter]
 	Order ScheduleOrder
+
+	// IsPaused determines the initial pause state of the schedule
+	IsPaused bool
 }
 
 // AddSchedule adds a schedule that systems can be added to.
@@ -156,7 +159,7 @@ func (app *SubApp) AddSchedule(schedule Schedule, options ScheduleOptions) *SubA
 	}
 
 	app.scheduleSystemsIdCounter++
-	err := scheduler.AddSchedule(schedule, app.scheduleSystemsIdCounter, options.Order)
+	err := scheduler.AddSchedule(schedule, app.scheduleSystemsIdCounter, options.Order, options.IsPaused)
 	if err != nil {
 		app.logger.Error("%s - failed to add schedule %s: %v", app.name, schedule, err)
 	}

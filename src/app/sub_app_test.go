@@ -438,6 +438,33 @@ func TestRun(t *testing.T) {
 		assert.Equal(2, numberOfSystemsRun1)
 		assert.Equal(uint(0), logger.err)
 	})
+
+	t.Run("schedule does not run when is is added as initially paused", func(t *testing.T) {
+		assert := assert.New(t)
+
+		const (
+			update Schedule = "Update"
+		)
+
+		numberOfSystemsRun := 0
+
+		logger := testLogger{}
+		app, err := New(&logger, ecs.DefaultWorldConfigs())
+		assert.NoError(err)
+		app.AddSchedule(update, ScheduleOptions{ScheduleType: ScheduleTypeRepeating, IsPaused: true})
+		runner := app.newNTimesRunner(5)
+		app.SetRunner(&runner)
+		app.AddSystem(update, func() {
+			numberOfSystemsRun++
+		})
+
+		isDoneChannel := make(chan bool)
+		go app.Run(make(chan struct{}), isDoneChannel)
+		<-isDoneChannel
+
+		assert.Equal(0, numberOfSystemsRun)
+		assert.Equal(uint(0), logger.err)
+	})
 }
 
 func TestConcurrency(t *testing.T) {

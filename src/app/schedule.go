@@ -21,12 +21,17 @@ func NewScheduler() Scheduler {
 	}
 }
 
-func (s *Scheduler) AddSchedule(schedule Schedule, scheduleSystemsId ScheduleSystemsId, order ScheduleOrder) (err error) {
+func (s *Scheduler) AddSchedule(schedule Schedule, scheduleSystemsId ScheduleSystemsId, order ScheduleOrder, isPaused bool) (err error) {
 	if _, exists := s.systems[schedule]; exists {
 		return ErrScheduleAlreadyExists
 	}
 
-	s.systems[schedule] = &ScheduleSystems{id: scheduleSystemsId}
+	scheduleSystems := &ScheduleSystems{id: scheduleSystemsId}
+	if isPaused {
+		scheduleSystems.isPaused.Store(true)
+	}
+	s.systems[schedule] = scheduleSystems
+
 	s.order, err = order.insert(schedule, s.order)
 	if err != nil {
 		return fmt.Errorf("ScheduleOrder failed to insert: %w", err)
