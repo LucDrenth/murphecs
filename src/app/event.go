@@ -2,6 +2,7 @@ package app
 
 import (
 	"reflect"
+	"time"
 )
 
 type EventStorage struct {
@@ -75,6 +76,7 @@ type IEvent interface {
 	shouldRemove() bool
 	getScheduleSystemsWriter() ScheduleSystemsId
 	setScheduleSystemsWriter(ScheduleSystemsId)
+	setTimeWritten(time.Time)
 	setTickAddedToEventReader(uint)
 	getTickAddedToEventReader() uint
 }
@@ -86,6 +88,7 @@ type Event struct {
 	remove                 bool
 	scheduleSystemsWriter  ScheduleSystemsId // the [ScheduleSystemsId] of the [ScheduleSystems] during which this event was written to an EventWriter
 	tickAddedToEventReader uint              // the tick number during which this event was added to an EventReader
+	timeWritten            time.Time         // the time at which the event has been written to the EventWriter
 }
 
 func (e *Event) shouldRemove() bool {
@@ -108,9 +111,18 @@ func (e *Event) getTickAddedToEventReader() uint {
 	return e.tickAddedToEventReader
 }
 
+func (e *Event) setTimeWritten(t time.Time) {
+	e.timeWritten = t
+}
+
 // Remove marks the event for cleanup and prevents other systems from reading this event.
 func (e *Event) Remove() {
 	e.remove = true
+}
+
+// TimeWritten returns the time during which the event was written to the EventWriter
+func (e *Event) TimeWritten() time.Time {
+	return e.timeWritten
 }
 
 type EventWriter[E IEvent] struct {
@@ -143,6 +155,7 @@ type EventWriter[E IEvent] struct {
 //
 //   - post-update 	system 1:	[event cleared] not readable
 func (writer *EventWriter[E]) Write(event E) {
+	event.setTimeWritten(time.Now())
 	event.setScheduleSystemsWriter(writer.ScheduleSystemsId)
 	writer.events = append(writer.events, event)
 }
