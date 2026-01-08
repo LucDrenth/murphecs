@@ -47,25 +47,25 @@ func TestAddResource(t *testing.T) {
 	t.Run("logs an error when resource is not valid", func(t *testing.T) {
 		assert := assert.New(t)
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
 		app.AddResource(&resourceA{})
 		app.AddResource(&resourceA{}) // <- resource already added so its not valid
-		assert.Equal(uint(1), logger.err)
+		assert.Equal(uint(1), logger.NumberOfErrorLogs)
 		assert.Equal(uint(1), app.NumberOfResources())
 	})
 
 	t.Run("successfully adds a resource", func(t *testing.T) {
 		assert := assert.New(t)
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
 		app.AddResource(&resourceA{})
-		assert.Equal(uint(0), logger.err)
+		assert.Equal(uint(0), logger.NumberOfErrorLogs)
 		assert.Equal(uint(1), app.NumberOfResources())
 	})
 }
@@ -77,37 +77,37 @@ func TestAddSchedule(t *testing.T) {
 		assert := assert.New(t)
 
 		var invalidScheduleType scheduleType = 100
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
 		app.AddSchedule(schedule, ScheduleOptions{ScheduleType: invalidScheduleType})
-		assert.Equal(uint(1), logger.err)
+		assert.Equal(uint(1), logger.NumberOfErrorLogs)
 		assert.Equal(uint(0), app.NumberOfSchedules())
 	})
 
 	t.Run("logs an error when schedule not valid", func(t *testing.T) {
 		assert := assert.New(t)
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
 		app.AddSchedule(schedule, ScheduleOptions{ScheduleType: ScheduleTypeStartup})
 		app.AddSchedule(schedule, ScheduleOptions{ScheduleType: ScheduleTypeStartup}) // <-- already added, so not valid
-		assert.Equal(uint(1), logger.err)
+		assert.Equal(uint(1), logger.NumberOfErrorLogs)
 		assert.Equal(uint(1), app.NumberOfSchedules())
 	})
 
 	t.Run("successfully adds a schedule", func(t *testing.T) {
 		assert := assert.New(t)
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
 		app.AddSchedule(schedule, ScheduleOptions{ScheduleType: ScheduleTypeStartup})
-		assert.Equal(uint(0), logger.err)
+		assert.Equal(uint(0), logger.NumberOfErrorLogs)
 		assert.Equal(uint(1), app.NumberOfSchedules())
 	})
 }
@@ -126,11 +126,11 @@ func TestSetSchedulePaused(t *testing.T) {
 	t.Run("returns error when schedule not found", func(t *testing.T) {
 		assert := assert.New(t)
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 		app.AddSchedule(testSchedule, ScheduleOptions{ScheduleType: ScheduleTypeRepeating})
-		assert.Equal(uint(0), logger.err)
+		assert.Equal(uint(0), logger.NumberOfErrorLogs)
 
 		err = app.SetSchedulePaused("nonExistingSchedule", ScheduleTypeRepeating, true)
 		assert.ErrorIs(err, ErrScheduleNotFound)
@@ -139,11 +139,11 @@ func TestSetSchedulePaused(t *testing.T) {
 	t.Run("succeeds", func(t *testing.T) {
 		assert := assert.New(t)
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 		app.AddSchedule(testSchedule, ScheduleOptions{ScheduleType: ScheduleTypeRepeating})
-		assert.Equal(uint(0), logger.err)
+		assert.Equal(uint(0), logger.NumberOfErrorLogs)
 
 		err = app.SetSchedulePaused(testSchedule, ScheduleTypeRepeating, true)
 		assert.NoError(err)
@@ -156,38 +156,38 @@ func TestAddSystemToSubApp(t *testing.T) {
 	t.Run("logs error when schedule does not exist", func(t *testing.T) {
 		assert := assert.New(t)
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
 		app.AddSystem(schedule, func() {})
-		assert.Equal(uint(1), logger.err)
+		assert.Equal(uint(1), logger.NumberOfErrorLogs)
 		assert.Equal(uint(0), app.NumberOfSystems())
 	})
 
 	t.Run("logs error when system is not valid", func(t *testing.T) {
 		assert := assert.New(t)
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 		app.AddSchedule(schedule, ScheduleOptions{ScheduleType: ScheduleTypeStartup})
 
 		app.AddSystem(schedule, "a string is not a valid system")
-		assert.Equal(uint(1), logger.err)
+		assert.Equal(uint(1), logger.NumberOfErrorLogs)
 		assert.Equal(uint(0), app.NumberOfSystems())
 	})
 
 	t.Run("successfully adds system", func(t *testing.T) {
 		assert := assert.New(t)
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 		app.AddSchedule(schedule, ScheduleOptions{ScheduleType: ScheduleTypeStartup})
 
 		app.AddSystem(schedule, func() {})
-		assert.Equal(uint(0), logger.err)
+		assert.Equal(uint(0), logger.NumberOfErrorLogs)
 		assert.Equal(uint(1), app.NumberOfSystems())
 	})
 }
@@ -196,13 +196,13 @@ func TestProcessFeatures(t *testing.T) {
 	t.Run("logs error if a feature its Init method does not have pointer receiver", func(t *testing.T) {
 		assert := assert.New(t)
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
 		app.AddFeature(&invalidFeature{})
 		app.ProcessFeatures()
-		assert.Equal(uint(1), logger.err)
+		assert.Equal(uint(1), logger.NumberOfErrorLogs)
 		assert.Equal(uint(0), app.NumberOfResources())
 		assert.Equal(uint(0), app.NumberOfSystems())
 	})
@@ -210,14 +210,14 @@ func TestProcessFeatures(t *testing.T) {
 	t.Run("adds all resources of the feature and its nested features", func(t *testing.T) {
 		assert := assert.New(t)
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		app.AddSchedule(testSchedule, ScheduleOptions{ScheduleType: ScheduleTypeRepeating})
 
 		assert.NoError(err)
 		app.AddFeature(&testFeatureForSubAppA{})
 		app.ProcessFeatures()
-		assert.Equal(uint(0), logger.err)
+		assert.Equal(uint(0), logger.NumberOfErrorLogs)
 		assert.Equal(uint(2), app.NumberOfResources())
 		assert.Equal(uint(1), app.NumberOfSystems())
 
@@ -229,23 +229,23 @@ func TestSetRunner(t *testing.T) {
 	t.Run("logs an error when passing nil runner", func(t *testing.T) {
 		assert := assert.New(t)
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
 		app.SetRunner(nil)
-		assert.Equal(uint(1), logger.err)
+		assert.Equal(uint(1), logger.NumberOfErrorLogs)
 	})
 
 	t.Run("logs no error when passing a proper runner", func(t *testing.T) {
 		assert := assert.New(t)
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
 		app.SetRunner(&fixedRunner{})
-		assert.Equal(uint(0), logger.err)
+		assert.Equal(uint(0), logger.NumberOfErrorLogs)
 	})
 }
 
@@ -260,7 +260,7 @@ func TestRun(t *testing.T) {
 
 		numberOfSystemsRun := 0
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 		app.AddSchedule(startup, ScheduleOptions{ScheduleType: ScheduleTypeStartup})
@@ -292,7 +292,7 @@ func TestRun(t *testing.T) {
 
 		numberOfSystemRuns := 0
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
@@ -313,14 +313,14 @@ func TestRun(t *testing.T) {
 		go app.Run(make(chan struct{}), isDoneChannel)
 		<-isDoneChannel
 
-		assert.Equal(uint(0), logger.err)
+		assert.Equal(uint(0), logger.NumberOfErrorLogs)
 		assert.Equal(3, numberOfSystemRuns)
 	})
 
 	t.Run("fixed runner stops when closing exit channel", func(t *testing.T) {
 		assert := assert.New(t)
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
@@ -334,13 +334,13 @@ func TestRun(t *testing.T) {
 		}()
 
 		<-isDoneChannel
-		assert.Equal(uint(0), logger.err)
+		assert.Equal(uint(0), logger.NumberOfErrorLogs)
 	})
 
 	t.Run("uncapped runner stops when closing exit channel", func(t *testing.T) {
 		assert := assert.New(t)
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
@@ -358,7 +358,7 @@ func TestRun(t *testing.T) {
 		}()
 
 		<-isDoneChannel
-		assert.Equal(uint(0), logger.err)
+		assert.Equal(uint(0), logger.NumberOfErrorLogs)
 	})
 
 	t.Run("n times runner stops when closing exit channel", func(t *testing.T) {
@@ -367,7 +367,7 @@ func TestRun(t *testing.T) {
 
 		assert := assert.New(t)
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 		app.AddSchedule(update, ScheduleOptions{ScheduleType: ScheduleTypeRepeating})
@@ -388,7 +388,7 @@ func TestRun(t *testing.T) {
 		}()
 
 		<-isDoneChannel
-		assert.Equal(uint(0), logger.err)
+		assert.Equal(uint(0), logger.NumberOfErrorLogs)
 
 		// We expect numberOfRunsDone to be 1, but we simply check if it didn't complete all target runs
 		// to keep the outcome of this test consistent.
@@ -408,7 +408,7 @@ func TestRun(t *testing.T) {
 		numberOfSystemsRun1 := 0
 		numberOfSystemsRun2 := 0
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 		app.AddSchedule(update1, ScheduleOptions{ScheduleType: ScheduleTypeRepeating})
@@ -436,7 +436,7 @@ func TestRun(t *testing.T) {
 		<-isDoneChannel
 
 		assert.Equal(2, numberOfSystemsRun1)
-		assert.Equal(uint(0), logger.err)
+		assert.Equal(uint(0), logger.NumberOfErrorLogs)
 	})
 
 	t.Run("schedule does not run when is is added as initially paused", func(t *testing.T) {
@@ -448,7 +448,7 @@ func TestRun(t *testing.T) {
 
 		numberOfSystemsRun := 0
 
-		logger := testLogger{}
+		logger := TestLogger{}
 		app, err := New(&logger, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 		app.AddSchedule(update, ScheduleOptions{ScheduleType: ScheduleTypeRepeating, IsPaused: true})
@@ -463,7 +463,7 @@ func TestRun(t *testing.T) {
 		<-isDoneChannel
 
 		assert.Equal(0, numberOfSystemsRun)
-		assert.Equal(uint(0), logger.err)
+		assert.Equal(uint(0), logger.NumberOfErrorLogs)
 	})
 }
 
@@ -487,7 +487,7 @@ func TestConcurrency(t *testing.T) {
 
 		assert := assert.New(t)
 
-		logger := &testLogger{}
+		logger := &TestLogger{}
 		worldConfigs := ecs.DefaultWorldConfigs()
 		worldConfigs.Id = &ecs.TestCustomTargetWorldId
 		subAppA, err := New(logger, worldConfigs)
@@ -522,7 +522,7 @@ func TestConcurrency(t *testing.T) {
 
 		subAppB.
 			AddResource(logger).
-			AddSystem(update, func(log *testLogger, query *ecs.Query1[component, ecs.TestCustomTargetWorld]) {
+			AddSystem(update, func(log *TestLogger, query *ecs.Query1[component, ecs.TestCustomTargetWorld]) {
 				query.Iter(func(entityId ecs.EntityId, a *component) {
 					for k, v := range a.data {
 						log.Info("%s=%d\t", k, v)
@@ -538,6 +538,6 @@ func TestConcurrency(t *testing.T) {
 		<-isDoneChannelA
 		<-isDoneChannelB
 
-		assert.Equal(uint(0), logger.err)
+		assert.Equal(uint(0), logger.NumberOfErrorLogs)
 	})
 }

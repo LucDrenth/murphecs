@@ -40,23 +40,23 @@ func (l *SimpleConsoleLogger) Error(message string, arguments ...any) {
 	fmt.Println("ERROR: " + fmt.Sprintf(message, arguments...))
 }
 
-// testLogger counts the number times a certain level is logged. Useful for tests
-type testLogger struct {
-	debug uint
-	info  uint
-	warn  uint
-	err   uint
+// TestLogger counts the number of logs per level. It's main use is for tests.
+type TestLogger struct {
+	NumberOfDebugLogs uint
+	NumberOfInfoLogs  uint
+	NumberOfWarnLogs  uint
+	NumberOfErrorLogs uint
 }
 
-func (l *testLogger) Debug(message string, arguments ...any) {
-	l.debug++
+func (l *TestLogger) Debug(message string, arguments ...any) {
+	l.NumberOfDebugLogs++
 }
-func (l *testLogger) Info(message string, arguments ...any) {
-	l.info++
+func (l *TestLogger) Info(message string, arguments ...any) {
+	l.NumberOfInfoLogs++
 }
-func (l *testLogger) Warn(message string, arguments ...any) {
-	l.warn++
+func (l *TestLogger) Warn(message string, arguments ...any) {
+	l.NumberOfWarnLogs++
 }
-func (l *testLogger) Error(message string, arguments ...any) {
-	l.err++
+func (l *TestLogger) Error(message string, arguments ...any) {
+	l.NumberOfErrorLogs++
 }
