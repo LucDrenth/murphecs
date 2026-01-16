@@ -2,6 +2,7 @@ package ecs
 
 import (
 	"errors"
+	"slices"
 
 	"github.com/lucdrenth/murphecs/src/utils"
 )
@@ -161,13 +162,7 @@ func (filter *queryFilterWith) EntityMeetsCriteria(e *EntityData) bool {
 }
 
 func (filter *queryFilterWithout) EntityMeetsCriteria(e *EntityData) bool {
-	for _, c := range filter.c {
-		if e.hasComponent(c) {
-			return false
-		}
-	}
-
-	return true
+	return !slices.ContainsFunc(filter.c, e.hasComponent)
 }
 
 func (filter *queryFilterAnd) ArchetypeMeetsCriteria(archetype *Archetype) bool {
@@ -189,11 +184,5 @@ func (filter *queryFilterWith) ArchetypeMeetsCriteria(archetype *Archetype) bool
 }
 
 func (filter *queryFilterWithout) ArchetypeMeetsCriteria(archetype *Archetype) bool {
-	for _, c := range filter.c {
-		if archetype.HasComponent(c) {
-			return false
-		}
-	}
-
-	return true
+	return !slices.ContainsFunc(filter.c, archetype.HasComponent)
 }
