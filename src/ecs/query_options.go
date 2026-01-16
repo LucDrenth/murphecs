@@ -219,6 +219,18 @@ type QueryOptions3[A, B, C QueryOption] struct{}
 // Multiple query options that will be combined. Multiple filters will result in them being used with an AND operator.
 type QueryOptions4[A, B, C, D QueryOption] struct{}
 
+// Multiple query options that will be combined. Multiple filters will result in them being used with an AND operator.
+type QueryOptions5[A, B, C, D, E QueryOption] struct{}
+
+// Multiple query options that will be combined. Multiple filters will result in them being used with an AND operator.
+type QueryOptions6[A, B, C, D, E, F QueryOption] struct{}
+
+// Multiple query options that will be combined. Multiple filters will result in them being used with an AND operator.
+type QueryOptions7[A, B, C, D, E, F, G QueryOption] struct{}
+
+// Multiple query options that will be combined. Multiple filters will result in them being used with an AND operator.
+type QueryOptions8[A, B, C, D, E, F, G, H QueryOption] struct{}
+
 func (o QueryOptions2[A, B]) GetCombinedQueryOptions(world *World) (result CombinedQueryOptions, err error) {
 	a, err := utils.ToConcrete[A]()
 	if err != nil {
@@ -272,6 +284,148 @@ func (o QueryOptions4[A, B, C, D]) GetCombinedQueryOptions(world *World) (result
 	}
 
 	return mergeQueryOptions([]QueryOption{a, b, c, d}, world)
+}
+func (o QueryOptions5[A, B, C, D, E]) GetCombinedQueryOptions(world *World) (result CombinedQueryOptions, err error) {
+	a, err := utils.ToConcrete[A]()
+	if err != nil {
+		return result, err
+	}
+
+	b, err := utils.ToConcrete[B]()
+	if err != nil {
+		return result, err
+	}
+
+	c, err := utils.ToConcrete[C]()
+	if err != nil {
+		return result, err
+	}
+
+	d, err := utils.ToConcrete[D]()
+	if err != nil {
+		return result, err
+	}
+
+	e, err := utils.ToConcrete[E]()
+	if err != nil {
+		return result, err
+	}
+
+	return mergeQueryOptions([]QueryOption{a, b, c, d, e}, world)
+}
+func (o QueryOptions6[A, B, C, D, E, F]) GetCombinedQueryOptions(world *World) (result CombinedQueryOptions, err error) {
+	a, err := utils.ToConcrete[A]()
+	if err != nil {
+		return result, err
+	}
+
+	b, err := utils.ToConcrete[B]()
+	if err != nil {
+		return result, err
+	}
+
+	c, err := utils.ToConcrete[C]()
+	if err != nil {
+		return result, err
+	}
+
+	d, err := utils.ToConcrete[D]()
+	if err != nil {
+		return result, err
+	}
+
+	e, err := utils.ToConcrete[E]()
+	if err != nil {
+		return result, err
+	}
+
+	f, err := utils.ToConcrete[F]()
+	if err != nil {
+		return result, err
+	}
+
+	return mergeQueryOptions([]QueryOption{a, b, c, d, e, f}, world)
+}
+func (o QueryOptions7[A, B, C, D, E, F, G]) GetCombinedQueryOptions(world *World) (result CombinedQueryOptions, err error) {
+	a, err := utils.ToConcrete[A]()
+	if err != nil {
+		return result, err
+	}
+
+	b, err := utils.ToConcrete[B]()
+	if err != nil {
+		return result, err
+	}
+
+	c, err := utils.ToConcrete[C]()
+	if err != nil {
+		return result, err
+	}
+
+	d, err := utils.ToConcrete[D]()
+	if err != nil {
+		return result, err
+	}
+
+	e, err := utils.ToConcrete[E]()
+	if err != nil {
+		return result, err
+	}
+
+	f, err := utils.ToConcrete[F]()
+	if err != nil {
+		return result, err
+	}
+
+	g, err := utils.ToConcrete[G]()
+	if err != nil {
+		return result, err
+	}
+
+	return mergeQueryOptions([]QueryOption{a, b, c, d, e, f, g}, world)
+}
+func (o QueryOptions8[A, B, C, D, E, F, G, H]) GetCombinedQueryOptions(world *World) (result CombinedQueryOptions, err error) {
+	a, err := utils.ToConcrete[A]()
+	if err != nil {
+		return result, err
+	}
+
+	b, err := utils.ToConcrete[B]()
+	if err != nil {
+		return result, err
+	}
+
+	c, err := utils.ToConcrete[C]()
+	if err != nil {
+		return result, err
+	}
+
+	d, err := utils.ToConcrete[D]()
+	if err != nil {
+		return result, err
+	}
+
+	e, err := utils.ToConcrete[E]()
+	if err != nil {
+		return result, err
+	}
+
+	f, err := utils.ToConcrete[F]()
+	if err != nil {
+		return result, err
+	}
+
+	g, err := utils.ToConcrete[G]()
+	if err != nil {
+		return result, err
+	}
+
+	h, err := utils.ToConcrete[H]()
+	if err != nil {
+		return result, err
+	}
+
+	return mergeQueryOptions([]QueryOption{a, b, c, d, e, f, g, h}, world)
 }
 
 func mergeQueryOptions(queryOptions []QueryOption, world *World) (result CombinedQueryOptions, err error) {
