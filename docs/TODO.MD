@@ -1,6 +1,8 @@
 # ECS
 **Must have**
 - [feature] Observers
+- [feature] Insert components by value
+- [feature] Define optional component by `Query[Optional[C], ...]` instead of `Query[C, Optional[C]]`.
 
 **Nice-to-have**
 - [performance] Generational entities. EntityId would become {id: uint, generation: uint}. World its entityList would becomes a slice instead of a map, and entityId would correlate with the slice index. This provides faster lookups. We'd need an deadEntityPool to choose from when creating a new EntityId which would increment its generation and repurpose it.
