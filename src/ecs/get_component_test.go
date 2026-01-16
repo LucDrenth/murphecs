@@ -14,36 +14,68 @@ import (
 // Because if this, the tests will get progressively simpler for each TestGet<number>, until only basic functionality is tested.
 
 type componentA struct {
-	value int
 	Component
+	value int
 }
 type componentB struct {
-	value int
 	Component
+	value int
 }
 type componentC struct {
-	value int
 	Component
+	value int
 }
 type componentD struct {
-	value int
 	Component
+	value int
 }
 type componentE struct {
-	value int
 	Component
+	value int
 }
 type componentF struct {
-	value int
 	Component
+	value int
 }
 type componentG struct {
-	value int
 	Component
+	value int
 }
 type componentH struct {
-	value int
 	Component
+	value int
+}
+type componentI struct {
+	Component
+	value int
+}
+type componentJ struct {
+	Component
+	value int
+}
+type componentK struct {
+	Component
+	value int
+}
+type componentL struct {
+	Component
+	value int
+}
+type componentM struct {
+	Component
+	value int
+}
+type componentN struct {
+	Component
+	value int
+}
+type componentO struct {
+	Component
+	value int
+}
+type componentP struct {
+	Component
+	value int
 }
 
 const (
@@ -55,6 +87,14 @@ const (
 	expectedValueF = 106
 	expectedValueG = 107
 	expectedValueH = 108
+	expectedValueI = 109
+	expectedValueJ = 110
+	expectedValueK = 111
+	expectedValueL = 112
+	expectedValueM = 113
+	expectedValueN = 114
+	expectedValueO = 115
+	expectedValueP = 116
 )
 
 func TestGet1(t *testing.T) {
@@ -370,5 +410,345 @@ func TestGet8(t *testing.T) {
 		assert.Equal(expectedValueG, (*g).value)
 		assert.NotNil(h)
 		assert.Equal(expectedValueH, (*h).value)
+	})
+}
+
+func TestGet9(t *testing.T) {
+	t.Run("returns the expected components", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewDefaultWorld()
+		entity, err := Spawn(world,
+			&componentA{value: expectedValueA}, &componentB{value: expectedValueB}, &componentC{value: expectedValueC},
+			&componentD{value: expectedValueD}, &componentE{value: expectedValueE}, &componentF{value: expectedValueF},
+			&componentG{value: expectedValueG}, &componentH{value: expectedValueH}, &componentI{value: expectedValueI},
+		)
+		assert.NoError(err)
+
+		a, b, c, d, e, f, g, h, i, err := Get9[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH, componentI](world, entity)
+		assert.NoError(err)
+		assert.NotNil(a)
+		assert.Equal(expectedValueA, (*a).value)
+		assert.NotNil(b)
+		assert.Equal(expectedValueB, (*b).value)
+		assert.NotNil(c)
+		assert.Equal(expectedValueC, (*c).value)
+		assert.NotNil(d)
+		assert.Equal(expectedValueD, (*d).value)
+		assert.NotNil(e)
+		assert.Equal(expectedValueE, (*e).value)
+		assert.NotNil(f)
+		assert.Equal(expectedValueF, (*f).value)
+		assert.NotNil(g)
+		assert.Equal(expectedValueG, (*g).value)
+		assert.NotNil(h)
+		assert.Equal(expectedValueH, (*h).value)
+		assert.NotNil(i)
+		assert.Equal(expectedValueI, (*i).value)
+	})
+}
+
+func TestGet10(t *testing.T) {
+	t.Run("returns the expected components", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewDefaultWorld()
+		entity, err := Spawn(world,
+			&componentA{value: expectedValueA}, &componentB{value: expectedValueB}, &componentC{value: expectedValueC},
+			&componentD{value: expectedValueD}, &componentE{value: expectedValueE}, &componentF{value: expectedValueF},
+			&componentG{value: expectedValueG}, &componentH{value: expectedValueH}, &componentI{value: expectedValueI},
+			&componentJ{value: expectedValueJ},
+		)
+		assert.NoError(err)
+
+		a, b, c, d, e, f, g, h, i, j, err := Get10[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH, componentI, componentJ](world, entity)
+		assert.NoError(err)
+		assert.NotNil(a)
+		assert.Equal(expectedValueA, (*a).value)
+		assert.NotNil(b)
+		assert.Equal(expectedValueB, (*b).value)
+		assert.NotNil(c)
+		assert.Equal(expectedValueC, (*c).value)
+		assert.NotNil(d)
+		assert.Equal(expectedValueD, (*d).value)
+		assert.NotNil(e)
+		assert.Equal(expectedValueE, (*e).value)
+		assert.NotNil(f)
+		assert.Equal(expectedValueF, (*f).value)
+		assert.NotNil(g)
+		assert.Equal(expectedValueG, (*g).value)
+		assert.NotNil(h)
+		assert.Equal(expectedValueH, (*h).value)
+		assert.NotNil(i)
+		assert.Equal(expectedValueI, (*i).value)
+		assert.NotNil(j)
+		assert.Equal(expectedValueJ, (*j).value)
+	})
+}
+
+func TestGet11(t *testing.T) {
+	t.Run("returns the expected components", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewDefaultWorld()
+		entity, err := Spawn(world,
+			&componentA{value: expectedValueA}, &componentB{value: expectedValueB}, &componentC{value: expectedValueC},
+			&componentD{value: expectedValueD}, &componentE{value: expectedValueE}, &componentF{value: expectedValueF},
+			&componentG{value: expectedValueG}, &componentH{value: expectedValueH}, &componentI{value: expectedValueI},
+			&componentJ{value: expectedValueJ}, &componentK{value: expectedValueK},
+		)
+		assert.NoError(err)
+
+		a, b, c, d, e, f, g, h, i, j, k, err := Get11[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH, componentI, componentJ, componentK](world, entity)
+		assert.NoError(err)
+		assert.NotNil(a)
+		assert.Equal(expectedValueA, (*a).value)
+		assert.NotNil(b)
+		assert.Equal(expectedValueB, (*b).value)
+		assert.NotNil(c)
+		assert.Equal(expectedValueC, (*c).value)
+		assert.NotNil(d)
+		assert.Equal(expectedValueD, (*d).value)
+		assert.NotNil(e)
+		assert.Equal(expectedValueE, (*e).value)
+		assert.NotNil(f)
+		assert.Equal(expectedValueF, (*f).value)
+		assert.NotNil(g)
+		assert.Equal(expectedValueG, (*g).value)
+		assert.NotNil(h)
+		assert.Equal(expectedValueH, (*h).value)
+		assert.NotNil(i)
+		assert.Equal(expectedValueI, (*i).value)
+		assert.NotNil(j)
+		assert.Equal(expectedValueJ, (*j).value)
+		assert.NotNil(k)
+		assert.Equal(expectedValueK, (*k).value)
+	})
+}
+
+func TestGet12(t *testing.T) {
+	t.Run("returns the expected components", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewDefaultWorld()
+		entity, err := Spawn(world,
+			&componentA{value: expectedValueA}, &componentB{value: expectedValueB}, &componentC{value: expectedValueC},
+			&componentD{value: expectedValueD}, &componentE{value: expectedValueE}, &componentF{value: expectedValueF},
+			&componentG{value: expectedValueG}, &componentH{value: expectedValueH}, &componentI{value: expectedValueI},
+			&componentJ{value: expectedValueJ}, &componentK{value: expectedValueK}, &componentL{value: expectedValueL},
+		)
+		assert.NoError(err)
+
+		a, b, c, d, e, f, g, h, i, j, k, l, err := Get12[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH, componentI, componentJ, componentK, componentL](world, entity)
+		assert.NoError(err)
+		assert.NotNil(a)
+		assert.Equal(expectedValueA, (*a).value)
+		assert.NotNil(b)
+		assert.Equal(expectedValueB, (*b).value)
+		assert.NotNil(c)
+		assert.Equal(expectedValueC, (*c).value)
+		assert.NotNil(d)
+		assert.Equal(expectedValueD, (*d).value)
+		assert.NotNil(e)
+		assert.Equal(expectedValueE, (*e).value)
+		assert.NotNil(f)
+		assert.Equal(expectedValueF, (*f).value)
+		assert.NotNil(g)
+		assert.Equal(expectedValueG, (*g).value)
+		assert.NotNil(h)
+		assert.Equal(expectedValueH, (*h).value)
+		assert.NotNil(i)
+		assert.Equal(expectedValueI, (*i).value)
+		assert.NotNil(j)
+		assert.Equal(expectedValueJ, (*j).value)
+		assert.NotNil(k)
+		assert.Equal(expectedValueK, (*k).value)
+		assert.NotNil(l)
+		assert.Equal(expectedValueL, (*l).value)
+	})
+}
+
+func TestGet13(t *testing.T) {
+	t.Run("returns the expected components", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewDefaultWorld()
+		entity, err := Spawn(world,
+			&componentA{value: expectedValueA}, &componentB{value: expectedValueB}, &componentC{value: expectedValueC},
+			&componentD{value: expectedValueD}, &componentE{value: expectedValueE}, &componentF{value: expectedValueF},
+			&componentG{value: expectedValueG}, &componentH{value: expectedValueH}, &componentI{value: expectedValueI},
+			&componentJ{value: expectedValueJ}, &componentK{value: expectedValueK}, &componentL{value: expectedValueL},
+			&componentM{value: expectedValueM},
+		)
+		assert.NoError(err)
+
+		a, b, c, d, e, f, g, h, i, j, k, l, m, err := Get13[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH, componentI, componentJ, componentK, componentL, componentM](world, entity)
+		assert.NoError(err)
+		assert.NotNil(a)
+		assert.Equal(expectedValueA, (*a).value)
+		assert.NotNil(b)
+		assert.Equal(expectedValueB, (*b).value)
+		assert.NotNil(c)
+		assert.Equal(expectedValueC, (*c).value)
+		assert.NotNil(d)
+		assert.Equal(expectedValueD, (*d).value)
+		assert.NotNil(e)
+		assert.Equal(expectedValueE, (*e).value)
+		assert.NotNil(f)
+		assert.Equal(expectedValueF, (*f).value)
+		assert.NotNil(g)
+		assert.Equal(expectedValueG, (*g).value)
+		assert.NotNil(h)
+		assert.Equal(expectedValueH, (*h).value)
+		assert.NotNil(i)
+		assert.Equal(expectedValueI, (*i).value)
+		assert.NotNil(j)
+		assert.Equal(expectedValueJ, (*j).value)
+		assert.NotNil(k)
+		assert.Equal(expectedValueK, (*k).value)
+		assert.NotNil(l)
+		assert.Equal(expectedValueL, (*l).value)
+		assert.NotNil(m)
+		assert.Equal(expectedValueM, (*m).value)
+	})
+}
+
+func TestGet14(t *testing.T) {
+	t.Run("returns the expected components", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewDefaultWorld()
+		entity, err := Spawn(world,
+			&componentA{value: expectedValueA}, &componentB{value: expectedValueB}, &componentC{value: expectedValueC},
+			&componentD{value: expectedValueD}, &componentE{value: expectedValueE}, &componentF{value: expectedValueF},
+			&componentG{value: expectedValueG}, &componentH{value: expectedValueH}, &componentI{value: expectedValueI},
+			&componentJ{value: expectedValueJ}, &componentK{value: expectedValueK}, &componentL{value: expectedValueL},
+			&componentM{value: expectedValueM}, &componentN{value: expectedValueN},
+		)
+		assert.NoError(err)
+
+		a, b, c, d, e, f, g, h, i, j, k, l, m, n, err := Get14[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH, componentI, componentJ, componentK, componentL, componentM, componentN](world, entity)
+		assert.NoError(err)
+		assert.NotNil(a)
+		assert.Equal(expectedValueA, (*a).value)
+		assert.NotNil(b)
+		assert.Equal(expectedValueB, (*b).value)
+		assert.NotNil(c)
+		assert.Equal(expectedValueC, (*c).value)
+		assert.NotNil(d)
+		assert.Equal(expectedValueD, (*d).value)
+		assert.NotNil(e)
+		assert.Equal(expectedValueE, (*e).value)
+		assert.NotNil(f)
+		assert.Equal(expectedValueF, (*f).value)
+		assert.NotNil(g)
+		assert.Equal(expectedValueG, (*g).value)
+		assert.NotNil(h)
+		assert.Equal(expectedValueH, (*h).value)
+		assert.NotNil(i)
+		assert.Equal(expectedValueI, (*i).value)
+		assert.NotNil(j)
+		assert.Equal(expectedValueJ, (*j).value)
+		assert.NotNil(k)
+		assert.Equal(expectedValueK, (*k).value)
+		assert.NotNil(l)
+		assert.Equal(expectedValueL, (*l).value)
+		assert.NotNil(m)
+		assert.Equal(expectedValueM, (*m).value)
+		assert.NotNil(n)
+		assert.Equal(expectedValueN, (*n).value)
+	})
+}
+
+func TestGet15(t *testing.T) {
+	t.Run("returns the expected components", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewDefaultWorld()
+		entity, err := Spawn(world,
+			&componentA{value: expectedValueA}, &componentB{value: expectedValueB}, &componentC{value: expectedValueC},
+			&componentD{value: expectedValueD}, &componentE{value: expectedValueE}, &componentF{value: expectedValueF},
+			&componentG{value: expectedValueG}, &componentH{value: expectedValueH}, &componentI{value: expectedValueI},
+			&componentJ{value: expectedValueJ}, &componentK{value: expectedValueK}, &componentL{value: expectedValueL},
+			&componentM{value: expectedValueM}, &componentN{value: expectedValueN}, &componentO{value: expectedValueO},
+		)
+		assert.NoError(err)
+
+		a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, err := Get15[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH, componentI, componentJ, componentK, componentL, componentM, componentN, componentO](world, entity)
+		assert.NoError(err)
+		assert.NotNil(a)
+		assert.Equal(expectedValueA, (*a).value)
+		assert.NotNil(b)
+		assert.Equal(expectedValueB, (*b).value)
+		assert.NotNil(c)
+		assert.Equal(expectedValueC, (*c).value)
+		assert.NotNil(d)
+		assert.Equal(expectedValueD, (*d).value)
+		assert.NotNil(e)
+		assert.Equal(expectedValueE, (*e).value)
+		assert.NotNil(f)
+		assert.Equal(expectedValueF, (*f).value)
+		assert.NotNil(g)
+		assert.Equal(expectedValueG, (*g).value)
+		assert.NotNil(h)
+		assert.Equal(expectedValueH, (*h).value)
+		assert.NotNil(i)
+		assert.Equal(expectedValueI, (*i).value)
+		assert.NotNil(j)
+		assert.Equal(expectedValueJ, (*j).value)
+		assert.NotNil(k)
+		assert.Equal(expectedValueK, (*k).value)
+		assert.NotNil(l)
+		assert.Equal(expectedValueL, (*l).value)
+		assert.NotNil(m)
+		assert.Equal(expectedValueM, (*m).value)
+		assert.NotNil(n)
+		assert.Equal(expectedValueN, (*n).value)
+		assert.NotNil(o)
+		assert.Equal(expectedValueO, (*o).value)
+	})
+}
+
+func TestGet16(t *testing.T) {
+	t.Run("returns the expected components", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewDefaultWorld()
+		entity, err := Spawn(world,
+			&componentA{value: expectedValueA}, &componentB{value: expectedValueB}, &componentC{value: expectedValueC},
+			&componentD{value: expectedValueD}, &componentE{value: expectedValueE}, &componentF{value: expectedValueF},
+			&componentG{value: expectedValueG}, &componentH{value: expectedValueH}, &componentI{value: expectedValueI},
+			&componentJ{value: expectedValueJ}, &componentK{value: expectedValueK}, &componentL{value: expectedValueL},
+			&componentM{value: expectedValueM}, &componentN{value: expectedValueN}, &componentO{value: expectedValueO},
+			&componentP{value: expectedValueP},
+		)
+		assert.NoError(err)
+
+		a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err := Get16[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH, componentI, componentJ, componentK, componentL, componentM, componentN, componentO, componentP](world, entity)
+		assert.NoError(err)
+		assert.NotNil(a)
+		assert.Equal(expectedValueA, (*a).value)
+		assert.NotNil(b)
+		assert.Equal(expectedValueB, (*b).value)
+		assert.NotNil(c)
+		assert.Equal(expectedValueC, (*c).value)
+		assert.NotNil(d)
+		assert.Equal(expectedValueD, (*d).value)
+		assert.NotNil(e)
+		assert.Equal(expectedValueE, (*e).value)
+		assert.NotNil(f)
+		assert.Equal(expectedValueF, (*f).value)
+		assert.NotNil(g)
+		assert.Equal(expectedValueG, (*g).value)
+		assert.NotNil(h)
+		assert.Equal(expectedValueH, (*h).value)
+		assert.NotNil(i)
+		assert.Equal(expectedValueI, (*i).value)
+		assert.NotNil(j)
+		assert.Equal(expectedValueJ, (*j).value)
+		assert.NotNil(k)
+		assert.Equal(expectedValueK, (*k).value)
+		assert.NotNil(l)
+		assert.Equal(expectedValueL, (*l).value)
+		assert.NotNil(m)
+		assert.Equal(expectedValueM, (*m).value)
+		assert.NotNil(n)
+		assert.Equal(expectedValueN, (*n).value)
+		assert.NotNil(o)
+		assert.Equal(expectedValueO, (*o).value)
+		assert.NotNil(p)
+		assert.Equal(expectedValueP, (*p).value)
 	})
 }

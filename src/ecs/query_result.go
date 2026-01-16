@@ -74,6 +74,130 @@ type Query8Result[A, B, C, D, E, F, G, H IComponent] struct {
 	componentsH []*H
 	entityIds   []EntityId
 }
+type Query9Result[A, B, C, D, E, F, G, H, I IComponent] struct {
+	componentsA []*A
+	componentsB []*B
+	componentsC []*C
+	componentsD []*D
+	componentsE []*E
+	componentsF []*F
+	componentsG []*G
+	componentsH []*H
+	componentsI []*I
+	entityIds   []EntityId
+}
+type Query10Result[A, B, C, D, E, F, G, H, I, J IComponent] struct {
+	componentsA []*A
+	componentsB []*B
+	componentsC []*C
+	componentsD []*D
+	componentsE []*E
+	componentsF []*F
+	componentsG []*G
+	componentsH []*H
+	componentsI []*I
+	componentsJ []*J
+	entityIds   []EntityId
+}
+type Query11Result[A, B, C, D, E, F, G, H, I, J, K IComponent] struct {
+	componentsA []*A
+	componentsB []*B
+	componentsC []*C
+	componentsD []*D
+	componentsE []*E
+	componentsF []*F
+	componentsG []*G
+	componentsH []*H
+	componentsI []*I
+	componentsJ []*J
+	componentsK []*K
+	entityIds   []EntityId
+}
+type Query12Result[A, B, C, D, E, F, G, H, I, J, K, L IComponent] struct {
+	componentsA []*A
+	componentsB []*B
+	componentsC []*C
+	componentsD []*D
+	componentsE []*E
+	componentsF []*F
+	componentsG []*G
+	componentsH []*H
+	componentsI []*I
+	componentsJ []*J
+	componentsK []*K
+	componentsL []*L
+	entityIds   []EntityId
+}
+type Query13Result[A, B, C, D, E, F, G, H, I, J, K, L, M IComponent] struct {
+	componentsA []*A
+	componentsB []*B
+	componentsC []*C
+	componentsD []*D
+	componentsE []*E
+	componentsF []*F
+	componentsG []*G
+	componentsH []*H
+	componentsI []*I
+	componentsJ []*J
+	componentsK []*K
+	componentsL []*L
+	componentsM []*M
+	entityIds   []EntityId
+}
+type Query14Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N IComponent] struct {
+	componentsA []*A
+	componentsB []*B
+	componentsC []*C
+	componentsD []*D
+	componentsE []*E
+	componentsF []*F
+	componentsG []*G
+	componentsH []*H
+	componentsI []*I
+	componentsJ []*J
+	componentsK []*K
+	componentsL []*L
+	componentsM []*M
+	componentsN []*N
+	entityIds   []EntityId
+}
+type Query15Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O IComponent] struct {
+	componentsA []*A
+	componentsB []*B
+	componentsC []*C
+	componentsD []*D
+	componentsE []*E
+	componentsF []*F
+	componentsG []*G
+	componentsH []*H
+	componentsI []*I
+	componentsJ []*J
+	componentsK []*K
+	componentsL []*L
+	componentsM []*M
+	componentsN []*N
+	componentsO []*O
+	entityIds   []EntityId
+}
+type Query16Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P IComponent] struct {
+	componentsA []*A
+	componentsB []*B
+	componentsC []*C
+	componentsD []*D
+	componentsE []*E
+	componentsF []*F
+	componentsG []*G
+	componentsH []*H
+	componentsI []*I
+	componentsJ []*J
+	componentsK []*K
+	componentsL []*L
+	componentsM []*M
+	componentsN []*N
+	componentsO []*O
+	componentsP []*P
+	entityIds   []EntityId
+}
 
 func (q *Query0Result) Clear() {
 	clear(q.entityIds)
@@ -183,6 +307,238 @@ func (q *Query8Result[A, B, C, D, E, F, G, H]) Clear() {
 	clear(q.entityIds)
 	q.entityIds = q.entityIds[:0]
 }
+func (q *Query9Result[A, B, C, D, E, F, G, H, I]) Clear() {
+	clear(q.componentsA)
+	q.componentsA = q.componentsA[:0]
+	clear(q.componentsB)
+	q.componentsB = q.componentsB[:0]
+	clear(q.componentsC)
+	q.componentsC = q.componentsC[:0]
+	clear(q.componentsD)
+	q.componentsD = q.componentsD[:0]
+	clear(q.componentsE)
+	q.componentsE = q.componentsE[:0]
+	clear(q.componentsF)
+	q.componentsF = q.componentsF[:0]
+	clear(q.componentsG)
+	q.componentsG = q.componentsG[:0]
+	clear(q.componentsH)
+	q.componentsH = q.componentsH[:0]
+	clear(q.componentsI)
+	q.componentsI = q.componentsI[:0]
+	clear(q.entityIds)
+	q.entityIds = q.entityIds[:0]
+}
+func (q *Query10Result[A, B, C, D, E, F, G, H, I, J]) Clear() {
+	clear(q.componentsA)
+	q.componentsA = q.componentsA[:0]
+	clear(q.componentsB)
+	q.componentsB = q.componentsB[:0]
+	clear(q.componentsC)
+	q.componentsC = q.componentsC[:0]
+	clear(q.componentsD)
+	q.componentsD = q.componentsD[:0]
+	clear(q.componentsE)
+	q.componentsE = q.componentsE[:0]
+	clear(q.componentsF)
+	q.componentsF = q.componentsF[:0]
+	clear(q.componentsG)
+	q.componentsG = q.componentsG[:0]
+	clear(q.componentsH)
+	q.componentsH = q.componentsH[:0]
+	clear(q.componentsI)
+	q.componentsI = q.componentsI[:0]
+	clear(q.componentsJ)
+	q.componentsJ = q.componentsJ[:0]
+	clear(q.entityIds)
+	q.entityIds = q.entityIds[:0]
+}
+func (q *Query11Result[A, B, C, D, E, F, G, H, I, J, K]) Clear() {
+	clear(q.componentsA)
+	q.componentsA = q.componentsA[:0]
+	clear(q.componentsB)
+	q.componentsB = q.componentsB[:0]
+	clear(q.componentsC)
+	q.componentsC = q.componentsC[:0]
+	clear(q.componentsD)
+	q.componentsD = q.componentsD[:0]
+	clear(q.componentsE)
+	q.componentsE = q.componentsE[:0]
+	clear(q.componentsF)
+	q.componentsF = q.componentsF[:0]
+	clear(q.componentsG)
+	q.componentsG = q.componentsG[:0]
+	clear(q.componentsH)
+	q.componentsH = q.componentsH[:0]
+	clear(q.componentsI)
+	q.componentsI = q.componentsI[:0]
+	clear(q.componentsJ)
+	q.componentsJ = q.componentsJ[:0]
+	clear(q.componentsK)
+	q.componentsK = q.componentsK[:0]
+	clear(q.entityIds)
+	q.entityIds = q.entityIds[:0]
+}
+func (q *Query12Result[A, B, C, D, E, F, G, H, I, J, K, L]) Clear() {
+	clear(q.componentsA)
+	q.componentsA = q.componentsA[:0]
+	clear(q.componentsB)
+	q.componentsB = q.componentsB[:0]
+	clear(q.componentsC)
+	q.componentsC = q.componentsC[:0]
+	clear(q.componentsD)
+	q.componentsD = q.componentsD[:0]
+	clear(q.componentsE)
+	q.componentsE = q.componentsE[:0]
+	clear(q.componentsF)
+	q.componentsF = q.componentsF[:0]
+	clear(q.componentsG)
+	q.componentsG = q.componentsG[:0]
+	clear(q.componentsH)
+	q.componentsH = q.componentsH[:0]
+	clear(q.componentsI)
+	q.componentsI = q.componentsI[:0]
+	clear(q.componentsJ)
+	q.componentsJ = q.componentsJ[:0]
+	clear(q.componentsK)
+	q.componentsK = q.componentsK[:0]
+	clear(q.componentsL)
+	q.componentsL = q.componentsL[:0]
+	clear(q.entityIds)
+	q.entityIds = q.entityIds[:0]
+}
+func (q *Query13Result[A, B, C, D, E, F, G, H, I, J, K, L, M]) Clear() {
+	clear(q.componentsA)
+	q.componentsA = q.componentsA[:0]
+	clear(q.componentsB)
+	q.componentsB = q.componentsB[:0]
+	clear(q.componentsC)
+	q.componentsC = q.componentsC[:0]
+	clear(q.componentsD)
+	q.componentsD = q.componentsD[:0]
+	clear(q.componentsE)
+	q.componentsE = q.componentsE[:0]
+	clear(q.componentsF)
+	q.componentsF = q.componentsF[:0]
+	clear(q.componentsG)
+	q.componentsG = q.componentsG[:0]
+	clear(q.componentsH)
+	q.componentsH = q.componentsH[:0]
+	clear(q.componentsI)
+	q.componentsI = q.componentsI[:0]
+	clear(q.componentsJ)
+	q.componentsJ = q.componentsJ[:0]
+	clear(q.componentsK)
+	q.componentsK = q.componentsK[:0]
+	clear(q.componentsL)
+	q.componentsL = q.componentsL[:0]
+	clear(q.componentsM)
+	q.componentsM = q.componentsM[:0]
+	clear(q.entityIds)
+	q.entityIds = q.entityIds[:0]
+}
+func (q *Query14Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N]) Clear() {
+	clear(q.componentsA)
+	q.componentsA = q.componentsA[:0]
+	clear(q.componentsB)
+	q.componentsB = q.componentsB[:0]
+	clear(q.componentsC)
+	q.componentsC = q.componentsC[:0]
+	clear(q.componentsD)
+	q.componentsD = q.componentsD[:0]
+	clear(q.componentsE)
+	q.componentsE = q.componentsE[:0]
+	clear(q.componentsF)
+	q.componentsF = q.componentsF[:0]
+	clear(q.componentsG)
+	q.componentsG = q.componentsG[:0]
+	clear(q.componentsH)
+	q.componentsH = q.componentsH[:0]
+	clear(q.componentsI)
+	q.componentsI = q.componentsI[:0]
+	clear(q.componentsJ)
+	q.componentsJ = q.componentsJ[:0]
+	clear(q.componentsK)
+	q.componentsK = q.componentsK[:0]
+	clear(q.componentsL)
+	q.componentsL = q.componentsL[:0]
+	clear(q.componentsM)
+	q.componentsM = q.componentsM[:0]
+	clear(q.componentsN)
+	q.componentsN = q.componentsN[:0]
+	clear(q.entityIds)
+	q.entityIds = q.entityIds[:0]
+}
+func (q *Query15Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]) Clear() {
+	clear(q.componentsA)
+	q.componentsA = q.componentsA[:0]
+	clear(q.componentsB)
+	q.componentsB = q.componentsB[:0]
+	clear(q.componentsC)
+	q.componentsC = q.componentsC[:0]
+	clear(q.componentsD)
+	q.componentsD = q.componentsD[:0]
+	clear(q.componentsE)
+	q.componentsE = q.componentsE[:0]
+	clear(q.componentsF)
+	q.componentsF = q.componentsF[:0]
+	clear(q.componentsG)
+	q.componentsG = q.componentsG[:0]
+	clear(q.componentsH)
+	q.componentsH = q.componentsH[:0]
+	clear(q.componentsI)
+	q.componentsI = q.componentsI[:0]
+	clear(q.componentsJ)
+	q.componentsJ = q.componentsJ[:0]
+	clear(q.componentsK)
+	q.componentsK = q.componentsK[:0]
+	clear(q.componentsL)
+	q.componentsL = q.componentsL[:0]
+	clear(q.componentsM)
+	q.componentsM = q.componentsM[:0]
+	clear(q.componentsN)
+	q.componentsN = q.componentsN[:0]
+	clear(q.componentsO)
+	q.componentsO = q.componentsO[:0]
+	clear(q.entityIds)
+	q.entityIds = q.entityIds[:0]
+}
+func (q *Query16Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]) Clear() {
+	clear(q.componentsA)
+	q.componentsA = q.componentsA[:0]
+	clear(q.componentsB)
+	q.componentsB = q.componentsB[:0]
+	clear(q.componentsC)
+	q.componentsC = q.componentsC[:0]
+	clear(q.componentsD)
+	q.componentsD = q.componentsD[:0]
+	clear(q.componentsE)
+	q.componentsE = q.componentsE[:0]
+	clear(q.componentsF)
+	q.componentsF = q.componentsF[:0]
+	clear(q.componentsG)
+	q.componentsG = q.componentsG[:0]
+	clear(q.componentsH)
+	q.componentsH = q.componentsH[:0]
+	clear(q.componentsI)
+	q.componentsI = q.componentsI[:0]
+	clear(q.componentsJ)
+	q.componentsJ = q.componentsJ[:0]
+	clear(q.componentsK)
+	q.componentsK = q.componentsK[:0]
+	clear(q.componentsL)
+	q.componentsL = q.componentsL[:0]
+	clear(q.componentsM)
+	q.componentsM = q.componentsM[:0]
+	clear(q.componentsN)
+	q.componentsN = q.componentsN[:0]
+	clear(q.componentsO)
+	q.componentsO = q.componentsO[:0]
+	clear(q.componentsP)
+	q.componentsP = q.componentsP[:0]
+	clear(q.entityIds)
+	q.entityIds = q.entityIds[:0]
+}
 
 func (q *Query0Result) NumberOfResult() uint {
 	return uint(len(q.entityIds))
@@ -209,6 +565,30 @@ func (q *Query7Result[A, B, C, D, E, F, G]) NumberOfResult() uint {
 	return uint(len(q.entityIds))
 }
 func (q *Query8Result[A, B, C, D, E, F, G, H]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
+}
+func (q *Query9Result[A, B, C, D, E, F, G, H, I]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
+}
+func (q *Query10Result[A, B, C, D, E, F, G, H, I, J]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
+}
+func (q *Query11Result[A, B, C, D, E, F, G, H, I, J, K]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
+}
+func (q *Query12Result[A, B, C, D, E, F, G, H, I, J, K, L]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
+}
+func (q *Query13Result[A, B, C, D, E, F, G, H, I, J, K, L, M]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
+}
+func (q *Query14Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
+}
+func (q *Query15Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]) NumberOfResult() uint {
+	return uint(len(q.entityIds))
+}
+func (q *Query16Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]) NumberOfResult() uint {
 	return uint(len(q.entityIds))
 }
 
@@ -322,6 +702,86 @@ func (q *Query7Result[A, B, C, D, E, F, G]) Iter(f func(entityId EntityId, a *A,
 func (q *Query8Result[A, B, C, D, E, F, G, H]) Iter(f func(entityId EntityId, a *A, b *B, c *C, d *D, e *E, f *F, g *G, h *H)) {
 	for i := range q.entityIds {
 		f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i])
+	}
+}
+
+// Iter executes function f on each entity that the query returned.
+//
+// During iteration, do not make changes that update the archetype
+// of the entity. This invalidates the component pointers.
+func (q *Query9Result[A, B, C, D, E, F, G, H, I]) Iter(f func(EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I)) {
+	for i := range q.entityIds {
+		f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i])
+	}
+}
+
+// Iter executes function f on each entity that the query returned.
+//
+// During iteration, do not make changes that update the archetype
+// of the entity. This invalidates the component pointers.
+func (q *Query10Result[A, B, C, D, E, F, G, H, I, J]) Iter(f func(EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J)) {
+	for i := range q.entityIds {
+		f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i])
+	}
+}
+
+// Iter executes function f on each entity that the query returned.
+//
+// During iteration, do not make changes that update the archetype
+// of the entity. This invalidates the component pointers.
+func (q *Query11Result[A, B, C, D, E, F, G, H, I, J, K]) Iter(f func(EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, *K)) {
+	for i := range q.entityIds {
+		f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i], q.componentsK[i])
+	}
+}
+
+// Iter executes function f on each entity that the query returned.
+//
+// During iteration, do not make changes that update the archetype
+// of the entity. This invalidates the component pointers.
+func (q *Query12Result[A, B, C, D, E, F, G, H, I, J, K, L]) Iter(f func(EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, *K, *L)) {
+	for i := range q.entityIds {
+		f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i], q.componentsK[i], q.componentsL[i])
+	}
+}
+
+// Iter executes function f on each entity that the query returned.
+//
+// During iteration, do not make changes that update the archetype
+// of the entity. This invalidates the component pointers.
+func (q *Query13Result[A, B, C, D, E, F, G, H, I, J, K, L, M]) Iter(f func(EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, *K, *L, *M)) {
+	for i := range q.entityIds {
+		f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i], q.componentsK[i], q.componentsL[i], q.componentsM[i])
+	}
+}
+
+// Iter executes function f on each entity that the query returned.
+//
+// During iteration, do not make changes that update the archetype
+// of the entity. This invalidates the component pointers.
+func (q *Query14Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N]) Iter(f func(EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, *K, *L, *M, *N)) {
+	for i := range q.entityIds {
+		f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i], q.componentsK[i], q.componentsL[i], q.componentsM[i], q.componentsN[i])
+	}
+}
+
+// Iter executes function f on each entity that the query returned.
+//
+// During iteration, do not make changes that update the archetype
+// of the entity. This invalidates the component pointers.
+func (q *Query15Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]) Iter(f func(EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, *K, *L, *M, *N, *O)) {
+	for i := range q.entityIds {
+		f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i], q.componentsK[i], q.componentsL[i], q.componentsM[i], q.componentsN[i], q.componentsO[i])
+	}
+}
+
+// Iter executes function f on each entity that the query returned.
+//
+// During iteration, do not make changes that update the archetype
+// of the entity. This invalidates the component pointers.
+func (q *Query16Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]) Iter(f func(EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, *K, *L, *M, *N, *O, *P)) {
+	for i := range q.entityIds {
+		f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i], q.componentsK[i], q.componentsL[i], q.componentsM[i], q.componentsN[i], q.componentsO[i], q.componentsP[i])
 	}
 }
 
@@ -457,6 +917,118 @@ func (q *Query8Result[A, B, C, D, E, F, G, H]) IterUntil(f func(entityId EntityI
 	return nil
 }
 
+// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+//
+// During iteration, do not make changes that update the archetype
+// of the entity. This invalidates the component pointers.
+func (q *Query9Result[A, B, C, D, E, F, G, H, I]) IterUntil(f func(EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i]); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+//
+// During iteration, do not make changes that update the archetype
+// of the entity. This invalidates the component pointers.
+func (q *Query10Result[A, B, C, D, E, F, G, H, I, J]) IterUntil(f func(EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i]); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+//
+// During iteration, do not make changes that update the archetype
+// of the entity. This invalidates the component pointers.
+func (q *Query11Result[A, B, C, D, E, F, G, H, I, J, K]) IterUntil(f func(EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, *K) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i], q.componentsK[i]); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+//
+// During iteration, do not make changes that update the archetype
+// of the entity. This invalidates the component pointers.
+func (q *Query12Result[A, B, C, D, E, F, G, H, I, J, K, L]) IterUntil(f func(EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, *K, *L) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i], q.componentsK[i], q.componentsL[i]); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+//
+// During iteration, do not make changes that update the archetype
+// of the entity. This invalidates the component pointers.
+func (q *Query13Result[A, B, C, D, E, F, G, H, I, J, K, L, M]) IterUntil(f func(EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, *K, *L, *M) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i], q.componentsK[i], q.componentsL[i], q.componentsM[i]); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+//
+// During iteration, do not make changes that update the archetype
+// of the entity. This invalidates the component pointers.
+func (q *Query14Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N]) IterUntil(f func(EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, *K, *L, *M, *N) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i], q.componentsK[i], q.componentsL[i], q.componentsM[i], q.componentsN[i]); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+//
+// During iteration, do not make changes that update the archetype
+// of the entity. This invalidates the component pointers.
+func (q *Query15Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]) IterUntil(f func(EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, *K, *L, *M, *N, *O) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i], q.componentsK[i], q.componentsL[i], q.componentsM[i], q.componentsN[i], q.componentsO[i]); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+//
+// During iteration, do not make changes that update the archetype
+// of the entity. This invalidates the component pointers.
+func (q *Query16Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]) IterUntil(f func(EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, *K, *L, *M, *N, *O, *P) error) error {
+	for i := range q.entityIds {
+		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i], q.componentsK[i], q.componentsL[i], q.componentsM[i], q.componentsN[i], q.componentsO[i], q.componentsP[i]); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 // Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
 func (q *Query0Result) Single() (EntityId, error) {
 	if q.NumberOfResult() != 1 {
@@ -536,4 +1108,68 @@ func (q *Query8Result[A, B, C, D, E, F, G, H]) Single() (EntityId, *A, *B, *C, *
 	}
 
 	return q.entityIds[0], q.componentsA[0], q.componentsB[0], q.componentsC[0], q.componentsD[0], q.componentsE[0], q.componentsF[0], q.componentsG[0], q.componentsH[0], nil
+}
+
+// Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
+func (q *Query9Result[A, B, C, D, E, F, G, H, I]) Single() (EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, error) {
+	if q.NumberOfResult() != 1 {
+		return nonExistingEntity, nil, nil, nil, nil, nil, nil, nil, nil, nil, fmt.Errorf("%w: expected 1, got %d", ErrUnexpectedNumberOfQueryResults, q.NumberOfResult())
+	}
+	return q.entityIds[0], q.componentsA[0], q.componentsB[0], q.componentsC[0], q.componentsD[0], q.componentsE[0], q.componentsF[0], q.componentsG[0], q.componentsH[0], q.componentsI[0], nil
+}
+
+// Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
+func (q *Query10Result[A, B, C, D, E, F, G, H, I, J]) Single() (EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, error) {
+	if q.NumberOfResult() != 1 {
+		return nonExistingEntity, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, fmt.Errorf("%w: expected 1, got %d", ErrUnexpectedNumberOfQueryResults, q.NumberOfResult())
+	}
+	return q.entityIds[0], q.componentsA[0], q.componentsB[0], q.componentsC[0], q.componentsD[0], q.componentsE[0], q.componentsF[0], q.componentsG[0], q.componentsH[0], q.componentsI[0], q.componentsJ[0], nil
+}
+
+// Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
+func (q *Query11Result[A, B, C, D, E, F, G, H, I, J, K]) Single() (EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, *K, error) {
+	if q.NumberOfResult() != 1 {
+		return nonExistingEntity, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, fmt.Errorf("%w: expected 1, got %d", ErrUnexpectedNumberOfQueryResults, q.NumberOfResult())
+	}
+	return q.entityIds[0], q.componentsA[0], q.componentsB[0], q.componentsC[0], q.componentsD[0], q.componentsE[0], q.componentsF[0], q.componentsG[0], q.componentsH[0], q.componentsI[0], q.componentsJ[0], q.componentsK[0], nil
+}
+
+// Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
+func (q *Query12Result[A, B, C, D, E, F, G, H, I, J, K, L]) Single() (EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, *K, *L, error) {
+	if q.NumberOfResult() != 1 {
+		return nonExistingEntity, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, fmt.Errorf("%w: expected 1, got %d", ErrUnexpectedNumberOfQueryResults, q.NumberOfResult())
+	}
+	return q.entityIds[0], q.componentsA[0], q.componentsB[0], q.componentsC[0], q.componentsD[0], q.componentsE[0], q.componentsF[0], q.componentsG[0], q.componentsH[0], q.componentsI[0], q.componentsJ[0], q.componentsK[0], q.componentsL[0], nil
+}
+
+// Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
+func (q *Query13Result[A, B, C, D, E, F, G, H, I, J, K, L, M]) Single() (EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, *K, *L, *M, error) {
+	if q.NumberOfResult() != 1 {
+		return nonExistingEntity, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, fmt.Errorf("%w: expected 1, got %d", ErrUnexpectedNumberOfQueryResults, q.NumberOfResult())
+	}
+	return q.entityIds[0], q.componentsA[0], q.componentsB[0], q.componentsC[0], q.componentsD[0], q.componentsE[0], q.componentsF[0], q.componentsG[0], q.componentsH[0], q.componentsI[0], q.componentsJ[0], q.componentsK[0], q.componentsL[0], q.componentsM[0], nil
+}
+
+// Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
+func (q *Query14Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N]) Single() (EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, *K, *L, *M, *N, error) {
+	if q.NumberOfResult() != 1 {
+		return nonExistingEntity, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, fmt.Errorf("%w: expected 1, got %d", ErrUnexpectedNumberOfQueryResults, q.NumberOfResult())
+	}
+	return q.entityIds[0], q.componentsA[0], q.componentsB[0], q.componentsC[0], q.componentsD[0], q.componentsE[0], q.componentsF[0], q.componentsG[0], q.componentsH[0], q.componentsI[0], q.componentsJ[0], q.componentsK[0], q.componentsL[0], q.componentsM[0], q.componentsN[0], nil
+}
+
+// Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
+func (q *Query15Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]) Single() (EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, *K, *L, *M, *N, *O, error) {
+	if q.NumberOfResult() != 1 {
+		return nonExistingEntity, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, fmt.Errorf("%w: expected 1, got %d", ErrUnexpectedNumberOfQueryResults, q.NumberOfResult())
+	}
+	return q.entityIds[0], q.componentsA[0], q.componentsB[0], q.componentsC[0], q.componentsD[0], q.componentsE[0], q.componentsF[0], q.componentsG[0], q.componentsH[0], q.componentsI[0], q.componentsJ[0], q.componentsK[0], q.componentsL[0], q.componentsM[0], q.componentsN[0], q.componentsO[0], nil
+}
+
+// Single returns the only query result, or an [ErrUnexpectedNumberOfQueryResults] error if there is not exactly 1 result.
+func (q *Query16Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]) Single() (EntityId, *A, *B, *C, *D, *E, *F, *G, *H, *I, *J, *K, *L, *M, *N, *O, *P, error) {
+	if q.NumberOfResult() != 1 {
+		return nonExistingEntity, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, fmt.Errorf("%w: expected 1, got %d", ErrUnexpectedNumberOfQueryResults, q.NumberOfResult())
+	}
+	return q.entityIds[0], q.componentsA[0], q.componentsB[0], q.componentsC[0], q.componentsD[0], q.componentsE[0], q.componentsF[0], q.componentsG[0], q.componentsH[0], q.componentsI[0], q.componentsJ[0], q.componentsK[0], q.componentsL[0], q.componentsM[0], q.componentsN[0], q.componentsO[0], q.componentsP[0], nil
 }
