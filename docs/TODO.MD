@@ -1,8 +1,8 @@
 # ECS
 **Must have**
 - [feature] Observers
-- [feature] Insert components by value
-- [feature] Define optional component by `Query[Optional[C], ...]` instead of `Query[C, Optional[C]]`.
+- [feature] Define optional component by `Query[Optional[C], ...]` instead of `Query[C, Optional[C]]`
+- [feature] Query components by pointer or copy by doing `Query[C, ...]` or `Query[*C, ...]`. This is currently possible by adding a query option `ReadOnly1[C]` but this is not obvious when reading a query and not user friendly.
 
 **Nice-to-have**
 - [performance] Generational entities. EntityId would become {id: uint, generation: uint}. World its entityList would becomes a slice instead of a map, and entityId would correlate with the slice index. This provides faster lookups. We'd need an deadEntityPool to choose from when creating a new EntityId which would increment its generation and repurpose it.
@@ -13,6 +13,8 @@
     3. Each query stores a list of all involved components (queried + from filters) and gets a union of archetypes from `world.archetypeStorage.componentIdToArchetypes`. We could initially do this every Exec call and add cache it in a later step (using dirty flags for archetypes when new archetypes are created).
 - [performance] Cache Queries
 - [feature] Relationships (like parent/child)
+- [performance|feature] Function to insert multiple at a time so that the component ID conversions and such don't have to be done for each spawn.
+- [performance|feature] Spawner that caches component ID's and required components. This allows quicker spawning.
 - [tests] More realistic ECS benchmarks. Check out [this benchmarks page for Go ECS's](https://github.com/mlange-42/go-ecs-benchmarks)
 
 # Project

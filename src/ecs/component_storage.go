@@ -49,8 +49,6 @@ func (storage *componentStorage) increaseCapacity(extraCapacity uint) {
 }
 
 // insert returns the index at which the component was inserted.
-//
-// Returns an ErrComponentIsNotAPointer when component is not passed as a reference (e.g. componentA{}, instead of &componentA{})
 func (storage *componentStorage) insert(world *World, component IComponent) (uint, error) {
 	insertIndex := storage.nextItemIndex
 
@@ -73,7 +71,6 @@ func (storage *componentStorage) insert(world *World, component IComponent) (uin
 	return insertIndex, nil
 }
 
-// set returns an ErrComponentIsNotAPointer when component is not passed as a pointer (e.g. componentA{}, instead of &componentA{})
 func (storage *componentStorage) set(component IComponent, index uint) error {
 	if index >= storage.capacity {
 		return fmt.Errorf("%w: %d", ErrComponentStorageIndexOutOfBounds, index)
@@ -81,8 +78,10 @@ func (storage *componentStorage) set(component IComponent, index uint) error {
 
 	componentValue := reflect.ValueOf(component)
 
-	if componentValue.Kind() != reflect.Ptr {
-		return fmt.Errorf("%w: component %s must be a pointer", ErrComponentIsNotAPointer, ComponentDebugStringOf(component))
+	if componentValue.Kind() != reflect.Pointer {
+		ptrValue := reflect.New(componentValue.Type())
+		ptrValue.Elem().Set(componentValue)
+		componentValue = ptrValue
 	}
 
 	componentPointer := componentValue.UnsafePointer()
@@ -99,8 +98,6 @@ func (storage *componentStorage) set(component IComponent, index uint) error {
 }
 
 // insertRaw returns the index at which the component was inserted.
-//
-// Returns an ErrComponentIsNotAPointer when component is not passed as a reference (e.g. componentA{}, instead of &componentA{})
 func (storage *componentStorage) insertRaw(world *World, componentPointer unsafe.Pointer) (uint, error) {
 	insertIndex := storage.nextItemIndex
 

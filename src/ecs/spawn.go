@@ -13,8 +13,6 @@ import (
 // Can return the following errors:
 //   - Returns an ErrComponentIsNil error when any of the given components is nil
 //   - Returns an ErrDuplicateComponent error when any of the given components are of the same type.
-//   - Returns an ErrComponentIsNotAPointer error when any of the given component or their required components are not passed as
-//     a reference.
 func Spawn(world *World, components ...IComponent) (EntityId, error) {
 	for i, component := range components {
 		if component == nil {
@@ -35,6 +33,20 @@ func Spawn(world *World, components ...IComponent) (EntityId, error) {
 	requiredComponents := getAllRequiredComponents(&componentIds, components, world)
 	components = append(components, requiredComponents...)
 
+	// collect reflect.Value's. If any component is not a pointer, convert it to a pointer.
+	componentValues := make([]reflect.Value, len(components))
+	for i, component := range components {
+		componentValue := reflect.ValueOf(component)
+		if componentValue.Kind() != reflect.Pointer {
+			ptrValue := reflect.New(componentValue.Type())
+			ptrValue.Elem().Set(componentValue)
+			components[i] = ptrValue.Interface().(IComponent)
+			componentValue = ptrValue
+		}
+
+		componentValues[i] = componentValue
+	}
+
 	// spawn components
 	entityId := world.generateEntityId()
 
@@ -43,16 +55,6 @@ func Spawn(world *World, components ...IComponent) (EntityId, error) {
 	archetype, err := world.archetypeStorage.getArchetype(world, componentIds)
 	if err != nil {
 		return nonExistingEntity, err
-	}
-
-	componentValues := make([]reflect.Value, len(components))
-	for i, component := range components {
-		componentValue := reflect.ValueOf(component)
-		if componentValue.Kind() != reflect.Pointer {
-			return nonExistingEntity, fmt.Errorf("%w: %s", ErrComponentIsNotAPointer, ComponentDebugStringOf(component))
-		}
-
-		componentValues[i] = componentValue
 	}
 
 	var row uint

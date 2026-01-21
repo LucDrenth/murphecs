@@ -14,8 +14,6 @@ import (
 //   - Returns an ErrDuplicateComponent error when any of the given components are of the same type.
 //   - Returns an ErrComponentAlreadyPresent error if any of the components is already present while still inserting
 //     the components that are not yet present.
-//   - Returns an ErrComponentIsNotAPointer error if any of the given components, or their required components, are not
-//     passed as a reference (e.g. componentA{} instead of &componentA{})
 //   - Returns an ErrInvalidComponentStorageCapacity if the component storage capacity, that is decided through World
 //     configs, is not valid
 func Insert(world *World, entity EntityId, components ...IComponent) (resultErr error) {
@@ -36,6 +34,7 @@ func Insert(world *World, entity EntityId, components ...IComponent) (resultErr 
 
 	componentIds := toComponentIds(components, world)
 
+	// check for duplicates
 	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(componentIds)
 	if duplicate != nil {
 		debugType := ComponentDebugStringOf(components[duplicateIndexA])
@@ -132,8 +131,6 @@ func Insert(world *World, entity EntityId, components ...IComponent) (resultErr 
 // Can return the following errors:
 //   - Returns an ErrEntityNotFound error when the given entity does not exist
 //   - Returns an ErrDuplicateComponent error when any of the given components are of the same type.
-//   - Returns an ErrComponentIsNotAPointer error if any of the given components, or their required components, are not
-//     passed as a reference (e.g. componentA{} instead of &componentA{})
 //   - Returns an ErrInvalidComponentStorageCapacity if the component storage capacity, that is decided through World
 //     configs, is not valid
 func InsertOrOverwrite(world *World, entity EntityId, components ...IComponent) (resultErr error) {

@@ -25,28 +25,26 @@ import (
 )
 
 type Position struct {
-	X float64
-	Y float64
-
 	ecs.Component
+
+	X, Y float64
 }
 
 type Velocity struct {
-	X float64
-	Y float64
-
 	ecs.Component
+
+	X, Y float64
 }
 
 func main() {
-	world := ecs.DefaultWorld()
+	world := ecs.NewDefaultWorld()
 	fmt.Printf("Hello %T! \n", world)
 
 	for range 3 {
 		// Create a new Entity with a Position and a Velocity component
 		ecs.Spawn(world,
-			&Position{X: rand.Float64() * 100, Y: rand.Float64() * 100},
-			&Velocity{X: rand.NormFloat64(), Y: rand.NormFloat64()},
+			Position{X: rand.Float64() * 100, Y: rand.Float64() * 100},
+			Velocity{X: rand.NormFloat64(), Y: rand.NormFloat64()},
 		)
 	}
 

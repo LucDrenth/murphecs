@@ -22,33 +22,33 @@ func TestSpawn(t *testing.T) {
 		assert.Equal(0, world.CountComponents())
 	})
 
-	t.Run("error when passing component by value", func(t *testing.T) {
+	t.Run("succeeds when passing component by value", func(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
 		entity, err := Spawn(world, componentA{})
-		assert.ErrorIs(err, ErrComponentIsNotAPointer)
-		assert.Equal(nonExistingEntity, entity)
+		assert.NoError(err)
+		assert.NotEqual(nonExistingEntity, entity)
 
-		assert.Equal(0, world.CountEntities())
-		assert.Equal(0, world.CountComponents())
+		assert.Equal(1, world.CountEntities())
+		assert.Equal(1, world.CountComponents())
 	})
 
-	t.Run("error when passing 1 component correctly and passing component by value", func(t *testing.T) {
+	t.Run("success when passing 1 component by pointer and passing 1 component by value", func(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
 		entity, err := Spawn(world, componentA{}, &componentB{})
-		assert.ErrorIs(err, ErrComponentIsNotAPointer)
-		assert.Equal(nonExistingEntity, entity)
+		assert.NoError(err)
+		assert.NotEqual(nonExistingEntity, entity)
 
 		// retry with different component order
 		entity, err = Spawn(world, &componentA{}, componentB{})
-		assert.ErrorIs(err, ErrComponentIsNotAPointer)
-		assert.Equal(nonExistingEntity, entity)
+		assert.NoError(err)
+		assert.NotEqual(nonExistingEntity, entity)
 
-		assert.Equal(0, world.CountEntities())
-		assert.Equal(0, world.CountComponents())
+		assert.Equal(2, world.CountEntities())
+		assert.Equal(4, world.CountComponents())
 	})
 
 	t.Run("returns error if there are duplicate components", func(t *testing.T) {
@@ -104,7 +104,10 @@ type requiredComponentB struct{ Component }
 type withRequiredComponents struct{ Component }
 
 func (a withRequiredComponents) RequiredComponents() []IComponent {
-	return []IComponent{&requiredComponentA{}, &requiredComponentB{}}
+	return []IComponent{
+		requiredComponentA{},
+		&requiredComponentB{},
+	}
 }
 
 func TestSpawnWithRequiredComponents(t *testing.T) {

@@ -8,31 +8,59 @@ import (
 )
 
 func BenchmarkSpawn(b *testing.B) {
-	b.Run("VariadicOneComponent", func(b *testing.B) {
+	b.Run("VariadicOneComponent-ByReference", func(b *testing.B) {
 		for b.Loop() {
 			world := ecs.NewDefaultWorld()
 			ecs.Spawn(world, &emptyComponentA{})
 		}
 	})
 
-	b.Run("VariadicTwoComponents", func(b *testing.B) {
+	b.Run("VariadicOneComponent-ByValue", func(b *testing.B) {
+		for b.Loop() {
+			world := ecs.NewDefaultWorld()
+			ecs.Spawn(world, emptyComponentA{})
+		}
+	})
+
+	b.Run("VariadicTwoComponents-ByReference", func(b *testing.B) {
 		for b.Loop() {
 			world := ecs.NewDefaultWorld()
 			ecs.Spawn(world, &emptyComponentA{}, &emptyComponentB{})
 		}
 	})
 
-	b.Run("VariadicThreeComponents", func(b *testing.B) {
+	b.Run("VariadicTwoComponents-ByValue", func(b *testing.B) {
+		for b.Loop() {
+			world := ecs.NewDefaultWorld()
+			ecs.Spawn(world, emptyComponentA{}, emptyComponentB{})
+		}
+	})
+
+	b.Run("VariadicThreeComponents-ByReference", func(b *testing.B) {
 		for b.Loop() {
 			world := ecs.NewDefaultWorld()
 			ecs.Spawn(world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{})
 		}
 	})
 
-	b.Run("VariadicFourComponents", func(b *testing.B) {
+	b.Run("VariadicThreeComponents-ByValue", func(b *testing.B) {
+		for b.Loop() {
+			world := ecs.NewDefaultWorld()
+			ecs.Spawn(world, emptyComponentA{}, emptyComponentB{}, emptyComponentC{})
+		}
+	})
+
+	b.Run("VariadicFourComponents-ByReference", func(b *testing.B) {
 		for b.Loop() {
 			world := ecs.NewDefaultWorld()
 			ecs.Spawn(world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+		}
+	})
+
+	b.Run("VariadicFourComponents-ByValue", func(b *testing.B) {
+		for b.Loop() {
+			world := ecs.NewDefaultWorld()
+			ecs.Spawn(world, emptyComponentA{}, emptyComponentB{}, emptyComponentC{}, emptyComponentD{})
 		}
 	})
 }
@@ -51,7 +79,7 @@ func BenchmarkInsert(b *testing.B) {
 			return world
 		}
 
-		b.Run(fmt.Sprintf("OneComponent-Size-%d", size), func(b *testing.B) {
+		b.Run(fmt.Sprintf("OneComponent-ByReference-Size-%d", size), func(b *testing.B) {
 			world := setupWorld()
 
 			for b.Loop() {
@@ -60,7 +88,16 @@ func BenchmarkInsert(b *testing.B) {
 			}
 		})
 
-		b.Run(fmt.Sprintf("TwoComponent-Size-%d", size), func(b *testing.B) {
+		b.Run(fmt.Sprintf("OneComponent-ByValue-Size-%d", size), func(b *testing.B) {
+			world := setupWorld()
+
+			for b.Loop() {
+				entity, _ := ecs.Spawn(world)
+				ecs.Insert(world, entity, emptyComponentA{})
+			}
+		})
+
+		b.Run(fmt.Sprintf("TwoComponent-ByReference-Size-%d", size), func(b *testing.B) {
 			world := setupWorld()
 
 			for b.Loop() {
@@ -69,7 +106,16 @@ func BenchmarkInsert(b *testing.B) {
 			}
 		})
 
-		b.Run(fmt.Sprintf("ThreeComponent-Size-%d", size), func(b *testing.B) {
+		b.Run(fmt.Sprintf("TwoComponent-ByValue-Size-%d", size), func(b *testing.B) {
+			world := setupWorld()
+
+			for b.Loop() {
+				entity, _ := ecs.Spawn(world)
+				ecs.Insert(world, entity, emptyComponentA{}, emptyComponentB{})
+			}
+		})
+
+		b.Run(fmt.Sprintf("ThreeComponent-ByReference-Size-%d", size), func(b *testing.B) {
 			world := setupWorld()
 
 			for b.Loop() {
@@ -78,12 +124,30 @@ func BenchmarkInsert(b *testing.B) {
 			}
 		})
 
-		b.Run(fmt.Sprintf("FourComponent-Size-%d", size), func(b *testing.B) {
+		b.Run(fmt.Sprintf("ThreeComponent-ByValue-Size-%d", size), func(b *testing.B) {
+			world := setupWorld()
+
+			for b.Loop() {
+				entity, _ := ecs.Spawn(world)
+				ecs.Insert(world, entity, emptyComponentA{}, emptyComponentB{}, emptyComponentC{})
+			}
+		})
+
+		b.Run(fmt.Sprintf("FourComponent-ByReference-Size-%d", size), func(b *testing.B) {
 			world := setupWorld()
 
 			for b.Loop() {
 				entity, _ := ecs.Spawn(world)
 				ecs.Insert(world, entity, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
+			}
+		})
+
+		b.Run(fmt.Sprintf("FourComponent-ByValue-Size-%d", size), func(b *testing.B) {
+			world := setupWorld()
+
+			for b.Loop() {
+				entity, _ := ecs.Spawn(world)
+				ecs.Insert(world, entity, emptyComponentA{}, emptyComponentB{}, emptyComponentC{}, emptyComponentD{})
 			}
 		})
 	}

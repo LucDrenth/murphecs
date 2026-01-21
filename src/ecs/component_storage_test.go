@@ -51,7 +51,7 @@ func TestGetComponentStoragePointer(t *testing.T) {
 func TestComponentStorageInsert(t *testing.T) {
 	type componentA struct{ Component }
 
-	t.Run("fails when component is not a pointer", func(t *testing.T) {
+	t.Run("succeeds when component is not a pointer", func(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
@@ -59,7 +59,7 @@ func TestComponentStorageInsert(t *testing.T) {
 		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](world))
 		assert.NoError(err)
 		_, err = componentStorage.insert(world, componentA{})
-		assert.ErrorIs(err, ErrComponentIsNotAPointer)
+		assert.NoError(err)
 	})
 
 	t.Run("successfully inserts when there is enough capacity", func(t *testing.T) {

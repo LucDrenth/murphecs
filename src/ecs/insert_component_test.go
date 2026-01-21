@@ -9,12 +9,12 @@ import (
 type testInsertComponentA struct{ Component }
 type testInsertComponentB struct{ Component }
 type testInsertComponentC struct{ Component }
-type testInsertComponentWithFaultyRequiredComponent struct{ Component }
 type testInsertComponentD struct{ Component }
 
 func (c testInsertComponentB) RequiredComponents() []IComponent {
 	return []IComponent{
 		&testInsertComponentA{},
+		testInsertComponentD{},
 	}
 }
 
@@ -24,18 +24,10 @@ func (c testInsertComponentC) RequiredComponents() []IComponent {
 	}
 }
 
-func (c testInsertComponentWithFaultyRequiredComponent) RequiredComponents() []IComponent {
-	return []IComponent{
-		testInsertComponentD{}, // not passed by reference, should result in error
-		&testInsertComponentA{},
-	}
-}
-
 func TestInsert(t *testing.T) {
 	type componentA struct{ Component }
 	type componentB struct{ Component }
 	type componentC struct{ Component }
-	type componentD struct{ Component }
 
 	t.Run("no error when passing an empty list of components", func(t *testing.T) {
 		assert := assert.New(t)
@@ -128,19 +120,6 @@ func TestInsert(t *testing.T) {
 		assert.Equal(3, world.CountComponents())
 	})
 
-	t.Run("if any component is not passed by reference, still inserts the other components that are passed by reference", func(t *testing.T) {
-		assert := assert.New(t)
-
-		world := NewDefaultWorld()
-		entity, err := Spawn(world, &componentA{})
-		assert.NoError(err)
-
-		err = Insert(world, entity, &componentB{}, componentC{}, &componentD{})
-		assert.ErrorIs(err, ErrComponentIsNotAPointer)
-
-		assert.Equal(3, world.CountComponents())
-	})
-
 	t.Run("correctly inserts the components, and only to the given entity", func(t *testing.T) {
 		assert := assert.New(t)
 
@@ -173,20 +152,7 @@ func TestInsert(t *testing.T) {
 		err = Insert(world, entity, &testInsertComponentC{})
 		assert.NoError(err)
 
-		assert.Equal(3, world.CountComponents())
-	})
-
-	t.Run("returns an error if any of the required components is not passed by reference, while still inserting the correctly passed required components", func(t *testing.T) {
-		assert := assert.New(t)
-
-		world := NewDefaultWorld()
-		entity, err := Spawn(world)
-		assert.NoError(err)
-
-		err = Insert(world, entity, &testInsertComponentWithFaultyRequiredComponent{})
-		assert.ErrorIs(err, ErrComponentIsNotAPointer)
-
-		assert.Equal(2, world.CountComponents())
+		assert.Equal(4, world.CountComponents())
 	})
 }
 
@@ -249,7 +215,7 @@ func TestInsertOrOverwrite(t *testing.T) {
 		assert.Equal(3, world.CountComponents())
 	})
 
-	t.Run("if any component is not passed by reference, still inserts the other components that are passed by reference", func(t *testing.T) {
+	t.Run("succeeds if some of the components are not passed by reference", func(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
@@ -257,9 +223,9 @@ func TestInsertOrOverwrite(t *testing.T) {
 		assert.NoError(err)
 
 		err = InsertOrOverwrite(world, entity, &componentB{}, componentC{}, &componentD{})
-		assert.ErrorIs(err, ErrComponentIsNotAPointer)
+		assert.NoError(err)
 
-		assert.Equal(3, world.CountComponents())
+		assert.Equal(4, world.CountComponents())
 	})
 
 	t.Run("correctly inserts the components, and only to the given entity", func(t *testing.T) {
@@ -294,19 +260,6 @@ func TestInsertOrOverwrite(t *testing.T) {
 		err = InsertOrOverwrite(world, entity, &testInsertComponentC{})
 		assert.NoError(err)
 
-		assert.Equal(3, world.CountComponents())
-	})
-
-	t.Run("returns an error if any of the required components is not passed by reference, while still inserting the correctly passed required components", func(t *testing.T) {
-		assert := assert.New(t)
-
-		world := NewDefaultWorld()
-		entity, err := Spawn(world)
-		assert.NoError(err)
-
-		err = InsertOrOverwrite(world, entity, &testInsertComponentWithFaultyRequiredComponent{})
-		assert.ErrorIs(err, ErrComponentIsNotAPointer)
-
-		assert.Equal(2, world.CountComponents())
+		assert.Equal(4, world.CountComponents())
 	})
 }
