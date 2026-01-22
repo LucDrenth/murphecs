@@ -2,9 +2,8 @@ package ecs
 
 import (
 	"fmt"
+	"reflect"
 	"slices"
-
-	"github.com/lucdrenth/murphecs/src/utils"
 )
 
 type Query interface {
@@ -37,6 +36,18 @@ type Query interface {
 	TargetWorld() *WorldId
 
 	getOptions() *CombinedQueryOptions
+}
+
+type queryComponentInfo struct {
+	id        ComponentId
+	isPointer bool
+}
+
+func queryComponentInfoFor[T IComponent](world *World) queryComponentInfo {
+	return queryComponentInfo{
+		id:        ComponentIdFor[T](world),
+		isPointer: reflect.TypeFor[T]().Kind() == reflect.Pointer,
+	}
 }
 
 type queryOptions struct {
@@ -79,8 +90,6 @@ type Query0[_ QueryOption] struct {
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1] to specify if components are read-only. Marking components as
-//     read-only allows systems with queries as system-params to be run in parallel with other systems.
 //   - use [NoOptional], [Optional1] to mark component as optional. When a component is optional, entities do not
 //     have to have that component in order for it to return a result, as long as it has the other (not-optional)
 //     components.
@@ -92,7 +101,7 @@ type Query1[ComponentA IComponent, _ QueryOption] struct {
 	Query1Result[ComponentA]
 	queryOptions
 
-	componentIdA ComponentId
+	componentInfoA queryComponentInfo
 }
 
 // Query2 queries 2 components.
@@ -100,8 +109,6 @@ type Query1[ComponentA IComponent, _ QueryOption] struct {
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] to specify if components are read-only. Marking
-//     components as read-only allows systems with queries as system-params to be run in parallel with other systems.
 //   - use [NoOptional], [Optional1], [Optional2] to mark components as optional. When a component is optional, entities
 //     do not have to have that component in order for it to return a result, as long as it has the other (not-optional)
 //     components.
@@ -113,8 +120,8 @@ type Query2[ComponentA, ComponentB IComponent, _ QueryOption] struct {
 	Query2Result[ComponentA, ComponentB]
 	queryOptions
 
-	componentIdA ComponentId
-	componentIdB ComponentId
+	componentInfoA queryComponentInfo
+	componentInfoB queryComponentInfo
 }
 
 // Query3 queries 3 components.
@@ -122,9 +129,6 @@ type Query2[ComponentA, ComponentB IComponent, _ QueryOption] struct {
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
-//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
-//     parallel with other systems.
 //   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
 //     component is optional, entities do not have to have that component in order for it to return a result,
 //     as long as it has the other (not-optional) components.
@@ -136,9 +140,9 @@ type Query3[ComponentA, ComponentB, ComponentC IComponent, _ QueryOption] struct
 	Query3Result[ComponentA, ComponentB, ComponentC]
 	queryOptions
 
-	componentIdA ComponentId
-	componentIdB ComponentId
-	componentIdC ComponentId
+	componentInfoA queryComponentInfo
+	componentInfoB queryComponentInfo
+	componentInfoC queryComponentInfo
 }
 
 // Query4 queries 4 components.
@@ -146,9 +150,6 @@ type Query3[ComponentA, ComponentB, ComponentC IComponent, _ QueryOption] struct
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
-//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
-//     parallel with other systems.
 //   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
 //     component is optional, entities do not have to have that component in order for it to return a result,
 //     as long as it has the other (not-optional) components.
@@ -160,10 +161,10 @@ type Query4[ComponentA, ComponentB, ComponentC, ComponentD IComponent, _ QueryOp
 	Query4Result[ComponentA, ComponentB, ComponentC, ComponentD]
 	queryOptions
 
-	componentIdA ComponentId
-	componentIdB ComponentId
-	componentIdC ComponentId
-	componentIdD ComponentId
+	componentInfoA queryComponentInfo
+	componentInfoB queryComponentInfo
+	componentInfoC queryComponentInfo
+	componentInfoD queryComponentInfo
 }
 
 // Query5 queries 5 components.
@@ -171,9 +172,6 @@ type Query4[ComponentA, ComponentB, ComponentC, ComponentD IComponent, _ QueryOp
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
-//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
-//     parallel with other systems.
 //   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
 //     component is optional, entities do not have to have that component in order for it to return a result,
 //     as long as it has the other (not-optional) components.
@@ -185,11 +183,11 @@ type Query5[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE IComponen
 	Query5Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE]
 	queryOptions
 
-	componentIdA ComponentId
-	componentIdB ComponentId
-	componentIdC ComponentId
-	componentIdD ComponentId
-	componentIdE ComponentId
+	componentInfoA queryComponentInfo
+	componentInfoB queryComponentInfo
+	componentInfoC queryComponentInfo
+	componentInfoD queryComponentInfo
+	componentInfoE queryComponentInfo
 }
 
 // Query6 queries 6 components.
@@ -197,9 +195,6 @@ type Query5[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE IComponen
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
-//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
-//     parallel with other systems.
 //   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
 //     component is optional, entities do not have to have that component in order for it to return a result,
 //     as long as it has the other (not-optional) components.
@@ -211,12 +206,12 @@ type Query6[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Componen
 	Query6Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF]
 	queryOptions
 
-	componentIdA ComponentId
-	componentIdB ComponentId
-	componentIdC ComponentId
-	componentIdD ComponentId
-	componentIdE ComponentId
-	componentIdF ComponentId
+	componentInfoA queryComponentInfo
+	componentInfoB queryComponentInfo
+	componentInfoC queryComponentInfo
+	componentInfoD queryComponentInfo
+	componentInfoE queryComponentInfo
+	componentInfoF queryComponentInfo
 }
 
 // Query7 queries 7 components.
@@ -224,9 +219,6 @@ type Query6[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Componen
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
-//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
-//     parallel with other systems.
 //   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
 //     component is optional, entities do not have to have that component in order for it to return a result,
 //     as long as it has the other (not-optional) components.
@@ -238,13 +230,13 @@ type Query7[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Componen
 	Query7Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG]
 	queryOptions
 
-	componentIdA ComponentId
-	componentIdB ComponentId
-	componentIdC ComponentId
-	componentIdD ComponentId
-	componentIdE ComponentId
-	componentIdF ComponentId
-	componentIdG ComponentId
+	componentInfoA queryComponentInfo
+	componentInfoB queryComponentInfo
+	componentInfoC queryComponentInfo
+	componentInfoD queryComponentInfo
+	componentInfoE queryComponentInfo
+	componentInfoF queryComponentInfo
+	componentInfoG queryComponentInfo
 }
 
 // Query8 queries 8 components.
@@ -252,9 +244,6 @@ type Query7[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Componen
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
-//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
-//     parallel with other systems.
 //   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
 //     component is optional, entities do not have to have that component in order for it to return a result,
 //     as long as it has the other (not-optional) components.
@@ -266,14 +255,14 @@ type Query8[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Componen
 	Query8Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH]
 	queryOptions
 
-	componentIdA ComponentId
-	componentIdB ComponentId
-	componentIdC ComponentId
-	componentIdD ComponentId
-	componentIdE ComponentId
-	componentIdF ComponentId
-	componentIdG ComponentId
-	componentIdH ComponentId
+	componentInfoA queryComponentInfo
+	componentInfoB queryComponentInfo
+	componentInfoC queryComponentInfo
+	componentInfoD queryComponentInfo
+	componentInfoE queryComponentInfo
+	componentInfoF queryComponentInfo
+	componentInfoG queryComponentInfo
+	componentInfoH queryComponentInfo
 }
 
 // Query9 queries 9 components.
@@ -281,9 +270,6 @@ type Query8[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Componen
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
-//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
-//     parallel with other systems.
 //   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
 //     component is optional, entities do not have to have that component in order for it to return a result,
 //     as long as it has the other (not-optional) components.
@@ -295,15 +281,15 @@ type Query9[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Componen
 	Query9Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI]
 	queryOptions
 
-	componentIdA ComponentId
-	componentIdB ComponentId
-	componentIdC ComponentId
-	componentIdD ComponentId
-	componentIdE ComponentId
-	componentIdF ComponentId
-	componentIdG ComponentId
-	componentIdH ComponentId
-	componentIdI ComponentId
+	componentInfoA queryComponentInfo
+	componentInfoB queryComponentInfo
+	componentInfoC queryComponentInfo
+	componentInfoD queryComponentInfo
+	componentInfoE queryComponentInfo
+	componentInfoF queryComponentInfo
+	componentInfoG queryComponentInfo
+	componentInfoH queryComponentInfo
+	componentInfoI queryComponentInfo
 }
 
 // Query10 queries 10 components.
@@ -311,9 +297,6 @@ type Query9[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Componen
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
-//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
-//     parallel with other systems.
 //   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
 //     component is optional, entities do not have to have that component in order for it to return a result,
 //     as long as it has the other (not-optional) components.
@@ -325,16 +308,16 @@ type Query10[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 	Query10Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ]
 	queryOptions
 
-	componentIdA ComponentId
-	componentIdB ComponentId
-	componentIdC ComponentId
-	componentIdD ComponentId
-	componentIdE ComponentId
-	componentIdF ComponentId
-	componentIdG ComponentId
-	componentIdH ComponentId
-	componentIdI ComponentId
-	componentIdJ ComponentId
+	componentInfoA queryComponentInfo
+	componentInfoB queryComponentInfo
+	componentInfoC queryComponentInfo
+	componentInfoD queryComponentInfo
+	componentInfoE queryComponentInfo
+	componentInfoF queryComponentInfo
+	componentInfoG queryComponentInfo
+	componentInfoH queryComponentInfo
+	componentInfoI queryComponentInfo
+	componentInfoJ queryComponentInfo
 }
 
 // Query11 queries 11 components.
@@ -342,9 +325,6 @@ type Query10[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
-//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
-//     parallel with other systems.
 //   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
 //     component is optional, entities do not have to have that component in order for it to return a result,
 //     as long as it has the other (not-optional) components.
@@ -356,17 +336,17 @@ type Query11[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 	Query11Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK]
 	queryOptions
 
-	componentIdA ComponentId
-	componentIdB ComponentId
-	componentIdC ComponentId
-	componentIdD ComponentId
-	componentIdE ComponentId
-	componentIdF ComponentId
-	componentIdG ComponentId
-	componentIdH ComponentId
-	componentIdI ComponentId
-	componentIdJ ComponentId
-	componentIdK ComponentId
+	componentInfoA queryComponentInfo
+	componentInfoB queryComponentInfo
+	componentInfoC queryComponentInfo
+	componentInfoD queryComponentInfo
+	componentInfoE queryComponentInfo
+	componentInfoF queryComponentInfo
+	componentInfoG queryComponentInfo
+	componentInfoH queryComponentInfo
+	componentInfoI queryComponentInfo
+	componentInfoJ queryComponentInfo
+	componentInfoK queryComponentInfo
 }
 
 // Query12 queries 12 components.
@@ -374,9 +354,6 @@ type Query11[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
-//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
-//     parallel with other systems.
 //   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
 //     component is optional, entities do not have to have that component in order for it to return a result,
 //     as long as it has the other (not-optional) components.
@@ -388,18 +365,18 @@ type Query12[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 	Query12Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL]
 	queryOptions
 
-	componentIdA ComponentId
-	componentIdB ComponentId
-	componentIdC ComponentId
-	componentIdD ComponentId
-	componentIdE ComponentId
-	componentIdF ComponentId
-	componentIdG ComponentId
-	componentIdH ComponentId
-	componentIdI ComponentId
-	componentIdJ ComponentId
-	componentIdK ComponentId
-	componentIdL ComponentId
+	componentInfoA queryComponentInfo
+	componentInfoB queryComponentInfo
+	componentInfoC queryComponentInfo
+	componentInfoD queryComponentInfo
+	componentInfoE queryComponentInfo
+	componentInfoF queryComponentInfo
+	componentInfoG queryComponentInfo
+	componentInfoH queryComponentInfo
+	componentInfoI queryComponentInfo
+	componentInfoJ queryComponentInfo
+	componentInfoK queryComponentInfo
+	componentInfoL queryComponentInfo
 }
 
 // Query13 queries 13 components.
@@ -407,9 +384,6 @@ type Query12[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
-//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
-//     parallel with other systems.
 //   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
 //     component is optional, entities do not have to have that component in order for it to return a result,
 //     as long as it has the other (not-optional) components.
@@ -421,19 +395,19 @@ type Query13[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 	Query13Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM]
 	queryOptions
 
-	componentIdA ComponentId
-	componentIdB ComponentId
-	componentIdC ComponentId
-	componentIdD ComponentId
-	componentIdE ComponentId
-	componentIdF ComponentId
-	componentIdG ComponentId
-	componentIdH ComponentId
-	componentIdI ComponentId
-	componentIdJ ComponentId
-	componentIdK ComponentId
-	componentIdL ComponentId
-	componentIdM ComponentId
+	componentInfoA queryComponentInfo
+	componentInfoB queryComponentInfo
+	componentInfoC queryComponentInfo
+	componentInfoD queryComponentInfo
+	componentInfoE queryComponentInfo
+	componentInfoF queryComponentInfo
+	componentInfoG queryComponentInfo
+	componentInfoH queryComponentInfo
+	componentInfoI queryComponentInfo
+	componentInfoJ queryComponentInfo
+	componentInfoK queryComponentInfo
+	componentInfoL queryComponentInfo
+	componentInfoM queryComponentInfo
 }
 
 // Query14 queries 14 components.
@@ -441,9 +415,6 @@ type Query13[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
-//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
-//     parallel with other systems.
 //   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
 //     component is optional, entities do not have to have that component in order for it to return a result,
 //     as long as it has the other (not-optional) components.
@@ -455,20 +426,20 @@ type Query14[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 	Query14Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM, ComponentN]
 	queryOptions
 
-	componentIdA ComponentId
-	componentIdB ComponentId
-	componentIdC ComponentId
-	componentIdD ComponentId
-	componentIdE ComponentId
-	componentIdF ComponentId
-	componentIdG ComponentId
-	componentIdH ComponentId
-	componentIdI ComponentId
-	componentIdJ ComponentId
-	componentIdK ComponentId
-	componentIdL ComponentId
-	componentIdM ComponentId
-	componentIdN ComponentId
+	componentInfoA queryComponentInfo
+	componentInfoB queryComponentInfo
+	componentInfoC queryComponentInfo
+	componentInfoD queryComponentInfo
+	componentInfoE queryComponentInfo
+	componentInfoF queryComponentInfo
+	componentInfoG queryComponentInfo
+	componentInfoH queryComponentInfo
+	componentInfoI queryComponentInfo
+	componentInfoJ queryComponentInfo
+	componentInfoK queryComponentInfo
+	componentInfoL queryComponentInfo
+	componentInfoM queryComponentInfo
+	componentInfoN queryComponentInfo
 }
 
 // Query15 queries 15 components.
@@ -476,9 +447,6 @@ type Query14[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
-//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
-//     parallel with other systems.
 //   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
 //     component is optional, entities do not have to have that component in order for it to return a result,
 //     as long as it has the other (not-optional) components.
@@ -490,21 +458,21 @@ type Query15[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 	Query15Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM, ComponentN, ComponentO]
 	queryOptions
 
-	componentIdA ComponentId
-	componentIdB ComponentId
-	componentIdC ComponentId
-	componentIdD ComponentId
-	componentIdE ComponentId
-	componentIdF ComponentId
-	componentIdG ComponentId
-	componentIdH ComponentId
-	componentIdI ComponentId
-	componentIdJ ComponentId
-	componentIdK ComponentId
-	componentIdL ComponentId
-	componentIdM ComponentId
-	componentIdN ComponentId
-	componentIdO ComponentId
+	componentInfoA queryComponentInfo
+	componentInfoB queryComponentInfo
+	componentInfoC queryComponentInfo
+	componentInfoD queryComponentInfo
+	componentInfoE queryComponentInfo
+	componentInfoF queryComponentInfo
+	componentInfoG queryComponentInfo
+	componentInfoH queryComponentInfo
+	componentInfoI queryComponentInfo
+	componentInfoJ queryComponentInfo
+	componentInfoK queryComponentInfo
+	componentInfoL queryComponentInfo
+	componentInfoM queryComponentInfo
+	componentInfoN queryComponentInfo
+	componentInfoO queryComponentInfo
 }
 
 // Query16 queries 16 components.
@@ -512,9 +480,6 @@ type Query15[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 // Prepare must be called once before calling Execute.
 //
 // The following query options are available:
-//   - use [NoReadOnly], [AllReadOnly], [ReadOnly1], [ReadOnly2] (and so on) to specify if components
-//     are read-only. Marking components as read-only allows systems with queries as system-params to be run in
-//     parallel with other systems.
 //   - use [NoOptional], [Optional1], [Optional2] (and so on) to mark components as optional. When a
 //     component is optional, entities do not have to have that component in order for it to return a result,
 //     as long as it has the other (not-optional) components.
@@ -526,22 +491,22 @@ type Query16[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 	Query16Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM, ComponentN, ComponentO, ComponentP]
 	queryOptions
 
-	componentIdA ComponentId
-	componentIdB ComponentId
-	componentIdC ComponentId
-	componentIdD ComponentId
-	componentIdE ComponentId
-	componentIdF ComponentId
-	componentIdG ComponentId
-	componentIdH ComponentId
-	componentIdI ComponentId
-	componentIdJ ComponentId
-	componentIdK ComponentId
-	componentIdL ComponentId
-	componentIdM ComponentId
-	componentIdN ComponentId
-	componentIdO ComponentId
-	componentIdP ComponentId
+	componentInfoA queryComponentInfo
+	componentInfoB queryComponentInfo
+	componentInfoC queryComponentInfo
+	componentInfoD queryComponentInfo
+	componentInfoE queryComponentInfo
+	componentInfoF queryComponentInfo
+	componentInfoG queryComponentInfo
+	componentInfoH queryComponentInfo
+	componentInfoI queryComponentInfo
+	componentInfoJ queryComponentInfo
+	componentInfoK queryComponentInfo
+	componentInfoL queryComponentInfo
+	componentInfoM queryComponentInfo
+	componentInfoN queryComponentInfo
+	componentInfoO queryComponentInfo
+	componentInfoP queryComponentInfo
 }
 
 func (q *Query0[QueryOptions]) Exec(world *World) error {
@@ -566,15 +531,15 @@ func (q *Query1[ComponentA, QueryOptions]) Exec(world *World) (err error) {
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentInfoA.id, archetype, &q.options)
 		if skip {
 			continue
 		}
 
 		for _, entity := range archetype.entities {
-			var a *ComponentA
+			var a ComponentA
 			if fetchA {
-				a, err = fetchComponentForQueryResult[ComponentA](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				a, err = fetchComponentForQueryResult[ComponentA](q.componentInfoA, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
@@ -595,27 +560,27 @@ func (q *Query2[ComponentA, ComponentB, QueryOptions]) Exec(world *World) (err e
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentInfoA.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.options)
+		fetchB, skip := shouldHandleQueryComponent(q.componentInfoB.id, archetype, &q.options)
 		if skip {
 			continue
 		}
 
 		for _, entity := range archetype.entities {
-			var a *ComponentA
+			var a ComponentA
 			if fetchA {
-				a, err = fetchComponentForQueryResult[ComponentA](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				a, err = fetchComponentForQueryResult[ComponentA](q.componentInfoA, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var b *ComponentB
+			var b ComponentB
 			if fetchB {
-				b, err = fetchComponentForQueryResult[ComponentB](q.componentIdB, world.entities[entity].row, archetype, &q.options)
+				b, err = fetchComponentForQueryResult[ComponentB](q.componentInfoB, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
@@ -637,39 +602,39 @@ func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Exec(world *W
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentInfoA.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.options)
+		fetchB, skip := shouldHandleQueryComponent(q.componentInfoB.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.options)
+		fetchC, skip := shouldHandleQueryComponent(q.componentInfoC.id, archetype, &q.options)
 		if skip {
 			continue
 		}
 
 		for _, entity := range archetype.entities {
-			var a *ComponentA
+			var a ComponentA
 			if fetchA {
-				a, err = fetchComponentForQueryResult[ComponentA](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				a, err = fetchComponentForQueryResult[ComponentA](q.componentInfoA, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var b *ComponentB
+			var b ComponentB
 			if fetchB {
-				b, err = fetchComponentForQueryResult[ComponentB](q.componentIdB, world.entities[entity].row, archetype, &q.options)
+				b, err = fetchComponentForQueryResult[ComponentB](q.componentInfoB, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var c *ComponentC
+			var c ComponentC
 			if fetchC {
-				c, err = fetchComponentForQueryResult[ComponentC](q.componentIdC, world.entities[entity].row, archetype, &q.options)
+				c, err = fetchComponentForQueryResult[ComponentC](q.componentInfoC, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
@@ -692,51 +657,51 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) E
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentInfoA.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.options)
+		fetchB, skip := shouldHandleQueryComponent(q.componentInfoB.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.options)
+		fetchC, skip := shouldHandleQueryComponent(q.componentInfoC.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchD, skip := shouldHandleQueryComponent(q.componentIdD, archetype, &q.options)
+		fetchD, skip := shouldHandleQueryComponent(q.componentInfoD.id, archetype, &q.options)
 		if skip {
 			continue
 		}
 
 		for _, entity := range archetype.entities {
-			var a *ComponentA
+			var a ComponentA
 			if fetchA {
-				a, err = fetchComponentForQueryResult[ComponentA](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				a, err = fetchComponentForQueryResult[ComponentA](q.componentInfoA, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var b *ComponentB
+			var b ComponentB
 			if fetchB {
-				b, err = fetchComponentForQueryResult[ComponentB](q.componentIdB, world.entities[entity].row, archetype, &q.options)
+				b, err = fetchComponentForQueryResult[ComponentB](q.componentInfoB, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var c *ComponentC
+			var c ComponentC
 			if fetchC {
-				c, err = fetchComponentForQueryResult[ComponentC](q.componentIdC, world.entities[entity].row, archetype, &q.options)
+				c, err = fetchComponentForQueryResult[ComponentC](q.componentInfoC, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var d *ComponentD
+			var d ComponentD
 			if fetchD {
-				d, err = fetchComponentForQueryResult[ComponentD](q.componentIdD, world.entities[entity].row, archetype, &q.options)
+				d, err = fetchComponentForQueryResult[ComponentD](q.componentInfoD, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
@@ -760,63 +725,63 @@ func (q *Query5[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Quer
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentInfoA.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.options)
+		fetchB, skip := shouldHandleQueryComponent(q.componentInfoB.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.options)
+		fetchC, skip := shouldHandleQueryComponent(q.componentInfoC.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchD, skip := shouldHandleQueryComponent(q.componentIdD, archetype, &q.options)
+		fetchD, skip := shouldHandleQueryComponent(q.componentInfoD.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchE, skip := shouldHandleQueryComponent(q.componentIdE, archetype, &q.options)
+		fetchE, skip := shouldHandleQueryComponent(q.componentInfoE.id, archetype, &q.options)
 		if skip {
 			continue
 		}
 
 		for _, entity := range archetype.entities {
-			var a *ComponentA
+			var a ComponentA
 			if fetchA {
-				a, err = fetchComponentForQueryResult[ComponentA](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				a, err = fetchComponentForQueryResult[ComponentA](q.componentInfoA, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var b *ComponentB
+			var b ComponentB
 			if fetchB {
-				b, err = fetchComponentForQueryResult[ComponentB](q.componentIdB, world.entities[entity].row, archetype, &q.options)
+				b, err = fetchComponentForQueryResult[ComponentB](q.componentInfoB, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var c *ComponentC
+			var c ComponentC
 			if fetchC {
-				c, err = fetchComponentForQueryResult[ComponentC](q.componentIdC, world.entities[entity].row, archetype, &q.options)
+				c, err = fetchComponentForQueryResult[ComponentC](q.componentInfoC, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var d *ComponentD
+			var d ComponentD
 			if fetchD {
-				d, err = fetchComponentForQueryResult[ComponentD](q.componentIdD, world.entities[entity].row, archetype, &q.options)
+				d, err = fetchComponentForQueryResult[ComponentD](q.componentInfoD, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var e *ComponentE
+			var e ComponentE
 			if fetchE {
-				e, err = fetchComponentForQueryResult[ComponentE](q.componentIdE, world.entities[entity].row, archetype, &q.options)
+				e, err = fetchComponentForQueryResult[ComponentE](q.componentInfoE, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
@@ -841,75 +806,75 @@ func (q *Query6[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Comp
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentInfoA.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.options)
+		fetchB, skip := shouldHandleQueryComponent(q.componentInfoB.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.options)
+		fetchC, skip := shouldHandleQueryComponent(q.componentInfoC.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchD, skip := shouldHandleQueryComponent(q.componentIdD, archetype, &q.options)
+		fetchD, skip := shouldHandleQueryComponent(q.componentInfoD.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchE, skip := shouldHandleQueryComponent(q.componentIdE, archetype, &q.options)
+		fetchE, skip := shouldHandleQueryComponent(q.componentInfoE.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchF, skip := shouldHandleQueryComponent(q.componentIdF, archetype, &q.options)
+		fetchF, skip := shouldHandleQueryComponent(q.componentInfoF.id, archetype, &q.options)
 		if skip {
 			continue
 		}
 
 		for _, entity := range archetype.entities {
-			var a *ComponentA
+			var a ComponentA
 			if fetchA {
-				a, err = fetchComponentForQueryResult[ComponentA](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				a, err = fetchComponentForQueryResult[ComponentA](q.componentInfoA, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var b *ComponentB
+			var b ComponentB
 			if fetchB {
-				b, err = fetchComponentForQueryResult[ComponentB](q.componentIdB, world.entities[entity].row, archetype, &q.options)
+				b, err = fetchComponentForQueryResult[ComponentB](q.componentInfoB, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var c *ComponentC
+			var c ComponentC
 			if fetchC {
-				c, err = fetchComponentForQueryResult[ComponentC](q.componentIdC, world.entities[entity].row, archetype, &q.options)
+				c, err = fetchComponentForQueryResult[ComponentC](q.componentInfoC, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var d *ComponentD
+			var d ComponentD
 			if fetchD {
-				d, err = fetchComponentForQueryResult[ComponentD](q.componentIdD, world.entities[entity].row, archetype, &q.options)
+				d, err = fetchComponentForQueryResult[ComponentD](q.componentInfoD, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var e *ComponentE
+			var e ComponentE
 			if fetchE {
-				e, err = fetchComponentForQueryResult[ComponentE](q.componentIdE, world.entities[entity].row, archetype, &q.options)
+				e, err = fetchComponentForQueryResult[ComponentE](q.componentInfoE, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var f *ComponentF
+			var f ComponentF
 			if fetchF {
-				f, err = fetchComponentForQueryResult[ComponentF](q.componentIdF, world.entities[entity].row, archetype, &q.options)
+				f, err = fetchComponentForQueryResult[ComponentF](q.componentInfoF, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
@@ -935,87 +900,87 @@ func (q *Query7[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Comp
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentInfoA.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.options)
+		fetchB, skip := shouldHandleQueryComponent(q.componentInfoB.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.options)
+		fetchC, skip := shouldHandleQueryComponent(q.componentInfoC.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchD, skip := shouldHandleQueryComponent(q.componentIdD, archetype, &q.options)
+		fetchD, skip := shouldHandleQueryComponent(q.componentInfoD.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchE, skip := shouldHandleQueryComponent(q.componentIdE, archetype, &q.options)
+		fetchE, skip := shouldHandleQueryComponent(q.componentInfoE.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchF, skip := shouldHandleQueryComponent(q.componentIdF, archetype, &q.options)
+		fetchF, skip := shouldHandleQueryComponent(q.componentInfoF.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchG, skip := shouldHandleQueryComponent(q.componentIdG, archetype, &q.options)
+		fetchG, skip := shouldHandleQueryComponent(q.componentInfoG.id, archetype, &q.options)
 		if skip {
 			continue
 		}
 
 		for _, entity := range archetype.entities {
-			var a *ComponentA
+			var a ComponentA
 			if fetchA {
-				a, err = fetchComponentForQueryResult[ComponentA](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				a, err = fetchComponentForQueryResult[ComponentA](q.componentInfoA, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var b *ComponentB
+			var b ComponentB
 			if fetchB {
-				b, err = fetchComponentForQueryResult[ComponentB](q.componentIdB, world.entities[entity].row, archetype, &q.options)
+				b, err = fetchComponentForQueryResult[ComponentB](q.componentInfoB, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var c *ComponentC
+			var c ComponentC
 			if fetchC {
-				c, err = fetchComponentForQueryResult[ComponentC](q.componentIdC, world.entities[entity].row, archetype, &q.options)
+				c, err = fetchComponentForQueryResult[ComponentC](q.componentInfoC, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var d *ComponentD
+			var d ComponentD
 			if fetchD {
-				d, err = fetchComponentForQueryResult[ComponentD](q.componentIdD, world.entities[entity].row, archetype, &q.options)
+				d, err = fetchComponentForQueryResult[ComponentD](q.componentInfoD, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var e *ComponentE
+			var e ComponentE
 			if fetchE {
-				e, err = fetchComponentForQueryResult[ComponentE](q.componentIdE, world.entities[entity].row, archetype, &q.options)
+				e, err = fetchComponentForQueryResult[ComponentE](q.componentInfoE, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var f *ComponentF
+			var f ComponentF
 			if fetchF {
-				f, err = fetchComponentForQueryResult[ComponentF](q.componentIdF, world.entities[entity].row, archetype, &q.options)
+				f, err = fetchComponentForQueryResult[ComponentF](q.componentInfoF, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var g *ComponentG
+			var g ComponentG
 			if fetchG {
-				g, err = fetchComponentForQueryResult[ComponentG](q.componentIdG, world.entities[entity].row, archetype, &q.options)
+				g, err = fetchComponentForQueryResult[ComponentG](q.componentInfoG, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
@@ -1042,99 +1007,99 @@ func (q *Query8[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Comp
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentInfoA.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.options)
+		fetchB, skip := shouldHandleQueryComponent(q.componentInfoB.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.options)
+		fetchC, skip := shouldHandleQueryComponent(q.componentInfoC.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchD, skip := shouldHandleQueryComponent(q.componentIdD, archetype, &q.options)
+		fetchD, skip := shouldHandleQueryComponent(q.componentInfoD.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchE, skip := shouldHandleQueryComponent(q.componentIdE, archetype, &q.options)
+		fetchE, skip := shouldHandleQueryComponent(q.componentInfoE.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchF, skip := shouldHandleQueryComponent(q.componentIdF, archetype, &q.options)
+		fetchF, skip := shouldHandleQueryComponent(q.componentInfoF.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchG, skip := shouldHandleQueryComponent(q.componentIdG, archetype, &q.options)
+		fetchG, skip := shouldHandleQueryComponent(q.componentInfoG.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchH, skip := shouldHandleQueryComponent(q.componentIdH, archetype, &q.options)
+		fetchH, skip := shouldHandleQueryComponent(q.componentInfoH.id, archetype, &q.options)
 		if skip {
 			continue
 		}
 
 		for _, entity := range archetype.entities {
-			var a *ComponentA
+			var a ComponentA
 			if fetchA {
-				a, err = fetchComponentForQueryResult[ComponentA](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				a, err = fetchComponentForQueryResult[ComponentA](q.componentInfoA, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var b *ComponentB
+			var b ComponentB
 			if fetchB {
-				b, err = fetchComponentForQueryResult[ComponentB](q.componentIdB, world.entities[entity].row, archetype, &q.options)
+				b, err = fetchComponentForQueryResult[ComponentB](q.componentInfoB, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var c *ComponentC
+			var c ComponentC
 			if fetchC {
-				c, err = fetchComponentForQueryResult[ComponentC](q.componentIdC, world.entities[entity].row, archetype, &q.options)
+				c, err = fetchComponentForQueryResult[ComponentC](q.componentInfoC, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var d *ComponentD
+			var d ComponentD
 			if fetchD {
-				d, err = fetchComponentForQueryResult[ComponentD](q.componentIdD, world.entities[entity].row, archetype, &q.options)
+				d, err = fetchComponentForQueryResult[ComponentD](q.componentInfoD, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var e *ComponentE
+			var e ComponentE
 			if fetchE {
-				e, err = fetchComponentForQueryResult[ComponentE](q.componentIdE, world.entities[entity].row, archetype, &q.options)
+				e, err = fetchComponentForQueryResult[ComponentE](q.componentInfoE, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var f *ComponentF
+			var f ComponentF
 			if fetchF {
-				f, err = fetchComponentForQueryResult[ComponentF](q.componentIdF, world.entities[entity].row, archetype, &q.options)
+				f, err = fetchComponentForQueryResult[ComponentF](q.componentInfoF, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var g *ComponentG
+			var g ComponentG
 			if fetchG {
-				g, err = fetchComponentForQueryResult[ComponentG](q.componentIdG, world.entities[entity].row, archetype, &q.options)
+				g, err = fetchComponentForQueryResult[ComponentG](q.componentInfoG, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var h *ComponentH
+			var h ComponentH
 			if fetchH {
-				h, err = fetchComponentForQueryResult[ComponentH](q.componentIdH, world.entities[entity].row, archetype, &q.options)
+				h, err = fetchComponentForQueryResult[ComponentH](q.componentInfoH, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
@@ -1163,111 +1128,111 @@ func (q *Query9[A, B, C, D, E, F, G, H, I, Options]) Exec(world *World) (err err
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentInfoA.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.options)
+		fetchB, skip := shouldHandleQueryComponent(q.componentInfoB.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.options)
+		fetchC, skip := shouldHandleQueryComponent(q.componentInfoC.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchD, skip := shouldHandleQueryComponent(q.componentIdD, archetype, &q.options)
+		fetchD, skip := shouldHandleQueryComponent(q.componentInfoD.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchE, skip := shouldHandleQueryComponent(q.componentIdE, archetype, &q.options)
+		fetchE, skip := shouldHandleQueryComponent(q.componentInfoE.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchF, skip := shouldHandleQueryComponent(q.componentIdF, archetype, &q.options)
+		fetchF, skip := shouldHandleQueryComponent(q.componentInfoF.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchG, skip := shouldHandleQueryComponent(q.componentIdG, archetype, &q.options)
+		fetchG, skip := shouldHandleQueryComponent(q.componentInfoG.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchH, skip := shouldHandleQueryComponent(q.componentIdH, archetype, &q.options)
+		fetchH, skip := shouldHandleQueryComponent(q.componentInfoH.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchI, skip := shouldHandleQueryComponent(q.componentIdI, archetype, &q.options)
+		fetchI, skip := shouldHandleQueryComponent(q.componentInfoI.id, archetype, &q.options)
 		if skip {
 			continue
 		}
 
 		for _, entity := range archetype.entities {
-			var a *A
+			var a A
 			if fetchA {
-				a, err = fetchComponentForQueryResult[A](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				a, err = fetchComponentForQueryResult[A](q.componentInfoA, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var b *B
+			var b B
 			if fetchB {
-				b, err = fetchComponentForQueryResult[B](q.componentIdB, world.entities[entity].row, archetype, &q.options)
+				b, err = fetchComponentForQueryResult[B](q.componentInfoB, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var c *C
+			var c C
 			if fetchC {
-				c, err = fetchComponentForQueryResult[C](q.componentIdC, world.entities[entity].row, archetype, &q.options)
+				c, err = fetchComponentForQueryResult[C](q.componentInfoC, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var d *D
+			var d D
 			if fetchD {
-				d, err = fetchComponentForQueryResult[D](q.componentIdD, world.entities[entity].row, archetype, &q.options)
+				d, err = fetchComponentForQueryResult[D](q.componentInfoD, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var e *E
+			var e E
 			if fetchE {
-				e, err = fetchComponentForQueryResult[E](q.componentIdE, world.entities[entity].row, archetype, &q.options)
+				e, err = fetchComponentForQueryResult[E](q.componentInfoE, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var f *F
+			var f F
 			if fetchF {
-				f, err = fetchComponentForQueryResult[F](q.componentIdF, world.entities[entity].row, archetype, &q.options)
+				f, err = fetchComponentForQueryResult[F](q.componentInfoF, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var g *G
+			var g G
 			if fetchG {
-				g, err = fetchComponentForQueryResult[G](q.componentIdG, world.entities[entity].row, archetype, &q.options)
+				g, err = fetchComponentForQueryResult[G](q.componentInfoG, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var h *H
+			var h H
 			if fetchH {
-				h, err = fetchComponentForQueryResult[H](q.componentIdH, world.entities[entity].row, archetype, &q.options)
+				h, err = fetchComponentForQueryResult[H](q.componentInfoH, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var i *I
+			var i I
 			if fetchI {
-				i, err = fetchComponentForQueryResult[I](q.componentIdI, world.entities[entity].row, archetype, &q.options)
+				i, err = fetchComponentForQueryResult[I](q.componentInfoI, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
@@ -1297,123 +1262,123 @@ func (q *Query10[A, B, C, D, E, F, G, H, I, J, Options]) Exec(world *World) (err
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentInfoA.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.options)
+		fetchB, skip := shouldHandleQueryComponent(q.componentInfoB.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.options)
+		fetchC, skip := shouldHandleQueryComponent(q.componentInfoC.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchD, skip := shouldHandleQueryComponent(q.componentIdD, archetype, &q.options)
+		fetchD, skip := shouldHandleQueryComponent(q.componentInfoD.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchE, skip := shouldHandleQueryComponent(q.componentIdE, archetype, &q.options)
+		fetchE, skip := shouldHandleQueryComponent(q.componentInfoE.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchF, skip := shouldHandleQueryComponent(q.componentIdF, archetype, &q.options)
+		fetchF, skip := shouldHandleQueryComponent(q.componentInfoF.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchG, skip := shouldHandleQueryComponent(q.componentIdG, archetype, &q.options)
+		fetchG, skip := shouldHandleQueryComponent(q.componentInfoG.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchH, skip := shouldHandleQueryComponent(q.componentIdH, archetype, &q.options)
+		fetchH, skip := shouldHandleQueryComponent(q.componentInfoH.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchI, skip := shouldHandleQueryComponent(q.componentIdI, archetype, &q.options)
+		fetchI, skip := shouldHandleQueryComponent(q.componentInfoI.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchJ, skip := shouldHandleQueryComponent(q.componentIdJ, archetype, &q.options)
+		fetchJ, skip := shouldHandleQueryComponent(q.componentInfoJ.id, archetype, &q.options)
 		if skip {
 			continue
 		}
 
 		for _, entity := range archetype.entities {
-			var a *A
+			var a A
 			if fetchA {
-				a, err = fetchComponentForQueryResult[A](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				a, err = fetchComponentForQueryResult[A](q.componentInfoA, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var b *B
+			var b B
 			if fetchB {
-				b, err = fetchComponentForQueryResult[B](q.componentIdB, world.entities[entity].row, archetype, &q.options)
+				b, err = fetchComponentForQueryResult[B](q.componentInfoB, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var c *C
+			var c C
 			if fetchC {
-				c, err = fetchComponentForQueryResult[C](q.componentIdC, world.entities[entity].row, archetype, &q.options)
+				c, err = fetchComponentForQueryResult[C](q.componentInfoC, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var d *D
+			var d D
 			if fetchD {
-				d, err = fetchComponentForQueryResult[D](q.componentIdD, world.entities[entity].row, archetype, &q.options)
+				d, err = fetchComponentForQueryResult[D](q.componentInfoD, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var e *E
+			var e E
 			if fetchE {
-				e, err = fetchComponentForQueryResult[E](q.componentIdE, world.entities[entity].row, archetype, &q.options)
+				e, err = fetchComponentForQueryResult[E](q.componentInfoE, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var f *F
+			var f F
 			if fetchF {
-				f, err = fetchComponentForQueryResult[F](q.componentIdF, world.entities[entity].row, archetype, &q.options)
+				f, err = fetchComponentForQueryResult[F](q.componentInfoF, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var g *G
+			var g G
 			if fetchG {
-				g, err = fetchComponentForQueryResult[G](q.componentIdG, world.entities[entity].row, archetype, &q.options)
+				g, err = fetchComponentForQueryResult[G](q.componentInfoG, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var h *H
+			var h H
 			if fetchH {
-				h, err = fetchComponentForQueryResult[H](q.componentIdH, world.entities[entity].row, archetype, &q.options)
+				h, err = fetchComponentForQueryResult[H](q.componentInfoH, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var i *I
+			var i I
 			if fetchI {
-				i, err = fetchComponentForQueryResult[I](q.componentIdI, world.entities[entity].row, archetype, &q.options)
+				i, err = fetchComponentForQueryResult[I](q.componentInfoI, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var j *J
+			var j J
 			if fetchJ {
-				j, err = fetchComponentForQueryResult[J](q.componentIdJ, world.entities[entity].row, archetype, &q.options)
+				j, err = fetchComponentForQueryResult[J](q.componentInfoJ, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
@@ -1444,135 +1409,135 @@ func (q *Query11[A, B, C, D, E, F, G, H, I, J, K, Options]) Exec(world *World) (
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentInfoA.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.options)
+		fetchB, skip := shouldHandleQueryComponent(q.componentInfoB.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.options)
+		fetchC, skip := shouldHandleQueryComponent(q.componentInfoC.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchD, skip := shouldHandleQueryComponent(q.componentIdD, archetype, &q.options)
+		fetchD, skip := shouldHandleQueryComponent(q.componentInfoD.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchE, skip := shouldHandleQueryComponent(q.componentIdE, archetype, &q.options)
+		fetchE, skip := shouldHandleQueryComponent(q.componentInfoE.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchF, skip := shouldHandleQueryComponent(q.componentIdF, archetype, &q.options)
+		fetchF, skip := shouldHandleQueryComponent(q.componentInfoF.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchG, skip := shouldHandleQueryComponent(q.componentIdG, archetype, &q.options)
+		fetchG, skip := shouldHandleQueryComponent(q.componentInfoG.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchH, skip := shouldHandleQueryComponent(q.componentIdH, archetype, &q.options)
+		fetchH, skip := shouldHandleQueryComponent(q.componentInfoH.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchI, skip := shouldHandleQueryComponent(q.componentIdI, archetype, &q.options)
+		fetchI, skip := shouldHandleQueryComponent(q.componentInfoI.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchJ, skip := shouldHandleQueryComponent(q.componentIdJ, archetype, &q.options)
+		fetchJ, skip := shouldHandleQueryComponent(q.componentInfoJ.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchK, skip := shouldHandleQueryComponent(q.componentIdK, archetype, &q.options)
+		fetchK, skip := shouldHandleQueryComponent(q.componentInfoK.id, archetype, &q.options)
 		if skip {
 			continue
 		}
 
 		for _, entity := range archetype.entities {
-			var a *A
+			var a A
 			if fetchA {
-				a, err = fetchComponentForQueryResult[A](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				a, err = fetchComponentForQueryResult[A](q.componentInfoA, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var b *B
+			var b B
 			if fetchB {
-				b, err = fetchComponentForQueryResult[B](q.componentIdB, world.entities[entity].row, archetype, &q.options)
+				b, err = fetchComponentForQueryResult[B](q.componentInfoB, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var c *C
+			var c C
 			if fetchC {
-				c, err = fetchComponentForQueryResult[C](q.componentIdC, world.entities[entity].row, archetype, &q.options)
+				c, err = fetchComponentForQueryResult[C](q.componentInfoC, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var d *D
+			var d D
 			if fetchD {
-				d, err = fetchComponentForQueryResult[D](q.componentIdD, world.entities[entity].row, archetype, &q.options)
+				d, err = fetchComponentForQueryResult[D](q.componentInfoD, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var e *E
+			var e E
 			if fetchE {
-				e, err = fetchComponentForQueryResult[E](q.componentIdE, world.entities[entity].row, archetype, &q.options)
+				e, err = fetchComponentForQueryResult[E](q.componentInfoE, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var f *F
+			var f F
 			if fetchF {
-				f, err = fetchComponentForQueryResult[F](q.componentIdF, world.entities[entity].row, archetype, &q.options)
+				f, err = fetchComponentForQueryResult[F](q.componentInfoF, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var g *G
+			var g G
 			if fetchG {
-				g, err = fetchComponentForQueryResult[G](q.componentIdG, world.entities[entity].row, archetype, &q.options)
+				g, err = fetchComponentForQueryResult[G](q.componentInfoG, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var h *H
+			var h H
 			if fetchH {
-				h, err = fetchComponentForQueryResult[H](q.componentIdH, world.entities[entity].row, archetype, &q.options)
+				h, err = fetchComponentForQueryResult[H](q.componentInfoH, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var i *I
+			var i I
 			if fetchI {
-				i, err = fetchComponentForQueryResult[I](q.componentIdI, world.entities[entity].row, archetype, &q.options)
+				i, err = fetchComponentForQueryResult[I](q.componentInfoI, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var j *J
+			var j J
 			if fetchJ {
-				j, err = fetchComponentForQueryResult[J](q.componentIdJ, world.entities[entity].row, archetype, &q.options)
+				j, err = fetchComponentForQueryResult[J](q.componentInfoJ, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var k *K
+			var k K
 			if fetchK {
-				k, err = fetchComponentForQueryResult[K](q.componentIdK, world.entities[entity].row, archetype, &q.options)
+				k, err = fetchComponentForQueryResult[K](q.componentInfoK, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
@@ -1604,147 +1569,147 @@ func (q *Query12[A, B, C, D, E, F, G, H, I, J, K, L, Options]) Exec(world *World
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentInfoA.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.options)
+		fetchB, skip := shouldHandleQueryComponent(q.componentInfoB.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.options)
+		fetchC, skip := shouldHandleQueryComponent(q.componentInfoC.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchD, skip := shouldHandleQueryComponent(q.componentIdD, archetype, &q.options)
+		fetchD, skip := shouldHandleQueryComponent(q.componentInfoD.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchE, skip := shouldHandleQueryComponent(q.componentIdE, archetype, &q.options)
+		fetchE, skip := shouldHandleQueryComponent(q.componentInfoE.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchF, skip := shouldHandleQueryComponent(q.componentIdF, archetype, &q.options)
+		fetchF, skip := shouldHandleQueryComponent(q.componentInfoF.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchG, skip := shouldHandleQueryComponent(q.componentIdG, archetype, &q.options)
+		fetchG, skip := shouldHandleQueryComponent(q.componentInfoG.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchH, skip := shouldHandleQueryComponent(q.componentIdH, archetype, &q.options)
+		fetchH, skip := shouldHandleQueryComponent(q.componentInfoH.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchI, skip := shouldHandleQueryComponent(q.componentIdI, archetype, &q.options)
+		fetchI, skip := shouldHandleQueryComponent(q.componentInfoI.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchJ, skip := shouldHandleQueryComponent(q.componentIdJ, archetype, &q.options)
+		fetchJ, skip := shouldHandleQueryComponent(q.componentInfoJ.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchK, skip := shouldHandleQueryComponent(q.componentIdK, archetype, &q.options)
+		fetchK, skip := shouldHandleQueryComponent(q.componentInfoK.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchL, skip := shouldHandleQueryComponent(q.componentIdL, archetype, &q.options)
+		fetchL, skip := shouldHandleQueryComponent(q.componentInfoL.id, archetype, &q.options)
 		if skip {
 			continue
 		}
 
 		for _, entity := range archetype.entities {
-			var a *A
+			var a A
 			if fetchA {
-				a, err = fetchComponentForQueryResult[A](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				a, err = fetchComponentForQueryResult[A](q.componentInfoA, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var b *B
+			var b B
 			if fetchB {
-				b, err = fetchComponentForQueryResult[B](q.componentIdB, world.entities[entity].row, archetype, &q.options)
+				b, err = fetchComponentForQueryResult[B](q.componentInfoB, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var c *C
+			var c C
 			if fetchC {
-				c, err = fetchComponentForQueryResult[C](q.componentIdC, world.entities[entity].row, archetype, &q.options)
+				c, err = fetchComponentForQueryResult[C](q.componentInfoC, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var d *D
+			var d D
 			if fetchD {
-				d, err = fetchComponentForQueryResult[D](q.componentIdD, world.entities[entity].row, archetype, &q.options)
+				d, err = fetchComponentForQueryResult[D](q.componentInfoD, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var e *E
+			var e E
 			if fetchE {
-				e, err = fetchComponentForQueryResult[E](q.componentIdE, world.entities[entity].row, archetype, &q.options)
+				e, err = fetchComponentForQueryResult[E](q.componentInfoE, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var f *F
+			var f F
 			if fetchF {
-				f, err = fetchComponentForQueryResult[F](q.componentIdF, world.entities[entity].row, archetype, &q.options)
+				f, err = fetchComponentForQueryResult[F](q.componentInfoF, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var g *G
+			var g G
 			if fetchG {
-				g, err = fetchComponentForQueryResult[G](q.componentIdG, world.entities[entity].row, archetype, &q.options)
+				g, err = fetchComponentForQueryResult[G](q.componentInfoG, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var h *H
+			var h H
 			if fetchH {
-				h, err = fetchComponentForQueryResult[H](q.componentIdH, world.entities[entity].row, archetype, &q.options)
+				h, err = fetchComponentForQueryResult[H](q.componentInfoH, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var i *I
+			var i I
 			if fetchI {
-				i, err = fetchComponentForQueryResult[I](q.componentIdI, world.entities[entity].row, archetype, &q.options)
+				i, err = fetchComponentForQueryResult[I](q.componentInfoI, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var j *J
+			var j J
 			if fetchJ {
-				j, err = fetchComponentForQueryResult[J](q.componentIdJ, world.entities[entity].row, archetype, &q.options)
+				j, err = fetchComponentForQueryResult[J](q.componentInfoJ, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var k *K
+			var k K
 			if fetchK {
-				k, err = fetchComponentForQueryResult[K](q.componentIdK, world.entities[entity].row, archetype, &q.options)
+				k, err = fetchComponentForQueryResult[K](q.componentInfoK, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var l *L
+			var l L
 			if fetchL {
-				l, err = fetchComponentForQueryResult[L](q.componentIdL, world.entities[entity].row, archetype, &q.options)
+				l, err = fetchComponentForQueryResult[L](q.componentInfoL, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
@@ -1777,159 +1742,159 @@ func (q *Query13[A, B, C, D, E, F, G, H, I, J, K, L, M, Options]) Exec(world *Wo
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentInfoA.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.options)
+		fetchB, skip := shouldHandleQueryComponent(q.componentInfoB.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.options)
+		fetchC, skip := shouldHandleQueryComponent(q.componentInfoC.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchD, skip := shouldHandleQueryComponent(q.componentIdD, archetype, &q.options)
+		fetchD, skip := shouldHandleQueryComponent(q.componentInfoD.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchE, skip := shouldHandleQueryComponent(q.componentIdE, archetype, &q.options)
+		fetchE, skip := shouldHandleQueryComponent(q.componentInfoE.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchF, skip := shouldHandleQueryComponent(q.componentIdF, archetype, &q.options)
+		fetchF, skip := shouldHandleQueryComponent(q.componentInfoF.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchG, skip := shouldHandleQueryComponent(q.componentIdG, archetype, &q.options)
+		fetchG, skip := shouldHandleQueryComponent(q.componentInfoG.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchH, skip := shouldHandleQueryComponent(q.componentIdH, archetype, &q.options)
+		fetchH, skip := shouldHandleQueryComponent(q.componentInfoH.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchI, skip := shouldHandleQueryComponent(q.componentIdI, archetype, &q.options)
+		fetchI, skip := shouldHandleQueryComponent(q.componentInfoI.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchJ, skip := shouldHandleQueryComponent(q.componentIdJ, archetype, &q.options)
+		fetchJ, skip := shouldHandleQueryComponent(q.componentInfoJ.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchK, skip := shouldHandleQueryComponent(q.componentIdK, archetype, &q.options)
+		fetchK, skip := shouldHandleQueryComponent(q.componentInfoK.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchL, skip := shouldHandleQueryComponent(q.componentIdL, archetype, &q.options)
+		fetchL, skip := shouldHandleQueryComponent(q.componentInfoL.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchM, skip := shouldHandleQueryComponent(q.componentIdM, archetype, &q.options)
+		fetchM, skip := shouldHandleQueryComponent(q.componentInfoM.id, archetype, &q.options)
 		if skip {
 			continue
 		}
 
 		for _, entity := range archetype.entities {
-			var a *A
+			var a A
 			if fetchA {
-				a, err = fetchComponentForQueryResult[A](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				a, err = fetchComponentForQueryResult[A](q.componentInfoA, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var b *B
+			var b B
 			if fetchB {
-				b, err = fetchComponentForQueryResult[B](q.componentIdB, world.entities[entity].row, archetype, &q.options)
+				b, err = fetchComponentForQueryResult[B](q.componentInfoB, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var c *C
+			var c C
 			if fetchC {
-				c, err = fetchComponentForQueryResult[C](q.componentIdC, world.entities[entity].row, archetype, &q.options)
+				c, err = fetchComponentForQueryResult[C](q.componentInfoC, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var d *D
+			var d D
 			if fetchD {
-				d, err = fetchComponentForQueryResult[D](q.componentIdD, world.entities[entity].row, archetype, &q.options)
+				d, err = fetchComponentForQueryResult[D](q.componentInfoD, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var e *E
+			var e E
 			if fetchE {
-				e, err = fetchComponentForQueryResult[E](q.componentIdE, world.entities[entity].row, archetype, &q.options)
+				e, err = fetchComponentForQueryResult[E](q.componentInfoE, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var f *F
+			var f F
 			if fetchF {
-				f, err = fetchComponentForQueryResult[F](q.componentIdF, world.entities[entity].row, archetype, &q.options)
+				f, err = fetchComponentForQueryResult[F](q.componentInfoF, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var g *G
+			var g G
 			if fetchG {
-				g, err = fetchComponentForQueryResult[G](q.componentIdG, world.entities[entity].row, archetype, &q.options)
+				g, err = fetchComponentForQueryResult[G](q.componentInfoG, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var h *H
+			var h H
 			if fetchH {
-				h, err = fetchComponentForQueryResult[H](q.componentIdH, world.entities[entity].row, archetype, &q.options)
+				h, err = fetchComponentForQueryResult[H](q.componentInfoH, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var i *I
+			var i I
 			if fetchI {
-				i, err = fetchComponentForQueryResult[I](q.componentIdI, world.entities[entity].row, archetype, &q.options)
+				i, err = fetchComponentForQueryResult[I](q.componentInfoI, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var j *J
+			var j J
 			if fetchJ {
-				j, err = fetchComponentForQueryResult[J](q.componentIdJ, world.entities[entity].row, archetype, &q.options)
+				j, err = fetchComponentForQueryResult[J](q.componentInfoJ, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var k *K
+			var k K
 			if fetchK {
-				k, err = fetchComponentForQueryResult[K](q.componentIdK, world.entities[entity].row, archetype, &q.options)
+				k, err = fetchComponentForQueryResult[K](q.componentInfoK, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var l *L
+			var l L
 			if fetchL {
-				l, err = fetchComponentForQueryResult[L](q.componentIdL, world.entities[entity].row, archetype, &q.options)
+				l, err = fetchComponentForQueryResult[L](q.componentInfoL, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var m *M
+			var m M
 			if fetchM {
-				m, err = fetchComponentForQueryResult[M](q.componentIdM, world.entities[entity].row, archetype, &q.options)
+				m, err = fetchComponentForQueryResult[M](q.componentInfoM, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
@@ -1963,171 +1928,171 @@ func (q *Query14[A, B, C, D, E, F, G, H, I, J, K, L, M, N, Options]) Exec(world 
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentInfoA.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.options)
+		fetchB, skip := shouldHandleQueryComponent(q.componentInfoB.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.options)
+		fetchC, skip := shouldHandleQueryComponent(q.componentInfoC.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchD, skip := shouldHandleQueryComponent(q.componentIdD, archetype, &q.options)
+		fetchD, skip := shouldHandleQueryComponent(q.componentInfoD.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchE, skip := shouldHandleQueryComponent(q.componentIdE, archetype, &q.options)
+		fetchE, skip := shouldHandleQueryComponent(q.componentInfoE.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchF, skip := shouldHandleQueryComponent(q.componentIdF, archetype, &q.options)
+		fetchF, skip := shouldHandleQueryComponent(q.componentInfoF.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchG, skip := shouldHandleQueryComponent(q.componentIdG, archetype, &q.options)
+		fetchG, skip := shouldHandleQueryComponent(q.componentInfoG.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchH, skip := shouldHandleQueryComponent(q.componentIdH, archetype, &q.options)
+		fetchH, skip := shouldHandleQueryComponent(q.componentInfoH.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchI, skip := shouldHandleQueryComponent(q.componentIdI, archetype, &q.options)
+		fetchI, skip := shouldHandleQueryComponent(q.componentInfoI.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchJ, skip := shouldHandleQueryComponent(q.componentIdJ, archetype, &q.options)
+		fetchJ, skip := shouldHandleQueryComponent(q.componentInfoJ.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchK, skip := shouldHandleQueryComponent(q.componentIdK, archetype, &q.options)
+		fetchK, skip := shouldHandleQueryComponent(q.componentInfoK.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchL, skip := shouldHandleQueryComponent(q.componentIdL, archetype, &q.options)
+		fetchL, skip := shouldHandleQueryComponent(q.componentInfoL.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchM, skip := shouldHandleQueryComponent(q.componentIdM, archetype, &q.options)
+		fetchM, skip := shouldHandleQueryComponent(q.componentInfoM.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchN, skip := shouldHandleQueryComponent(q.componentIdN, archetype, &q.options)
+		fetchN, skip := shouldHandleQueryComponent(q.componentInfoN.id, archetype, &q.options)
 		if skip {
 			continue
 		}
 
 		for _, entity := range archetype.entities {
-			var a *A
+			var a A
 			if fetchA {
-				a, err = fetchComponentForQueryResult[A](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				a, err = fetchComponentForQueryResult[A](q.componentInfoA, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var b *B
+			var b B
 			if fetchB {
-				b, err = fetchComponentForQueryResult[B](q.componentIdB, world.entities[entity].row, archetype, &q.options)
+				b, err = fetchComponentForQueryResult[B](q.componentInfoB, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var c *C
+			var c C
 			if fetchC {
-				c, err = fetchComponentForQueryResult[C](q.componentIdC, world.entities[entity].row, archetype, &q.options)
+				c, err = fetchComponentForQueryResult[C](q.componentInfoC, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var d *D
+			var d D
 			if fetchD {
-				d, err = fetchComponentForQueryResult[D](q.componentIdD, world.entities[entity].row, archetype, &q.options)
+				d, err = fetchComponentForQueryResult[D](q.componentInfoD, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var e *E
+			var e E
 			if fetchE {
-				e, err = fetchComponentForQueryResult[E](q.componentIdE, world.entities[entity].row, archetype, &q.options)
+				e, err = fetchComponentForQueryResult[E](q.componentInfoE, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var f *F
+			var f F
 			if fetchF {
-				f, err = fetchComponentForQueryResult[F](q.componentIdF, world.entities[entity].row, archetype, &q.options)
+				f, err = fetchComponentForQueryResult[F](q.componentInfoF, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var g *G
+			var g G
 			if fetchG {
-				g, err = fetchComponentForQueryResult[G](q.componentIdG, world.entities[entity].row, archetype, &q.options)
+				g, err = fetchComponentForQueryResult[G](q.componentInfoG, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var h *H
+			var h H
 			if fetchH {
-				h, err = fetchComponentForQueryResult[H](q.componentIdH, world.entities[entity].row, archetype, &q.options)
+				h, err = fetchComponentForQueryResult[H](q.componentInfoH, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var i *I
+			var i I
 			if fetchI {
-				i, err = fetchComponentForQueryResult[I](q.componentIdI, world.entities[entity].row, archetype, &q.options)
+				i, err = fetchComponentForQueryResult[I](q.componentInfoI, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var j *J
+			var j J
 			if fetchJ {
-				j, err = fetchComponentForQueryResult[J](q.componentIdJ, world.entities[entity].row, archetype, &q.options)
+				j, err = fetchComponentForQueryResult[J](q.componentInfoJ, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var k *K
+			var k K
 			if fetchK {
-				k, err = fetchComponentForQueryResult[K](q.componentIdK, world.entities[entity].row, archetype, &q.options)
+				k, err = fetchComponentForQueryResult[K](q.componentInfoK, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var l *L
+			var l L
 			if fetchL {
-				l, err = fetchComponentForQueryResult[L](q.componentIdL, world.entities[entity].row, archetype, &q.options)
+				l, err = fetchComponentForQueryResult[L](q.componentInfoL, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var m *M
+			var m M
 			if fetchM {
-				m, err = fetchComponentForQueryResult[M](q.componentIdM, world.entities[entity].row, archetype, &q.options)
+				m, err = fetchComponentForQueryResult[M](q.componentInfoM, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var n *N
+			var n N
 			if fetchN {
-				n, err = fetchComponentForQueryResult[N](q.componentIdN, world.entities[entity].row, archetype, &q.options)
+				n, err = fetchComponentForQueryResult[N](q.componentInfoN, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
@@ -2162,183 +2127,183 @@ func (q *Query15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, Options]) Exec(wor
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentInfoA.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.options)
+		fetchB, skip := shouldHandleQueryComponent(q.componentInfoB.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.options)
+		fetchC, skip := shouldHandleQueryComponent(q.componentInfoC.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchD, skip := shouldHandleQueryComponent(q.componentIdD, archetype, &q.options)
+		fetchD, skip := shouldHandleQueryComponent(q.componentInfoD.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchE, skip := shouldHandleQueryComponent(q.componentIdE, archetype, &q.options)
+		fetchE, skip := shouldHandleQueryComponent(q.componentInfoE.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchF, skip := shouldHandleQueryComponent(q.componentIdF, archetype, &q.options)
+		fetchF, skip := shouldHandleQueryComponent(q.componentInfoF.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchG, skip := shouldHandleQueryComponent(q.componentIdG, archetype, &q.options)
+		fetchG, skip := shouldHandleQueryComponent(q.componentInfoG.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchH, skip := shouldHandleQueryComponent(q.componentIdH, archetype, &q.options)
+		fetchH, skip := shouldHandleQueryComponent(q.componentInfoH.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchI, skip := shouldHandleQueryComponent(q.componentIdI, archetype, &q.options)
+		fetchI, skip := shouldHandleQueryComponent(q.componentInfoI.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchJ, skip := shouldHandleQueryComponent(q.componentIdJ, archetype, &q.options)
+		fetchJ, skip := shouldHandleQueryComponent(q.componentInfoJ.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchK, skip := shouldHandleQueryComponent(q.componentIdK, archetype, &q.options)
+		fetchK, skip := shouldHandleQueryComponent(q.componentInfoK.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchL, skip := shouldHandleQueryComponent(q.componentIdL, archetype, &q.options)
+		fetchL, skip := shouldHandleQueryComponent(q.componentInfoL.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchM, skip := shouldHandleQueryComponent(q.componentIdM, archetype, &q.options)
+		fetchM, skip := shouldHandleQueryComponent(q.componentInfoM.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchN, skip := shouldHandleQueryComponent(q.componentIdN, archetype, &q.options)
+		fetchN, skip := shouldHandleQueryComponent(q.componentInfoN.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchO, skip := shouldHandleQueryComponent(q.componentIdO, archetype, &q.options)
+		fetchO, skip := shouldHandleQueryComponent(q.componentInfoO.id, archetype, &q.options)
 		if skip {
 			continue
 		}
 
 		for _, entity := range archetype.entities {
-			var a *A
+			var a A
 			if fetchA {
-				a, err = fetchComponentForQueryResult[A](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				a, err = fetchComponentForQueryResult[A](q.componentInfoA, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var b *B
+			var b B
 			if fetchB {
-				b, err = fetchComponentForQueryResult[B](q.componentIdB, world.entities[entity].row, archetype, &q.options)
+				b, err = fetchComponentForQueryResult[B](q.componentInfoB, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var c *C
+			var c C
 			if fetchC {
-				c, err = fetchComponentForQueryResult[C](q.componentIdC, world.entities[entity].row, archetype, &q.options)
+				c, err = fetchComponentForQueryResult[C](q.componentInfoC, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var d *D
+			var d D
 			if fetchD {
-				d, err = fetchComponentForQueryResult[D](q.componentIdD, world.entities[entity].row, archetype, &q.options)
+				d, err = fetchComponentForQueryResult[D](q.componentInfoD, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var e *E
+			var e E
 			if fetchE {
-				e, err = fetchComponentForQueryResult[E](q.componentIdE, world.entities[entity].row, archetype, &q.options)
+				e, err = fetchComponentForQueryResult[E](q.componentInfoE, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var f *F
+			var f F
 			if fetchF {
-				f, err = fetchComponentForQueryResult[F](q.componentIdF, world.entities[entity].row, archetype, &q.options)
+				f, err = fetchComponentForQueryResult[F](q.componentInfoF, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var g *G
+			var g G
 			if fetchG {
-				g, err = fetchComponentForQueryResult[G](q.componentIdG, world.entities[entity].row, archetype, &q.options)
+				g, err = fetchComponentForQueryResult[G](q.componentInfoG, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var h *H
+			var h H
 			if fetchH {
-				h, err = fetchComponentForQueryResult[H](q.componentIdH, world.entities[entity].row, archetype, &q.options)
+				h, err = fetchComponentForQueryResult[H](q.componentInfoH, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var i *I
+			var i I
 			if fetchI {
-				i, err = fetchComponentForQueryResult[I](q.componentIdI, world.entities[entity].row, archetype, &q.options)
+				i, err = fetchComponentForQueryResult[I](q.componentInfoI, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var j *J
+			var j J
 			if fetchJ {
-				j, err = fetchComponentForQueryResult[J](q.componentIdJ, world.entities[entity].row, archetype, &q.options)
+				j, err = fetchComponentForQueryResult[J](q.componentInfoJ, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var k *K
+			var k K
 			if fetchK {
-				k, err = fetchComponentForQueryResult[K](q.componentIdK, world.entities[entity].row, archetype, &q.options)
+				k, err = fetchComponentForQueryResult[K](q.componentInfoK, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var l *L
+			var l L
 			if fetchL {
-				l, err = fetchComponentForQueryResult[L](q.componentIdL, world.entities[entity].row, archetype, &q.options)
+				l, err = fetchComponentForQueryResult[L](q.componentInfoL, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var m *M
+			var m M
 			if fetchM {
-				m, err = fetchComponentForQueryResult[M](q.componentIdM, world.entities[entity].row, archetype, &q.options)
+				m, err = fetchComponentForQueryResult[M](q.componentInfoM, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var n *N
+			var n N
 			if fetchN {
-				n, err = fetchComponentForQueryResult[N](q.componentIdN, world.entities[entity].row, archetype, &q.options)
+				n, err = fetchComponentForQueryResult[N](q.componentInfoN, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var o *O
+			var o O
 			if fetchO {
-				o, err = fetchComponentForQueryResult[O](q.componentIdO, world.entities[entity].row, archetype, &q.options)
+				o, err = fetchComponentForQueryResult[O](q.componentInfoO, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
@@ -2374,195 +2339,195 @@ func (q *Query16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Options]) Exec(
 			continue
 		}
 
-		fetchA, skip := shouldHandleQueryComponent(q.componentIdA, archetype, &q.options)
+		fetchA, skip := shouldHandleQueryComponent(q.componentInfoA.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchB, skip := shouldHandleQueryComponent(q.componentIdB, archetype, &q.options)
+		fetchB, skip := shouldHandleQueryComponent(q.componentInfoB.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchC, skip := shouldHandleQueryComponent(q.componentIdC, archetype, &q.options)
+		fetchC, skip := shouldHandleQueryComponent(q.componentInfoC.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchD, skip := shouldHandleQueryComponent(q.componentIdD, archetype, &q.options)
+		fetchD, skip := shouldHandleQueryComponent(q.componentInfoD.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchE, skip := shouldHandleQueryComponent(q.componentIdE, archetype, &q.options)
+		fetchE, skip := shouldHandleQueryComponent(q.componentInfoE.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchF, skip := shouldHandleQueryComponent(q.componentIdF, archetype, &q.options)
+		fetchF, skip := shouldHandleQueryComponent(q.componentInfoF.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchG, skip := shouldHandleQueryComponent(q.componentIdG, archetype, &q.options)
+		fetchG, skip := shouldHandleQueryComponent(q.componentInfoG.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchH, skip := shouldHandleQueryComponent(q.componentIdH, archetype, &q.options)
+		fetchH, skip := shouldHandleQueryComponent(q.componentInfoH.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchI, skip := shouldHandleQueryComponent(q.componentIdI, archetype, &q.options)
+		fetchI, skip := shouldHandleQueryComponent(q.componentInfoI.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchJ, skip := shouldHandleQueryComponent(q.componentIdJ, archetype, &q.options)
+		fetchJ, skip := shouldHandleQueryComponent(q.componentInfoJ.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchK, skip := shouldHandleQueryComponent(q.componentIdK, archetype, &q.options)
+		fetchK, skip := shouldHandleQueryComponent(q.componentInfoK.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchL, skip := shouldHandleQueryComponent(q.componentIdL, archetype, &q.options)
+		fetchL, skip := shouldHandleQueryComponent(q.componentInfoL.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchM, skip := shouldHandleQueryComponent(q.componentIdM, archetype, &q.options)
+		fetchM, skip := shouldHandleQueryComponent(q.componentInfoM.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchN, skip := shouldHandleQueryComponent(q.componentIdN, archetype, &q.options)
+		fetchN, skip := shouldHandleQueryComponent(q.componentInfoN.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchO, skip := shouldHandleQueryComponent(q.componentIdO, archetype, &q.options)
+		fetchO, skip := shouldHandleQueryComponent(q.componentInfoO.id, archetype, &q.options)
 		if skip {
 			continue
 		}
-		fetchP, skip := shouldHandleQueryComponent(q.componentIdP, archetype, &q.options)
+		fetchP, skip := shouldHandleQueryComponent(q.componentInfoP.id, archetype, &q.options)
 		if skip {
 			continue
 		}
 
 		for _, entity := range archetype.entities {
-			var a *A
+			var a A
 			if fetchA {
-				a, err = fetchComponentForQueryResult[A](q.componentIdA, world.entities[entity].row, archetype, &q.options)
+				a, err = fetchComponentForQueryResult[A](q.componentInfoA, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var b *B
+			var b B
 			if fetchB {
-				b, err = fetchComponentForQueryResult[B](q.componentIdB, world.entities[entity].row, archetype, &q.options)
+				b, err = fetchComponentForQueryResult[B](q.componentInfoB, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var c *C
+			var c C
 			if fetchC {
-				c, err = fetchComponentForQueryResult[C](q.componentIdC, world.entities[entity].row, archetype, &q.options)
+				c, err = fetchComponentForQueryResult[C](q.componentInfoC, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var d *D
+			var d D
 			if fetchD {
-				d, err = fetchComponentForQueryResult[D](q.componentIdD, world.entities[entity].row, archetype, &q.options)
+				d, err = fetchComponentForQueryResult[D](q.componentInfoD, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var e *E
+			var e E
 			if fetchE {
-				e, err = fetchComponentForQueryResult[E](q.componentIdE, world.entities[entity].row, archetype, &q.options)
+				e, err = fetchComponentForQueryResult[E](q.componentInfoE, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var f *F
+			var f F
 			if fetchF {
-				f, err = fetchComponentForQueryResult[F](q.componentIdF, world.entities[entity].row, archetype, &q.options)
+				f, err = fetchComponentForQueryResult[F](q.componentInfoF, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var g *G
+			var g G
 			if fetchG {
-				g, err = fetchComponentForQueryResult[G](q.componentIdG, world.entities[entity].row, archetype, &q.options)
+				g, err = fetchComponentForQueryResult[G](q.componentInfoG, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var h *H
+			var h H
 			if fetchH {
-				h, err = fetchComponentForQueryResult[H](q.componentIdH, world.entities[entity].row, archetype, &q.options)
+				h, err = fetchComponentForQueryResult[H](q.componentInfoH, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var i *I
+			var i I
 			if fetchI {
-				i, err = fetchComponentForQueryResult[I](q.componentIdI, world.entities[entity].row, archetype, &q.options)
+				i, err = fetchComponentForQueryResult[I](q.componentInfoI, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var j *J
+			var j J
 			if fetchJ {
-				j, err = fetchComponentForQueryResult[J](q.componentIdJ, world.entities[entity].row, archetype, &q.options)
+				j, err = fetchComponentForQueryResult[J](q.componentInfoJ, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var k *K
+			var k K
 			if fetchK {
-				k, err = fetchComponentForQueryResult[K](q.componentIdK, world.entities[entity].row, archetype, &q.options)
+				k, err = fetchComponentForQueryResult[K](q.componentInfoK, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var l *L
+			var l L
 			if fetchL {
-				l, err = fetchComponentForQueryResult[L](q.componentIdL, world.entities[entity].row, archetype, &q.options)
+				l, err = fetchComponentForQueryResult[L](q.componentInfoL, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var m *M
+			var m M
 			if fetchM {
-				m, err = fetchComponentForQueryResult[M](q.componentIdM, world.entities[entity].row, archetype, &q.options)
+				m, err = fetchComponentForQueryResult[M](q.componentInfoM, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var n *N
+			var n N
 			if fetchN {
-				n, err = fetchComponentForQueryResult[N](q.componentIdN, world.entities[entity].row, archetype, &q.options)
+				n, err = fetchComponentForQueryResult[N](q.componentInfoN, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var o *O
+			var o O
 			if fetchO {
-				o, err = fetchComponentForQueryResult[O](q.componentIdO, world.entities[entity].row, archetype, &q.options)
+				o, err = fetchComponentForQueryResult[O](q.componentInfoO, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
 			}
 
-			var p *P
+			var p P
 			if fetchP {
-				p, err = fetchComponentForQueryResult[P](q.componentIdP, world.entities[entity].row, archetype, &q.options)
+				p, err = fetchComponentForQueryResult[P](q.componentInfoP, world.entities[entity].row, archetype)
 				if err != nil {
 					return err
 				}
@@ -2608,9 +2573,9 @@ func (q *Query1[A, QueryOptions]) Prepare(world *World, otherWorlds *map[WorldId
 		return err
 	}
 
-	q.componentIdA = ComponentIdFor[A](targetWorld)
+	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
 	q.components = []ComponentId{
-		q.componentIdA,
+		q.componentInfoA.id,
 	}
 	q.options.optimize(q.components)
 	return nil
@@ -2622,11 +2587,11 @@ func (q *Query2[A, B, QueryOptions]) Prepare(world *World, otherWorlds *map[Worl
 		return err
 	}
 
-	q.componentIdA = ComponentIdFor[A](targetWorld)
-	q.componentIdB = ComponentIdFor[B](targetWorld)
+	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
+	q.componentInfoB = queryComponentInfoFor[B](targetWorld)
 	q.components = []ComponentId{
-		q.componentIdA,
-		q.componentIdB,
+		q.componentInfoA.id,
+		q.componentInfoB.id,
 	}
 	q.options.optimize(q.components)
 	return nil
@@ -2638,13 +2603,13 @@ func (q *Query3[A, B, C, QueryOptions]) Prepare(world *World, otherWorlds *map[W
 		return err
 	}
 
-	q.componentIdA = ComponentIdFor[A](targetWorld)
-	q.componentIdB = ComponentIdFor[B](targetWorld)
-	q.componentIdC = ComponentIdFor[C](targetWorld)
+	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
+	q.componentInfoB = queryComponentInfoFor[B](targetWorld)
+	q.componentInfoC = queryComponentInfoFor[C](targetWorld)
 	q.components = []ComponentId{
-		q.componentIdA,
-		q.componentIdB,
-		q.componentIdC,
+		q.componentInfoA.id,
+		q.componentInfoB.id,
+		q.componentInfoC.id,
 	}
 	q.options.optimize(q.components)
 	return nil
@@ -2656,15 +2621,15 @@ func (q *Query4[A, B, C, D, QueryOptions]) Prepare(world *World, otherWorlds *ma
 		return err
 	}
 
-	q.componentIdA = ComponentIdFor[A](targetWorld)
-	q.componentIdB = ComponentIdFor[B](targetWorld)
-	q.componentIdC = ComponentIdFor[C](targetWorld)
-	q.componentIdD = ComponentIdFor[D](targetWorld)
+	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
+	q.componentInfoB = queryComponentInfoFor[B](targetWorld)
+	q.componentInfoC = queryComponentInfoFor[C](targetWorld)
+	q.componentInfoD = queryComponentInfoFor[D](targetWorld)
 	q.components = []ComponentId{
-		q.componentIdA,
-		q.componentIdB,
-		q.componentIdC,
-		q.componentIdD,
+		q.componentInfoA.id,
+		q.componentInfoB.id,
+		q.componentInfoC.id,
+		q.componentInfoD.id,
 	}
 	q.options.optimize(q.components)
 	return nil
@@ -2676,17 +2641,17 @@ func (q *Query5[A, B, C, D, E, QueryOptions]) Prepare(world *World, otherWorlds 
 		return err
 	}
 
-	q.componentIdA = ComponentIdFor[A](targetWorld)
-	q.componentIdB = ComponentIdFor[B](targetWorld)
-	q.componentIdC = ComponentIdFor[C](targetWorld)
-	q.componentIdD = ComponentIdFor[D](targetWorld)
-	q.componentIdE = ComponentIdFor[E](targetWorld)
+	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
+	q.componentInfoB = queryComponentInfoFor[B](targetWorld)
+	q.componentInfoC = queryComponentInfoFor[C](targetWorld)
+	q.componentInfoD = queryComponentInfoFor[D](targetWorld)
+	q.componentInfoE = queryComponentInfoFor[E](targetWorld)
 	q.components = []ComponentId{
-		q.componentIdA,
-		q.componentIdB,
-		q.componentIdC,
-		q.componentIdD,
-		q.componentIdE,
+		q.componentInfoA.id,
+		q.componentInfoB.id,
+		q.componentInfoC.id,
+		q.componentInfoD.id,
+		q.componentInfoE.id,
 	}
 	q.options.optimize(q.components)
 	return nil
@@ -2698,19 +2663,19 @@ func (q *Query6[A, B, C, D, E, F, QueryOptions]) Prepare(world *World, otherWorl
 		return err
 	}
 
-	q.componentIdA = ComponentIdFor[A](targetWorld)
-	q.componentIdB = ComponentIdFor[B](targetWorld)
-	q.componentIdC = ComponentIdFor[C](targetWorld)
-	q.componentIdD = ComponentIdFor[D](targetWorld)
-	q.componentIdE = ComponentIdFor[E](targetWorld)
-	q.componentIdF = ComponentIdFor[F](targetWorld)
+	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
+	q.componentInfoB = queryComponentInfoFor[B](targetWorld)
+	q.componentInfoC = queryComponentInfoFor[C](targetWorld)
+	q.componentInfoD = queryComponentInfoFor[D](targetWorld)
+	q.componentInfoE = queryComponentInfoFor[E](targetWorld)
+	q.componentInfoF = queryComponentInfoFor[F](targetWorld)
 	q.components = []ComponentId{
-		q.componentIdA,
-		q.componentIdB,
-		q.componentIdC,
-		q.componentIdD,
-		q.componentIdE,
-		q.componentIdF,
+		q.componentInfoA.id,
+		q.componentInfoB.id,
+		q.componentInfoC.id,
+		q.componentInfoD.id,
+		q.componentInfoE.id,
+		q.componentInfoF.id,
 	}
 	q.options.optimize(q.components)
 	return nil
@@ -2722,21 +2687,21 @@ func (q *Query7[A, B, C, D, E, F, G, QueryOptions]) Prepare(world *World, otherW
 		return err
 	}
 
-	q.componentIdA = ComponentIdFor[A](targetWorld)
-	q.componentIdB = ComponentIdFor[B](targetWorld)
-	q.componentIdC = ComponentIdFor[C](targetWorld)
-	q.componentIdD = ComponentIdFor[D](targetWorld)
-	q.componentIdE = ComponentIdFor[E](targetWorld)
-	q.componentIdF = ComponentIdFor[F](targetWorld)
-	q.componentIdG = ComponentIdFor[G](targetWorld)
+	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
+	q.componentInfoB = queryComponentInfoFor[B](targetWorld)
+	q.componentInfoC = queryComponentInfoFor[C](targetWorld)
+	q.componentInfoD = queryComponentInfoFor[D](targetWorld)
+	q.componentInfoE = queryComponentInfoFor[E](targetWorld)
+	q.componentInfoF = queryComponentInfoFor[F](targetWorld)
+	q.componentInfoG = queryComponentInfoFor[G](targetWorld)
 	q.components = []ComponentId{
-		q.componentIdA,
-		q.componentIdB,
-		q.componentIdC,
-		q.componentIdD,
-		q.componentIdE,
-		q.componentIdF,
-		q.componentIdG,
+		q.componentInfoA.id,
+		q.componentInfoB.id,
+		q.componentInfoC.id,
+		q.componentInfoD.id,
+		q.componentInfoE.id,
+		q.componentInfoF.id,
+		q.componentInfoG.id,
 	}
 	q.options.optimize(q.components)
 	return nil
@@ -2748,23 +2713,23 @@ func (q *Query8[A, B, C, D, E, F, G, H, QueryOptions]) Prepare(world *World, oth
 		return err
 	}
 
-	q.componentIdA = ComponentIdFor[A](targetWorld)
-	q.componentIdB = ComponentIdFor[B](targetWorld)
-	q.componentIdC = ComponentIdFor[C](targetWorld)
-	q.componentIdD = ComponentIdFor[D](targetWorld)
-	q.componentIdE = ComponentIdFor[E](targetWorld)
-	q.componentIdF = ComponentIdFor[F](targetWorld)
-	q.componentIdG = ComponentIdFor[G](targetWorld)
-	q.componentIdH = ComponentIdFor[H](targetWorld)
+	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
+	q.componentInfoB = queryComponentInfoFor[B](targetWorld)
+	q.componentInfoC = queryComponentInfoFor[C](targetWorld)
+	q.componentInfoD = queryComponentInfoFor[D](targetWorld)
+	q.componentInfoE = queryComponentInfoFor[E](targetWorld)
+	q.componentInfoF = queryComponentInfoFor[F](targetWorld)
+	q.componentInfoG = queryComponentInfoFor[G](targetWorld)
+	q.componentInfoH = queryComponentInfoFor[H](targetWorld)
 	q.components = []ComponentId{
-		q.componentIdA,
-		q.componentIdB,
-		q.componentIdC,
-		q.componentIdD,
-		q.componentIdE,
-		q.componentIdF,
-		q.componentIdG,
-		q.componentIdH,
+		q.componentInfoA.id,
+		q.componentInfoB.id,
+		q.componentInfoC.id,
+		q.componentInfoD.id,
+		q.componentInfoE.id,
+		q.componentInfoF.id,
+		q.componentInfoG.id,
+		q.componentInfoH.id,
 	}
 	q.options.optimize(q.components)
 	return nil
@@ -2777,16 +2742,16 @@ func (q *Query9[A, B, C, D, E, F, G, H, I, Options]) Prepare(world *World, other
 		return err
 	}
 
-	q.componentIdA = ComponentIdFor[A](targetWorld)
-	q.componentIdB = ComponentIdFor[B](targetWorld)
-	q.componentIdC = ComponentIdFor[C](targetWorld)
-	q.componentIdD = ComponentIdFor[D](targetWorld)
-	q.componentIdE = ComponentIdFor[E](targetWorld)
-	q.componentIdF = ComponentIdFor[F](targetWorld)
-	q.componentIdG = ComponentIdFor[G](targetWorld)
-	q.componentIdH = ComponentIdFor[H](targetWorld)
-	q.componentIdI = ComponentIdFor[I](targetWorld)
-	q.components = []ComponentId{q.componentIdA, q.componentIdB, q.componentIdC, q.componentIdD, q.componentIdE, q.componentIdF, q.componentIdG, q.componentIdH, q.componentIdI}
+	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
+	q.componentInfoB = queryComponentInfoFor[B](targetWorld)
+	q.componentInfoC = queryComponentInfoFor[C](targetWorld)
+	q.componentInfoD = queryComponentInfoFor[D](targetWorld)
+	q.componentInfoE = queryComponentInfoFor[E](targetWorld)
+	q.componentInfoF = queryComponentInfoFor[F](targetWorld)
+	q.componentInfoG = queryComponentInfoFor[G](targetWorld)
+	q.componentInfoH = queryComponentInfoFor[H](targetWorld)
+	q.componentInfoI = queryComponentInfoFor[I](targetWorld)
+	q.components = []ComponentId{q.componentInfoA.id, q.componentInfoB.id, q.componentInfoC.id, q.componentInfoD.id, q.componentInfoE.id, q.componentInfoF.id, q.componentInfoG.id, q.componentInfoH.id, q.componentInfoI.id}
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2798,17 +2763,17 @@ func (q *Query10[A, B, C, D, E, F, G, H, I, J, Options]) Prepare(world *World, o
 		return err
 	}
 
-	q.componentIdA = ComponentIdFor[A](targetWorld)
-	q.componentIdB = ComponentIdFor[B](targetWorld)
-	q.componentIdC = ComponentIdFor[C](targetWorld)
-	q.componentIdD = ComponentIdFor[D](targetWorld)
-	q.componentIdE = ComponentIdFor[E](targetWorld)
-	q.componentIdF = ComponentIdFor[F](targetWorld)
-	q.componentIdG = ComponentIdFor[G](targetWorld)
-	q.componentIdH = ComponentIdFor[H](targetWorld)
-	q.componentIdI = ComponentIdFor[I](targetWorld)
-	q.componentIdJ = ComponentIdFor[J](targetWorld)
-	q.components = []ComponentId{q.componentIdA, q.componentIdB, q.componentIdC, q.componentIdD, q.componentIdE, q.componentIdF, q.componentIdG, q.componentIdH, q.componentIdI, q.componentIdJ}
+	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
+	q.componentInfoB = queryComponentInfoFor[B](targetWorld)
+	q.componentInfoC = queryComponentInfoFor[C](targetWorld)
+	q.componentInfoD = queryComponentInfoFor[D](targetWorld)
+	q.componentInfoE = queryComponentInfoFor[E](targetWorld)
+	q.componentInfoF = queryComponentInfoFor[F](targetWorld)
+	q.componentInfoG = queryComponentInfoFor[G](targetWorld)
+	q.componentInfoH = queryComponentInfoFor[H](targetWorld)
+	q.componentInfoI = queryComponentInfoFor[I](targetWorld)
+	q.componentInfoJ = queryComponentInfoFor[J](targetWorld)
+	q.components = []ComponentId{q.componentInfoA.id, q.componentInfoB.id, q.componentInfoC.id, q.componentInfoD.id, q.componentInfoE.id, q.componentInfoF.id, q.componentInfoG.id, q.componentInfoH.id, q.componentInfoI.id, q.componentInfoJ.id}
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2820,18 +2785,18 @@ func (q *Query11[A, B, C, D, E, F, G, H, I, J, K, Options]) Prepare(world *World
 		return err
 	}
 
-	q.componentIdA = ComponentIdFor[A](targetWorld)
-	q.componentIdB = ComponentIdFor[B](targetWorld)
-	q.componentIdC = ComponentIdFor[C](targetWorld)
-	q.componentIdD = ComponentIdFor[D](targetWorld)
-	q.componentIdE = ComponentIdFor[E](targetWorld)
-	q.componentIdF = ComponentIdFor[F](targetWorld)
-	q.componentIdG = ComponentIdFor[G](targetWorld)
-	q.componentIdH = ComponentIdFor[H](targetWorld)
-	q.componentIdI = ComponentIdFor[I](targetWorld)
-	q.componentIdJ = ComponentIdFor[J](targetWorld)
-	q.componentIdK = ComponentIdFor[K](targetWorld)
-	q.components = []ComponentId{q.componentIdA, q.componentIdB, q.componentIdC, q.componentIdD, q.componentIdE, q.componentIdF, q.componentIdG, q.componentIdH, q.componentIdI, q.componentIdJ, q.componentIdK}
+	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
+	q.componentInfoB = queryComponentInfoFor[B](targetWorld)
+	q.componentInfoC = queryComponentInfoFor[C](targetWorld)
+	q.componentInfoD = queryComponentInfoFor[D](targetWorld)
+	q.componentInfoE = queryComponentInfoFor[E](targetWorld)
+	q.componentInfoF = queryComponentInfoFor[F](targetWorld)
+	q.componentInfoG = queryComponentInfoFor[G](targetWorld)
+	q.componentInfoH = queryComponentInfoFor[H](targetWorld)
+	q.componentInfoI = queryComponentInfoFor[I](targetWorld)
+	q.componentInfoJ = queryComponentInfoFor[J](targetWorld)
+	q.componentInfoK = queryComponentInfoFor[K](targetWorld)
+	q.components = []ComponentId{q.componentInfoA.id, q.componentInfoB.id, q.componentInfoC.id, q.componentInfoD.id, q.componentInfoE.id, q.componentInfoF.id, q.componentInfoG.id, q.componentInfoH.id, q.componentInfoI.id, q.componentInfoJ.id, q.componentInfoK.id}
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2843,19 +2808,19 @@ func (q *Query12[A, B, C, D, E, F, G, H, I, J, K, L, Options]) Prepare(world *Wo
 		return err
 	}
 
-	q.componentIdA = ComponentIdFor[A](targetWorld)
-	q.componentIdB = ComponentIdFor[B](targetWorld)
-	q.componentIdC = ComponentIdFor[C](targetWorld)
-	q.componentIdD = ComponentIdFor[D](targetWorld)
-	q.componentIdE = ComponentIdFor[E](targetWorld)
-	q.componentIdF = ComponentIdFor[F](targetWorld)
-	q.componentIdG = ComponentIdFor[G](targetWorld)
-	q.componentIdH = ComponentIdFor[H](targetWorld)
-	q.componentIdI = ComponentIdFor[I](targetWorld)
-	q.componentIdJ = ComponentIdFor[J](targetWorld)
-	q.componentIdK = ComponentIdFor[K](targetWorld)
-	q.componentIdL = ComponentIdFor[L](targetWorld)
-	q.components = []ComponentId{q.componentIdA, q.componentIdB, q.componentIdC, q.componentIdD, q.componentIdE, q.componentIdF, q.componentIdG, q.componentIdH, q.componentIdI, q.componentIdJ, q.componentIdK, q.componentIdL}
+	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
+	q.componentInfoB = queryComponentInfoFor[B](targetWorld)
+	q.componentInfoC = queryComponentInfoFor[C](targetWorld)
+	q.componentInfoD = queryComponentInfoFor[D](targetWorld)
+	q.componentInfoE = queryComponentInfoFor[E](targetWorld)
+	q.componentInfoF = queryComponentInfoFor[F](targetWorld)
+	q.componentInfoG = queryComponentInfoFor[G](targetWorld)
+	q.componentInfoH = queryComponentInfoFor[H](targetWorld)
+	q.componentInfoI = queryComponentInfoFor[I](targetWorld)
+	q.componentInfoJ = queryComponentInfoFor[J](targetWorld)
+	q.componentInfoK = queryComponentInfoFor[K](targetWorld)
+	q.componentInfoL = queryComponentInfoFor[L](targetWorld)
+	q.components = []ComponentId{q.componentInfoA.id, q.componentInfoB.id, q.componentInfoC.id, q.componentInfoD.id, q.componentInfoE.id, q.componentInfoF.id, q.componentInfoG.id, q.componentInfoH.id, q.componentInfoI.id, q.componentInfoJ.id, q.componentInfoK.id, q.componentInfoL.id}
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2867,20 +2832,20 @@ func (q *Query13[A, B, C, D, E, F, G, H, I, J, K, L, M, Options]) Prepare(world 
 		return err
 	}
 
-	q.componentIdA = ComponentIdFor[A](targetWorld)
-	q.componentIdB = ComponentIdFor[B](targetWorld)
-	q.componentIdC = ComponentIdFor[C](targetWorld)
-	q.componentIdD = ComponentIdFor[D](targetWorld)
-	q.componentIdE = ComponentIdFor[E](targetWorld)
-	q.componentIdF = ComponentIdFor[F](targetWorld)
-	q.componentIdG = ComponentIdFor[G](targetWorld)
-	q.componentIdH = ComponentIdFor[H](targetWorld)
-	q.componentIdI = ComponentIdFor[I](targetWorld)
-	q.componentIdJ = ComponentIdFor[J](targetWorld)
-	q.componentIdK = ComponentIdFor[K](targetWorld)
-	q.componentIdL = ComponentIdFor[L](targetWorld)
-	q.componentIdM = ComponentIdFor[M](targetWorld)
-	q.components = []ComponentId{q.componentIdA, q.componentIdB, q.componentIdC, q.componentIdD, q.componentIdE, q.componentIdF, q.componentIdG, q.componentIdH, q.componentIdI, q.componentIdJ, q.componentIdK, q.componentIdL, q.componentIdM}
+	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
+	q.componentInfoB = queryComponentInfoFor[B](targetWorld)
+	q.componentInfoC = queryComponentInfoFor[C](targetWorld)
+	q.componentInfoD = queryComponentInfoFor[D](targetWorld)
+	q.componentInfoE = queryComponentInfoFor[E](targetWorld)
+	q.componentInfoF = queryComponentInfoFor[F](targetWorld)
+	q.componentInfoG = queryComponentInfoFor[G](targetWorld)
+	q.componentInfoH = queryComponentInfoFor[H](targetWorld)
+	q.componentInfoI = queryComponentInfoFor[I](targetWorld)
+	q.componentInfoJ = queryComponentInfoFor[J](targetWorld)
+	q.componentInfoK = queryComponentInfoFor[K](targetWorld)
+	q.componentInfoL = queryComponentInfoFor[L](targetWorld)
+	q.componentInfoM = queryComponentInfoFor[M](targetWorld)
+	q.components = []ComponentId{q.componentInfoA.id, q.componentInfoB.id, q.componentInfoC.id, q.componentInfoD.id, q.componentInfoE.id, q.componentInfoF.id, q.componentInfoG.id, q.componentInfoH.id, q.componentInfoI.id, q.componentInfoJ.id, q.componentInfoK.id, q.componentInfoL.id, q.componentInfoM.id}
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2892,21 +2857,21 @@ func (q *Query14[A, B, C, D, E, F, G, H, I, J, K, L, M, N, Options]) Prepare(wor
 		return err
 	}
 
-	q.componentIdA = ComponentIdFor[A](targetWorld)
-	q.componentIdB = ComponentIdFor[B](targetWorld)
-	q.componentIdC = ComponentIdFor[C](targetWorld)
-	q.componentIdD = ComponentIdFor[D](targetWorld)
-	q.componentIdE = ComponentIdFor[E](targetWorld)
-	q.componentIdF = ComponentIdFor[F](targetWorld)
-	q.componentIdG = ComponentIdFor[G](targetWorld)
-	q.componentIdH = ComponentIdFor[H](targetWorld)
-	q.componentIdI = ComponentIdFor[I](targetWorld)
-	q.componentIdJ = ComponentIdFor[J](targetWorld)
-	q.componentIdK = ComponentIdFor[K](targetWorld)
-	q.componentIdL = ComponentIdFor[L](targetWorld)
-	q.componentIdM = ComponentIdFor[M](targetWorld)
-	q.componentIdN = ComponentIdFor[N](targetWorld)
-	q.components = []ComponentId{q.componentIdA, q.componentIdB, q.componentIdC, q.componentIdD, q.componentIdE, q.componentIdF, q.componentIdG, q.componentIdH, q.componentIdI, q.componentIdJ, q.componentIdK, q.componentIdL, q.componentIdM, q.componentIdN}
+	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
+	q.componentInfoB = queryComponentInfoFor[B](targetWorld)
+	q.componentInfoC = queryComponentInfoFor[C](targetWorld)
+	q.componentInfoD = queryComponentInfoFor[D](targetWorld)
+	q.componentInfoE = queryComponentInfoFor[E](targetWorld)
+	q.componentInfoF = queryComponentInfoFor[F](targetWorld)
+	q.componentInfoG = queryComponentInfoFor[G](targetWorld)
+	q.componentInfoH = queryComponentInfoFor[H](targetWorld)
+	q.componentInfoI = queryComponentInfoFor[I](targetWorld)
+	q.componentInfoJ = queryComponentInfoFor[J](targetWorld)
+	q.componentInfoK = queryComponentInfoFor[K](targetWorld)
+	q.componentInfoL = queryComponentInfoFor[L](targetWorld)
+	q.componentInfoM = queryComponentInfoFor[M](targetWorld)
+	q.componentInfoN = queryComponentInfoFor[N](targetWorld)
+	q.components = []ComponentId{q.componentInfoA.id, q.componentInfoB.id, q.componentInfoC.id, q.componentInfoD.id, q.componentInfoE.id, q.componentInfoF.id, q.componentInfoG.id, q.componentInfoH.id, q.componentInfoI.id, q.componentInfoJ.id, q.componentInfoK.id, q.componentInfoL.id, q.componentInfoM.id, q.componentInfoN.id}
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2918,22 +2883,22 @@ func (q *Query15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, Options]) Prepare(
 		return err
 	}
 
-	q.componentIdA = ComponentIdFor[A](targetWorld)
-	q.componentIdB = ComponentIdFor[B](targetWorld)
-	q.componentIdC = ComponentIdFor[C](targetWorld)
-	q.componentIdD = ComponentIdFor[D](targetWorld)
-	q.componentIdE = ComponentIdFor[E](targetWorld)
-	q.componentIdF = ComponentIdFor[F](targetWorld)
-	q.componentIdG = ComponentIdFor[G](targetWorld)
-	q.componentIdH = ComponentIdFor[H](targetWorld)
-	q.componentIdI = ComponentIdFor[I](targetWorld)
-	q.componentIdJ = ComponentIdFor[J](targetWorld)
-	q.componentIdK = ComponentIdFor[K](targetWorld)
-	q.componentIdL = ComponentIdFor[L](targetWorld)
-	q.componentIdM = ComponentIdFor[M](targetWorld)
-	q.componentIdN = ComponentIdFor[N](targetWorld)
-	q.componentIdO = ComponentIdFor[O](targetWorld)
-	q.components = []ComponentId{q.componentIdA, q.componentIdB, q.componentIdC, q.componentIdD, q.componentIdE, q.componentIdF, q.componentIdG, q.componentIdH, q.componentIdI, q.componentIdJ, q.componentIdK, q.componentIdL, q.componentIdM, q.componentIdN, q.componentIdO}
+	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
+	q.componentInfoB = queryComponentInfoFor[B](targetWorld)
+	q.componentInfoC = queryComponentInfoFor[C](targetWorld)
+	q.componentInfoD = queryComponentInfoFor[D](targetWorld)
+	q.componentInfoE = queryComponentInfoFor[E](targetWorld)
+	q.componentInfoF = queryComponentInfoFor[F](targetWorld)
+	q.componentInfoG = queryComponentInfoFor[G](targetWorld)
+	q.componentInfoH = queryComponentInfoFor[H](targetWorld)
+	q.componentInfoI = queryComponentInfoFor[I](targetWorld)
+	q.componentInfoJ = queryComponentInfoFor[J](targetWorld)
+	q.componentInfoK = queryComponentInfoFor[K](targetWorld)
+	q.componentInfoL = queryComponentInfoFor[L](targetWorld)
+	q.componentInfoM = queryComponentInfoFor[M](targetWorld)
+	q.componentInfoN = queryComponentInfoFor[N](targetWorld)
+	q.componentInfoO = queryComponentInfoFor[O](targetWorld)
+	q.components = []ComponentId{q.componentInfoA.id, q.componentInfoB.id, q.componentInfoC.id, q.componentInfoD.id, q.componentInfoE.id, q.componentInfoF.id, q.componentInfoG.id, q.componentInfoH.id, q.componentInfoI.id, q.componentInfoJ.id, q.componentInfoK.id, q.componentInfoL.id, q.componentInfoM.id, q.componentInfoN.id, q.componentInfoO.id}
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2945,25 +2910,25 @@ func (q *Query16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Options]) Prepa
 		return err
 	}
 
-	q.componentIdA = ComponentIdFor[A](targetWorld)
-	q.componentIdB = ComponentIdFor[B](targetWorld)
-	q.componentIdC = ComponentIdFor[C](targetWorld)
-	q.componentIdD = ComponentIdFor[D](targetWorld)
-	q.componentIdE = ComponentIdFor[E](targetWorld)
-	q.componentIdF = ComponentIdFor[F](targetWorld)
-	q.componentIdG = ComponentIdFor[G](targetWorld)
-	q.componentIdH = ComponentIdFor[H](targetWorld)
-	q.componentIdI = ComponentIdFor[I](targetWorld)
-	q.componentIdJ = ComponentIdFor[J](targetWorld)
-	q.componentIdK = ComponentIdFor[K](targetWorld)
-	q.componentIdL = ComponentIdFor[L](targetWorld)
-	q.componentIdM = ComponentIdFor[M](targetWorld)
-	q.componentIdN = ComponentIdFor[N](targetWorld)
-	q.componentIdO = ComponentIdFor[O](targetWorld)
-	q.componentIdP = ComponentIdFor[P](targetWorld)
+	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
+	q.componentInfoB = queryComponentInfoFor[B](targetWorld)
+	q.componentInfoC = queryComponentInfoFor[C](targetWorld)
+	q.componentInfoD = queryComponentInfoFor[D](targetWorld)
+	q.componentInfoE = queryComponentInfoFor[E](targetWorld)
+	q.componentInfoF = queryComponentInfoFor[F](targetWorld)
+	q.componentInfoG = queryComponentInfoFor[G](targetWorld)
+	q.componentInfoH = queryComponentInfoFor[H](targetWorld)
+	q.componentInfoI = queryComponentInfoFor[I](targetWorld)
+	q.componentInfoJ = queryComponentInfoFor[J](targetWorld)
+	q.componentInfoK = queryComponentInfoFor[K](targetWorld)
+	q.componentInfoL = queryComponentInfoFor[L](targetWorld)
+	q.componentInfoM = queryComponentInfoFor[M](targetWorld)
+	q.componentInfoN = queryComponentInfoFor[N](targetWorld)
+	q.componentInfoO = queryComponentInfoFor[O](targetWorld)
+	q.componentInfoP = queryComponentInfoFor[P](targetWorld)
 	q.components = []ComponentId{
-		q.componentIdA, q.componentIdB, q.componentIdC, q.componentIdD, q.componentIdE, q.componentIdF, q.componentIdG, q.componentIdH,
-		q.componentIdI, q.componentIdJ, q.componentIdK, q.componentIdL, q.componentIdM, q.componentIdN, q.componentIdO, q.componentIdP,
+		q.componentInfoA.id, q.componentInfoB.id, q.componentInfoC.id, q.componentInfoD.id, q.componentInfoE.id, q.componentInfoF.id, q.componentInfoG.id, q.componentInfoH.id,
+		q.componentInfoI.id, q.componentInfoJ.id, q.componentInfoK.id, q.componentInfoL.id, q.componentInfoM.id, q.componentInfoN.id, q.componentInfoO.id, q.componentInfoP.id,
 	}
 	q.options.optimize(q.components)
 	return nil
@@ -3027,15 +2992,11 @@ func shouldHandleQueryComponent(componentId ComponentId, archetype *Archetype, q
 }
 
 // fetchComponentForQueryResult fetches a component from the component storage
-func fetchComponentForQueryResult[T IComponent](componentId ComponentId, entityRow uint, archetype *Archetype, queryOptions *CombinedQueryOptions) (result *T, err error) {
-	storage := archetype.components[componentId]
-	result, err = getComponentFromComponentStorage[T](storage, entityRow)
+func fetchComponentForQueryResult[T IComponent](componentInfo queryComponentInfo, entityRow uint, archetype *Archetype) (result T, err error) {
+	storage := archetype.components[componentInfo.id]
+	result, err = getComponentFromComponentStorage[T](storage, entityRow, componentInfo.isPointer)
 	if err != nil {
-		return nil, fmt.Errorf("failed to retrieve component %s from storage: %v", componentId.DebugString(), err)
-	}
-
-	if result != nil && (queryOptions.ReadOnlyComponents.IsAllReadOnly || slices.Contains(queryOptions.ReadOnlyComponents.ComponentIds, componentId)) {
-		result = utils.ClonePointerValue(result)
+		return result, fmt.Errorf("failed to retrieve component %s from storage: %v", componentInfo.id.DebugString(), err)
 	}
 
 	return result, nil

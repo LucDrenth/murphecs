@@ -508,12 +508,12 @@ func TestConcurrency(t *testing.T) {
 
 		subAppA.
 			AddSystem(startup, func(world *ecs.World) error {
-				_, err := ecs.Spawn(world, &component{
+				_, err := ecs.Spawn(world, component{
 					data: map[string]int{},
 				})
 				return err
 			}).
-			AddSystem(update, func(query *ecs.Query1[component, ecs.Default]) {
+			AddSystem(update, func(query *ecs.Query1[*component, ecs.Default]) {
 				query.Iter(func(entityId ecs.EntityId, a *component) {
 					target := len(a.data)
 					a.data[strconv.Itoa(target)] = target
@@ -522,7 +522,7 @@ func TestConcurrency(t *testing.T) {
 
 		subAppB.
 			AddResource(logger).
-			AddSystem(update, func(log *TestLogger, query *ecs.Query1[component, ecs.TestCustomTargetWorld]) {
+			AddSystem(update, func(log *TestLogger, query *ecs.Query1[*component, ecs.TestCustomTargetWorld]) {
 				query.Iter(func(entityId ecs.EntityId, a *component) {
 					for k, v := range a.data {
 						log.Info("%s=%d\t", k, v)

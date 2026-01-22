@@ -132,10 +132,10 @@ func TestInsert(t *testing.T) {
 		err = Insert(world, entityA, &componentA{}, &componentC{})
 		assert.NoError(err)
 
-		a, err := Get1[componentA](world, entityA)
+		a, err := Get1[*componentA](world, entityA)
 		assert.NoError(err)
 		assert.NotNil(a)
-		a, err = Get1[componentA](world, entityB)
+		a, err = Get1[*componentA](world, entityB)
 		assert.Error(err)
 		assert.Nil(a)
 
@@ -240,10 +240,10 @@ func TestInsertOrOverwrite(t *testing.T) {
 		err = InsertOrOverwrite(world, entityA, &componentA{}, &componentC{})
 		assert.NoError(err)
 
-		a, err := Get1[componentA](world, entityA)
+		a, err := Get1[*componentA](world, entityA)
 		assert.NoError(err)
 		assert.NotNil(a)
-		a, err = Get1[componentA](world, entityB)
+		a, err = Get1[*componentA](world, entityB)
 		assert.Error(err)
 		assert.Nil(a)
 

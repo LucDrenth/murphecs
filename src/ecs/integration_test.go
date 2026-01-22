@@ -23,7 +23,7 @@ func TestArchetypeMoveInsideQUery(t *testing.T) {
 	entityId, err := ecs.Spawn(world, &componentA{value: 10})
 	assert.NoError(err)
 
-	query := ecs.Query1[componentA, ecs.Default]{}
+	query := ecs.Query1[*componentA, ecs.Default]{}
 	err = query.Prepare(world, nil)
 	assert.NoError(err)
 	err = query.Exec(world)
@@ -86,7 +86,7 @@ func TestMixingComponentTypes(t *testing.T) {
 		assert.Equal(4, world.CountEntities())
 		assert.Equal(8, world.CountComponents())
 
-		query := ecs.Query2[componentA, componentB, ecs.Default]{}
+		query := ecs.Query2[*componentA, *componentB, ecs.Default]{}
 		err = query.Prepare(world, nil)
 		assert.NoError(err)
 		err = query.Exec(world)
@@ -127,7 +127,7 @@ func TestMixingComponentTypes(t *testing.T) {
 		assert.Equal(4, world.CountEntities())
 		assert.Equal(8, world.CountComponents())
 
-		query := ecs.Query2[componentA, componentB, ecs.Default]{}
+		query := ecs.Query2[*componentA, *componentB, ecs.Default]{}
 		err = query.Prepare(world, nil)
 		assert.NoError(err)
 		err = query.Exec(world)

@@ -50,7 +50,7 @@ func main() {
 
 	for range 5 {
 		// Loop over the entities with the Position and the Velocity component
-		query := ecs.Query2[Position, Velocity, ecs.Default]{}
+		query := ecs.Query2[*Position, Velocity, ecs.Default]{}
 		query.Prepare(world, nil)
 		query.Exec(world)
 

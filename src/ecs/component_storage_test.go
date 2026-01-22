@@ -107,7 +107,7 @@ func TestComponentStorageInsert(t *testing.T) {
 
 		{
 			// assert that component matches what we inserted
-			item, err := getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 0)
+			item, err := getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 0, false)
 			assert.NoError(err)
 			err = item.Validate()
 			assert.NoError(err)
@@ -117,7 +117,7 @@ func TestComponentStorageInsert(t *testing.T) {
 
 		{
 			// assert that component matches what we inserted after garbage collection has run
-			item, err := getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 0)
+			item, err := getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 0, false)
 			assert.NoError(err)
 			err = item.Validate()
 			assert.NoError(err)
@@ -175,7 +175,7 @@ func TestComponentStorageInsertValue(t *testing.T) {
 
 		{
 			// assert that component matches what we inserted
-			item, err := getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 0)
+			item, err := getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 0, false)
 			assert.NoError(err)
 			err = item.Validate()
 			assert.NoError(err)
@@ -185,7 +185,7 @@ func TestComponentStorageInsertValue(t *testing.T) {
 
 		{
 			// assert that component matches what we inserted after garbage collection has run
-			item, err := getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 0)
+			item, err := getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 0, false)
 			assert.NoError(err)
 			err = item.Validate()
 			assert.NoError(err)
@@ -236,7 +236,7 @@ func TestGetComponentFromComponentStorage(t *testing.T) {
 
 		componentStorage, err := createComponentStorage(4, ComponentIdFor[componentA](world))
 		assert.NoError(err)
-		component, err := getComponentFromComponentStorage[componentA](&componentStorage, 5)
+		component, err := getComponentFromComponentStorage[*componentA](&componentStorage, 5, true)
 		assert.Error(err)
 		assert.Nil(component)
 	})
@@ -258,7 +258,7 @@ func TestGetComponentFromComponentStorage(t *testing.T) {
 		}
 
 		for i := range capacity {
-			component, err := getComponentFromComponentStorage[componentA](&componentStorage, uint(i))
+			component, err := getComponentFromComponentStorage[componentA](&componentStorage, uint(i), false)
 			assert.NoError(err)
 			assert.NotNil(component)
 			assert.Equal(i, component.value)
@@ -283,7 +283,7 @@ func TestGetComponentFromComponentStorage(t *testing.T) {
 		}
 
 		for i := range numberOfInserts {
-			component, err := getComponentFromComponentStorage[componentA](&componentStorage, uint(i))
+			component, err := getComponentFromComponentStorage[componentA](&componentStorage, uint(i), false)
 			assert.NoError(err)
 			assert.NotNil(component)
 			assert.Equal(i, component.value)
@@ -423,16 +423,16 @@ func TestComponentStorageCopyComponent(t *testing.T) {
 
 		err = componentStorage.copyComponent(1, 0)
 		assert.NoError(err)
-		component, err := getComponentFromComponentStorage[componentA](&componentStorage, 0) // copied-over component
+		component, err := getComponentFromComponentStorage[componentA](&componentStorage, 0, false) // copied-over component
 		assert.NoError(err)
 		assert.Equal(20, component.value)
-		component, err = getComponentFromComponentStorage[componentA](&componentStorage, 1) // original component
+		component, err = getComponentFromComponentStorage[componentA](&componentStorage, 1, false) // original component
 		assert.NoError(err)
 		assert.Equal(20, component.value)
 
 		// changing the original should not change the copy
 		component.value = 30
-		component, err = getComponentFromComponentStorage[componentA](&componentStorage, 0) // copied-over component
+		component, err = getComponentFromComponentStorage[componentA](&componentStorage, 0, false) // copied-over component
 		assert.NoError(err)
 		assert.Equal(20, component.value)
 	})
@@ -452,10 +452,10 @@ func TestComponentStorageCopyComponent(t *testing.T) {
 		assert.NoError(err)
 
 		{
-			component, err := getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 0) // copied-over component
+			component, err := getComponentFromComponentStorage[*ComponentWithPointers](&componentStorage, 0, true) // copied-over component
 			assert.NoError(err)
 			assert.NoError(component.Validate())
-			component, err = getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 1) // original component
+			component, err = getComponentFromComponentStorage[*ComponentWithPointers](&componentStorage, 1, true) // original component
 			assert.NoError(err)
 			assert.NoError(component.Validate())
 		}
@@ -463,10 +463,10 @@ func TestComponentStorageCopyComponent(t *testing.T) {
 		runtime.GC()
 
 		{
-			component, err := getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 0) // copied-over component
+			component, err := getComponentFromComponentStorage[*ComponentWithPointers](&componentStorage, 0, true) // copied-over component
 			assert.NoError(err)
 			assert.NoError(component.Validate())
-			component, err = getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 1) // original component
+			component, err = getComponentFromComponentStorage[*ComponentWithPointers](&componentStorage, 1, true) // original component
 			assert.NoError(err)
 			assert.NoError(component.Validate())
 
@@ -477,11 +477,11 @@ func TestComponentStorageCopyComponent(t *testing.T) {
 		runtime.GC()
 
 		{
-			component, err := getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 0) // copied-over component
+			component, err := getComponentFromComponentStorage[*ComponentWithPointers](&componentStorage, 0, true) // copied-over component
 			assert.NoError(err)
 			assert.NoError(component.Validate()) // should not have changed
 
-			component, err = getComponentFromComponentStorage[ComponentWithPointers](&componentStorage, 1) // original component
+			component, err = getComponentFromComponentStorage[*ComponentWithPointers](&componentStorage, 1, true) // original component
 			assert.NoError(err)
 			assert.Error(component.Validate()) // now has an error because name changed
 		}

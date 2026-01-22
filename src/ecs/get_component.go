@@ -1,6 +1,8 @@
 // functions to get components for a given entity
 package ecs
 
+import "reflect"
+
 // Get1 returns the component that belongs to the given entity.
 //
 // Can return the following errors:
@@ -8,14 +10,14 @@ package ecs
 //   - Returns an ErrComponentNotFound error if the entity does not have the component.
 //
 // WARNING: Do not store the component pointer
-func Get1[A IComponent](world *World, entity EntityId) (a *A, err error) {
+func Get1[A IComponent](world *World, entity EntityId) (a A, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
-		return nil, ErrEntityNotFound
+		return a, ErrEntityNotFound
 	}
 
 	if err = setComponentFromEntry(world, entityData, &a); err != nil {
-		return nil, err
+		return a, err
 	}
 
 	return a, nil
@@ -30,16 +32,16 @@ func Get1[A IComponent](world *World, entity EntityId) (a *A, err error) {
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get2[A, B IComponent](world *World, entity EntityId) (a *A, b *B, err error) {
+func Get2[A, B IComponent](world *World, entity EntityId) (a A, b B, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
-		return nil, nil, ErrEntityNotFound
+		return a, b, ErrEntityNotFound
 	}
 
 	if err = setComponentFromEntry(world, entityData, &a); err != nil {
-		return nil, nil, err
+		return a, b, err
 	} else if err = setComponentFromEntry(world, entityData, &b); err != nil {
-		return nil, nil, err
+		return a, b, err
 	}
 
 	return a, b, nil
@@ -54,18 +56,18 @@ func Get2[A, B IComponent](world *World, entity EntityId) (a *A, b *B, err error
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get3[A, B, C IComponent](world *World, entity EntityId) (a *A, b *B, c *C, err error) {
+func Get3[A, B, C IComponent](world *World, entity EntityId) (a A, b B, c C, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
-		return nil, nil, nil, ErrEntityNotFound
+		return a, b, c, ErrEntityNotFound
 	}
 
 	if err = setComponentFromEntry(world, entityData, &a); err != nil {
-		return nil, nil, nil, err
+		return a, b, c, err
 	} else if err = setComponentFromEntry(world, entityData, &b); err != nil {
-		return nil, nil, nil, err
+		return a, b, c, err
 	} else if err = setComponentFromEntry(world, entityData, &c); err != nil {
-		return nil, nil, nil, err
+		return a, b, c, err
 	}
 
 	return a, b, c, nil
@@ -80,20 +82,20 @@ func Get3[A, B, C IComponent](world *World, entity EntityId) (a *A, b *B, c *C, 
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get4[A, B, C, D IComponent](world *World, entity EntityId) (a *A, b *B, c *C, d *D, err error) {
+func Get4[A, B, C, D IComponent](world *World, entity EntityId) (a A, b B, c C, d D, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
-		return nil, nil, nil, nil, ErrEntityNotFound
+		return a, b, c, d, ErrEntityNotFound
 	}
 
 	if err = setComponentFromEntry(world, entityData, &a); err != nil {
-		return nil, nil, nil, nil, err
+		return a, b, c, d, err
 	} else if err = setComponentFromEntry(world, entityData, &b); err != nil {
-		return nil, nil, nil, nil, err
+		return a, b, c, d, err
 	} else if err = setComponentFromEntry(world, entityData, &c); err != nil {
-		return nil, nil, nil, nil, err
+		return a, b, c, d, err
 	} else if err = setComponentFromEntry(world, entityData, &d); err != nil {
-		return nil, nil, nil, nil, err
+		return a, b, c, d, err
 	}
 
 	return a, b, c, d, nil
@@ -108,22 +110,22 @@ func Get4[A, B, C, D IComponent](world *World, entity EntityId) (a *A, b *B, c *
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get5[A, B, C, D, E IComponent](world *World, entity EntityId) (a *A, b *B, c *C, d *D, e *E, err error) {
+func Get5[A, B, C, D, E IComponent](world *World, entity EntityId) (a A, b B, c C, d D, e E, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
-		return nil, nil, nil, nil, nil, ErrEntityNotFound
+		return a, b, c, d, e, ErrEntityNotFound
 	}
 
 	if err = setComponentFromEntry(world, entityData, &a); err != nil {
-		return nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, err
 	} else if err = setComponentFromEntry(world, entityData, &b); err != nil {
-		return nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, err
 	} else if err = setComponentFromEntry(world, entityData, &c); err != nil {
-		return nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, err
 	} else if err = setComponentFromEntry(world, entityData, &d); err != nil {
-		return nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, err
 	} else if err = setComponentFromEntry(world, entityData, &e); err != nil {
-		return nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, err
 	}
 
 	return a, b, c, d, e, nil
@@ -138,24 +140,24 @@ func Get5[A, B, C, D, E IComponent](world *World, entity EntityId) (a *A, b *B, 
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get6[A, B, C, D, E, F IComponent](world *World, entity EntityId) (a *A, b *B, c *C, d *D, e *E, f *F, err error) {
+func Get6[A, B, C, D, E, F IComponent](world *World, entity EntityId) (a A, b B, c C, d D, e E, f F, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
-		return nil, nil, nil, nil, nil, nil, ErrEntityNotFound
+		return a, b, c, d, e, f, ErrEntityNotFound
 	}
 
 	if err = setComponentFromEntry(world, entityData, &a); err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, err
 	} else if err = setComponentFromEntry(world, entityData, &b); err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, err
 	} else if err = setComponentFromEntry(world, entityData, &c); err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, err
 	} else if err = setComponentFromEntry(world, entityData, &d); err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, err
 	} else if err = setComponentFromEntry(world, entityData, &e); err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, err
 	} else if err = setComponentFromEntry(world, entityData, &f); err != nil {
-		return nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, err
 	}
 
 	return a, b, c, d, e, f, nil
@@ -171,27 +173,27 @@ func Get6[A, B, C, D, E, F IComponent](world *World, entity EntityId) (a *A, b *
 //
 // WARNING: Do not store any of the component pointers
 func Get7[A, B, C, D, E, F, G IComponent](world *World, entity EntityId) (
-	a *A, b *B, c *C, d *D, e *E, f *F, g *G, err error,
+	a A, b B, c C, d D, e E, f F, g G, err error,
 ) {
 	entityData, ok := world.entities[entity]
 	if !ok {
-		return nil, nil, nil, nil, nil, nil, nil, ErrEntityNotFound
+		return a, b, c, d, e, f, g, ErrEntityNotFound
 	}
 
 	if err = setComponentFromEntry(world, entityData, &a); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, err
 	} else if err = setComponentFromEntry(world, entityData, &b); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, err
 	} else if err = setComponentFromEntry(world, entityData, &c); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, err
 	} else if err = setComponentFromEntry(world, entityData, &d); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, err
 	} else if err = setComponentFromEntry(world, entityData, &e); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, err
 	} else if err = setComponentFromEntry(world, entityData, &f); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, err
 	} else if err = setComponentFromEntry(world, entityData, &g); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, err
 	}
 
 	return a, b, c, d, e, f, g, nil
@@ -207,29 +209,29 @@ func Get7[A, B, C, D, E, F, G IComponent](world *World, entity EntityId) (
 //
 // WARNING: Do not store any of the component pointers
 func Get8[A, B, C, D, E, F, G, H IComponent](world *World, entity EntityId) (
-	a *A, b *B, c *C, d *D, e *E, f *F, g *G, h *H, err error,
+	a A, b B, c C, d D, e E, f F, g G, h H, err error,
 ) {
 	entityData, ok := world.entities[entity]
 	if !ok {
-		return nil, nil, nil, nil, nil, nil, nil, nil, ErrEntityNotFound
+		return a, b, c, d, e, f, g, h, ErrEntityNotFound
 	}
 
 	if err = setComponentFromEntry(world, entityData, &a); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, err
 	} else if err = setComponentFromEntry(world, entityData, &b); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, err
 	} else if err = setComponentFromEntry(world, entityData, &c); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, err
 	} else if err = setComponentFromEntry(world, entityData, &d); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, err
 	} else if err = setComponentFromEntry(world, entityData, &e); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, err
 	} else if err = setComponentFromEntry(world, entityData, &f); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, err
 	} else if err = setComponentFromEntry(world, entityData, &g); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, err
 	} else if err = setComponentFromEntry(world, entityData, &h); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, err
 	}
 
 	return a, b, c, d, e, f, g, h, nil
@@ -245,31 +247,31 @@ func Get8[A, B, C, D, E, F, G, H IComponent](world *World, entity EntityId) (
 //
 // WARNING: Do not store any of the component pointers
 func Get9[A, B, C, D, E, F, G, H, I IComponent](world *World, entity EntityId) (
-	a *A, b *B, c *C, d *D, e *E, f *F, g *G, h *H, i *I, err error,
+	a A, b B, c C, d D, e E, f F, g G, h H, i I, err error,
 ) {
 	entityData, ok := world.entities[entity]
 	if !ok {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, ErrEntityNotFound
+		return a, b, c, d, e, f, g, h, i, ErrEntityNotFound
 	}
 
 	if err = setComponentFromEntry(world, entityData, &a); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, err
 	} else if err = setComponentFromEntry(world, entityData, &b); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, err
 	} else if err = setComponentFromEntry(world, entityData, &c); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, err
 	} else if err = setComponentFromEntry(world, entityData, &d); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, err
 	} else if err = setComponentFromEntry(world, entityData, &e); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, err
 	} else if err = setComponentFromEntry(world, entityData, &f); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, err
 	} else if err = setComponentFromEntry(world, entityData, &g); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, err
 	} else if err = setComponentFromEntry(world, entityData, &h); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, err
 	} else if err = setComponentFromEntry(world, entityData, &i); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, err
 	}
 
 	return a, b, c, d, e, f, g, h, i, nil
@@ -285,33 +287,33 @@ func Get9[A, B, C, D, E, F, G, H, I IComponent](world *World, entity EntityId) (
 //
 // WARNING: Do not store any of the component pointers
 func Get10[A, B, C, D, E, F, G, H, I, J IComponent](world *World, entity EntityId) (
-	a *A, b *B, c *C, d *D, e *E, f *F, g *G, h *H, i *I, j *J, err error,
+	a A, b B, c C, d D, e E, f F, g G, h H, i I, j J, err error,
 ) {
 	entityData, ok := world.entities[entity]
 	if !ok {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, ErrEntityNotFound
+		return a, b, c, d, e, f, g, h, i, j, ErrEntityNotFound
 	}
 
 	if err = setComponentFromEntry(world, entityData, &a); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, err
 	} else if err = setComponentFromEntry(world, entityData, &b); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, err
 	} else if err = setComponentFromEntry(world, entityData, &c); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, err
 	} else if err = setComponentFromEntry(world, entityData, &d); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, err
 	} else if err = setComponentFromEntry(world, entityData, &e); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, err
 	} else if err = setComponentFromEntry(world, entityData, &f); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, err
 	} else if err = setComponentFromEntry(world, entityData, &g); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, err
 	} else if err = setComponentFromEntry(world, entityData, &h); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, err
 	} else if err = setComponentFromEntry(world, entityData, &i); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, err
 	} else if err = setComponentFromEntry(world, entityData, &j); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, err
 	}
 
 	return a, b, c, d, e, f, g, h, i, j, nil
@@ -327,35 +329,35 @@ func Get10[A, B, C, D, E, F, G, H, I, J IComponent](world *World, entity EntityI
 //
 // WARNING: Do not store any of the component pointers
 func Get11[A, B, C, D, E, F, G, H, I, J, K IComponent](world *World, entity EntityId) (
-	a *A, b *B, c *C, d *D, e *E, f *F, g *G, h *H, i *I, j *J, k *K, err error,
+	a A, b B, c C, d D, e E, f F, g G, h H, i I, j J, k K, err error,
 ) {
 	entityData, ok := world.entities[entity]
 	if !ok {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, ErrEntityNotFound
+		return a, b, c, d, e, f, g, h, i, j, k, ErrEntityNotFound
 	}
 
 	if err = setComponentFromEntry(world, entityData, &a); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, err
 	} else if err = setComponentFromEntry(world, entityData, &b); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, err
 	} else if err = setComponentFromEntry(world, entityData, &c); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, err
 	} else if err = setComponentFromEntry(world, entityData, &d); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, err
 	} else if err = setComponentFromEntry(world, entityData, &e); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, err
 	} else if err = setComponentFromEntry(world, entityData, &f); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, err
 	} else if err = setComponentFromEntry(world, entityData, &g); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, err
 	} else if err = setComponentFromEntry(world, entityData, &h); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, err
 	} else if err = setComponentFromEntry(world, entityData, &i); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, err
 	} else if err = setComponentFromEntry(world, entityData, &j); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, err
 	} else if err = setComponentFromEntry(world, entityData, &k); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, err
 	}
 
 	return a, b, c, d, e, f, g, h, i, j, k, nil
@@ -371,37 +373,37 @@ func Get11[A, B, C, D, E, F, G, H, I, J, K IComponent](world *World, entity Enti
 //
 // WARNING: Do not store any of the component pointers
 func Get12[A, B, C, D, E, F, G, H, I, J, K, L IComponent](world *World, entity EntityId) (
-	a *A, b *B, c *C, d *D, e *E, f *F, g *G, h *H, i *I, j *J, k *K, l *L, err error,
+	a A, b B, c C, d D, e E, f F, g G, h H, i I, j J, k K, l L, err error,
 ) {
 	entityData, ok := world.entities[entity]
 	if !ok {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, ErrEntityNotFound
+		return a, b, c, d, e, f, g, h, i, j, k, l, ErrEntityNotFound
 	}
 
 	if err = setComponentFromEntry(world, entityData, &a); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, err
 	} else if err = setComponentFromEntry(world, entityData, &b); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, err
 	} else if err = setComponentFromEntry(world, entityData, &c); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, err
 	} else if err = setComponentFromEntry(world, entityData, &d); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, err
 	} else if err = setComponentFromEntry(world, entityData, &e); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, err
 	} else if err = setComponentFromEntry(world, entityData, &f); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, err
 	} else if err = setComponentFromEntry(world, entityData, &g); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, err
 	} else if err = setComponentFromEntry(world, entityData, &h); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, err
 	} else if err = setComponentFromEntry(world, entityData, &i); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, err
 	} else if err = setComponentFromEntry(world, entityData, &j); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, err
 	} else if err = setComponentFromEntry(world, entityData, &k); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, err
 	} else if err = setComponentFromEntry(world, entityData, &l); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, err
 	}
 
 	return a, b, c, d, e, f, g, h, i, j, k, l, nil
@@ -417,39 +419,39 @@ func Get12[A, B, C, D, E, F, G, H, I, J, K, L IComponent](world *World, entity E
 //
 // WARNING: Do not store any of the component pointers
 func Get13[A, B, C, D, E, F, G, H, I, J, K, L, M IComponent](world *World, entity EntityId) (
-	a *A, b *B, c *C, d *D, e *E, f *F, g *G, h *H, i *I, j *J, k *K, l *L, m *M, err error,
+	a A, b B, c C, d D, e E, f F, g G, h H, i I, j J, k K, l L, m M, err error,
 ) {
 	entityData, ok := world.entities[entity]
 	if !ok {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, ErrEntityNotFound
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, ErrEntityNotFound
 	}
 
 	if err = setComponentFromEntry(world, entityData, &a); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, err
 	} else if err = setComponentFromEntry(world, entityData, &b); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, err
 	} else if err = setComponentFromEntry(world, entityData, &c); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, err
 	} else if err = setComponentFromEntry(world, entityData, &d); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, err
 	} else if err = setComponentFromEntry(world, entityData, &e); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, err
 	} else if err = setComponentFromEntry(world, entityData, &f); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, err
 	} else if err = setComponentFromEntry(world, entityData, &g); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, err
 	} else if err = setComponentFromEntry(world, entityData, &h); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, err
 	} else if err = setComponentFromEntry(world, entityData, &i); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, err
 	} else if err = setComponentFromEntry(world, entityData, &j); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, err
 	} else if err = setComponentFromEntry(world, entityData, &k); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, err
 	} else if err = setComponentFromEntry(world, entityData, &l); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, err
 	} else if err = setComponentFromEntry(world, entityData, &m); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, err
 	}
 
 	return a, b, c, d, e, f, g, h, i, j, k, l, m, nil
@@ -465,41 +467,41 @@ func Get13[A, B, C, D, E, F, G, H, I, J, K, L, M IComponent](world *World, entit
 //
 // WARNING: Do not store any of the component pointers
 func Get14[A, B, C, D, E, F, G, H, I, J, K, L, M, N IComponent](world *World, entity EntityId) (
-	a *A, b *B, c *C, d *D, e *E, f *F, g *G, h *H, i *I, j *J, k *K, l *L, m *M, n *N, err error,
+	a A, b B, c C, d D, e E, f F, g G, h H, i I, j J, k K, l L, m M, n N, err error,
 ) {
 	entityData, ok := world.entities[entity]
 	if !ok {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, ErrEntityNotFound
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, ErrEntityNotFound
 	}
 
 	if err = setComponentFromEntry(world, entityData, &a); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, err
 	} else if err = setComponentFromEntry(world, entityData, &b); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, err
 	} else if err = setComponentFromEntry(world, entityData, &c); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, err
 	} else if err = setComponentFromEntry(world, entityData, &d); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, err
 	} else if err = setComponentFromEntry(world, entityData, &e); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, err
 	} else if err = setComponentFromEntry(world, entityData, &f); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, err
 	} else if err = setComponentFromEntry(world, entityData, &g); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, err
 	} else if err = setComponentFromEntry(world, entityData, &h); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, err
 	} else if err = setComponentFromEntry(world, entityData, &i); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, err
 	} else if err = setComponentFromEntry(world, entityData, &j); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, err
 	} else if err = setComponentFromEntry(world, entityData, &k); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, err
 	} else if err = setComponentFromEntry(world, entityData, &l); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, err
 	} else if err = setComponentFromEntry(world, entityData, &m); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, err
 	} else if err = setComponentFromEntry(world, entityData, &n); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, err
 	}
 
 	return a, b, c, d, e, f, g, h, i, j, k, l, m, n, nil
@@ -515,43 +517,43 @@ func Get14[A, B, C, D, E, F, G, H, I, J, K, L, M, N IComponent](world *World, en
 //
 // WARNING: Do not store any of the component pointers
 func Get15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O IComponent](world *World, entity EntityId) (
-	a *A, b *B, c *C, d *D, e *E, f *F, g *G, h *H, i *I, j *J, k *K, l *L, m *M, n *N, o *O, err error,
+	a A, b B, c C, d D, e E, f F, g G, h H, i I, j J, k K, l L, m M, n N, o O, err error,
 ) {
 	entityData, ok := world.entities[entity]
 	if !ok {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, ErrEntityNotFound
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, ErrEntityNotFound
 	}
 
 	if err = setComponentFromEntry(world, entityData, &a); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, err
 	} else if err = setComponentFromEntry(world, entityData, &b); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, err
 	} else if err = setComponentFromEntry(world, entityData, &c); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, err
 	} else if err = setComponentFromEntry(world, entityData, &d); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, err
 	} else if err = setComponentFromEntry(world, entityData, &e); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, err
 	} else if err = setComponentFromEntry(world, entityData, &f); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, err
 	} else if err = setComponentFromEntry(world, entityData, &g); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, err
 	} else if err = setComponentFromEntry(world, entityData, &h); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, err
 	} else if err = setComponentFromEntry(world, entityData, &i); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, err
 	} else if err = setComponentFromEntry(world, entityData, &j); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, err
 	} else if err = setComponentFromEntry(world, entityData, &k); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, err
 	} else if err = setComponentFromEntry(world, entityData, &l); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, err
 	} else if err = setComponentFromEntry(world, entityData, &m); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, err
 	} else if err = setComponentFromEntry(world, entityData, &n); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, err
 	} else if err = setComponentFromEntry(world, entityData, &o); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, err
 	}
 
 	return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, nil
@@ -567,45 +569,45 @@ func Get15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O IComponent](world *World,
 //
 // WARNING: Do not store any of the component pointers
 func Get16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P IComponent](world *World, entity EntityId) (
-	a *A, b *B, c *C, d *D, e *E, f *F, g *G, h *H, i *I, j *J, k *K, l *L, m *M, n *N, o *O, p *P, err error,
+	a A, b B, c C, d D, e E, f F, g G, h H, i I, j J, k K, l L, m M, n N, o O, p P, err error,
 ) {
 	entityData, ok := world.entities[entity]
 	if !ok {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, ErrEntityNotFound
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, ErrEntityNotFound
 	}
 
 	if err = setComponentFromEntry(world, entityData, &a); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err
 	} else if err = setComponentFromEntry(world, entityData, &b); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err
 	} else if err = setComponentFromEntry(world, entityData, &c); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err
 	} else if err = setComponentFromEntry(world, entityData, &d); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err
 	} else if err = setComponentFromEntry(world, entityData, &e); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err
 	} else if err = setComponentFromEntry(world, entityData, &f); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err
 	} else if err = setComponentFromEntry(world, entityData, &g); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err
 	} else if err = setComponentFromEntry(world, entityData, &h); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err
 	} else if err = setComponentFromEntry(world, entityData, &i); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err
 	} else if err = setComponentFromEntry(world, entityData, &j); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err
 	} else if err = setComponentFromEntry(world, entityData, &k); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err
 	} else if err = setComponentFromEntry(world, entityData, &l); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err
 	} else if err = setComponentFromEntry(world, entityData, &m); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err
 	} else if err = setComponentFromEntry(world, entityData, &n); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err
 	} else if err = setComponentFromEntry(world, entityData, &o); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err
 	} else if err = setComponentFromEntry(world, entityData, &p); err != nil {
-		return nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, err
+		return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err
 	}
 
 	return a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, nil
@@ -615,7 +617,7 @@ func Get16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P IComponent](world *Wor
 //
 // Can return the following errors:
 //   - ErrComponentNotFound error when the entity does not have a component of type T.
-func setComponentFromEntry[T IComponent](world *World, entityData *EntityData, target **T) error {
+func setComponentFromEntry[T IComponent](world *World, entityData *EntityData, target *T) error {
 	componentId := ComponentIdFor[T](world)
 
 	storage, componentExists := entityData.archetype.components[componentId]
@@ -623,7 +625,7 @@ func setComponentFromEntry[T IComponent](world *World, entityData *EntityData, t
 		return ErrComponentNotFound
 	}
 
-	result, err := getComponentFromComponentStorage[T](storage, entityData.row)
+	result, err := getComponentFromComponentStorage[T](storage, entityData.row, reflect.TypeFor[T]().Kind() == reflect.Pointer)
 	if err != nil {
 		return err
 	}

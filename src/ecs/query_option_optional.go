@@ -120,26 +120,26 @@ func (o Optional8[A, B, C, D, E, F, G, H]) getOptionalComponentIds(world *World)
 }
 
 func (optional Optional1[A]) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional1[A], NoReadOnly, NotLazy, DefaultWorld]](world)
+	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional1[A], NotLazy, DefaultWorld]](world)
 }
 func (optional Optional2[A, B]) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional2[A, B], NoReadOnly, NotLazy, DefaultWorld]](world)
+	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional2[A, B], NotLazy, DefaultWorld]](world)
 }
 func (optional Optional3[A, B, C]) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional3[A, B, C], NoReadOnly, NotLazy, DefaultWorld]](world)
+	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional3[A, B, C], NotLazy, DefaultWorld]](world)
 }
 func (optional Optional4[A, B, C, D]) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional4[A, B, C, D], NoReadOnly, NotLazy, DefaultWorld]](world)
+	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional4[A, B, C, D], NotLazy, DefaultWorld]](world)
 }
 func (optional Optional5[A, B, C, D, E]) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional5[A, B, C, D, E], NoReadOnly, NotLazy, DefaultWorld]](world)
+	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional5[A, B, C, D, E], NotLazy, DefaultWorld]](world)
 }
 func (optional Optional6[A, B, C, D, E, F]) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional6[A, B, C, D, E, F], NoReadOnly, NotLazy, DefaultWorld]](world)
+	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional6[A, B, C, D, E, F], NotLazy, DefaultWorld]](world)
 }
 func (optional Optional7[A, B, C, D, E, F, G]) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional7[A, B, C, D, E, F, G], NoReadOnly, NotLazy, DefaultWorld]](world)
+	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional7[A, B, C, D, E, F, G], NotLazy, DefaultWorld]](world)
 }
 func (optional Optional8[A, B, C, D, E, F, G, H]) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
-	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional8[A, B, C, D, E, F, G, H], NoReadOnly, NotLazy, DefaultWorld]](world)
+	return toCombinedQueryOptions[QueryOptions[NoFilter, Optional8[A, B, C, D, E, F, G, H], NotLazy, DefaultWorld]](world)
 }

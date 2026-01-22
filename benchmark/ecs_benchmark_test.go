@@ -235,9 +235,21 @@ func BenchmarkGet(b *testing.B) {
 		}
 	})
 
+	b.Run("Get1-Mutable", func(b *testing.B) {
+		for b.Loop() {
+			ecs.Get1[*emptyComponentA](world, target)
+		}
+	})
+
 	b.Run("Get2", func(b *testing.B) {
 		for b.Loop() {
 			ecs.Get2[emptyComponentA, emptyComponentB](world, target)
+		}
+	})
+
+	b.Run("Get2-Mutable", func(b *testing.B) {
+		for b.Loop() {
+			ecs.Get2[*emptyComponentA, *emptyComponentB](world, target)
 		}
 	})
 
@@ -247,9 +259,21 @@ func BenchmarkGet(b *testing.B) {
 		}
 	})
 
+	b.Run("Get3-Mutable", func(b *testing.B) {
+		for b.Loop() {
+			ecs.Get3[*emptyComponentA, *emptyComponentB, *emptyComponentC](world, target)
+		}
+	})
+
 	b.Run("Get4", func(b *testing.B) {
 		for b.Loop() {
 			ecs.Get4[emptyComponentA, emptyComponentB, emptyComponentC, emptyComponentD](world, target)
+		}
+	})
+
+	b.Run("Get4-Mutable", func(b *testing.B) {
+		for b.Loop() {
+			ecs.Get4[*emptyComponentA, *emptyComponentB, *emptyComponentC, *emptyComponentD](world, target)
 		}
 	})
 }
@@ -441,8 +465,8 @@ func BenchmarkQuery(b *testing.B) {
 			}
 		})
 
-		b.Run(fmt.Sprintf("Query1-ReadOnly-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query1[emptyComponentA, ecs.AllReadOnly]{}
+		b.Run(fmt.Sprintf("Query1-Mutable-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query1[*emptyComponentA, ecs.Default]{}
 
 			err := query.Prepare(world, nil)
 			if err != nil {
@@ -506,8 +530,8 @@ func BenchmarkQuery(b *testing.B) {
 			}
 		})
 
-		b.Run(fmt.Sprintf("Query2-ReadOnly-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.AllReadOnly]{}
+		b.Run(fmt.Sprintf("Query2-Mutable-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query2[*emptyComponentA, *emptyComponentD, ecs.Default]{}
 
 			err := query.Prepare(world, nil)
 			if err != nil {
@@ -571,8 +595,8 @@ func BenchmarkQuery(b *testing.B) {
 			}
 		})
 
-		b.Run(fmt.Sprintf("Query3-ReadOnly-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query3[emptyComponentA, emptyComponentD, emptyComponentC, ecs.AllReadOnly]{}
+		b.Run(fmt.Sprintf("Query3-Mutable-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query3[*emptyComponentA, *emptyComponentD, *emptyComponentC, ecs.Default]{}
 
 			err := query.Prepare(world, nil)
 			if err != nil {
@@ -636,8 +660,8 @@ func BenchmarkQuery(b *testing.B) {
 			}
 		})
 
-		b.Run(fmt.Sprintf("Query4-ReadOnly-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query4[emptyComponentA, emptyComponentD, emptyComponentB, emptyComponentC, ecs.AllReadOnly]{}
+		b.Run(fmt.Sprintf("Query4-Mutable-Size-%d", size), func(b *testing.B) {
+			query := ecs.Query4[*emptyComponentA, *emptyComponentD, *emptyComponentB, *emptyComponentC, ecs.Default]{}
 
 			err := query.Prepare(world, nil)
 			if err != nil {

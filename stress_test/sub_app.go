@@ -94,9 +94,9 @@ func insertComponents(world *ecs.World) error {
 	return nil
 }
 
-func runQuery(log app.Logger, query ecs.Query2[emptyComponentA, componentWithValue, ecs.With[emptyComponentB]]) {
+func runQuery(log app.Logger, query ecs.Query2[emptyComponentA, *componentWithValue, ecs.With[emptyComponentB]]) {
 	total := 0
-	query.Iter(func(entityId ecs.EntityId, a *emptyComponentA, b *componentWithValue) {
+	query.Iter(func(entityId ecs.EntityId, a emptyComponentA, b *componentWithValue) {
 		total += b.value
 	})
 

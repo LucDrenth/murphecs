@@ -244,11 +244,20 @@ func (storage *componentStorage) getComponentPointer(index uint) (unsafe.Pointer
 // getComponentFromComponentStorage returns a pointer to the component at index.
 //
 // Returns an error if index is out of bounds.
-func getComponentFromComponentStorage[T IComponent](storage *componentStorage, index uint) (*T, error) {
+func getComponentFromComponentStorage[T IComponent](storage *componentStorage, index uint, isPointer bool) (result T, err error) {
 	componentPointer, err := storage.getComponentPointer(index)
 	if err != nil {
-		return nil, err
+		return result, err
 	}
 
-	return (*T)(componentPointer), nil
+	// Check if the generic type T is a pointer (e.g., *componentA)
+	if isPointer {
+		// Treat 'result' as a bucket for a pointer and write the address directly.
+		*(*unsafe.Pointer)(unsafe.Pointer(&result)) = componentPointer
+	} else {
+		// Make 'result' a copy of the data at that address.
+		result = *(*T)(componentPointer)
+	}
+
+	return result, nil
 }

@@ -60,13 +60,13 @@ func main() {
 
 	// 4. We register a startup system for appFoo that spawns components that appBar will query
 	appFoo.AddSystem(startup, func(world *ecs.World, log app.Logger) error {
-		entity, err := ecs.Spawn(world, &myComponent{value: 100})
+		entity, err := ecs.Spawn(world, myComponent{value: 100})
 		if err != nil {
 			return err
 		}
 		log.Info("spawned entity %d with value 100", entity)
 
-		entity, err = ecs.Spawn(world, &myComponent{value: 200})
+		entity, err = ecs.Spawn(world, myComponent{value: 200})
 		if err != nil {
 			return err
 		}
@@ -77,7 +77,7 @@ func main() {
 
 	// 5. Now register a system for appBar that queries appFoo
 	appBar.AddSystem(update, func(query *ecs.Query1[myComponent, targetWorldAppFoo], log app.Logger) error {
-		query.Iter(func(entityId ecs.EntityId, a *myComponent) {
+		query.Iter(func(entityId ecs.EntityId, a myComponent) {
 			log.Info("%d: %d", entityId, a.value)
 		})
 

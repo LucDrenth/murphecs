@@ -139,26 +139,41 @@ func TestGet1(t *testing.T) {
 	t.Run("returns the expected component", func(t *testing.T) {
 		entity, world, assert := setup(&componentA{value: expectedValue})
 
-		a, err := Get1[componentA](world, entity)
+		a, err := Get1[*componentA](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValue, (*a).value)
 	})
 
-	t.Run("retrieved component is mutable", func(t *testing.T) {
+	t.Run("retrieved component is mutable when component is a pointer", func(t *testing.T) {
 		entity, world, assert := setup(&componentA{value: expectedValue})
 
-		a, err := Get1[componentA](world, entity)
+		a, err := Get1[*componentA](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValue, (*a).value)
 
 		a.value += 1
 
-		a, err = Get1[componentA](world, entity)
+		a, err = Get1[*componentA](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValue+1, (*a).value)
+	})
+
+	t.Run("retrieved component is not mutable when component is not a pointer", func(t *testing.T) {
+		entity, world, assert := setup(&componentA{value: expectedValue})
+
+		aCopy, err := Get1[componentA](world, entity)
+		assert.NoError(err)
+		assert.NotNil(aCopy)
+		assert.Equal(expectedValue, aCopy.value)
+		aCopy.value += 1
+
+		a, err := Get1[*componentA](world, entity)
+		assert.NoError(err)
+		assert.NotNil(a)
+		assert.NotEqual(expectedValue+1, (*a).value)
 	})
 }
 
@@ -181,7 +196,7 @@ func TestGet2(t *testing.T) {
 	t.Run("returns the expected components regardless of the component order", func(t *testing.T) {
 		entity, world, assert := setup()
 
-		a, b, err := Get2[componentA, componentB](world, entity)
+		a, b, err := Get2[*componentA, *componentB](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.NotNil(b)
@@ -189,7 +204,7 @@ func TestGet2(t *testing.T) {
 		assert.Equal(expectedValueB, (*b).value)
 
 		// other way around
-		b, a, err = Get2[componentB, componentA](world, entity)
+		b, a, err = Get2[*componentB, *componentA](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.NotNil(b)
@@ -200,7 +215,7 @@ func TestGet2(t *testing.T) {
 	t.Run("returns the expected components even if two of the same components are given", func(t *testing.T) {
 		entity, world, assert := setup()
 
-		a, alsoA, err := Get2[componentA, componentA](world, entity)
+		a, alsoA, err := Get2[*componentA, *componentA](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)
@@ -210,9 +225,9 @@ func TestGet2(t *testing.T) {
 
 	t.Run("returns error if a components was not found, regardless of the component order", func(t *testing.T) {
 		entity, world, assert := setup()
-		_, _, err := Get2[nonExistingComponent, componentA](world, entity)
+		_, _, err := Get2[*nonExistingComponent, *componentA](world, entity)
 		assert.Error(err)
-		_, _, err = Get2[componentA, nonExistingComponent](world, entity)
+		_, _, err = Get2[*componentA, *nonExistingComponent](world, entity)
 		assert.Error(err)
 	})
 }
@@ -236,7 +251,7 @@ func TestGet3(t *testing.T) {
 	t.Run("returns the expected components", func(t *testing.T) {
 		entity, world, assert := setup()
 
-		a, b, c, err := Get3[componentA, componentB, componentC](world, entity)
+		a, b, c, err := Get3[*componentA, *componentB, *componentC](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)
@@ -270,7 +285,7 @@ func TestGet4(t *testing.T) {
 		)
 		assert.NoError(err)
 
-		a, b, c, d, err := Get4[componentA, componentB, componentC, componentD](world, entity)
+		a, b, c, d, err := Get4[*componentA, *componentB, *componentC, *componentD](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)
@@ -296,7 +311,7 @@ func TestGet5(t *testing.T) {
 		)
 		assert.NoError(err)
 
-		a, b, c, d, e, err := Get5[componentA, componentB, componentC, componentD, componentE](world, entity)
+		a, b, c, d, e, err := Get5[*componentA, *componentB, *componentC, *componentD, *componentE](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)
@@ -325,7 +340,7 @@ func TestGet6(t *testing.T) {
 		)
 		assert.NoError(err)
 
-		a, b, c, d, e, f, err := Get6[componentA, componentB, componentC, componentD, componentE, componentF](world, entity)
+		a, b, c, d, e, f, err := Get6[*componentA, *componentB, *componentC, *componentD, *componentE, *componentF](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)
@@ -357,7 +372,7 @@ func TestGet7(t *testing.T) {
 		)
 		assert.NoError(err)
 
-		a, b, c, d, e, f, g, err := Get7[componentA, componentB, componentC, componentD, componentE, componentF, componentG](world, entity)
+		a, b, c, d, e, f, g, err := Get7[*componentA, *componentB, *componentC, *componentD, *componentE, *componentF, *componentG](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)
@@ -392,7 +407,7 @@ func TestGet8(t *testing.T) {
 		)
 		assert.NoError(err)
 
-		a, b, c, d, e, f, g, h, err := Get8[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH](world, entity)
+		a, b, c, d, e, f, g, h, err := Get8[*componentA, *componentB, *componentC, *componentD, *componentE, *componentF, *componentG, *componentH](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)
@@ -424,7 +439,7 @@ func TestGet9(t *testing.T) {
 		)
 		assert.NoError(err)
 
-		a, b, c, d, e, f, g, h, i, err := Get9[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH, componentI](world, entity)
+		a, b, c, d, e, f, g, h, i, err := Get9[*componentA, *componentB, *componentC, *componentD, *componentE, *componentF, *componentG, *componentH, *componentI](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)
@@ -459,7 +474,7 @@ func TestGet10(t *testing.T) {
 		)
 		assert.NoError(err)
 
-		a, b, c, d, e, f, g, h, i, j, err := Get10[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH, componentI, componentJ](world, entity)
+		a, b, c, d, e, f, g, h, i, j, err := Get10[*componentA, *componentB, *componentC, *componentD, *componentE, *componentF, *componentG, *componentH, *componentI, *componentJ](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)
@@ -496,7 +511,7 @@ func TestGet11(t *testing.T) {
 		)
 		assert.NoError(err)
 
-		a, b, c, d, e, f, g, h, i, j, k, err := Get11[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH, componentI, componentJ, componentK](world, entity)
+		a, b, c, d, e, f, g, h, i, j, k, err := Get11[*componentA, *componentB, *componentC, *componentD, *componentE, *componentF, *componentG, *componentH, *componentI, *componentJ, *componentK](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)
@@ -535,7 +550,7 @@ func TestGet12(t *testing.T) {
 		)
 		assert.NoError(err)
 
-		a, b, c, d, e, f, g, h, i, j, k, l, err := Get12[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH, componentI, componentJ, componentK, componentL](world, entity)
+		a, b, c, d, e, f, g, h, i, j, k, l, err := Get12[*componentA, *componentB, *componentC, *componentD, *componentE, *componentF, *componentG, *componentH, *componentI, *componentJ, *componentK, *componentL](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)
@@ -577,7 +592,7 @@ func TestGet13(t *testing.T) {
 		)
 		assert.NoError(err)
 
-		a, b, c, d, e, f, g, h, i, j, k, l, m, err := Get13[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH, componentI, componentJ, componentK, componentL, componentM](world, entity)
+		a, b, c, d, e, f, g, h, i, j, k, l, m, err := Get13[*componentA, *componentB, *componentC, *componentD, *componentE, *componentF, *componentG, *componentH, *componentI, *componentJ, *componentK, *componentL, *componentM](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)
@@ -621,7 +636,7 @@ func TestGet14(t *testing.T) {
 		)
 		assert.NoError(err)
 
-		a, b, c, d, e, f, g, h, i, j, k, l, m, n, err := Get14[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH, componentI, componentJ, componentK, componentL, componentM, componentN](world, entity)
+		a, b, c, d, e, f, g, h, i, j, k, l, m, n, err := Get14[*componentA, *componentB, *componentC, *componentD, *componentE, *componentF, *componentG, *componentH, *componentI, *componentJ, *componentK, *componentL, *componentM, *componentN](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)
@@ -667,7 +682,7 @@ func TestGet15(t *testing.T) {
 		)
 		assert.NoError(err)
 
-		a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, err := Get15[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH, componentI, componentJ, componentK, componentL, componentM, componentN, componentO](world, entity)
+		a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, err := Get15[*componentA, *componentB, *componentC, *componentD, *componentE, *componentF, *componentG, *componentH, *componentI, *componentJ, *componentK, *componentL, *componentM, *componentN, *componentO](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)
@@ -716,7 +731,7 @@ func TestGet16(t *testing.T) {
 		)
 		assert.NoError(err)
 
-		a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err := Get16[componentA, componentB, componentC, componentD, componentE, componentF, componentG, componentH, componentI, componentJ, componentK, componentL, componentM, componentN, componentO, componentP](world, entity)
+		a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, err := Get16[*componentA, *componentB, *componentC, *componentD, *componentE, *componentF, *componentG, *componentH, *componentI, *componentJ, *componentK, *componentL, *componentM, *componentN, *componentO, *componentP](world, entity)
 		assert.NoError(err)
 		assert.NotNil(a)
 		assert.Equal(expectedValueA, (*a).value)

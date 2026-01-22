@@ -2,7 +2,6 @@
 **Must have**
 - [feature] Observers
 - [feature] Define optional component by `Query[Optional[C], ...]` instead of `Query[C, Optional[C]]`
-- [feature] Query components by pointer or copy by doing `Query[C, ...]` or `Query[*C, ...]`. This is currently possible by adding a query option `ReadOnly1[C]` but this is not obvious when reading a query and not user friendly.
 
 **Nice-to-have**
 - [performance] Generational entities. EntityId would become {id: uint, generation: uint}. World its entityList would becomes a slice instead of a map, and entityId would correlate with the slice index. This provides faster lookups. We'd need an deadEntityPool to choose from when creating a new EntityId which would increment its generation and repurpose it.

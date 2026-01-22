@@ -132,7 +132,7 @@ func TestQuery1(t *testing.T) {
 		err = query.Exec(world)
 		assert.NoError(err)
 		assert.Equal(uint(2), query.NumberOfResult())
-		query.Iter(func(entityId EntityId, a *componentA) {
+		query.Iter(func(entityId EntityId, a componentA) {
 			switch entityId {
 			case expectedEntity1:
 				assert.Equal(expectedValue1, a.value)
@@ -227,7 +227,7 @@ func TestQuery1(t *testing.T) {
 		assert.NoError(err)
 
 		assert.Equal(uint(1), query.NumberOfResult())
-		query.Iter(func(entityId EntityId, _ *componentA) {
+		query.Iter(func(entityId EntityId, _ componentA) {
 			assert.Equal(expected, entityId)
 		})
 	})
@@ -275,7 +275,7 @@ func TestQuery1(t *testing.T) {
 		_, err = Spawn(world, &componentB{}, &componentC{})
 		assert.NoError(err)
 
-		query := Query1[componentA, QueryOptions[With[componentB], Optional1[componentA], NoReadOnly, NotLazy, DefaultWorld]]{}
+		query := Query1[componentA, QueryOptions[With[componentB], Optional1[componentA], NotLazy, DefaultWorld]]{}
 		err = query.Prepare(world, nil)
 		assert.NoError(err)
 		err = query.Exec(world)
@@ -284,17 +284,17 @@ func TestQuery1(t *testing.T) {
 		assert.Equal(uint(4), query.NumberOfResult())
 	})
 
-	t.Run("queried component can be mutated", func(t *testing.T) {
+	t.Run("queried component can be mutated if declared with a pointer", func(t *testing.T) {
 		assert := assert.New(t)
 
 		expectedValue := 10
 		world := NewDefaultWorld()
-		query := Query1[componentA, Default]{}
+		query := Query1[*componentA, Default]{}
 		err := query.Prepare(world, nil)
 		assert.NoError(err)
-		_, err = Spawn(world, &componentA{value: 0}, &componentB{})
+		_, err = Spawn(world, componentA{value: 0}, componentB{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentB{})
+		_, err = Spawn(world, componentB{})
 		assert.NoError(err)
 
 		err = query.Exec(world)
@@ -310,12 +310,12 @@ func TestQuery1(t *testing.T) {
 		})
 	})
 
-	t.Run("queried component can not be mutated if is specified as read-only", func(t *testing.T) {
+	t.Run("queried component can not be mutated if declared without pointer", func(t *testing.T) {
 		assert := assert.New(t)
 
 		expectedValue := 0
 		world := NewDefaultWorld()
-		query := Query1[componentA, AllReadOnly]{}
+		query := Query1[componentA, Default]{}
 		err := query.Prepare(world, nil)
 		assert.NoError(err)
 		_, err = Spawn(world, &componentA{value: 0}, &componentB{})
@@ -325,13 +325,13 @@ func TestQuery1(t *testing.T) {
 
 		err = query.Exec(world)
 		assert.NoError(err)
-		query.Iter(func(entityId EntityId, a *componentA) {
+		query.Iter(func(entityId EntityId, a componentA) {
 			a.value = 10
 		})
 
 		err = query.Exec(world)
 		assert.NoError(err)
-		query.Iter(func(entityId EntityId, a *componentA) {
+		query.Iter(func(entityId EntityId, a componentA) {
 			assert.Equal(expectedValue, a.value)
 		})
 	})
@@ -352,7 +352,7 @@ func TestQuery1(t *testing.T) {
 
 		assert.Equal(uint(2), query.NumberOfResult())
 		numberOfIterations := 0
-		err = query.IterUntil(func(_ EntityId, _ *componentA) error {
+		err = query.IterUntil(func(_ EntityId, _ componentA) error {
 			numberOfIterations++
 			return errors.New("oops")
 		})

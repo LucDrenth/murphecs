@@ -11,7 +11,6 @@ import (
 type CombinedQueryOptions struct {
 	Filters            []QueryFilter
 	OptionalComponents []ComponentId
-	ReadOnlyComponents combinedReadOnlyComponent
 	isLazy             bool
 	TargetWorld        *WorldId
 }
@@ -40,72 +39,27 @@ func (o *CombinedQueryOptions) validateOptions(queryComponents []ComponentId) er
 		}
 	}
 
-	if duplicate, _, _ := utils.GetFirstDuplicate(o.ReadOnlyComponents.ComponentIds); duplicate != nil {
-		return fmt.Errorf("read-only component %s is given multiple times", (*duplicate).DebugString())
-	}
-
-	for _, readOnly := range o.ReadOnlyComponents.ComponentIds {
-		if !slices.Contains(queryComponents, readOnly) {
-			return fmt.Errorf("read-only component %s is not in query", readOnly.DebugString())
-		}
-	}
-
-	if o.ReadOnlyComponents.IsAllReadOnly && len(o.ReadOnlyComponents.ComponentIds) > 0 {
-		return fmt.Errorf("should not have specific read-only components together with IsAllReadOnly")
-	}
-
 	return nil
 }
 
 func (o *CombinedQueryOptions) optimize(queryComponents []ComponentId) {
-	// If IsAllReadOnly is not set, and all query components are individually marked as ReadOnly, we can
-	// set IsAllReadOnly to true. This saves a little bit of memory and slightly increase performance.
-	if !o.ReadOnlyComponents.IsAllReadOnly {
-		setAllReadOnly := true
-		for _, component := range queryComponents {
-			if !slices.ContainsFunc(o.ReadOnlyComponents.ComponentIds, func(c ComponentId) bool {
-				return component.id == c.id
-			}) {
-				setAllReadOnly = false
-			}
-		}
-
-		if setAllReadOnly {
-			o.ReadOnlyComponents.IsAllReadOnly = true
-		}
-	}
-
-	if o.ReadOnlyComponents.IsAllReadOnly {
-		// free up memory
-		o.ReadOnlyComponents.ComponentIds = nil
-	}
-}
-
-type combinedReadOnlyComponent struct {
-	ComponentIds  []ComponentId
-	IsAllReadOnly bool
+	// This was originally used for a read-only option, which is now removed.
+	// But this function may be used for other optimizations in the future.
 }
 
 type QueryOption interface {
 	GetCombinedQueryOptions(*World) (CombinedQueryOptions, error)
 }
 
-// default query options: NoFilter, NoOptional, NoReadonly, NotLazy
+// default query options: [NoFilter], [NoOptional], [NotLazy]
 type Default struct{}
-type QueryOptionsAllReadOnly struct{}
-type QueryOptions[_ QueryParamFilter, _ OptionalComponents, _ ReadOnlyComponents, _ IsQueryLazy, _ TargetWorld] struct{}
+type QueryOptions[_ QueryParamFilter, _ OptionalComponents, _ IsQueryLazy, _ TargetWorld] struct{}
 
 func (Default) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
 	return CombinedQueryOptions{}, nil
 }
 
-func (o QueryOptionsAllReadOnly) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
-	return CombinedQueryOptions{
-		ReadOnlyComponents: combinedReadOnlyComponent{IsAllReadOnly: true},
-	}, nil
-}
-
-func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents, IsQueryLazy, TargetWorld]) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
+func (o QueryOptions[QueryParamFilter, OptionalComponents, IsQueryLazy, TargetWorld]) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
 	result := CombinedQueryOptions{}
 
 	concreteFilters, err := utils.ToConcrete[QueryParamFilter]()
@@ -126,12 +80,6 @@ func (o QueryOptions[QueryParamFilter, OptionalComponents, ReadOnlyComponents, I
 		return result, fmt.Errorf("failed to cast optional components to concrete type: %w", err)
 	}
 	result.OptionalComponents = concreteOptionals.getOptionalComponentIds(world)
-
-	readOnlyComponents, err := utils.ToConcrete[ReadOnlyComponents]()
-	if err != nil {
-		return result, fmt.Errorf("failed to cast read only components to concrete type: %w", err)
-	}
-	result.ReadOnlyComponents.ComponentIds, result.ReadOnlyComponents.IsAllReadOnly = readOnlyComponents.getReadonlyComponentIds(world)
 
 	queryOptionLazy, err := utils.ToConcrete[IsQueryLazy]()
 	if err != nil {
@@ -438,12 +386,6 @@ func mergeQueryOptions(queryOptions []QueryOption, world *World) (result Combine
 		result.Filters = append(result.Filters, options.Filters...)
 		result.OptionalComponents = append(result.OptionalComponents, options.OptionalComponents...)
 
-		result.ReadOnlyComponents.ComponentIds = append(result.ReadOnlyComponents.ComponentIds, options.ReadOnlyComponents.ComponentIds...)
-
-		if !result.ReadOnlyComponents.IsAllReadOnly && options.ReadOnlyComponents.IsAllReadOnly {
-			result.ReadOnlyComponents.IsAllReadOnly = true
-		}
-
 		if !result.isLazy && options.isLazy {
 			result.isLazy = true
 		}
@@ -463,19 +405,6 @@ func QueryWithOptional[C IComponent](world *World, query Query) error {
 	options.OptionalComponents = append(options.OptionalComponents, componentId)
 
 	return query.Validate()
-}
-
-func QueryWithReadOnly[C IComponent](world *World, query Query) error {
-	options := query.getOptions()
-
-	componentId := ComponentIdFor[C](world)
-	options.ReadOnlyComponents.ComponentIds = append(options.ReadOnlyComponents.ComponentIds, componentId)
-
-	return query.Validate()
-}
-
-func QueryWithAllReadOnly(query Query) {
-	query.getOptions().ReadOnlyComponents.IsAllReadOnly = true
 }
 
 func QueryWith[C IComponent](world *World, query Query) error {
