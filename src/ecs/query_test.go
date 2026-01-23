@@ -262,17 +262,17 @@ func TestQuery1(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		_, err := Spawn(world, &componentA{}, &componentB{}, &componentC{})
+		_, err := Spawn(world, componentA{}, componentB{}, componentC{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentA{}, &componentB{})
+		_, err = Spawn(world, componentA{}, componentB{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentA{})
+		_, err = Spawn(world, componentA{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentB{})
+		_, err = Spawn(world, componentB{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentC{})
+		_, err = Spawn(world, componentC{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentB{}, &componentC{})
+		_, err = Spawn(world, componentB{}, componentC{})
 		assert.NoError(err)
 
 		query := Query1[componentA, QueryOptions[With[componentB], Optional1[componentA], NotLazy, DefaultWorld]]{}
@@ -282,6 +282,34 @@ func TestQuery1(t *testing.T) {
 		assert.NoError(err)
 
 		assert.Equal(uint(4), query.NumberOfResult())
+	})
+
+	t.Run("query with optional component returns nil when optional component was not found", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewDefaultWorld()
+
+		expectedEntityId, err := Spawn(world, componentB{})
+		assert.NoError(err)
+
+		query := Query1[*componentA, Optional1[componentA]]{}
+		assert.NoError(query.Prepare(world, nil))
+		assert.NoError(query.Exec(world))
+
+		// Single
+		{
+			gotEntityId, component, err := query.Single()
+			assert.NoError(err)
+			assert.Nil(component)
+			assert.Equal(expectedEntityId, gotEntityId)
+		}
+
+		// Iter
+		{
+			query.Iter(func(gotEntityId EntityId, component *componentA) {
+				assert.Nil(component)
+				assert.Equal(expectedEntityId, gotEntityId)
+			})
+		}
 	})
 
 	t.Run("queried component can be mutated if declared with a pointer", func(t *testing.T) {
