@@ -252,8 +252,14 @@ func getComponentFromComponentStorage[T IComponent](storage *componentStorage, i
 
 	// Check if the generic type T is a pointer (e.g., *componentA)
 	if isPointer {
-		// Treat 'result' as a bucket for a pointer and write the address directly.
-		*(*unsafe.Pointer)(unsafe.Pointer(&result)) = componentPointer
+		// Use reflect.NewAt to safely create a pointer of type T pointing to componentPointer.
+		//
+		// This is GC-safe, where the following is not:
+		//
+		//   `*(*unsafe.Pointer)(unsafe.Pointer(&result)) = componentPointer`
+		//
+		//
+		result = reflect.NewAt(storage.componentId.componentType, componentPointer).Interface().(T)
 	} else {
 		// Make 'result' a copy of the data at that address.
 		result = *(*T)(componentPointer)
