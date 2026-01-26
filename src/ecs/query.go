@@ -43,7 +43,7 @@ type queryComponentInfo struct {
 	isPointer bool
 }
 
-func queryComponentInfoFor[T IComponent](world *World) queryComponentInfo {
+func queryComponentInfoFor[T AnyComponent](world *World) queryComponentInfo {
 	return queryComponentInfo{
 		id:        ComponentIdFor[T](world),
 		isPointer: reflect.TypeFor[T]().Kind() == reflect.Pointer,
@@ -97,7 +97,7 @@ type Query0[_ QueryOption] struct {
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
-type Query1[ComponentA IComponent, _ QueryOption] struct {
+type Query1[ComponentA AnyComponent, _ QueryOption] struct {
 	Query1Result[ComponentA]
 	queryOptions
 
@@ -116,7 +116,7 @@ type Query1[ComponentA IComponent, _ QueryOption] struct {
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
-type Query2[ComponentA, ComponentB IComponent, _ QueryOption] struct {
+type Query2[ComponentA, ComponentB AnyComponent, _ QueryOption] struct {
 	Query2Result[ComponentA, ComponentB]
 	queryOptions
 
@@ -136,7 +136,7 @@ type Query2[ComponentA, ComponentB IComponent, _ QueryOption] struct {
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
-type Query3[ComponentA, ComponentB, ComponentC IComponent, _ QueryOption] struct {
+type Query3[ComponentA, ComponentB, ComponentC AnyComponent, _ QueryOption] struct {
 	Query3Result[ComponentA, ComponentB, ComponentC]
 	queryOptions
 
@@ -157,7 +157,7 @@ type Query3[ComponentA, ComponentB, ComponentC IComponent, _ QueryOption] struct
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
-type Query4[ComponentA, ComponentB, ComponentC, ComponentD IComponent, _ QueryOption] struct {
+type Query4[ComponentA, ComponentB, ComponentC, ComponentD AnyComponent, _ QueryOption] struct {
 	Query4Result[ComponentA, ComponentB, ComponentC, ComponentD]
 	queryOptions
 
@@ -179,7 +179,7 @@ type Query4[ComponentA, ComponentB, ComponentC, ComponentD IComponent, _ QueryOp
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
-type Query5[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE IComponent, _ QueryOption] struct {
+type Query5[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE AnyComponent, _ QueryOption] struct {
 	Query5Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE]
 	queryOptions
 
@@ -202,7 +202,7 @@ type Query5[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE IComponen
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
-type Query6[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF IComponent, _ QueryOption] struct {
+type Query6[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF AnyComponent, _ QueryOption] struct {
 	Query6Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF]
 	queryOptions
 
@@ -226,7 +226,7 @@ type Query6[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Componen
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
-type Query7[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG IComponent, _ QueryOption] struct {
+type Query7[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG AnyComponent, _ QueryOption] struct {
 	Query7Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG]
 	queryOptions
 
@@ -251,7 +251,7 @@ type Query7[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Componen
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
-type Query8[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH IComponent, _ QueryOption] struct {
+type Query8[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH AnyComponent, _ QueryOption] struct {
 	Query8Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH]
 	queryOptions
 
@@ -277,7 +277,7 @@ type Query8[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Componen
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
-type Query9[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI IComponent, _ QueryOption] struct {
+type Query9[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI AnyComponent, _ QueryOption] struct {
 	Query9Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI]
 	queryOptions
 
@@ -304,7 +304,7 @@ type Query9[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Componen
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
-type Query10[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ IComponent, _ QueryOption] struct {
+type Query10[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ AnyComponent, _ QueryOption] struct {
 	Query10Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ]
 	queryOptions
 
@@ -332,7 +332,7 @@ type Query10[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
-type Query11[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK IComponent, _ QueryOption] struct {
+type Query11[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK AnyComponent, _ QueryOption] struct {
 	Query11Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK]
 	queryOptions
 
@@ -361,7 +361,7 @@ type Query11[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
-type Query12[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL IComponent, _ QueryOption] struct {
+type Query12[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL AnyComponent, _ QueryOption] struct {
 	Query12Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL]
 	queryOptions
 
@@ -391,7 +391,7 @@ type Query12[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
-type Query13[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM IComponent, _ QueryOption] struct {
+type Query13[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM AnyComponent, _ QueryOption] struct {
 	Query13Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM]
 	queryOptions
 
@@ -422,7 +422,7 @@ type Query13[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
-type Query14[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM, ComponentN IComponent, _ QueryOption] struct {
+type Query14[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM, ComponentN AnyComponent, _ QueryOption] struct {
 	Query14Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM, ComponentN]
 	queryOptions
 
@@ -454,7 +454,7 @@ type Query14[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
-type Query15[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM, ComponentN, ComponentO IComponent, _ QueryOption] struct {
+type Query15[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM, ComponentN, ComponentO AnyComponent, _ QueryOption] struct {
 	Query15Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM, ComponentN, ComponentO]
 	queryOptions
 
@@ -487,7 +487,7 @@ type Query15[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 //   - use [With] to make the results only include entities that has a specific component.
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
-type Query16[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM, ComponentN, ComponentO, ComponentP IComponent, _ QueryOption] struct {
+type Query16[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM, ComponentN, ComponentO, ComponentP AnyComponent, _ QueryOption] struct {
 	Query16Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM, ComponentN, ComponentO, ComponentP]
 	queryOptions
 
@@ -2992,7 +2992,7 @@ func shouldHandleQueryComponent(componentId ComponentId, archetype *Archetype, q
 }
 
 // fetchComponentForQueryResult fetches a component from the component storage
-func fetchComponentForQueryResult[T IComponent](componentInfo queryComponentInfo, entityRow uint, archetype *Archetype) (result T, err error) {
+func fetchComponentForQueryResult[T AnyComponent](componentInfo queryComponentInfo, entityRow uint, archetype *Archetype) (result T, err error) {
 	storage := archetype.components[componentInfo.id]
 	result, err = getComponentFromComponentStorage[T](storage, entityRow, componentInfo.isPointer)
 	if err != nil {

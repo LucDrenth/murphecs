@@ -9,7 +9,7 @@ import (
 )
 
 // Compiler check to verify that `Component` satisfies `IComponent`
-var _ IComponent = Component{}
+var _ AnyComponent = Component{}
 
 /*****************************
  * Component without require *
@@ -22,11 +22,11 @@ type componentWithoutRequire struct{ Component }
 type componentThatRequiresEachOtherA struct{ Component }
 type componentThatRequiresEachOtherB struct{ Component }
 
-func (a componentThatRequiresEachOtherA) RequiredComponents() []IComponent {
-	return []IComponent{componentThatRequiresEachOtherB{}}
+func (a componentThatRequiresEachOtherA) RequiredComponents() []AnyComponent {
+	return []AnyComponent{componentThatRequiresEachOtherB{}}
 }
-func (a componentThatRequiresEachOtherB) RequiredComponents() []IComponent {
-	return []IComponent{componentThatRequiresEachOtherA{}}
+func (a componentThatRequiresEachOtherB) RequiredComponents() []AnyComponent {
+	return []AnyComponent{componentThatRequiresEachOtherA{}}
 }
 
 /**********************************
@@ -34,8 +34,8 @@ func (a componentThatRequiresEachOtherB) RequiredComponents() []IComponent {
  **********************************/
 type componentThatRequiresItself struct{ Component }
 
-func (a componentThatRequiresItself) RequiredComponents() []IComponent {
-	return []IComponent{componentThatRequiresItself{}}
+func (a componentThatRequiresItself) RequiredComponents() []AnyComponent {
+	return []AnyComponent{componentThatRequiresItself{}}
 }
 
 /****************************************************
@@ -67,59 +67,59 @@ type componentTree3A struct{ Component }
 type componentTree3B struct{ Component }
 type componentTree3C struct{ Component }
 
-func (a componentTree0A) RequiredComponents() []IComponent {
-	return []IComponent{componentTree1A{}, componentTree1B{}}
+func (a componentTree0A) RequiredComponents() []AnyComponent {
+	return []AnyComponent{componentTree1A{}, componentTree1B{}}
 }
-func (a componentTree1B) RequiredComponents() []IComponent {
-	return []IComponent{componentTree2C{}}
+func (a componentTree1B) RequiredComponents() []AnyComponent {
+	return []AnyComponent{componentTree2C{}}
 }
-func (a componentTree2C) RequiredComponents() []IComponent {
-	return []IComponent{componentTree3C{}, componentTree0B{}}
+func (a componentTree2C) RequiredComponents() []AnyComponent {
+	return []AnyComponent{componentTree3C{}, componentTree0B{}}
 }
-func (a componentTree1A) RequiredComponents() []IComponent {
-	return []IComponent{componentTree2A{}, componentTree2B{}}
+func (a componentTree1A) RequiredComponents() []AnyComponent {
+	return []AnyComponent{componentTree2A{}, componentTree2B{}}
 }
-func (a componentTree2B) RequiredComponents() []IComponent {
-	return []IComponent{componentTree3A{}, componentTree3B{}}
+func (a componentTree2B) RequiredComponents() []AnyComponent {
+	return []AnyComponent{componentTree3A{}, componentTree3B{}}
 }
-func (a componentTree3A) RequiredComponents() []IComponent {
-	return []IComponent{componentTree2A{}}
+func (a componentTree3A) RequiredComponents() []AnyComponent {
+	return []AnyComponent{componentTree2A{}}
 }
 
 func TestGetAllRequiredComponents(t *testing.T) {
 	scenarios := []struct {
 		description       string
-		components        []IComponent
+		components        []AnyComponent
 		nrExpectedResults int
 	}{
 		{
 			description:       "handles empty list of components",
-			components:        []IComponent{},
+			components:        []AnyComponent{},
 			nrExpectedResults: 0,
 		},
 		{
 			description:       "handles component with recursive require",
-			components:        []IComponent{componentThatRequiresEachOtherA{}},
+			components:        []AnyComponent{componentThatRequiresEachOtherA{}},
 			nrExpectedResults: 1,
 		},
 		{
 			description:       "handles components that require each other",
-			components:        []IComponent{componentThatRequiresEachOtherA{}, componentThatRequiresEachOtherB{}},
+			components:        []AnyComponent{componentThatRequiresEachOtherA{}, componentThatRequiresEachOtherB{}},
 			nrExpectedResults: 0,
 		},
 		{
 			description:       "handles component that requires itself",
-			components:        []IComponent{componentThatRequiresItself{}},
+			components:        []AnyComponent{componentThatRequiresItself{}},
 			nrExpectedResults: 0,
 		},
 		{
 			description:       "returns empty for component without required components",
-			components:        []IComponent{componentWithoutRequire{}},
+			components:        []AnyComponent{componentWithoutRequire{}},
 			nrExpectedResults: 0,
 		},
 		{
 			description:       "handles complex tree of required components",
-			components:        []IComponent{componentTree0A{}, componentTree0B{}},
+			components:        []AnyComponent{componentTree0A{}, componentTree0B{}},
 			nrExpectedResults: 8,
 		},
 	}
@@ -188,7 +188,7 @@ func TestComponentIdConversions(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		var iComponent IComponent = componentA{}
+		var iComponent AnyComponent = componentA{}
 
 		a := ComponentIdOf(iComponent, world)
 		b := ComponentIdFor[componentA](world)

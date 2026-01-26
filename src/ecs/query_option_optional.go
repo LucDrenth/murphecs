@@ -9,35 +9,35 @@ type NoOptional struct{}
 
 // Entities will be in query result even if A is not present. If A is not present,
 // it will be nil in the query result.
-type Optional1[A IComponent] struct{}
+type Optional1[A AnyComponent] struct{}
 
 // Entities will be in query result even if any of these are not present. Components that are
 // not present will be nil in the query result.
-type Optional2[A, B IComponent] struct{}
+type Optional2[A, B AnyComponent] struct{}
 
 // Entities will be in query result even if any of these are not present. Components that are
 // not present will be nil in the query result.
-type Optional3[A, B, C IComponent] struct{}
+type Optional3[A, B, C AnyComponent] struct{}
 
 // Entities will be in query result even if any of these are not present. Components that are
 // not present will be nil in the query result.
-type Optional4[A, B, C, D IComponent] struct{}
+type Optional4[A, B, C, D AnyComponent] struct{}
 
 // Entities will be in query result even if any of these are not present. Components that are
 // not present will be nil in the query result.
-type Optional5[A, B, C, D, E IComponent] struct{}
+type Optional5[A, B, C, D, E AnyComponent] struct{}
 
 // Entities will be in query result even if any of these are not present. Components that are
 // not present will be nil in the query result.
-type Optional6[A, B, C, D, E, F IComponent] struct{}
+type Optional6[A, B, C, D, E, F AnyComponent] struct{}
 
 // Entities will be in query result even if any of these are not present. Components that are
 // not present will be nil in the query result.
-type Optional7[A, B, C, D, E, F, G IComponent] struct{}
+type Optional7[A, B, C, D, E, F, G AnyComponent] struct{}
 
 // Entities will be in query result even if any of these are not present. Components that are
 // not present will be nil in the query result.
-type Optional8[A, B, C, D, E, F, G, H IComponent] struct{}
+type Optional8[A, B, C, D, E, F, G, H AnyComponent] struct{}
 
 func (o NoOptional) getOptionalComponentIds(world *World) []ComponentId {
 	return []ComponentId{}

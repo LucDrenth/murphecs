@@ -13,7 +13,7 @@ import (
 // Can return the following errors:
 //   - Returns an ErrComponentIsNil error when any of the given components is nil
 //   - Returns an ErrDuplicateComponent error when any of the given components are of the same type.
-func Spawn(world *World, components ...IComponent) (EntityId, error) {
+func Spawn(world *World, components ...AnyComponent) (EntityId, error) {
 	for i, component := range components {
 		if component == nil {
 			return nonExistingEntity, fmt.Errorf("%w: at position %d", ErrComponentIsNil, i+1)
@@ -40,7 +40,7 @@ func Spawn(world *World, components ...IComponent) (EntityId, error) {
 		if componentValue.Kind() != reflect.Pointer {
 			ptrValue := reflect.New(componentValue.Type())
 			ptrValue.Elem().Set(componentValue)
-			components[i] = ptrValue.Interface().(IComponent)
+			components[i] = ptrValue.Interface().(AnyComponent)
 			componentValue = ptrValue
 		}
 

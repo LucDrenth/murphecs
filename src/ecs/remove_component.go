@@ -13,7 +13,7 @@ import (
 // Can return the following errors:
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
-func Remove1[A IComponent](world *World, entity EntityId) error {
+func Remove1[A AnyComponent](world *World, entity EntityId) error {
 	return removeComponents(world, entity, []ComponentId{
 		ComponentIdFor[A](world),
 	})
@@ -24,7 +24,7 @@ func Remove1[A IComponent](world *World, entity EntityId) error {
 // Can return the following errors:
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
-func Remove2[A, B IComponent](world *World, entity EntityId) (result error) {
+func Remove2[A, B AnyComponent](world *World, entity EntityId) (result error) {
 	return removeComponents(world, entity, []ComponentId{
 		ComponentIdFor[A](world),
 		ComponentIdFor[B](world),
@@ -36,7 +36,7 @@ func Remove2[A, B IComponent](world *World, entity EntityId) (result error) {
 // Can return the following errors:
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
-func Remove3[A, B, C IComponent](world *World, entity EntityId) (result error) {
+func Remove3[A, B, C AnyComponent](world *World, entity EntityId) (result error) {
 	return removeComponents(world, entity, []ComponentId{
 		ComponentIdFor[A](world),
 		ComponentIdFor[B](world),
@@ -49,7 +49,7 @@ func Remove3[A, B, C IComponent](world *World, entity EntityId) (result error) {
 // Can return the following errors:
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
-func Remove4[A, B, C, D IComponent](world *World, entity EntityId) (result error) {
+func Remove4[A, B, C, D AnyComponent](world *World, entity EntityId) (result error) {
 	return removeComponents(world, entity, []ComponentId{
 		ComponentIdFor[A](world),
 		ComponentIdFor[B](world),

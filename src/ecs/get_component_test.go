@@ -106,7 +106,7 @@ func TestGet1(t *testing.T) {
 
 	expectedValue := 101
 
-	setup := func(component IComponent) (EntityId, *World, *assert.Assertions) {
+	setup := func(component AnyComponent) (EntityId, *World, *assert.Assertions) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 		entity, err := Spawn(world, component, &anotherComponent{})

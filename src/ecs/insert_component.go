@@ -16,7 +16,7 @@ import (
 //     the components that are not yet present.
 //   - Returns an ErrInvalidComponentStorageCapacity if the component storage capacity, that is decided through World
 //     configs, is not valid
-func Insert(world *World, entity EntityId, components ...IComponent) (resultErr error) {
+func Insert(world *World, entity EntityId, components ...AnyComponent) (resultErr error) {
 	if len(components) == 0 {
 		return nil
 	}
@@ -44,7 +44,7 @@ func Insert(world *World, entity EntityId, components ...IComponent) (resultErr 
 	oldArchetype := entityData.archetype
 
 	componentIdsToAdd := make([]ComponentId, 0, len(componentIds))
-	componentsToAdd := make([]IComponent, 0, len(components))
+	componentsToAdd := make([]AnyComponent, 0, len(components))
 	for i, componentId := range componentIds {
 		if oldArchetype.HasComponent(componentId) {
 			resultErr = fmt.Errorf("%w: %s", ErrComponentAlreadyPresent, componentId.DebugString())
@@ -133,7 +133,7 @@ func Insert(world *World, entity EntityId, components ...IComponent) (resultErr 
 //   - Returns an ErrDuplicateComponent error when any of the given components are of the same type.
 //   - Returns an ErrInvalidComponentStorageCapacity if the component storage capacity, that is decided through World
 //     configs, is not valid
-func InsertOrOverwrite(world *World, entity EntityId, components ...IComponent) (resultErr error) {
+func InsertOrOverwrite(world *World, entity EntityId, components ...AnyComponent) (resultErr error) {
 	if len(components) == 0 {
 		return nil
 	}
@@ -154,7 +154,7 @@ func InsertOrOverwrite(world *World, entity EntityId, components ...IComponent) 
 	oldArchetype := entityData.archetype
 
 	componentIdsToAdd := make([]ComponentId, 0, len(componentIds))
-	componentsToAdd := make([]IComponent, 0, len(components))
+	componentsToAdd := make([]AnyComponent, 0, len(components))
 	for i, componentId := range componentIds {
 		if oldArchetype.HasComponent(componentId) {
 			err := oldArchetype.components[componentId].set(components[i], entityData.row)

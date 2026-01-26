@@ -52,14 +52,14 @@ func (c *componentRegistry) processComponentIdRegistries() {
 	maps.Copy(c.components, c.concurrencySafeComponents)
 }
 
-type IComponent interface {
-	RequiredComponents() []IComponent
+type AnyComponent interface {
+	RequiredComponents() []AnyComponent
 }
 
 type Component struct{}
 
-func (Component) RequiredComponents() []IComponent {
-	return []IComponent{}
+func (Component) RequiredComponents() []AnyComponent {
+	return []AnyComponent{}
 }
 
 type ComponentId struct {
@@ -85,7 +85,7 @@ func (c *ComponentId) ReflectType() reflect.Type {
 }
 
 // ComponentIdOf returns a unique representation of the component ID
-func ComponentIdOf(component IComponent, world *World) ComponentId {
+func ComponentIdOf(component AnyComponent, world *World) ComponentId {
 	componentType := reflect.TypeOf(component)
 
 	if componentType.Kind() == reflect.Pointer {
@@ -99,7 +99,7 @@ func ComponentIdOf(component IComponent, world *World) ComponentId {
 }
 
 // ComponentIdFor returns a unique representation of the component ID
-func ComponentIdFor[T IComponent](world *World) ComponentId {
+func ComponentIdFor[T AnyComponent](world *World) ComponentId {
 	componentType := reflect.TypeFor[T]()
 
 	if componentType.Kind() == reflect.Pointer {
@@ -113,18 +113,18 @@ func ComponentIdFor[T IComponent](world *World) ComponentId {
 }
 
 // ComponentDebugStringOf returns a string reflection of a component id such as "ecs.Entity"
-func ComponentDebugStringOf(component IComponent) string {
+func ComponentDebugStringOf(component AnyComponent) string {
 	return reflect.TypeOf(component).String()
 }
 
 // ComponentDebugStringFor returns a string reflection of a component id such as "ecs.Entity"
-func ComponentDebugStringFor[T IComponent]() string {
+func ComponentDebugStringFor[T AnyComponent]() string {
 	result := reflect.TypeFor[T]().String()
 	result, _ = strings.CutPrefix(result, "*")
 	return result
 }
 
-func toComponentIds(components []IComponent, world *World) []ComponentId {
+func toComponentIds(components []AnyComponent, world *World) []ComponentId {
 	componentIds := make([]ComponentId, len(components))
 
 	for i, component := range components {
@@ -136,8 +136,8 @@ func toComponentIds(components []IComponent, world *World) []ComponentId {
 
 // getARequiredComponents non-exhaustively gets required components of `components` adds those components to `result`, and their types to `componentsToExclude`.
 // Required components of which their type exists in `componentsToExclude` are skipped.
-func getRequiredComponents(componentsToExclude *[]ComponentId, components []IComponent, result *[]IComponent, world *World) (newComponents []IComponent) {
-	newComponents = []IComponent{}
+func getRequiredComponents(componentsToExclude *[]ComponentId, components []AnyComponent, result *[]AnyComponent, world *World) (newComponents []AnyComponent) {
+	newComponents = []AnyComponent{}
 
 	for _, component := range components {
 		for _, required_component := range component.RequiredComponents() {
@@ -163,8 +163,8 @@ func getRequiredComponents(componentsToExclude *[]ComponentId, components []ICom
 // getAllRequiredComponents exhaustively gets all required components of `components`.
 //
 // `componentsToExclude` gets updated with the types from the result.
-func getAllRequiredComponents(componentsToExclude *[]ComponentId, components []IComponent, world *World) []IComponent {
-	result := []IComponent{}
+func getAllRequiredComponents(componentsToExclude *[]ComponentId, components []AnyComponent, world *World) []AnyComponent {
+	result := []AnyComponent{}
 
 	for {
 		components = getRequiredComponents(componentsToExclude, components, &result, world)

@@ -11,15 +11,15 @@ type testInsertComponentB struct{ Component }
 type testInsertComponentC struct{ Component }
 type testInsertComponentD struct{ Component }
 
-func (c testInsertComponentB) RequiredComponents() []IComponent {
-	return []IComponent{
+func (c testInsertComponentB) RequiredComponents() []AnyComponent {
+	return []AnyComponent{
 		&testInsertComponentA{},
 		testInsertComponentD{},
 	}
 }
 
-func (c testInsertComponentC) RequiredComponents() []IComponent {
-	return []IComponent{
+func (c testInsertComponentC) RequiredComponents() []AnyComponent {
+	return []AnyComponent{
 		&testInsertComponentB{},
 	}
 }

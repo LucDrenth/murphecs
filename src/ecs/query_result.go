@@ -14,29 +14,29 @@ type QueryResult interface {
 type Query0Result struct {
 	entityIds []EntityId
 }
-type Query1Result[A IComponent] struct {
+type Query1Result[A AnyComponent] struct {
 	componentsA []A
 	entityIds   []EntityId
 }
-type Query2Result[A, B IComponent] struct {
+type Query2Result[A, B AnyComponent] struct {
 	componentsA []A
 	componentsB []B
 	entityIds   []EntityId
 }
-type Query3Result[A, B, C IComponent] struct {
+type Query3Result[A, B, C AnyComponent] struct {
 	componentsA []A
 	componentsB []B
 	componentsC []C
 	entityIds   []EntityId
 }
-type Query4Result[A, B, C, D IComponent] struct {
+type Query4Result[A, B, C, D AnyComponent] struct {
 	componentsA []A
 	componentsB []B
 	componentsC []C
 	componentsD []D
 	entityIds   []EntityId
 }
-type Query5Result[A, B, C, D, E IComponent] struct {
+type Query5Result[A, B, C, D, E AnyComponent] struct {
 	componentsA []A
 	componentsB []B
 	componentsC []C
@@ -44,7 +44,7 @@ type Query5Result[A, B, C, D, E IComponent] struct {
 	componentsE []E
 	entityIds   []EntityId
 }
-type Query6Result[A, B, C, D, E, F IComponent] struct {
+type Query6Result[A, B, C, D, E, F AnyComponent] struct {
 	componentsA []A
 	componentsB []B
 	componentsC []C
@@ -53,7 +53,7 @@ type Query6Result[A, B, C, D, E, F IComponent] struct {
 	componentsF []F
 	entityIds   []EntityId
 }
-type Query7Result[A, B, C, D, E, F, G IComponent] struct {
+type Query7Result[A, B, C, D, E, F, G AnyComponent] struct {
 	componentsA []A
 	componentsB []B
 	componentsC []C
@@ -63,7 +63,7 @@ type Query7Result[A, B, C, D, E, F, G IComponent] struct {
 	componentsG []G
 	entityIds   []EntityId
 }
-type Query8Result[A, B, C, D, E, F, G, H IComponent] struct {
+type Query8Result[A, B, C, D, E, F, G, H AnyComponent] struct {
 	componentsA []A
 	componentsB []B
 	componentsC []C
@@ -74,7 +74,7 @@ type Query8Result[A, B, C, D, E, F, G, H IComponent] struct {
 	componentsH []H
 	entityIds   []EntityId
 }
-type Query9Result[A, B, C, D, E, F, G, H, I IComponent] struct {
+type Query9Result[A, B, C, D, E, F, G, H, I AnyComponent] struct {
 	componentsA []A
 	componentsB []B
 	componentsC []C
@@ -86,7 +86,7 @@ type Query9Result[A, B, C, D, E, F, G, H, I IComponent] struct {
 	componentsI []I
 	entityIds   []EntityId
 }
-type Query10Result[A, B, C, D, E, F, G, H, I, J IComponent] struct {
+type Query10Result[A, B, C, D, E, F, G, H, I, J AnyComponent] struct {
 	componentsA []A
 	componentsB []B
 	componentsC []C
@@ -99,7 +99,7 @@ type Query10Result[A, B, C, D, E, F, G, H, I, J IComponent] struct {
 	componentsJ []J
 	entityIds   []EntityId
 }
-type Query11Result[A, B, C, D, E, F, G, H, I, J, K IComponent] struct {
+type Query11Result[A, B, C, D, E, F, G, H, I, J, K AnyComponent] struct {
 	componentsA []A
 	componentsB []B
 	componentsC []C
@@ -113,7 +113,7 @@ type Query11Result[A, B, C, D, E, F, G, H, I, J, K IComponent] struct {
 	componentsK []K
 	entityIds   []EntityId
 }
-type Query12Result[A, B, C, D, E, F, G, H, I, J, K, L IComponent] struct {
+type Query12Result[A, B, C, D, E, F, G, H, I, J, K, L AnyComponent] struct {
 	componentsA []A
 	componentsB []B
 	componentsC []C
@@ -128,7 +128,7 @@ type Query12Result[A, B, C, D, E, F, G, H, I, J, K, L IComponent] struct {
 	componentsL []L
 	entityIds   []EntityId
 }
-type Query13Result[A, B, C, D, E, F, G, H, I, J, K, L, M IComponent] struct {
+type Query13Result[A, B, C, D, E, F, G, H, I, J, K, L, M AnyComponent] struct {
 	componentsA []A
 	componentsB []B
 	componentsC []C
@@ -144,7 +144,7 @@ type Query13Result[A, B, C, D, E, F, G, H, I, J, K, L, M IComponent] struct {
 	componentsM []M
 	entityIds   []EntityId
 }
-type Query14Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N IComponent] struct {
+type Query14Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N AnyComponent] struct {
 	componentsA []A
 	componentsB []B
 	componentsC []C
@@ -161,7 +161,7 @@ type Query14Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N IComponent] struct {
 	componentsN []N
 	entityIds   []EntityId
 }
-type Query15Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O IComponent] struct {
+type Query15Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O AnyComponent] struct {
 	componentsA []A
 	componentsB []B
 	componentsC []C
@@ -179,7 +179,7 @@ type Query15Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O IComponent] struc
 	componentsO []O
 	entityIds   []EntityId
 }
-type Query16Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P IComponent] struct {
+type Query16Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P AnyComponent] struct {
 	componentsA []A
 	componentsB []B
 	componentsC []C

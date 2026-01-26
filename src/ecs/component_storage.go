@@ -49,7 +49,7 @@ func (storage *componentStorage) increaseCapacity(extraCapacity uint) {
 }
 
 // insert returns the index at which the component was inserted.
-func (storage *componentStorage) insert(world *World, component IComponent) (uint, error) {
+func (storage *componentStorage) insert(world *World, component AnyComponent) (uint, error) {
 	insertIndex := storage.nextItemIndex
 
 	if storage.capacity == insertIndex {
@@ -71,7 +71,7 @@ func (storage *componentStorage) insert(world *World, component IComponent) (uin
 	return insertIndex, nil
 }
 
-func (storage *componentStorage) set(component IComponent, index uint) error {
+func (storage *componentStorage) set(component AnyComponent, index uint) error {
 	if index >= storage.capacity {
 		return fmt.Errorf("%w: %d", ErrComponentStorageIndexOutOfBounds, index)
 	}
@@ -244,7 +244,7 @@ func (storage *componentStorage) getComponentPointer(index uint) (unsafe.Pointer
 // getComponentFromComponentStorage returns a pointer to the component at index.
 //
 // Returns an error if index is out of bounds.
-func getComponentFromComponentStorage[T IComponent](storage *componentStorage, index uint, isPointer bool) (result T, err error) {
+func getComponentFromComponentStorage[T AnyComponent](storage *componentStorage, index uint, isPointer bool) (result T, err error) {
 	componentPointer, err := storage.getComponentPointer(index)
 	if err != nil {
 		return result, err

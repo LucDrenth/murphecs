@@ -16,7 +16,7 @@ type systemGroup struct {
 	systems                         []systemEntry
 	systemParamQueries              []ecs.Query
 	systemParamQueriesToOuterWorlds []queryToOuterWorld
-	eventWriters                    []iEventWriter
+	eventWriters                    []anyEventWriter
 }
 
 type systemGroupBuilder struct {
@@ -55,8 +55,8 @@ func (s *systemGroupBuilder) build(source string, world *ecs.World, outerWorlds 
 	systemGroup := systemGroup{}
 
 	queryType := reflect.TypeFor[ecs.Query]()
-	eventReaderType := reflect.TypeFor[iEventReader]()
-	eventWriterType := reflect.TypeFor[iEventWriter]()
+	eventReaderType := reflect.TypeFor[anyEventReader]()
+	eventWriterType := reflect.TypeFor[anyEventWriter]()
 
 	for _, sys := range s.systems {
 		systemValue := reflect.ValueOf(sys)
@@ -91,19 +91,19 @@ func (s *systemGroupBuilder) build(source string, world *ecs.World, outerWorlds 
 				//	2. it is probably unintended and would cause unexpected behavior
 				return systemGroup, fmt.Errorf("%s: parameter %s: %w", systemToDebugString(sys), systemParameterDebugString(sys, i), ErrSystemParamWorldNotAPointer)
 			} else if parameterType.Implements(eventReaderType) {
-				eventReader, ok := reflect.TypeAssert[iEventReader](reflect.New(parameterType.Elem()))
+				eventReader, ok := reflect.TypeAssert[anyEventReader](reflect.New(parameterType.Elem()))
 				if !ok {
 					panic("failed to type assert iEventReader")
 				}
 				params[i] = *eventStorage.getReader(eventReader)
 			} else if parameterType.Implements(eventWriterType) {
-				eventWriter, ok := reflect.TypeAssert[iEventWriter](reflect.New(parameterType.Elem()))
+				eventWriter, ok := reflect.TypeAssert[anyEventWriter](reflect.New(parameterType.Elem()))
 				if !ok {
 					panic("failed to type assert iEventWriter")
 				}
 
 				reflectedEventWriter := *eventStorage.getWriter(eventWriter)
-				eventWriterParam, ok := reflect.TypeAssert[iEventWriter](reflectedEventWriter)
+				eventWriterParam, ok := reflect.TypeAssert[anyEventWriter](reflectedEventWriter)
 				if !ok {
 					panic("failed to type assert iEventWriter")
 				}

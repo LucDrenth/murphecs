@@ -23,8 +23,8 @@ type QueryParamFilter interface {
 	getNestedFilters() (a QueryParamFilter, b QueryParamFilter, err error)
 }
 type NoFilter struct{}
-type With[A IComponent] struct{}
-type Without[A IComponent] struct{}
+type With[A AnyComponent] struct{}
+type Without[A AnyComponent] struct{}
 type And[A, B QueryParamFilter] struct{}
 type Or[A, B QueryParamFilter] struct{}
 

@@ -24,8 +24,8 @@ type Dialog struct {
 	ecs.Component
 }
 
-func (NPC) RequiredComponents() []ecs.IComponent {
-	return []ecs.IComponent{
+func (NPC) RequiredComponents() []ecs.AnyComponent {
+	return []ecs.AnyComponent{
 		&Health{max: 100, current: 50},
 		&Dialog{text: "I am an NPC!"},
 	}

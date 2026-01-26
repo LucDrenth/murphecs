@@ -398,7 +398,7 @@ func mergeQueryOptions(queryOptions []QueryOption, world *World) (result Combine
 	return result, nil
 }
 
-func QueryWithOptional[C IComponent](world *World, query Query) error {
+func QueryWithOptional[C AnyComponent](world *World, query Query) error {
 	options := query.getOptions()
 
 	componentId := ComponentIdFor[C](world)
@@ -407,7 +407,7 @@ func QueryWithOptional[C IComponent](world *World, query Query) error {
 	return query.Validate()
 }
 
-func QueryWith[C IComponent](world *World, query Query) error {
+func QueryWith[C AnyComponent](world *World, query Query) error {
 	componentId := ComponentIdFor[C](world)
 	options := query.getOptions()
 	options.Filters = append(options.Filters, &queryFilterWith{c: []ComponentId{componentId}})
@@ -415,7 +415,7 @@ func QueryWith[C IComponent](world *World, query Query) error {
 	return query.Validate()
 }
 
-func QueryWithout[C IComponent](world *World, query Query) error {
+func QueryWithout[C AnyComponent](world *World, query Query) error {
 	componentId := ComponentIdFor[C](world)
 	options := query.getOptions()
 	options.Filters = append(options.Filters, &queryFilterWithout{c: []ComponentId{componentId}})

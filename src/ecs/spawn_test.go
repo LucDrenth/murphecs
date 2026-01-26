@@ -103,8 +103,8 @@ type requiredComponentB struct{ Component }
 
 type withRequiredComponents struct{ Component }
 
-func (a withRequiredComponents) RequiredComponents() []IComponent {
-	return []IComponent{
+func (a withRequiredComponents) RequiredComponents() []AnyComponent {
+	return []AnyComponent{
 		requiredComponentA{},
 		&requiredComponentB{},
 	}
