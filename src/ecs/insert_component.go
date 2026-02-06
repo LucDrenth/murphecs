@@ -2,6 +2,7 @@ package ecs
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/lucdrenth/murphecs/src/utils"
 )
@@ -59,7 +60,7 @@ func Insert(world *World, entity EntityId, components ...AnyComponent) (resultEr
 	}
 
 	// move archetype
-	newComponentIds := append(componentIdsToAdd, oldArchetype.componentIds...)
+	newComponentIds := slices.Concat(componentIdsToAdd, oldArchetype.componentIds)
 	requiredComponents := getAllRequiredComponents(&newComponentIds, componentsToAdd, world)
 
 	newArchetype, err := world.archetypeStorage.getArchetype(world, newComponentIds)
@@ -172,7 +173,7 @@ func InsertOrOverwrite(world *World, entity EntityId, components ...AnyComponent
 	}
 
 	// move archetype
-	newComponentIds := append(componentIdsToAdd, oldArchetype.componentIds...)
+	newComponentIds := slices.Concat(componentIdsToAdd, oldArchetype.componentIds)
 	requiredComponents := getAllRequiredComponents(&newComponentIds, componentsToAdd, world)
 
 	newArchetype, err := world.archetypeStorage.getArchetype(world, newComponentIds)

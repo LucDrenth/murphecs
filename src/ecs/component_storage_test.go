@@ -365,13 +365,13 @@ func TestRemoveFromComponentStorage(t *testing.T) {
 		assert.NoError(err)
 
 		for range capacity {
-			_, err := componentStorage.insert(world, &emptyComponentA{})
+			_, err := componentStorage.insert(world, &componentA{})
 			assert.NoError(err)
 		}
 
 		_, err = componentStorage.remove(5)
 		assert.NoError(err)
-		_, err = componentStorage.insert(world, &emptyComponentA{})
+		_, err = componentStorage.insert(world, &componentA{})
 		assert.NoError(err)
 
 		assert.Equal(capacity, componentStorage.capacity)
@@ -443,7 +443,7 @@ func TestComponentStorageCopyComponent(t *testing.T) {
 		world := NewDefaultWorld()
 		componentStorage, err := createComponentStorage(4, ComponentIdFor[ComponentWithPointers](world))
 		assert.NoError(err)
-		_, err = componentStorage.insert(world, &componentA{})
+		_, err = componentStorage.insert(world, &ComponentWithPointers{})
 		assert.NoError(err)
 		_, err = componentStorage.insert(world, CreateComponentWithPointers())
 		assert.NoError(err)

@@ -77,22 +77,11 @@ func (storage *componentStorage) set(component AnyComponent, index uint) error {
 	}
 
 	componentValue := reflect.ValueOf(component)
-
-	if componentValue.Kind() != reflect.Pointer {
-		ptrValue := reflect.New(componentValue.Type())
-		ptrValue.Elem().Set(componentValue)
-		componentValue = ptrValue
+	if componentValue.Kind() == reflect.Pointer {
+		componentValue = componentValue.Elem()
 	}
 
-	componentPointer := componentValue.UnsafePointer()
-
-	destination, err := storage.getComponentPointer(index)
-	if err != nil {
-		// this error should never happen because we always make sure we have enough capacity.
-		panic(err)
-	}
-
-	utils.CopyPointerData(componentPointer, destination, storage.componentSize)
+	storage.data.Index(int(index)).Set(componentValue)
 
 	return nil
 }
@@ -109,13 +98,9 @@ func (storage *componentStorage) insertRaw(world *World, componentPointer unsafe
 		storage.increaseCapacity(extraCapacity)
 	}
 
-	destination, err := storage.getComponentPointer(insertIndex)
-	if err != nil {
-		// this error should never happen because we always make sure we have enough capacity.
-		panic(err)
-	}
+	src := reflect.NewAt(storage.componentId.componentType, componentPointer).Elem()
+	storage.data.Index(int(insertIndex)).Set(src)
 
-	utils.CopyPointerData(componentPointer, destination, storage.componentSize)
 	storage.nextItemIndex += 1
 	storage.numberOfComponents += 1
 
@@ -150,15 +135,12 @@ func (storage *componentStorage) setValue(component *reflect.Value, index uint) 
 		return fmt.Errorf("%w: %d", ErrComponentStorageIndexOutOfBounds, index)
 	}
 
-	componentPointer := component.UnsafePointer()
-
-	destination, err := storage.getComponentPointer(index)
-	if err != nil {
-		// this error should never happen because we always make sure we have enough capacity.
-		panic(err)
+	val := *component
+	if val.Kind() == reflect.Pointer {
+		val = val.Elem()
 	}
 
-	utils.CopyPointerData(componentPointer, destination, storage.componentSize)
+	storage.data.Index(int(index)).Set(val)
 
 	return nil
 }
@@ -214,17 +196,7 @@ func (storage *componentStorage) copyComponent(fromIndex uint, toIndex uint) err
 		return fmt.Errorf("%w: toIndex: %d", ErrComponentStorageIndexOutOfBounds, toIndex)
 	}
 
-	source, err := storage.getComponentPointer(fromIndex)
-	if err != nil {
-		panic(err)
-	}
-
-	destination, err := storage.getComponentPointer(toIndex)
-	if err != nil {
-		panic(err)
-	}
-
-	utils.CopyPointerData(source, destination, storage.componentSize)
+	storage.data.Index(int(toIndex)).Set(storage.data.Index(int(fromIndex)))
 
 	return nil
 }
