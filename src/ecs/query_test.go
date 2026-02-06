@@ -380,7 +380,7 @@ func TestQuery1(t *testing.T) {
 
 		assert.Equal(uint(2), query.NumberOfResult())
 		numberOfIterations := 0
-		err = query.IterUntil(func(_ EntityId, _ componentA) error {
+		err = query.IterUntilErr(func(_ EntityId, _ componentA) error {
 			numberOfIterations++
 			return errors.New("oops")
 		})

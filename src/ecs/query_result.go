@@ -785,9 +785,9 @@ func (q *Query16Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]) Iter(f f
 	}
 }
 
-// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
-func (q *Query0Result) IterUntil(f func(entityId EntityId) error) error {
+func (q *Query0Result) IterUntilErr(f func(entityId EntityId) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i]); err != nil {
 			return err
@@ -797,12 +797,12 @@ func (q *Query0Result) IterUntil(f func(entityId EntityId) error) error {
 	return nil
 }
 
-// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
 //
 // During iteration, do not make changes that update the archetype
 // of the entity. This invalidates the component pointer.
-func (q *Query1Result[A]) IterUntil(f func(entityId EntityId, a A) error) error {
+func (q *Query1Result[A]) IterUntilErr(f func(entityId EntityId, a A) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i]); err != nil {
 			return err
@@ -812,12 +812,12 @@ func (q *Query1Result[A]) IterUntil(f func(entityId EntityId, a A) error) error 
 	return nil
 }
 
-// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
 //
 // During iteration, do not make changes that update the archetype
 // of the entity. This invalidates the component pointers.
-func (q *Query2Result[A, B]) IterUntil(f func(entityId EntityId, a A, b B) error) error {
+func (q *Query2Result[A, B]) IterUntilErr(f func(entityId EntityId, a A, b B) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i]); err != nil {
 			return err
@@ -827,12 +827,12 @@ func (q *Query2Result[A, B]) IterUntil(f func(entityId EntityId, a A, b B) error
 	return nil
 }
 
-// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
 //
 // During iteration, do not make changes that update the archetype
 // of the entity. This invalidates the component pointers.
-func (q *Query3Result[A, B, C]) IterUntil(f func(entityId EntityId, a A, b B, c C) error) error {
+func (q *Query3Result[A, B, C]) IterUntilErr(f func(entityId EntityId, a A, b B, c C) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i]); err != nil {
 			return err
@@ -842,12 +842,12 @@ func (q *Query3Result[A, B, C]) IterUntil(f func(entityId EntityId, a A, b B, c 
 	return nil
 }
 
-// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
 //
 // During iteration, do not make changes that update the archetype
 // of the entity. This invalidates the component pointers.
-func (q *Query4Result[A, B, C, D]) IterUntil(f func(entityId EntityId, a A, b B, c C, d D) error) error {
+func (q *Query4Result[A, B, C, D]) IterUntilErr(f func(entityId EntityId, a A, b B, c C, d D) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i]); err != nil {
 			return err
@@ -857,12 +857,12 @@ func (q *Query4Result[A, B, C, D]) IterUntil(f func(entityId EntityId, a A, b B,
 	return nil
 }
 
-// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
 //
 // During iteration, do not make changes that update the archetype
 // of the entity. This invalidates the component pointers.
-func (q *Query5Result[A, B, C, D, E]) IterUntil(f func(entityId EntityId, a A, b B, c C, d D, e E) error) error {
+func (q *Query5Result[A, B, C, D, E]) IterUntilErr(f func(entityId EntityId, a A, b B, c C, d D, e E) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i]); err != nil {
 			return err
@@ -872,12 +872,12 @@ func (q *Query5Result[A, B, C, D, E]) IterUntil(f func(entityId EntityId, a A, b
 	return nil
 }
 
-// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
 //
 // During iteration, do not make changes that update the archetype
 // of the entity. This invalidates the component pointers.
-func (q *Query6Result[A, B, C, D, E, F]) IterUntil(f func(entityId EntityId, a A, b B, c C, d D, e E, f F) error) error {
+func (q *Query6Result[A, B, C, D, E, F]) IterUntilErr(f func(entityId EntityId, a A, b B, c C, d D, e E, f F) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i]); err != nil {
 			return err
@@ -887,12 +887,12 @@ func (q *Query6Result[A, B, C, D, E, F]) IterUntil(f func(entityId EntityId, a A
 	return nil
 }
 
-// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
 //
 // During iteration, do not make changes that update the archetype
 // of the entity. This invalidates the component pointers.
-func (q *Query7Result[A, B, C, D, E, F, G]) IterUntil(f func(entityId EntityId, a A, b B, c C, d D, e E, f F, g G) error) error {
+func (q *Query7Result[A, B, C, D, E, F, G]) IterUntilErr(f func(entityId EntityId, a A, b B, c C, d D, e E, f F, g G) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i]); err != nil {
 			return err
@@ -902,12 +902,12 @@ func (q *Query7Result[A, B, C, D, E, F, G]) IterUntil(f func(entityId EntityId, 
 	return nil
 }
 
-// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
 //
 // During iteration, do not make changes that update the archetype
 // of the entity. This invalidates the component pointers.
-func (q *Query8Result[A, B, C, D, E, F, G, H]) IterUntil(f func(entityId EntityId, a A, b B, c C, d D, e E, f F, g G, h H) error) error {
+func (q *Query8Result[A, B, C, D, E, F, G, H]) IterUntilErr(f func(entityId EntityId, a A, b B, c C, d D, e E, f F, g G, h H) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i]); err != nil {
 			return err
@@ -917,12 +917,12 @@ func (q *Query8Result[A, B, C, D, E, F, G, H]) IterUntil(f func(entityId EntityI
 	return nil
 }
 
-// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
 //
 // During iteration, do not make changes that update the archetype
 // of the entity. This invalidates the component pointers.
-func (q *Query9Result[A, B, C, D, E, F, G, H, I]) IterUntil(f func(EntityId, A, B, C, D, E, F, G, H, I) error) error {
+func (q *Query9Result[A, B, C, D, E, F, G, H, I]) IterUntilErr(f func(EntityId, A, B, C, D, E, F, G, H, I) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i]); err != nil {
 			return err
@@ -931,12 +931,12 @@ func (q *Query9Result[A, B, C, D, E, F, G, H, I]) IterUntil(f func(EntityId, A, 
 	return nil
 }
 
-// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
 //
 // During iteration, do not make changes that update the archetype
 // of the entity. This invalidates the component pointers.
-func (q *Query10Result[A, B, C, D, E, F, G, H, I, J]) IterUntil(f func(EntityId, A, B, C, D, E, F, G, H, I, J) error) error {
+func (q *Query10Result[A, B, C, D, E, F, G, H, I, J]) IterUntilErr(f func(EntityId, A, B, C, D, E, F, G, H, I, J) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i]); err != nil {
 			return err
@@ -945,12 +945,12 @@ func (q *Query10Result[A, B, C, D, E, F, G, H, I, J]) IterUntil(f func(EntityId,
 	return nil
 }
 
-// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
 //
 // During iteration, do not make changes that update the archetype
 // of the entity. This invalidates the component pointers.
-func (q *Query11Result[A, B, C, D, E, F, G, H, I, J, K]) IterUntil(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K) error) error {
+func (q *Query11Result[A, B, C, D, E, F, G, H, I, J, K]) IterUntilErr(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i], q.componentsK[i]); err != nil {
 			return err
@@ -959,12 +959,12 @@ func (q *Query11Result[A, B, C, D, E, F, G, H, I, J, K]) IterUntil(f func(Entity
 	return nil
 }
 
-// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
 //
 // During iteration, do not make changes that update the archetype
 // of the entity. This invalidates the component pointers.
-func (q *Query12Result[A, B, C, D, E, F, G, H, I, J, K, L]) IterUntil(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L) error) error {
+func (q *Query12Result[A, B, C, D, E, F, G, H, I, J, K, L]) IterUntilErr(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i], q.componentsK[i], q.componentsL[i]); err != nil {
 			return err
@@ -973,12 +973,12 @@ func (q *Query12Result[A, B, C, D, E, F, G, H, I, J, K, L]) IterUntil(f func(Ent
 	return nil
 }
 
-// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
 //
 // During iteration, do not make changes that update the archetype
 // of the entity. This invalidates the component pointers.
-func (q *Query13Result[A, B, C, D, E, F, G, H, I, J, K, L, M]) IterUntil(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L, M) error) error {
+func (q *Query13Result[A, B, C, D, E, F, G, H, I, J, K, L, M]) IterUntilErr(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L, M) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i], q.componentsK[i], q.componentsL[i], q.componentsM[i]); err != nil {
 			return err
@@ -987,12 +987,12 @@ func (q *Query13Result[A, B, C, D, E, F, G, H, I, J, K, L, M]) IterUntil(f func(
 	return nil
 }
 
-// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
 //
 // During iteration, do not make changes that update the archetype
 // of the entity. This invalidates the component pointers.
-func (q *Query14Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N]) IterUntil(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L, M, N) error) error {
+func (q *Query14Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N]) IterUntilErr(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L, M, N) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i], q.componentsK[i], q.componentsL[i], q.componentsM[i], q.componentsN[i]); err != nil {
 			return err
@@ -1001,12 +1001,12 @@ func (q *Query14Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N]) IterUntil(f fu
 	return nil
 }
 
-// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
 //
 // During iteration, do not make changes that update the archetype
 // of the entity. This invalidates the component pointers.
-func (q *Query15Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]) IterUntil(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O) error) error {
+func (q *Query15Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]) IterUntilErr(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i], q.componentsK[i], q.componentsL[i], q.componentsM[i], q.componentsN[i], q.componentsO[i]); err != nil {
 			return err
@@ -1015,12 +1015,12 @@ func (q *Query15Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O]) IterUntil(f
 	return nil
 }
 
-// IterUntil executes function f on each entity that the query returned, until f returns an error.
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
 // If any of the calls to f returned an error, this function returns that error.
 //
 // During iteration, do not make changes that update the archetype
 // of the entity. This invalidates the component pointers.
-func (q *Query16Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]) IterUntil(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P) error) error {
+func (q *Query16Result[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P]) IterUntilErr(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P) error) error {
 	for i := range q.entityIds {
 		if err := f(q.entityIds[i], q.componentsA[i], q.componentsB[i], q.componentsC[i], q.componentsD[i], q.componentsE[i], q.componentsF[i], q.componentsG[i], q.componentsH[i], q.componentsI[i], q.componentsJ[i], q.componentsK[i], q.componentsL[i], q.componentsM[i], q.componentsN[i], q.componentsO[i], q.componentsP[i]); err != nil {
 			return err
