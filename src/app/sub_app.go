@@ -32,7 +32,7 @@ type SubApp struct {
 	schedules                map[scheduleType]*Scheduler
 	resources                resourceStorage // resources that can be pulled by system params.
 	logger                   Logger
-	name                     string
+	Name                     string
 	tickRate                 *time.Duration // the rate at which the repeating systems run
 	currentTick              uint
 	lastDelta                *float64 // delta time of the last tick
@@ -78,7 +78,7 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
 		},
 		resources:        resourceStorage,
 		logger:           logger,
-		name:             "App",
+		Name:             "App",
 		tickRate:         new(time.Second / 60.0),
 		lastDelta:        new(0.0),
 		outerWorlds:      map[ecs.WorldId]*ecs.World{},
@@ -102,7 +102,7 @@ func (app *SubApp) addSystemWithSource(schedule Schedule, system System, source 
 	scheduler := app.getScheduler(schedule)
 	if scheduler == nil {
 		app.logger.Error("%s - failed to add system: schedule %s not found",
-			app.name,
+			app.Name,
 			schedule,
 		)
 		return app
@@ -111,7 +111,7 @@ func (app *SubApp) addSystemWithSource(schedule Schedule, system System, source 
 	err := scheduler.AddSystem(schedule, system, source, app.world, &app.outerWorlds, app.logger, &app.resources, &app.eventStorage)
 	if err != nil {
 		app.logger.Error("%s - failed to add system: %v",
-			app.name,
+			app.Name,
 			err,
 		)
 	}
@@ -150,7 +150,7 @@ type ScheduleOptions struct {
 func (app *SubApp) AddSchedule(schedule Schedule, options ScheduleOptions) *SubApp {
 	scheduler, ok := app.schedules[options.ScheduleType]
 	if !ok {
-		app.logger.Error("%s - failed to add schedule %s: %w: %d", app.name, schedule, ErrScheduleTypeNotFound, options.ScheduleType)
+		app.logger.Error("%s - failed to add schedule %s: %w: %d", app.Name, schedule, ErrScheduleTypeNotFound, options.ScheduleType)
 		return app
 	}
 
@@ -161,7 +161,7 @@ func (app *SubApp) AddSchedule(schedule Schedule, options ScheduleOptions) *SubA
 	app.scheduleSystemsIdCounter++
 	err := scheduler.AddSchedule(schedule, app.scheduleSystemsIdCounter, options.Order, options.IsPaused)
 	if err != nil {
-		app.logger.Error("%s - failed to add schedule %s: %v", app.name, schedule, err)
+		app.logger.Error("%s - failed to add schedule %s: %v", app.Name, schedule, err)
 	}
 
 	return app
@@ -205,7 +205,7 @@ func (app *SubApp) SetSchedulePaused(schedule Schedule, scheduleType scheduleTyp
 func (app *SubApp) AddResource(resource Resource) *SubApp {
 	err := app.resources.add(resource)
 	if err != nil {
-		app.logger.Error("%s - failed to add resource %s: %v", app.name, getResourceDebugType(resource), err)
+		app.logger.Error("%s - failed to add resource %s: %v", app.Name, getResourceDebugType(resource), err)
 	}
 
 	return app
@@ -227,7 +227,7 @@ func (app *SubApp) ProcessFeatures() {
 		for _, feature := range features {
 			err := validateFeature(feature)
 			if err != nil {
-				app.logger.Error("%s - %v", app.name, err)
+				app.logger.Error("%s - %v", app.Name, err)
 				continue
 			}
 
@@ -288,25 +288,21 @@ func (app *SubApp) prepareExecutors() error {
 	if err != nil {
 		return fmt.Errorf("failed to get startup systems: %v", err)
 	}
-	app.startupExecutor.Load(startupSystems, app.world, &app.outerWorlds, app.logger, app.name, &app.eventStorage)
+	app.startupExecutor.Load(startupSystems, app.world, &app.outerWorlds, app.logger, app.Name, &app.eventStorage)
 
 	repeatedSystems, err := app.schedules[ScheduleTypeRepeating].GetScheduleSystems()
 	if err != nil {
 		return fmt.Errorf("failed to get repeated systems: %v", err)
 	}
-	app.repeatedExecutor.Load(repeatedSystems, app.world, &app.outerWorlds, app.logger, app.name, &app.eventStorage)
+	app.repeatedExecutor.Load(repeatedSystems, app.world, &app.outerWorlds, app.logger, app.Name, &app.eventStorage)
 
 	cleanupSystems, err := app.schedules[ScheduleTypeCleanup].GetScheduleSystems()
 	if err != nil {
 		return fmt.Errorf("failed to get cleanup systems: %v", err)
 	}
-	app.cleanupExecutor.Load(cleanupSystems, app.world, &app.outerWorlds, app.logger, app.name, &app.eventStorage)
+	app.cleanupExecutor.Load(cleanupSystems, app.world, &app.outerWorlds, app.logger, app.Name, &app.eventStorage)
 
 	return nil
-}
-
-func (app *SubApp) SetName(name string) {
-	app.name = name
 }
 
 // SetTickRate sets the interval at which the repeated systems are run. This can be safely changed while
@@ -371,7 +367,7 @@ func (app *SubApp) RegisterOuterWorld(id ecs.WorldId, world *ecs.World) error {
 // SetRunner sets the runner for the repeated systems
 func (app *SubApp) SetRunner(runner Runner) {
 	if runner == nil {
-		app.logger.Error("%s - failed to set runner: can not be nil", app.name)
+		app.logger.Error("%s - failed to set runner: can not be nil", app.Name)
 		return
 	}
 
