@@ -10,7 +10,7 @@ type EventStorage struct {
 	eventWriters map[eventId]*reflect.Value
 }
 
-func newEventStorage() EventStorage {
+func NewEventStorage() EventStorage {
 	return EventStorage{
 		eventReaders: map[eventId]*reflect.Value{},
 		eventWriters: map[eventId]*reflect.Value{},

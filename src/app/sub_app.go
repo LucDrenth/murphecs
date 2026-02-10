@@ -82,7 +82,7 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
 		tickRate:         new(time.Second / 60.0),
 		lastDelta:        new(0.0),
 		outerWorlds:      map[ecs.WorldId]*ecs.World{},
-		EventStorage:     new(newEventStorage()),
+		EventStorage:     new(NewEventStorage()),
 		startupExecutor:  &ConsecutiveExecutor{},
 		repeatedExecutor: &ConsecutiveExecutor{},
 		cleanupExecutor:  &ConsecutiveExecutor{},
