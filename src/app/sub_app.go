@@ -38,7 +38,7 @@ type SubApp struct {
 	lastDelta                *float64 // delta time of the last tick
 	runner                   Runner
 	outerWorlds              map[ecs.WorldId]*ecs.World
-	eventStorage             EventStorage
+	EventStorage             *EventStorage
 	scheduleSystemsIdCounter ScheduleSystemsId
 	OnStartupSchedulesDone   func()
 	features                 []IFeature // this slice will be process and emptied when starting this SubApp
@@ -82,7 +82,7 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
 		tickRate:         new(time.Second / 60.0),
 		lastDelta:        new(0.0),
 		outerWorlds:      map[ecs.WorldId]*ecs.World{},
-		eventStorage:     newEventStorage(),
+		EventStorage:     new(newEventStorage()),
 		startupExecutor:  &ConsecutiveExecutor{},
 		repeatedExecutor: &ConsecutiveExecutor{},
 		cleanupExecutor:  &ConsecutiveExecutor{},
@@ -108,7 +108,7 @@ func (app *SubApp) addSystemWithSource(schedule Schedule, system System, source 
 		return app
 	}
 
-	err := scheduler.AddSystem(schedule, system, source, app.world, &app.outerWorlds, app.logger, &app.resources, &app.eventStorage)
+	err := scheduler.AddSystem(schedule, system, source, app.world, &app.outerWorlds, app.logger, &app.resources, app.EventStorage)
 	if err != nil {
 		app.logger.Error("%s - failed to add system: %v",
 			app.Name,
@@ -288,19 +288,19 @@ func (app *SubApp) prepareExecutors() error {
 	if err != nil {
 		return fmt.Errorf("failed to get startup systems: %v", err)
 	}
-	app.startupExecutor.Load(startupSystems, app.world, &app.outerWorlds, app.logger, app.Name, &app.eventStorage)
+	app.startupExecutor.Load(startupSystems, app.world, &app.outerWorlds, app.logger, app.Name, app.EventStorage)
 
 	repeatedSystems, err := app.schedules[ScheduleTypeRepeating].GetScheduleSystems()
 	if err != nil {
 		return fmt.Errorf("failed to get repeated systems: %v", err)
 	}
-	app.repeatedExecutor.Load(repeatedSystems, app.world, &app.outerWorlds, app.logger, app.Name, &app.eventStorage)
+	app.repeatedExecutor.Load(repeatedSystems, app.world, &app.outerWorlds, app.logger, app.Name, app.EventStorage)
 
 	cleanupSystems, err := app.schedules[ScheduleTypeCleanup].GetScheduleSystems()
 	if err != nil {
 		return fmt.Errorf("failed to get cleanup systems: %v", err)
 	}
-	app.cleanupExecutor.Load(cleanupSystems, app.world, &app.outerWorlds, app.logger, app.Name, &app.eventStorage)
+	app.cleanupExecutor.Load(cleanupSystems, app.world, &app.outerWorlds, app.logger, app.Name, app.EventStorage)
 
 	return nil
 }
@@ -348,10 +348,6 @@ func (app *SubApp) World() *ecs.World {
 
 func (app *SubApp) OuterWorlds() *map[ecs.WorldId]*ecs.World {
 	return &app.outerWorlds
-}
-
-func (app *SubApp) EventStorage() *EventStorage {
-	return &app.eventStorage
 }
 
 // RegisterOuterWorld lets you use the outer world in system param queries.
