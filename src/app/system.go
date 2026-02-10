@@ -154,13 +154,11 @@ func handleInvalidSystemParam(parameterType reflect.Type) error {
 		return ErrSystemParamQueryNotAPointer
 	}
 
-	// TODO do a proper check for the parameter being an EventReader
-	if strings.HasPrefix(parameterType.Name(), "EventReader") {
+	if parameterType.Kind() != reflect.Pointer && reflect.PointerTo(parameterType).Implements(reflect.TypeFor[anyEventReader]()) {
 		return fmt.Errorf("EventReader: %w", ErrSystemParamEventReaderNotAPointer)
 	}
 
-	// TODO do a proper check for the parameter being an EventWriter
-	if strings.HasPrefix(parameterType.Name(), "EventWriter") {
+	if parameterType.Kind() != reflect.Pointer && reflect.PointerTo(parameterType).Implements(reflect.TypeFor[anyEventWriter]()) {
 		return fmt.Errorf("EventWriter: %w", ErrSystemParamEventWriterNotAPointer)
 	}
 
