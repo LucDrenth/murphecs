@@ -5,7 +5,6 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/lucdrenth/murphecs/src/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -471,7 +470,7 @@ func TestComponentStorageCopyComponent(t *testing.T) {
 			assert.NoError(component.Validate())
 
 			// change component value
-			component.name = utils.PointerTo(componentWithPointersName + " and something else")
+			component.name = new(componentWithPointersName + " and something else")
 		}
 
 		runtime.GC()

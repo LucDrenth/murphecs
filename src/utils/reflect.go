@@ -49,5 +49,5 @@ func MethodHasPointerReceiver(i any, methodName string) (bool, error) {
 	}
 
 	receiverType := method.Type.In(0)
-	return receiverType.Kind() == reflect.Ptr, nil
+	return receiverType.Kind() == reflect.Pointer, nil
 }

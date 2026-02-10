@@ -4,7 +4,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/lucdrenth/murphecs/src/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -53,11 +52,11 @@ func TestAddStructToResourceStorage(t *testing.T) {
 
 		err := storage.add(&[]int{1, 2})
 		assert.ErrorIs(err, ErrResourceTypeNotValid)
-		err = storage.add(utils.PointerTo("invalid resource type"))
+		err = storage.add(new("invalid resource type"))
 		assert.ErrorIs(err, ErrResourceTypeNotValid)
-		err = storage.add(utils.PointerTo(100))
+		err = storage.add(new(100))
 		assert.ErrorIs(err, ErrResourceTypeNotValid)
-		err = storage.add(utils.PointerTo(func() {}))
+		err = storage.add(new(func() {}))
 		assert.ErrorIs(err, ErrResourceTypeNotValid)
 	})
 
@@ -345,16 +344,16 @@ func TestResourceId(t *testing.T) {
 	t.Run("resource return the same result, regardless of wether its passed by reference", func(t *testing.T) {
 		assert := assert.New(t)
 
-		a := reflectTypeToResourceId(reflect.TypeOf(resourceA{}))
-		b := reflectTypeToResourceId(reflect.TypeOf(&resourceA{}))
+		a := reflectTypeToResourceId(reflect.TypeFor[resourceA]())
+		b := reflectTypeToResourceId(reflect.TypeFor[*resourceA]())
 		assert.Equal(a, b)
 	})
 
 	t.Run("resource ids for different resources are unique", func(t *testing.T) {
 		assert := assert.New(t)
 
-		a := reflectTypeToResourceId(reflect.TypeOf(resourceA{}))
-		b := reflectTypeToResourceId(reflect.TypeOf(resourceB{}))
+		a := reflectTypeToResourceId(reflect.TypeFor[resourceA]())
+		b := reflectTypeToResourceId(reflect.TypeFor[resourceB]())
 		assert.NotEqual(a, b)
 	})
 

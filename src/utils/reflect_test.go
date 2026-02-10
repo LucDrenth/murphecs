@@ -36,7 +36,7 @@ func TestAlignedSize(t *testing.T) {
 	t.Run("succeeds if we use aligned size", func(t *testing.T) {
 		assert := assert.New(t)
 
-		size := AlignedSize(reflect.TypeOf(misaligned{}))
+		size := AlignedSize(reflect.TypeFor[misaligned]())
 		assert.Equal(uintptr(16), size)
 		mem := make([]byte, size*uintptr(numberOfElements))
 
