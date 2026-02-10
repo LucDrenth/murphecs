@@ -51,7 +51,7 @@ func (s *systemGroupBuilder) validate() error {
 	return nil
 }
 
-func (s *systemGroupBuilder) build(source string, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, resources *resourceStorage, eventStorage *EventStorage) (systemGroup, error) {
+func (s *systemGroupBuilder) build(source string, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, eventStorage *EventStorage) (systemGroup, error) {
 	systemGroup := systemGroup{}
 
 	queryType := reflect.TypeFor[ecs.Query]()
@@ -111,7 +111,7 @@ func (s *systemGroupBuilder) build(source string, world *ecs.World, outerWorlds 
 				params[i] = reflectedEventWriter
 			} else {
 				// check if its a resource
-				resource, err := resources.getReflectResource(parameterType)
+				resource, err := world.Resources().GetReflectResource(parameterType)
 				if err != nil {
 					// err just means its not a resource, no need to return this specific error.
 

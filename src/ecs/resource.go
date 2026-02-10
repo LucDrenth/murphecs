@@ -1,4 +1,4 @@
-package app
+package ecs
 
 import (
 	"fmt"
@@ -23,7 +23,7 @@ func newResourceStorage() resourceStorage {
 // Return an error if:
 //   - resource is not passed by reference
 //   - resource is already present
-func (s *resourceStorage) add(resource Resource) error {
+func (s *resourceStorage) Add(resource Resource) error {
 	if resource == nil {
 		return ErrResourceIsNil
 	}
@@ -53,12 +53,12 @@ func (s *resourceStorage) add(resource Resource) error {
 	return nil
 }
 
-func registerBlacklistedResource[T Resource](storage *resourceStorage) error {
+func RegisterBlacklistedResource[T Resource](storage *resourceStorage) error {
 	resourceType := reflect.TypeFor[T]()
-	return registerBlacklistedResourceType(resourceType, storage)
+	return RegisterBlacklistedResourceType(resourceType, storage)
 }
 
-func registerBlacklistedResourceType(resourceType reflect.Type, storage *resourceStorage) error {
+func RegisterBlacklistedResourceType(resourceType reflect.Type, storage *resourceStorage) error {
 	if resourceType.Kind() != reflect.Pointer {
 		// resource must be passed by reference because if it is not, we can never retrieve it by reference
 		return ErrResourceNotAPointer
@@ -75,7 +75,7 @@ func registerBlacklistedResourceType(resourceType reflect.Type, storage *resourc
 	return nil
 }
 
-func getResourceFromStorage[T Resource](s *resourceStorage) (result T, err error) {
+func GetResourceFromStorage[T Resource](s *resourceStorage) (result T, err error) {
 	resourceType := reflect.TypeFor[T]()
 	resourceId := reflectTypeToResourceId(resourceType)
 
@@ -100,8 +100,8 @@ func getResourceFromStorage[T Resource](s *resourceStorage) (result T, err error
 	return result, nil
 }
 
-// getReflectResource returns a pointer to the resource, regardless if wether resourceType is a pointer or not.
-func (s *resourceStorage) getReflectResource(resourceType reflect.Type) (result reflect.Value, err error) {
+// GetReflectResource returns a pointer to the resource, regardless if wether resourceType is a pointer or not.
+func (s *resourceStorage) GetReflectResource(resourceType reflect.Type) (result reflect.Value, err error) {
 	resourceId := reflectTypeToResourceId(resourceType)
 
 	untypedResource, exists := s.resources[resourceId]
@@ -118,6 +118,11 @@ func (s *resourceStorage) getReflectResource(resourceType reflect.Type) (result 
 	return result, nil
 }
 
+// Count returns the number of resources
+func (s *resourceStorage) Count() uint {
+	return uint(len(s.resources))
+}
+
 func reflectTypeToResourceId(resourceType reflect.Type) resourceId {
 	if resourceType.Kind() == reflect.Pointer {
 		resourceType = resourceType.Elem()
@@ -126,7 +131,7 @@ func reflectTypeToResourceId(resourceType reflect.Type) resourceId {
 	return resourceId(resourceType)
 }
 
-func getResourceDebugType(resource Resource) string {
+func GetResourceDebugType(resource Resource) string {
 	resourceType := reflect.TypeOf(resource)
 	if resourceType == nil {
 		return "nil"

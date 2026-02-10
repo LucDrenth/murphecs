@@ -66,7 +66,7 @@ func removeComponents(world *World, entityId EntityId, componentIds []ComponentI
 
 	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(componentIds)
 	if duplicate != nil {
-		return fmt.Errorf("%w: %s at positions %d and %d", ErrDuplicateComponent, duplicate.DebugString(), duplicateIndexA, duplicateIndexB)
+		return fmt.Errorf("%w: %s at positions %d and %d", ErrComponentDuplicate, duplicate.DebugString(), duplicateIndexA, duplicateIndexB)
 	}
 
 	componentIdsToRemove := make([]ComponentId, 0, len(componentIds))

@@ -57,11 +57,11 @@ func TestAddSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		resourceStorage := newResourceStorage()
+
 		outerWorlds := map[ecs.WorldId]*ecs.World{}
 		eventStorage := NewEventStorage()
 
-		err := scheduleSystems.add(func(_ *ecs.Query1[componentA, ecs.TestCustomTargetWorld]) {}, "", world, &outerWorlds, &logger, &resourceStorage, &eventStorage)
+		err := scheduleSystems.add(func(_ *ecs.Query1[componentA, ecs.TestCustomTargetWorld]) {}, "", world, &outerWorlds, &logger, &eventStorage)
 		assert.ErrorIs(err, ErrSystemParamQueryNotValid)
 		assert.ErrorIs(err, ecs.ErrTargetWorldNotFound)
 	})
@@ -82,10 +82,10 @@ func TestAddSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		resourceStorage := newResourceStorage()
+
 		eventStorage := NewEventStorage()
 
-		err = scheduleSystems.add(func(_ *ecs.Query1[componentA, ecs.QueryOptions2[ecs.TestCustomTargetWorld, ecs.Lazy]]) {}, "", world, &outerWorlds, &logger, &resourceStorage, &eventStorage)
+		err = scheduleSystems.add(func(_ *ecs.Query1[componentA, ecs.QueryOptions2[ecs.TestCustomTargetWorld, ecs.Lazy]]) {}, "", world, &outerWorlds, &logger, &eventStorage)
 		assert.ErrorIs(err, ErrSystemParamQueryNotValid)
 	})
 
@@ -105,10 +105,10 @@ func TestAddSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		resourceStorage := newResourceStorage()
+
 		eventStorage := NewEventStorage()
 
-		err = scheduleSystems.add(func(_ *ecs.Query1[componentA, ecs.TestCustomTargetWorld]) {}, "", world, &outerWorlds, &logger, &resourceStorage, &eventStorage)
+		err = scheduleSystems.add(func(_ *ecs.Query1[componentA, ecs.TestCustomTargetWorld]) {}, "", world, &outerWorlds, &logger, &eventStorage)
 		assert.NoError(err)
 	})
 
@@ -128,12 +128,12 @@ func TestAddSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		resourceStorage := newResourceStorage()
-		err := resourceStorage.add(&resourceA{})
+
+		err := world.Resources().Add(&resourceA{})
 		assert.NoError(err)
 		eventStorage := NewEventStorage()
 
-		err = scheduleSystems.add(func(_ resourceA) {}, "", world, nil, &logger, &resourceStorage, &eventStorage)
+		err = scheduleSystems.add(func(_ resourceA) {}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 	})
 
@@ -145,12 +145,12 @@ func TestAddSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		resourceStorage := newResourceStorage()
-		err := resourceStorage.add(&resourceA{})
+
+		err := world.Resources().Add(&resourceA{})
 		assert.NoError(err)
 		eventStorage := NewEventStorage()
 
-		err = scheduleSystems.add(func(_ *resourceA) {}, "", world, nil, &logger, &resourceStorage, &eventStorage)
+		err = scheduleSystems.add(func(_ *resourceA) {}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 	})
 
@@ -219,10 +219,10 @@ func simpleTestAddSystem(system System) error {
 	scheduleSystems := ScheduleSystems{}
 	world := ecs.NewDefaultWorld()
 	logger := NoOpLogger{}
-	resourceStorage := newResourceStorage()
+
 	eventStorage := NewEventStorage()
 
-	return scheduleSystems.add(system, "", world, nil, &logger, &resourceStorage, &eventStorage)
+	return scheduleSystems.add(system, "", world, nil, &logger, &eventStorage)
 }
 
 func TestExecSystem(t *testing.T) {
@@ -232,11 +232,11 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		resourceStorage := newResourceStorage()
+
 		eventStorage := NewEventStorage()
 
 		didRun := false
-		err := scheduleSystems.add(func() { didRun = true }, "", world, nil, &logger, &resourceStorage, &eventStorage)
+		err := scheduleSystems.add(func() { didRun = true }, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
 		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
@@ -252,15 +252,15 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		resourceStorage := newResourceStorage()
+
 		eventStorage := NewEventStorage()
 
 		resource := resourceA{value: 10}
 
-		err := resourceStorage.add(&resource)
+		err := world.Resources().Add(&resource)
 		assert.NoError(err)
 
-		err = scheduleSystems.add(func(r *resourceA) { r.value = 20 }, "", world, nil, &logger, &resourceStorage, &eventStorage)
+		err = scheduleSystems.add(func(r *resourceA) { r.value = 20 }, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
 		assert.Empty(errors)
@@ -276,14 +276,13 @@ func TestExecSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		eventStorage := NewEventStorage()
-		resourceStorage := newResourceStorage()
 
 		resource := resourceA{value: 10}
 
-		err := resourceStorage.add(&resource)
+		err := world.Resources().Add(&resource)
 		assert.NoError(err)
 
-		err = scheduleSystems.add(func(r resourceA) { r.value = 20 }, "", world, nil, &logger, &resourceStorage, &eventStorage)
+		err = scheduleSystems.add(func(r resourceA) { r.value = 20 }, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
 		assert.Empty(errors)
@@ -299,41 +298,40 @@ func TestExecSystem(t *testing.T) {
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
 		eventStorage := NewEventStorage()
-		resourceStorage := newResourceStorage()
 
 		resource := resourceA{value: 10}
 
-		err := resourceStorage.add(&resource)
+		err := world.Resources().Add(&resource)
 		assert.NoError(err)
 
 		// first system updates the resource
-		err = scheduleSystems.add(func(r *resourceA) { r.value = 20 }, "", world, nil, &logger, &resourceStorage, &eventStorage)
+		err = scheduleSystems.add(func(r *resourceA) { r.value = 20 }, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
 		// second system should have the updated resource value
 		err = scheduleSystems.add(func(r resourceA) {
 			assert.Equal(20, r.value)
 			r.value = 30 // should not do anything
-		}, "", world, nil, &logger, &resourceStorage, &eventStorage)
+		}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
 		// third system should have the updated resource value from the first system
 		err = scheduleSystems.add(func(r resourceA) {
 			assert.Equal(20, r.value)
-		}, "", world, nil, &logger, &resourceStorage, &eventStorage)
+		}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
 		// fourth system should also have the updated resource value from the first system
 		err = scheduleSystems.add(func(r *resourceA) {
 			assert.Equal(20, r.value)
 			r.value = 40
-		}, "", world, nil, &logger, &resourceStorage, &eventStorage)
+		}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
 		// fifth system should have an updated value from the fourth system
 		err = scheduleSystems.add(func(r resourceA) {
 			assert.Equal(40, r.value)
-		}, "", world, nil, &logger, &resourceStorage, &eventStorage)
+		}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
 		scheduleSystems.Exec(world, nil, &eventStorage, 1)
@@ -345,10 +343,10 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		resourceStorage := newResourceStorage()
+
 		eventStorage := NewEventStorage()
 
-		err := scheduleSystems.add(func() {}, "", world, nil, &logger, &resourceStorage, &eventStorage)
+		err := scheduleSystems.add(func() {}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
 
@@ -361,10 +359,10 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		resourceStorage := newResourceStorage()
+
 		eventStorage := NewEventStorage()
 
-		err := scheduleSystems.add(func() error { return nil }, "", world, nil, &logger, &resourceStorage, &eventStorage)
+		err := scheduleSystems.add(func() error { return nil }, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
 
@@ -377,10 +375,10 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		resourceStorage := newResourceStorage()
+
 		eventStorage := NewEventStorage()
 
-		err := scheduleSystems.add(func() error { return errors.New("oops") }, "", world, nil, &logger, &resourceStorage, &eventStorage)
+		err := scheduleSystems.add(func() error { return errors.New("oops") }, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
 
@@ -395,7 +393,7 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		resourceStorage := newResourceStorage()
+
 		eventStorage := NewEventStorage()
 
 		_, err := ecs.Spawn(world, &componentA{})
@@ -404,7 +402,7 @@ func TestExecSystem(t *testing.T) {
 		numberOfResults := 0
 		err = scheduleSystems.add(func(q *ecs.Query1[componentA, ecs.Default]) {
 			numberOfResults = int(q.NumberOfResult())
-		}, "", world, nil, &logger, &resourceStorage, &eventStorage)
+		}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
 		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
@@ -421,7 +419,7 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		resourceStorage := newResourceStorage()
+
 		eventStorage := NewEventStorage()
 
 		_, err := ecs.Spawn(world, &componentA{})
@@ -430,7 +428,7 @@ func TestExecSystem(t *testing.T) {
 		numberOfResults := 0
 		err = scheduleSystems.add(func(q *ecs.Query1[componentA, ecs.Lazy]) {
 			numberOfResults = int(q.NumberOfResult())
-		}, "", world, nil, &logger, &resourceStorage, &eventStorage)
+		}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
 		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
@@ -455,7 +453,7 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		resourceStorage := newResourceStorage()
+
 		eventStorage := NewEventStorage()
 
 		_, err = ecs.Spawn(&outerWorld, &componentA{})
@@ -464,7 +462,7 @@ func TestExecSystem(t *testing.T) {
 		numberOfResults := 0
 		err = scheduleSystems.add(func(q *ecs.Query1[componentA, ecs.TestCustomTargetWorld]) {
 			numberOfResults = int(q.NumberOfResult())
-		}, "", world, &outerWorlds, &logger, &resourceStorage, &eventStorage)
+		}, "", world, &outerWorlds, &logger, &eventStorage)
 		assert.NoError(err)
 
 		errors := scheduleSystems.Exec(world, &outerWorlds, &eventStorage, 1)
@@ -488,7 +486,7 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems3 := &ScheduleSystems{id: 3}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		resourceStorage := newResourceStorage()
+
 		eventStorage := NewEventStorage()
 
 		eventsFromScheduleSystems1 := []*testEvent{}
@@ -504,7 +502,7 @@ func TestExecSystem(t *testing.T) {
 					eventsFromScheduleSystems1 = append(eventsFromScheduleSystems1, event)
 				}
 			},
-			"", world, nil, &logger, &resourceStorage, &eventStorage)
+			"", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
 		err = scheduleSystems2.add(
@@ -513,7 +511,7 @@ func TestExecSystem(t *testing.T) {
 					eventWriter.Write(&testEvent{id: 3})
 				}
 			},
-			"", world, nil, &logger, &resourceStorage, &eventStorage)
+			"", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 		err = scheduleSystems2.add(
 			func(eventReader *EventReader[*testEvent]) {
@@ -523,7 +521,7 @@ func TestExecSystem(t *testing.T) {
 					eventsFromScheduleSystems2 = append(eventsFromScheduleSystems2, event)
 				}
 			},
-			"", world, nil, &logger, &resourceStorage, &eventStorage)
+			"", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
 		err = scheduleSystems3.add(
@@ -534,7 +532,7 @@ func TestExecSystem(t *testing.T) {
 					eventsFromScheduleSystems3 = append(eventsFromScheduleSystems3, event)
 				}
 			},
-			"", world, nil, &logger, &resourceStorage, &eventStorage)
+			"", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
 		executeScheduleSystemss := func(tick uint) {
@@ -578,14 +576,14 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{id: 1}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		resourceStorage := newResourceStorage()
+
 		eventStorage := NewEventStorage()
 		err := scheduleSystems.add(
 			func(eventReader *EventReader[*testEvent]) {
 				for range eventReader.Read {
 				}
 			},
-			"", world, nil, &logger, &resourceStorage, &eventStorage)
+			"", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
 		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
@@ -602,13 +600,13 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{id: 1}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		resourceStorage := newResourceStorage()
+
 		eventStorage := NewEventStorage()
 		err := scheduleSystems.add(
 			func(eventWriter *EventWriter[*testEvent]) {
 				eventWriter.Write(&testEvent{})
 			},
-			"", world, nil, &logger, &resourceStorage, &eventStorage)
+			"", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
 		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)

@@ -121,7 +121,7 @@ func (s *ScheduleSystems) execSystems() []error {
 	return errors
 }
 
-func (s *ScheduleSystems) add(sys System, source string, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, resources *resourceStorage, eventStorage *EventStorage) error {
+func (s *ScheduleSystems) add(sys System, source string, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, eventStorage *EventStorage) error {
 	systemValue := reflect.ValueOf(sys)
 	systemGroupBuilderType2 := reflect.TypeFor[*systemGroupBuilder]()
 
@@ -140,7 +140,7 @@ func (s *ScheduleSystems) add(sys System, source string, world *ecs.World, outer
 		return err
 	}
 
-	systemGroup, err := systemGroupBuilder.build(source, world, outerWorlds, logger, resources, eventStorage)
+	systemGroup, err := systemGroupBuilder.build(source, world, outerWorlds, logger, eventStorage)
 	if err != nil {
 		return err
 	}

@@ -30,7 +30,6 @@ var (
 type SubApp struct {
 	world                    *ecs.World
 	schedules                map[scheduleType]*Scheduler
-	resources                resourceStorage // resources that can be pulled by system params.
 	logger                   Logger
 	Name                     string
 	tickRate                 *time.Duration // the rate at which the repeating systems run
@@ -59,12 +58,10 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
 		return nil, fmt.Errorf("failed to create world: %w", err)
 	}
 
-	resourceStorage := newResourceStorage()
-
 	// The following resources are reserved by this app. If a user would add them, systems would
 	// use the reserved resource instead if the inserted resource, which could cause confusion. So
 	// we register them as blacklisted so that an error is logged when the user tries to add them.
-	err = registerBlacklistedResource[*ecs.World](&resourceStorage)
+	err = ecs.RegisterBlacklistedResource[*ecs.World](world.Resources())
 	if err != nil {
 		logger.Warn("App - failed to register blacklisted resource: %v", err)
 	}
@@ -76,7 +73,6 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
 			ScheduleTypeRepeating: new(NewScheduler()),
 			ScheduleTypeCleanup:   new(NewScheduler()),
 		},
-		resources:        resourceStorage,
 		logger:           logger,
 		Name:             "App",
 		tickRate:         new(time.Second / 60.0),
@@ -108,7 +104,7 @@ func (app *SubApp) addSystemWithSource(schedule Schedule, system System, source 
 		return app
 	}
 
-	err := scheduler.AddSystem(schedule, system, source, app.world, &app.outerWorlds, app.logger, &app.resources, app.EventStorage)
+	err := scheduler.AddSystem(schedule, system, source, app.world, &app.outerWorlds, app.logger, app.EventStorage)
 	if err != nil {
 		app.logger.Error("%s - failed to add system: %v",
 			app.Name,
@@ -202,10 +198,10 @@ func (app *SubApp) SetSchedulePaused(schedule Schedule, scheduleType scheduleTyp
 //     You can then use it by reference, as is normally the case with interface values.
 //   - If you pass it by value, you must use it in a system param by its struct implementation. You can then use that
 //     as a regular struct resource (see above for explanation).
-func (app *SubApp) AddResource(resource Resource) *SubApp {
-	err := app.resources.add(resource)
+func (app *SubApp) AddResource(resource ecs.Resource) *SubApp {
+	err := app.world.Resources().Add(resource)
 	if err != nil {
-		app.logger.Error("%s - failed to add resource %s: %v", app.Name, getResourceDebugType(resource), err)
+		app.logger.Error("%s - failed to add resource %s: %v", app.Name, ecs.GetResourceDebugType(resource), err)
 	}
 
 	return app
@@ -320,7 +316,7 @@ func (app *SubApp) Delta() float64 {
 }
 
 func (app *SubApp) NumberOfResources() uint {
-	return uint(len(app.resources.resources))
+	return app.world.Resources().Count()
 }
 
 func (app *SubApp) NumberOfSystems() uint {

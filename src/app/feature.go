@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/lucdrenth/murphecs/src/ecs"
 	"github.com/lucdrenth/murphecs/src/utils"
 )
 
 type IFeature interface {
 	Init()
-	GetResources() []Resource
+	GetResources() []ecs.Resource
 	GetSystems() []FeatureSystem
 
 	// GetAndInitNestedFeatures recursively gets and Inits all features. It needs to init them so
@@ -24,7 +25,7 @@ type IFeature interface {
 // Added systems and resources will not be directly verified. It will be done once the app processes
 // the features, which is done before running the app.
 type Feature struct {
-	resources []Resource
+	resources []ecs.Resource
 	systems   []FeatureSystem
 	features  []IFeature
 }
@@ -40,7 +41,7 @@ func (feature *Feature) AddSystem(schedule Schedule, system System) *Feature {
 	return feature
 }
 
-func (feature *Feature) AddResource(resource Resource) *Feature {
+func (feature *Feature) AddResource(resource ecs.Resource) *Feature {
 	feature.resources = append(feature.resources, resource)
 	return feature
 }
@@ -53,7 +54,7 @@ func (feature *Feature) AddFeature(f IFeature) *Feature {
 	return feature
 }
 
-func (feature *Feature) GetResources() []Resource {
+func (feature *Feature) GetResources() []ecs.Resource {
 	return feature.resources
 }
 

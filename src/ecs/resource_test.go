@@ -1,4 +1,4 @@
-package app
+package ecs
 
 import (
 	"reflect"
@@ -31,7 +31,7 @@ func TestAddStructToResourceStorage(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
-		err := storage.add(resourceA{})
+		err := storage.Add(resourceA{})
 		assert.ErrorIs(err, ErrResourceNotAPointer)
 	})
 
@@ -39,9 +39,9 @@ func TestAddStructToResourceStorage(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
-		err := registerBlacklistedResource[*resourceA](&storage)
+		err := RegisterBlacklistedResource[*resourceA](&storage)
 		assert.NoError(err)
-		err = storage.add(&resourceA{})
+		err = storage.Add(&resourceA{})
 		assert.ErrorIs(err, ErrResourceTypeNotAllowed)
 	})
 
@@ -50,13 +50,13 @@ func TestAddStructToResourceStorage(t *testing.T) {
 
 		storage := newResourceStorage()
 
-		err := storage.add(&[]int{1, 2})
+		err := storage.Add(&[]int{1, 2})
 		assert.ErrorIs(err, ErrResourceTypeNotValid)
-		err = storage.add(new("invalid resource type"))
+		err = storage.Add(new("invalid resource type"))
 		assert.ErrorIs(err, ErrResourceTypeNotValid)
-		err = storage.add(new(100))
+		err = storage.Add(new(100))
 		assert.ErrorIs(err, ErrResourceTypeNotValid)
-		err = storage.add(new(func() {}))
+		err = storage.Add(new(func() {}))
 		assert.ErrorIs(err, ErrResourceTypeNotValid)
 	})
 
@@ -64,7 +64,7 @@ func TestAddStructToResourceStorage(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
-		err := storage.add(nil)
+		err := storage.Add(nil)
 		assert.ErrorIs(err, ErrResourceIsNil)
 	})
 
@@ -72,9 +72,9 @@ func TestAddStructToResourceStorage(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
-		err := storage.add(&resourceA{})
+		err := storage.Add(&resourceA{})
 		assert.NoError(err)
-		err = storage.add(&resourceA{})
+		err = storage.Add(&resourceA{})
 		assert.ErrorIs(err, ErrResourceAlreadyPresent)
 	})
 
@@ -82,7 +82,7 @@ func TestAddStructToResourceStorage(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
-		err := storage.add(&resourceA{})
+		err := storage.Add(&resourceA{})
 		assert.NoError(err)
 	})
 }
@@ -94,21 +94,11 @@ func TestAddInterfaceToResourceStorage(t *testing.T) {
 		storage := newResourceStorage()
 
 		var resource testResourceInterface = &testResourceInterfaceA{}
-		err := storage.add(resource)
+		err := storage.Add(resource)
 		assert.NoError(err)
 
-		err = storage.add(&testResourceInterfaceA{})
+		err = storage.Add(&testResourceInterfaceA{})
 		assert.ErrorIs(err, ErrResourceAlreadyPresent)
-	})
-
-	t.Run("successfully adds interface resource that is passed by value", func(t *testing.T) {
-		assert := assert.New(t)
-
-		storage := newResourceStorage()
-
-		var log Logger = &NoOpLogger{}
-		err := storage.add(log)
-		assert.NoError(err)
 	})
 
 	t.Run("successfully adds interface resource that is passed by reference", func(t *testing.T) {
@@ -116,8 +106,8 @@ func TestAddInterfaceToResourceStorage(t *testing.T) {
 
 		storage := newResourceStorage()
 
-		var log Logger = &NoOpLogger{}
-		err := storage.add(&log)
+		var resource testResourceInterface = &testResourceInterfaceA{}
+		err := storage.Add(&resource)
 		assert.NoError(err)
 	})
 
@@ -127,10 +117,10 @@ func TestAddInterfaceToResourceStorage(t *testing.T) {
 		storage := newResourceStorage()
 
 		var resource testResourceInterface = &testResourceInterfaceA{}
-		err := storage.add(&resource)
+		err := storage.Add(&resource)
 		assert.NoError(err)
 
-		err = storage.add(&testResourceInterfaceA{})
+		err = storage.Add(&testResourceInterfaceA{})
 		assert.NoError(err)
 	})
 
@@ -140,7 +130,7 @@ func TestAddInterfaceToResourceStorage(t *testing.T) {
 		storage := newResourceStorage()
 
 		var resource testResourceInterface = nil
-		err := storage.add(&resource)
+		err := storage.Add(&resource)
 		assert.NoError(err)
 	})
 }
@@ -152,7 +142,7 @@ func TestRegisterBlacklistedResource(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
-		err := registerBlacklistedResource[resourceA](&storage)
+		err := RegisterBlacklistedResource[resourceA](&storage)
 		assert.ErrorIs(err, ErrResourceNotAPointer)
 	})
 
@@ -160,9 +150,9 @@ func TestRegisterBlacklistedResource(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
-		err := registerBlacklistedResource[*resourceA](&storage)
+		err := RegisterBlacklistedResource[*resourceA](&storage)
 		assert.NoError(err)
-		err = registerBlacklistedResource[*resourceA](&storage)
+		err = RegisterBlacklistedResource[*resourceA](&storage)
 		assert.ErrorIs(err, ErrResourceAlreadyPresent)
 		assert.Len(storage.blacklistedResources, 1)
 	})
@@ -171,7 +161,7 @@ func TestRegisterBlacklistedResource(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
-		err := registerBlacklistedResource[*resourceA](&storage)
+		err := RegisterBlacklistedResource[*resourceA](&storage)
 		assert.NoError(err)
 		assert.Len(storage.blacklistedResources, 1)
 	})
@@ -185,10 +175,10 @@ func TestGetResourceFromStorage(t *testing.T) {
 
 		storage := newResourceStorage()
 
-		_, err := getResourceFromStorage[resourceA](&storage)
+		_, err := GetResourceFromStorage[resourceA](&storage)
 		assert.ErrorIs(err, ErrResourceNotFound)
 
-		_, err = getResourceFromStorage[*resourceA](&storage)
+		_, err = GetResourceFromStorage[*resourceA](&storage)
 		assert.ErrorIs(err, ErrResourceNotFound)
 	})
 
@@ -196,10 +186,10 @@ func TestGetResourceFromStorage(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
-		err := storage.add(&resourceA{value: 10})
+		err := storage.Add(&resourceA{value: 10})
 		assert.NoError(err)
 
-		resource, err := getResourceFromStorage[resourceA](&storage)
+		resource, err := GetResourceFromStorage[resourceA](&storage)
 		assert.NoError(err)
 		assert.Equal(10, resource.value)
 	})
@@ -208,14 +198,14 @@ func TestGetResourceFromStorage(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
-		err := storage.add(&resourceA{value: 0})
+		err := storage.Add(&resourceA{value: 0})
 		assert.NoError(err)
 
-		resource, err := getResourceFromStorage[resourceA](&storage)
+		resource, err := GetResourceFromStorage[resourceA](&storage)
 		assert.NoError(err)
 		resource.value = 10
 
-		resource, err = getResourceFromStorage[resourceA](&storage)
+		resource, err = GetResourceFromStorage[resourceA](&storage)
 		assert.NoError(err)
 		assert.NotEqual(10, resource.value)
 	})
@@ -224,10 +214,10 @@ func TestGetResourceFromStorage(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
-		err := storage.add(&resourceA{value: 10})
+		err := storage.Add(&resourceA{value: 10})
 		assert.NoError(err)
 
-		resource, err := getResourceFromStorage[*resourceA](&storage)
+		resource, err := GetResourceFromStorage[*resourceA](&storage)
 		assert.NoError(err)
 		assert.Equal(10, resource.value)
 	})
@@ -236,14 +226,14 @@ func TestGetResourceFromStorage(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
-		err := storage.add(&resourceA{value: 0})
+		err := storage.Add(&resourceA{value: 0})
 		assert.NoError(err)
 
-		resource, err := getResourceFromStorage[*resourceA](&storage)
+		resource, err := GetResourceFromStorage[*resourceA](&storage)
 		assert.NoError(err)
 		resource.value = 10
 
-		resource, err = getResourceFromStorage[*resourceA](&storage)
+		resource, err = GetResourceFromStorage[*resourceA](&storage)
 		assert.NoError(err)
 		assert.Equal(10, resource.value)
 	})
@@ -253,14 +243,14 @@ func TestGetResourceFromStorage(t *testing.T) {
 
 		var resource testResourceInterface = &testResourceInterfaceA{}
 		storage := newResourceStorage()
-		err := storage.add(&resource)
+		err := storage.Add(&resource)
 		assert.NoError(err)
 
-		resource, err = getResourceFromStorage[testResourceInterface](&storage)
+		resource, err = GetResourceFromStorage[testResourceInterface](&storage)
 		assert.NoError(err)
 		resource.Increment()
 
-		resource, err = getResourceFromStorage[testResourceInterface](&storage)
+		resource, err = GetResourceFromStorage[testResourceInterface](&storage)
 		assert.NoError(err)
 		assert.Equal(1, resource.Get())
 	})
@@ -270,14 +260,14 @@ func TestGetResourceFromStorage(t *testing.T) {
 
 		var resource testResourceInterface = &testResourceInterfaceA{}
 		storage := newResourceStorage()
-		err := storage.add(resource)
+		err := storage.Add(resource)
 		assert.NoError(err)
 
-		resource, err = getResourceFromStorage[*testResourceInterfaceA](&storage)
+		resource, err = GetResourceFromStorage[*testResourceInterfaceA](&storage)
 		assert.NoError(err)
 		resource.Increment()
 
-		resource, err = getResourceFromStorage[*testResourceInterfaceA](&storage)
+		resource, err = GetResourceFromStorage[*testResourceInterfaceA](&storage)
 		assert.NoError(err)
 		assert.Equal(1, resource.Get())
 	})
@@ -290,10 +280,10 @@ func TestGetReflectResource(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
-		_, err := storage.getReflectResource(reflect.TypeFor[resourceA]())
+		_, err := storage.GetReflectResource(reflect.TypeFor[resourceA]())
 		assert.ErrorIs(err, ErrResourceNotFound)
 
-		_, err = storage.getReflectResource(reflect.TypeFor[*resourceA]())
+		_, err = storage.GetReflectResource(reflect.TypeFor[*resourceA]())
 		assert.ErrorIs(err, ErrResourceNotFound)
 	})
 
@@ -301,10 +291,10 @@ func TestGetReflectResource(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
-		err := storage.add(&resourceA{value: 10})
+		err := storage.Add(&resourceA{value: 10})
 		assert.NoError(err)
 
-		reflectedResource, err := storage.getReflectResource(reflect.TypeFor[resourceA]())
+		reflectedResource, err := storage.GetReflectResource(reflect.TypeFor[resourceA]())
 		assert.NoError(err)
 
 		resourceReference, ok := reflect.TypeAssert[*resourceA](reflectedResource)
@@ -320,16 +310,16 @@ func TestGetReflectResource(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
-		err := storage.add(&resourceA{value: 0})
+		err := storage.Add(&resourceA{value: 0})
 		assert.NoError(err)
 
-		reflectedResource, err := storage.getReflectResource(reflect.TypeFor[*resourceA]())
+		reflectedResource, err := storage.GetReflectResource(reflect.TypeFor[*resourceA]())
 		assert.NoError(err)
 		resource, ok := reflect.TypeAssert[*resourceA](reflectedResource)
 		assert.True(ok)
 		resource.value = 10
 
-		reflectedResource, err = storage.getReflectResource(reflect.TypeFor[*resourceA]())
+		reflectedResource, err = storage.GetReflectResource(reflect.TypeFor[*resourceA]())
 		assert.NoError(err)
 		resource, ok = reflect.TypeAssert[*resourceA](reflectedResource)
 		assert.True(ok)

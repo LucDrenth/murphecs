@@ -16,6 +16,8 @@ type World struct {
 	componentRegistry componentRegistry
 	archetypeStorage  archetypeStorage
 
+	resources resourceStorage
+
 	initialComponentCapacityStrategy initialComponentCapacityStrategy
 	componentCapacityGrowthStrategy  componentCapacityGrowthStrategy
 
@@ -52,6 +54,7 @@ func NewWorld(configs WorldConfigs) (World, error) {
 		componentCapacityGrowthStrategy:  configs.ComponentCapacityGrowthStrategy,
 		componentRegistry:                newComponentRegistry(),
 		archetypeStorage:                 newArchetypeStorage(),
+		resources:                        newResourceStorage(),
 	}, nil
 }
 
@@ -81,6 +84,10 @@ func (world *World) generateEntityId() EntityId {
 
 func (world *World) Id() *WorldId {
 	return world.id
+}
+
+func (world *World) Resources() *resourceStorage {
+	return &world.resources
 }
 
 type WorldStats struct {

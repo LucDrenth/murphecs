@@ -39,7 +39,7 @@ func Insert(world *World, entity EntityId, components ...AnyComponent) (resultEr
 	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(componentIds)
 	if duplicate != nil {
 		debugType := ComponentDebugStringOf(components[duplicateIndexA])
-		return fmt.Errorf("%w: %s at positions %d and %d", ErrDuplicateComponent, debugType, duplicateIndexA, duplicateIndexB)
+		return fmt.Errorf("%w: %s at positions %d and %d", ErrComponentDuplicate, debugType, duplicateIndexA, duplicateIndexB)
 	}
 
 	oldArchetype := entityData.archetype
@@ -149,7 +149,7 @@ func InsertOrOverwrite(world *World, entity EntityId, components ...AnyComponent
 	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(componentIds)
 	if duplicate != nil {
 		debugType := ComponentDebugStringOf(components[duplicateIndexA])
-		return fmt.Errorf("%w: %s at positions %d and %d", ErrDuplicateComponent, debugType, duplicateIndexA, duplicateIndexB)
+		return fmt.Errorf("%w: %s at positions %d and %d", ErrComponentDuplicate, debugType, duplicateIndexA, duplicateIndexB)
 	}
 
 	oldArchetype := entityData.archetype

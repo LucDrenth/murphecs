@@ -26,7 +26,7 @@ func Spawn(world *World, components ...AnyComponent) (EntityId, error) {
 	duplicate, duplicateIndexA, duplicateIndexB := utils.GetFirstDuplicate(componentIds)
 	if duplicate != nil {
 		debugType := ComponentDebugStringOf(components[duplicateIndexA])
-		return nonExistingEntity, fmt.Errorf("%w: %s at positions %d and %d", ErrDuplicateComponent, debugType, duplicateIndexA, duplicateIndexB)
+		return nonExistingEntity, fmt.Errorf("%w: %s at positions %d and %d", ErrComponentDuplicate, debugType, duplicateIndexA, duplicateIndexB)
 	}
 
 	// get required components

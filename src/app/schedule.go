@@ -40,13 +40,13 @@ func (s *Scheduler) AddSchedule(schedule Schedule, scheduleSystemsId ScheduleSys
 	return nil
 }
 
-func (s *Scheduler) AddSystem(schedule Schedule, system System, source string, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, resources *resourceStorage, eventStorage *EventStorage) error {
+func (s *Scheduler) AddSystem(schedule Schedule, system System, source string, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, eventStorage *EventStorage) error {
 	scheduleSystems, exists := s.systems[schedule]
 	if !exists {
 		return fmt.Errorf("%w: %s", ErrScheduleNotFound, schedule)
 	}
 
-	return scheduleSystems.add(system, source, world, outerWorlds, logger, resources, eventStorage)
+	return scheduleSystems.add(system, source, world, outerWorlds, logger, eventStorage)
 }
 
 func (s *Scheduler) GetScheduleSystems() ([]*ScheduleSystems, error) {
