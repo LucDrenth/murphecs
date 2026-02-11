@@ -27,14 +27,6 @@ func (a *testResourceInterfaceA) Increment() {
 func TestAddStructToResourceStorage(t *testing.T) {
 	type resourceA struct{}
 
-	t.Run("fails to add resource if it is not passed by reference", func(t *testing.T) {
-		assert := assert.New(t)
-
-		storage := newResourceStorage()
-		err := storage.Add(resourceA{})
-		assert.ErrorIs(err, ErrResourceNotAPointer)
-	})
-
 	t.Run("fails to add resource if it is blacklisted", func(t *testing.T) {
 		assert := assert.New(t)
 
@@ -78,7 +70,15 @@ func TestAddStructToResourceStorage(t *testing.T) {
 		assert.ErrorIs(err, ErrResourceAlreadyPresent)
 	})
 
-	t.Run("successfully adds struct resource", func(t *testing.T) {
+	t.Run("successfully adds struct resource by value", func(t *testing.T) {
+		assert := assert.New(t)
+
+		storage := newResourceStorage()
+		err := storage.Add(resourceA{})
+		assert.NoError(err)
+	})
+
+	t.Run("successfully adds struct resource by reference", func(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()
@@ -138,14 +138,6 @@ func TestAddInterfaceToResourceStorage(t *testing.T) {
 func TestRegisterBlacklistedResource(t *testing.T) {
 	type resourceA struct{}
 
-	t.Run("fails to blacklist resource if it is not passed by reference", func(t *testing.T) {
-		assert := assert.New(t)
-
-		storage := newResourceStorage()
-		err := RegisterBlacklistedResource[resourceA](&storage)
-		assert.ErrorIs(err, ErrResourceNotAPointer)
-	})
-
 	t.Run("fails to blacklist resource if it is already present", func(t *testing.T) {
 		assert := assert.New(t)
 
@@ -158,6 +150,15 @@ func TestRegisterBlacklistedResource(t *testing.T) {
 	})
 
 	t.Run("successfully registers blacklisted resource", func(t *testing.T) {
+		assert := assert.New(t)
+
+		storage := newResourceStorage()
+		err := RegisterBlacklistedResource[resourceA](&storage)
+		assert.NoError(err)
+		assert.Len(storage.blacklistedResources, 1)
+	})
+
+	t.Run("successfully registers blacklisted resource pointer", func(t *testing.T) {
 		assert := assert.New(t)
 
 		storage := newResourceStorage()

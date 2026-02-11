@@ -21,7 +21,6 @@ func newResourceStorage() resourceStorage {
 }
 
 // Return an error if:
-//   - resource is not passed by reference
 //   - resource is already present
 func (s *resourceStorage) Add(resource Resource) error {
 	if resource == nil {
@@ -30,8 +29,11 @@ func (s *resourceStorage) Add(resource Resource) error {
 
 	resourceType := reflect.TypeOf(resource)
 	if resourceType.Kind() != reflect.Pointer {
-		// resource must be passed by reference because if it is not, we can never retrieve it by reference
-		return ErrResourceNotAPointer
+		// turn the resource into a pointer
+		ptr := reflect.New(resourceType)
+		ptr.Elem().Set(reflect.ValueOf(resource))
+		resource = ptr.Interface()
+		resourceType = reflect.TypeOf(resource)
 	}
 
 	if resourceType.Elem().Kind() != reflect.Struct && resourceType.Elem().Kind() != reflect.Interface {
@@ -55,13 +57,8 @@ func (s *resourceStorage) Add(resource Resource) error {
 
 func RegisterBlacklistedResource[T Resource](storage *resourceStorage) error {
 	resourceType := reflect.TypeFor[T]()
-	return RegisterBlacklistedResourceType(resourceType, storage)
-}
-
-func RegisterBlacklistedResourceType(resourceType reflect.Type, storage *resourceStorage) error {
 	if resourceType.Kind() != reflect.Pointer {
-		// resource must be passed by reference because if it is not, we can never retrieve it by reference
-		return ErrResourceNotAPointer
+		resourceType = reflect.TypeFor[*T]()
 	}
 
 	resourceId := reflectTypeToResourceId(resourceType)

@@ -11,7 +11,6 @@ var (
 	ErrComponentIsNil          error = errors.New("component is nil")
 
 	ErrResourceAlreadyPresent error = errors.New("resource already present")
-	ErrResourceNotAPointer    error = errors.New("resource is not a pointer")
 	ErrResourceIsNil          error = errors.New("resource is nil")
 	ErrResourceNotFound       error = errors.New("resource not found")
 	ErrResourceTypeNotValid   error = errors.New("resource type not valid")
