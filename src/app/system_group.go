@@ -7,15 +7,31 @@ import (
 	"github.com/lucdrenth/murphecs/src/ecs"
 )
 
+var (
+	queryType         = reflect.TypeFor[ecs.Query]()
+	eventReaderType   = reflect.TypeFor[anyEventReader]()
+	eventWriterType   = reflect.TypeFor[anyEventWriter]()
+	outerResourceType = reflect.TypeFor[ecs.AnyOuterResource]()
+)
+
 type queryToOuterWorld struct {
 	worldId ecs.WorldId
 	query   ecs.Query
+}
+
+type outerResourceParam struct {
+	systemIndex       int
+	paramIndex        int
+	worldId           ecs.WorldId
+	resourceType      reflect.Type
+	outerResourceType reflect.Type // the full OuterResource[R, T] struct type
 }
 
 type systemGroup struct {
 	systems                         []systemEntry
 	systemParamQueries              []ecs.Query
 	systemParamQueriesToOuterWorlds []queryToOuterWorld
+	outerResources                  []outerResourceParam
 	eventWriters                    []anyEventWriter
 }
 
@@ -53,10 +69,6 @@ func (s *systemGroupBuilder) validate() error {
 
 func (s *systemGroupBuilder) build(source string, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, eventStorage *EventStorage) (systemGroup, error) {
 	systemGroup := systemGroup{}
-
-	queryType := reflect.TypeFor[ecs.Query]()
-	eventReaderType := reflect.TypeFor[anyEventReader]()
-	eventWriterType := reflect.TypeFor[anyEventWriter]()
 
 	for _, sys := range s.systems {
 		systemValue := reflect.ValueOf(sys)
@@ -109,6 +121,22 @@ func (s *systemGroupBuilder) build(source string, world *ecs.World, outerWorlds 
 				}
 				systemGroup.eventWriters = append(systemGroup.eventWriters, eventWriterParam)
 				params[i] = reflectedEventWriter
+			} else if parameterType.Implements(outerResourceType) {
+				return systemGroup, fmt.Errorf("%s: parameter %s: %w", systemToDebugString(sys), systemParameterDebugString(sys, i), ErrSystemParamOuterResourceIsAPointer)
+			} else if parameterType.Kind() != reflect.Pointer && reflect.PointerTo(parameterType).Implements(outerResourceType) {
+				instance := reflect.New(parameterType)
+				outerRes := instance.Interface().(ecs.AnyOuterResource)
+				worldId, resType := outerRes.OuterResourceInfo()
+
+				systemGroup.outerResources = append(systemGroup.outerResources, outerResourceParam{
+					systemIndex:       len(systemGroup.systems),
+					paramIndex:        i,
+					worldId:           *worldId,
+					resourceType:      resType,
+					outerResourceType: parameterType,
+				})
+
+				params[i] = reflect.Zero(parameterType)
 			} else {
 				// check if its a resource
 				resource, err := world.Resources().GetReflectResource(parameterType)

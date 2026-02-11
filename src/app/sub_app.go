@@ -253,9 +253,15 @@ func (app *SubApp) ProcessFeatures() {
 func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 	app.ProcessFeatures()
 
-	err := app.prepareExecutors()
+	err := app.prepareSystems()
 	if err != nil {
-		app.logger.Error("%s - %v", err)
+		app.logger.Error("%s - prepare systems: %v", app.Name, err)
+		return
+	}
+
+	err = app.prepareExecutors()
+	if err != nil {
+		app.logger.Error("%s - prepare executors: %v", app.Name, err)
 		return
 	}
 
@@ -277,6 +283,23 @@ func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 	app.runner.Run(exitChannel, app.repeatedExecutor)
 	onceRunner.Run(exitChannel, app.cleanupExecutor)
 	isDoneChannel <- true
+}
+
+func (app *SubApp) prepareSystems() error {
+	for _, scheduler := range app.schedules {
+		systemsSet, err := scheduler.GetScheduleSystems()
+		if err != nil {
+			return fmt.Errorf("failed to get schedule systems: %w", err)
+		}
+
+		for _, systems := range systemsSet {
+			err := systems.prepare(&app.outerWorlds)
+			if err != nil {
+				return fmt.Errorf("failed to prepare systems: %w", err)
+			}
+		}
+	}
+	return nil
 }
 
 func (app *SubApp) prepareExecutors() error {

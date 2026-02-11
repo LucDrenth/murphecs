@@ -106,6 +106,34 @@ func (s *ScheduleSystems) handleSystemParamQueries(world *ecs.World, outerWorlds
 	return nil
 }
 
+func (s *ScheduleSystems) prepare(outerWorlds *map[ecs.WorldId]*ecs.World) error {
+	for _, systemGroup := range s.systemGroups {
+		for _, orp := range systemGroup.outerResources {
+			outerWorld, exists := (*outerWorlds)[orp.worldId]
+			if !exists {
+				return fmt.Errorf("%w: world id %d", ecs.ErrTargetWorldNotFound, orp.worldId)
+			}
+
+			resource, err := outerWorld.Resources().GetReflectResource(orp.resourceType)
+			if err != nil {
+				return err
+			}
+
+			instance := reflect.New(orp.outerResourceType)
+			valueField := instance.Elem().FieldByName("Value")
+			if orp.resourceType.Kind() == reflect.Pointer {
+				valueField.Set(resource)
+			} else {
+				valueField.Set(resource.Elem())
+			}
+
+			systemGroup.systems[orp.systemIndex].params[orp.paramIndex] = instance.Elem()
+		}
+	}
+
+	return nil
+}
+
 func (s *ScheduleSystems) execSystems() []error {
 	errors := []error{}
 

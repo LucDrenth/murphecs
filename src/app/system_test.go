@@ -9,6 +9,8 @@ import (
 )
 
 func TestAddSystem(t *testing.T) {
+	type componentA struct{ ecs.Component }
+
 	t.Run("error if adding an invalid system", func(t *testing.T) {
 		assert := assert.New(t)
 		err := simpleTestAddSystem("not a func")
@@ -28,8 +30,6 @@ func TestAddSystem(t *testing.T) {
 	})
 
 	t.Run("returns an error when using non-pointer ecs.Query as system param", func(t *testing.T) {
-		type componentA struct{ ecs.Component }
-
 		assert := assert.New(t)
 		err := simpleTestAddSystem(func(_ ecs.Query1[componentA, ecs.Default]) {})
 		assert.ErrorIs(err, ErrSystemParamQueryNotAPointer)
@@ -42,16 +42,12 @@ func TestAddSystem(t *testing.T) {
 	})
 
 	t.Run("can use an ecs.Query as system param", func(t *testing.T) {
-		type componentA struct{ ecs.Component }
-
 		assert := assert.New(t)
 		err := simpleTestAddSystem(func(_ *ecs.Query1[componentA, ecs.Default]) {})
 		assert.NoError(err)
 	})
 
 	t.Run("fails when app is not aware of the outer world in the ecs.Query", func(t *testing.T) {
-		type componentA struct{ ecs.Component }
-
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{}
@@ -67,8 +63,6 @@ func TestAddSystem(t *testing.T) {
 	})
 
 	t.Run("fails when app is not aware of the outer world in the ecs.Query", func(t *testing.T) {
-		type componentA struct{ ecs.Component }
-
 		assert := assert.New(t)
 
 		outerWorldConfigs := ecs.DefaultWorldConfigs()
@@ -90,8 +84,6 @@ func TestAddSystem(t *testing.T) {
 	})
 
 	t.Run("can insert ecs.Query that targets an outer world", func(t *testing.T) {
-		type componentA struct{ ecs.Component }
-
 		assert := assert.New(t)
 
 		outerWorldConfigs := ecs.DefaultWorldConfigs()
@@ -186,6 +178,13 @@ func TestAddSystem(t *testing.T) {
 		assert.NoError(err)
 	})
 
+	t.Run("returns err if system param OuterResource is a pointer", func(t *testing.T) {
+		type resource struct{}
+		assert := assert.New(t)
+		err := simpleTestAddSystem(func(*ecs.OuterResource[*resource, ecs.TestCustomTargetWorld]) {})
+		assert.ErrorIs(err, ErrSystemParamOuterResourceIsAPointer)
+	})
+
 	t.Run("returns an error if the system returns something that is not an error", func(t *testing.T) {
 		assert := assert.New(t)
 		err := simpleTestAddSystem(func() int { return 10 })
@@ -226,6 +225,9 @@ func simpleTestAddSystem(system System) error {
 }
 
 func TestExecSystem(t *testing.T) {
+	type componentA struct{ ecs.Component }
+	type resourceA struct{ value int }
+
 	t.Run("runs system without system params", func(t *testing.T) {
 		assert := assert.New(t)
 
@@ -245,8 +247,6 @@ func TestExecSystem(t *testing.T) {
 	})
 
 	t.Run("system with by-reference resource param can mutate the resource", func(t *testing.T) {
-		type resourceA struct{ value int }
-
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{}
@@ -268,8 +268,6 @@ func TestExecSystem(t *testing.T) {
 	})
 
 	t.Run("system with by-value resource param can not mutate the resource", func(t *testing.T) {
-		type resourceA struct{ value int }
-
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{}
@@ -290,8 +288,6 @@ func TestExecSystem(t *testing.T) {
 	})
 
 	t.Run("system with by-value resource uses a copy of the latest resource value", func(t *testing.T) {
-		type resourceA struct{ value int }
-
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{}
@@ -335,6 +331,80 @@ func TestExecSystem(t *testing.T) {
 		assert.NoError(err)
 
 		scheduleSystems.Exec(world, nil, &eventStorage, 1)
+	})
+
+	t.Run("OuterResource with resource pointer can mutate", func(t *testing.T) {
+		assert := assert.New(t)
+
+		outerWorldConfigs := ecs.DefaultWorldConfigs()
+		outerWorldConfigs.Id = &ecs.TestCustomTargetWorldId
+		outerWorld, err := ecs.NewWorld(outerWorldConfigs)
+		assert.NoError(err)
+		outerWorlds := map[ecs.WorldId]*ecs.World{
+			ecs.TestCustomTargetWorldId: &outerWorld,
+		}
+
+		scheduleSystems := ScheduleSystems{}
+		world := ecs.NewDefaultWorld()
+		logger := NoOpLogger{}
+		eventStorage := NewEventStorage()
+
+		resource := resourceA{value: 7}
+		err = outerWorld.Resources().Add(&resource)
+		assert.NoError(err)
+
+		err = scheduleSystems.add(func(res ecs.OuterResource[*resourceA, ecs.TestCustomTargetWorld]) {
+			assert.Equal(7, res.Value.value)
+			res.Value.value = 77
+		}, "", world, &outerWorlds, &logger, &eventStorage)
+		assert.NoError(err)
+
+		err = scheduleSystems.add(func(res ecs.OuterResource[*resourceA, ecs.TestCustomTargetWorld]) {
+			assert.Equal(77, res.Value.value)
+		}, "", world, &outerWorlds, &logger, &eventStorage)
+		assert.NoError(err)
+
+		assert.NoError(scheduleSystems.prepare(&outerWorlds))
+
+		errors := scheduleSystems.Exec(world, &outerWorlds, &eventStorage, 1)
+		assert.Empty(errors)
+	})
+
+	t.Run("OuterResource without resource pointer can not mutate", func(t *testing.T) {
+		assert := assert.New(t)
+
+		outerWorldConfigs := ecs.DefaultWorldConfigs()
+		outerWorldConfigs.Id = &ecs.TestCustomTargetWorldId
+		outerWorld, err := ecs.NewWorld(outerWorldConfigs)
+		assert.NoError(err)
+		outerWorlds := map[ecs.WorldId]*ecs.World{
+			ecs.TestCustomTargetWorldId: &outerWorld,
+		}
+
+		scheduleSystems := ScheduleSystems{}
+		world := ecs.NewDefaultWorld()
+		logger := NoOpLogger{}
+		eventStorage := NewEventStorage()
+
+		resource := resourceA{value: 7}
+		err = outerWorld.Resources().Add(&resource)
+		assert.NoError(err)
+
+		err = scheduleSystems.add(func(res ecs.OuterResource[*resourceA, ecs.TestCustomTargetWorld]) {
+			assert.Equal(7, res.Value.value)
+			res.Value.value = 77
+		}, "", world, &outerWorlds, &logger, &eventStorage)
+		assert.NoError(err)
+
+		err = scheduleSystems.add(func(res ecs.OuterResource[resourceA, ecs.TestCustomTargetWorld]) {
+			assert.Equal(7, res.Value.value)
+		}, "", world, &outerWorlds, &logger, &eventStorage)
+		assert.NoError(err)
+
+		assert.NoError(scheduleSystems.prepare(&outerWorlds))
+
+		errors := scheduleSystems.Exec(world, &outerWorlds, &eventStorage, 1)
+		assert.Empty(errors)
 	})
 
 	t.Run("returns no errors if the system does not return anything", func(t *testing.T) {
@@ -386,8 +456,6 @@ func TestExecSystem(t *testing.T) {
 	})
 
 	t.Run("automatically execute non-lazy queries in system params before executing systems", func(t *testing.T) {
-		type componentA struct{ ecs.Component }
-
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{}
@@ -412,8 +480,6 @@ func TestExecSystem(t *testing.T) {
 	})
 
 	t.Run("clear and not execute queries in system params before executing systems", func(t *testing.T) {
-		type componentA struct{ ecs.Component }
-
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{}
@@ -438,8 +504,6 @@ func TestExecSystem(t *testing.T) {
 	})
 
 	t.Run("executes query to outer world", func(t *testing.T) {
-		type componentA struct{ ecs.Component }
-
 		assert := assert.New(t)
 
 		outerWorldConfigs := ecs.DefaultWorldConfigs()
