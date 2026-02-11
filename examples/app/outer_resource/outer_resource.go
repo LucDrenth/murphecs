@@ -61,9 +61,8 @@ func main() {
 	appFoo.AddResource(&myResource{})
 
 	// 5. Add a system for appBar that uses a resource from appFoo
-	appBar.AddSystem(update, func(res ecs.OuterResource[*myResource, targetWorldAppFoo]) error {
+	appBar.AddSystem(update, func(res ecs.OuterResource[*myResource, targetWorldAppFoo]) {
 		res.Value.counter += 1
-		return nil
 	})
 
 	appFoo.AddSystem(update, func(res myResource, log app.Logger) {

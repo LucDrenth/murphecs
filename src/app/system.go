@@ -78,6 +78,15 @@ func (s *ScheduleSystems) Exec(world *ecs.World, outerWorlds *map[ecs.WorldId]*e
 		}
 	}
 
+	if outerWorlds != nil {
+		err = s.updateNonPointerOuterResources(outerWorlds)
+		if err != nil {
+			return []error{
+				fmt.Errorf("did not execute system set because updating outer resources failed: %w", err),
+			}
+		}
+	}
+
 	return s.execSystems()
 }
 
@@ -126,6 +135,33 @@ func (s *ScheduleSystems) prepare(outerWorlds *map[ecs.WorldId]*ecs.World) error
 			} else {
 				valueField.Set(resource.Elem())
 			}
+
+			systemGroup.systems[orp.systemIndex].params[orp.paramIndex] = instance.Elem()
+		}
+	}
+
+	return nil
+}
+
+// updateNonPointerOuterResources refreshes the value of non-pointer outer resources
+// so that systems see the latest resource state. Pointer outer resources don't need
+// this because they reference the resource memory directly.
+func (s *ScheduleSystems) updateNonPointerOuterResources(outerWorlds *map[ecs.WorldId]*ecs.World) error {
+	for _, systemGroup := range s.systemGroups {
+		for _, orp := range systemGroup.outerResources {
+			if orp.resourceType.Kind() == reflect.Pointer {
+				continue
+			}
+
+			outerWorld := (*outerWorlds)[orp.worldId]
+			resource, err := outerWorld.Resources().GetReflectResource(orp.resourceType)
+			if err != nil {
+				return err
+			}
+
+			instance := reflect.New(orp.outerResourceType)
+			valueField := instance.Elem().FieldByName("Value")
+			valueField.Set(resource.Elem())
 
 			systemGroup.systems[orp.systemIndex].params[orp.paramIndex] = instance.Elem()
 		}

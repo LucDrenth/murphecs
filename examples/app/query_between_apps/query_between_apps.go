@@ -78,13 +78,12 @@ func main() {
 	})
 
 	// 5. Now register a system for appBar that queries appFoo
-	appBar.AddSystem(update, func(query *ecs.Query1[myComponent, targetWorldAppFoo], log app.Logger) error {
+	appBar.AddSystem(update, func(query *ecs.Query1[myComponent, targetWorldAppFoo], log app.Logger) {
 		query.Iter(func(entityId ecs.EntityId, a myComponent) {
 			log.Info("%d: %d", entityId, a.value)
 		})
 
 		fmt.Println()
-		return nil
 	})
 
 	run.RunApps(appFoo, appBar)
