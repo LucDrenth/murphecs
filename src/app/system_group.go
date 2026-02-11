@@ -19,10 +19,19 @@ type queryToOuterWorld struct {
 	query   ecs.Query
 }
 
+type outerResourceParam struct {
+	systemIndex       int
+	paramIndex        int
+	worldId           ecs.WorldId
+	resourceType      reflect.Type
+	outerResourceType reflect.Type // the full OuterResource[R, T] struct type
+}
+
 type systemGroup struct {
 	systems                         []systemEntry
 	systemParamQueries              []ecs.Query
 	systemParamQueriesToOuterWorlds []queryToOuterWorld
+	outerResources                  []outerResourceParam
 	eventWriters                    []anyEventWriter
 }
 
@@ -119,24 +128,15 @@ func (s *systemGroupBuilder) build(source string, world *ecs.World, outerWorlds 
 				outerRes := instance.Interface().(ecs.AnyOuterResource)
 				worldId, resType := outerRes.OuterResourceInfo()
 
-				outerWorld, exists := (*outerWorlds)[*worldId]
-				if !exists {
-					return systemGroup, fmt.Errorf("%s: parameter %s: %w", systemToDebugString(sys), systemParameterDebugString(sys, i), ecs.ErrTargetWorldNotFound)
-				}
+				systemGroup.outerResources = append(systemGroup.outerResources, outerResourceParam{
+					systemIndex:       len(systemGroup.systems),
+					paramIndex:        i,
+					worldId:           *worldId,
+					resourceType:      resType,
+					outerResourceType: parameterType,
+				})
 
-				resource, err := outerWorld.Resources().GetReflectResource(resType)
-				if err != nil {
-					return systemGroup, fmt.Errorf("%s: parameter %s: %w", systemToDebugString(sys), systemParameterDebugString(sys, i), err)
-				}
-
-				valueField := instance.Elem().FieldByName("Value")
-				if resType.Kind() == reflect.Pointer {
-					valueField.Set(resource)
-				} else {
-					valueField.Set(resource.Elem())
-				}
-
-				params[i] = instance.Elem()
+				params[i] = reflect.Zero(parameterType)
 			} else {
 				// check if its a resource
 				resource, err := world.Resources().GetReflectResource(parameterType)

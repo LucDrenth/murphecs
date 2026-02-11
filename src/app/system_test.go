@@ -179,7 +179,7 @@ func TestAddSystem(t *testing.T) {
 	})
 
 	t.Run("returns err if system param OuterResource is a pointer", func(t *testing.T) {
-		type resource struct{ value int }
+		type resource struct{}
 		assert := assert.New(t)
 		err := simpleTestAddSystem(func(*ecs.OuterResource[*resource, ecs.TestCustomTargetWorld]) {})
 		assert.ErrorIs(err, ErrSystemParamOuterResourceIsAPointer)
@@ -364,6 +364,8 @@ func TestExecSystem(t *testing.T) {
 		}, "", world, &outerWorlds, &logger, &eventStorage)
 		assert.NoError(err)
 
+		assert.NoError(scheduleSystems.prepare(&outerWorlds))
+
 		errors := scheduleSystems.Exec(world, &outerWorlds, &eventStorage, 1)
 		assert.Empty(errors)
 	})
@@ -398,6 +400,8 @@ func TestExecSystem(t *testing.T) {
 			assert.Equal(7, res.Value.value)
 		}, "", world, &outerWorlds, &logger, &eventStorage)
 		assert.NoError(err)
+
+		assert.NoError(scheduleSystems.prepare(&outerWorlds))
 
 		errors := scheduleSystems.Exec(world, &outerWorlds, &eventStorage, 1)
 		assert.Empty(errors)
