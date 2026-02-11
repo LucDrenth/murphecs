@@ -113,7 +113,9 @@ func (s *systemGroupBuilder) build(source string, world *ecs.World, outerWorlds 
 				systemGroup.eventWriters = append(systemGroup.eventWriters, eventWriterParam)
 				params[i] = reflectedEventWriter
 			} else if parameterType.Implements(outerResourceType) {
-				instance := reflect.New(parameterType.Elem())
+				return systemGroup, fmt.Errorf("%s: parameter %s: %w", systemToDebugString(sys), systemParameterDebugString(sys, i), ErrSystemParamOuterResourceIsAPointer)
+			} else if parameterType.Kind() != reflect.Pointer && reflect.PointerTo(parameterType).Implements(outerResourceType) {
+				instance := reflect.New(parameterType)
 				outerRes := instance.Interface().(ecs.AnyOuterResource)
 				worldId, resType := outerRes.OuterResourceInfo()
 
@@ -134,7 +136,7 @@ func (s *systemGroupBuilder) build(source string, world *ecs.World, outerWorlds 
 					valueField.Set(resource.Elem())
 				}
 
-				params[i] = instance
+				params[i] = instance.Elem()
 			} else {
 				// check if its a resource
 				resource, err := world.Resources().GetReflectResource(parameterType)

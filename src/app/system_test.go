@@ -178,6 +178,13 @@ func TestAddSystem(t *testing.T) {
 		assert.NoError(err)
 	})
 
+	t.Run("returns err if system param OuterResource is a pointer", func(t *testing.T) {
+		type resource struct{ value int }
+		assert := assert.New(t)
+		err := simpleTestAddSystem(func(*ecs.OuterResource[*resource, ecs.TestCustomTargetWorld]) {})
+		assert.ErrorIs(err, ErrSystemParamOuterResourceIsAPointer)
+	})
+
 	t.Run("returns an error if the system returns something that is not an error", func(t *testing.T) {
 		assert := assert.New(t)
 		err := simpleTestAddSystem(func() int { return 10 })
@@ -324,76 +331,6 @@ func TestExecSystem(t *testing.T) {
 		assert.NoError(err)
 
 		scheduleSystems.Exec(world, nil, &eventStorage, 1)
-	})
-
-	t.Run("OuterResource pointer with resource pointer can mutate", func(t *testing.T) {
-		assert := assert.New(t)
-
-		outerWorldConfigs := ecs.DefaultWorldConfigs()
-		outerWorldConfigs.Id = &ecs.TestCustomTargetWorldId
-		outerWorld, err := ecs.NewWorld(outerWorldConfigs)
-		assert.NoError(err)
-		outerWorlds := map[ecs.WorldId]*ecs.World{
-			ecs.TestCustomTargetWorldId: &outerWorld,
-		}
-
-		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
-		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
-
-		resource := resourceA{value: 7}
-		err = outerWorld.Resources().Add(&resource)
-		assert.NoError(err)
-
-		err = scheduleSystems.add(func(res *ecs.OuterResource[*resourceA, ecs.TestCustomTargetWorld]) {
-			assert.Equal(7, res.Value.value)
-			res.Value.value = 77
-		}, "", world, &outerWorlds, &logger, &eventStorage)
-		assert.NoError(err)
-
-		err = scheduleSystems.add(func(res *ecs.OuterResource[*resourceA, ecs.TestCustomTargetWorld]) {
-			assert.Equal(77, res.Value.value)
-		}, "", world, &outerWorlds, &logger, &eventStorage)
-		assert.NoError(err)
-
-		errors := scheduleSystems.Exec(world, &outerWorlds, &eventStorage, 1)
-		assert.Empty(errors)
-	})
-
-	t.Run("OuterResource pointer without resource pointer can not mutate", func(t *testing.T) {
-		assert := assert.New(t)
-
-		outerWorldConfigs := ecs.DefaultWorldConfigs()
-		outerWorldConfigs.Id = &ecs.TestCustomTargetWorldId
-		outerWorld, err := ecs.NewWorld(outerWorldConfigs)
-		assert.NoError(err)
-		outerWorlds := map[ecs.WorldId]*ecs.World{
-			ecs.TestCustomTargetWorldId: &outerWorld,
-		}
-
-		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
-		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
-
-		resource := resourceA{value: 7}
-		err = outerWorld.Resources().Add(&resource)
-		assert.NoError(err)
-
-		err = scheduleSystems.add(func(res *ecs.OuterResource[*resourceA, ecs.TestCustomTargetWorld]) {
-			assert.Equal(7, res.Value.value)
-			res.Value.value = 77
-		}, "", world, &outerWorlds, &logger, &eventStorage)
-		assert.NoError(err)
-
-		err = scheduleSystems.add(func(res *ecs.OuterResource[resourceA, ecs.TestCustomTargetWorld]) {
-			assert.Equal(7, res.Value.value)
-		}, "", world, &outerWorlds, &logger, &eventStorage)
-		assert.NoError(err)
-
-		errors := scheduleSystems.Exec(world, &outerWorlds, &eventStorage, 1)
-		assert.Empty(errors)
 	})
 
 	t.Run("OuterResource with resource pointer can mutate", func(t *testing.T) {
