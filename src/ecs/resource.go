@@ -139,3 +139,16 @@ func GetResourceDebugType(resource Resource) string {
 
 	return resourceType.String()
 }
+
+type AnyOuterResource interface {
+	OuterResourceInfo() (targetWorldId *WorldId, resourceType reflect.Type)
+}
+
+type OuterResource[R Resource, T TargetWorld] struct {
+	Value R
+}
+
+func (o *OuterResource[R, T]) OuterResourceInfo() (*WorldId, reflect.Type) {
+	var t T
+	return t.GetWorldId(), reflect.TypeFor[R]()
+}

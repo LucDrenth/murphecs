@@ -1,8 +1,7 @@
-// Demonstrate how to query the world of another SubApp. Querying between sub apps is thread-safe.
+// Demonstrate how to use a resource from another world
 package main
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/lucdrenth/murphecs/examples/app/run"
@@ -13,11 +12,6 @@ import (
 const startup app.Schedule = "Startup"
 const update app.Schedule = "Update"
 
-type myComponent struct {
-	ecs.Component
-	value int
-}
-
 // 1. First we define a worldId
 var appFooId = ecs.WorldId(10)
 
@@ -27,9 +21,13 @@ func (c targetWorldAppFoo) GetWorldId() *ecs.WorldId {
 	return &appFooId
 }
 
-// 2. Now we implement QueryOption for it so that we can use it as a query parameter
+// 2. Now we implement QueryOption for it so that we can use it as target world
 func (targetWorldAppFoo) GetCombinedQueryOptions(world *ecs.World) (ecs.CombinedQueryOptions, error) {
 	return ecs.CombinedQueryOptions{TargetWorld: &appFooId}, nil
+}
+
+type myResource struct {
+	counter int
 }
 
 func main() {
@@ -48,43 +46,28 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	appBar.SetTickRate(time.Second * 2)
+	appBar.SetTickRate(time.Second)
+	appFoo.SetTickRate(time.Second)
 
 	appBar.
 		AddSchedule(startup, app.ScheduleOptions{ScheduleType: app.ScheduleTypeStartup}).
 		AddSchedule(update, app.ScheduleOptions{ScheduleType: app.ScheduleTypeRepeating}).
 		AddResource(&logger)
 
-	// 3. Register appFoo to appBar so that we can query appFoo from an appBar system
+	// 3. Register appFoo to appBar so that we can target appFoo from an appBar system
 	appBar.RegisterOuterWorld(appFooId, appFoo.World())
 
-	// 4. We register a startup system for appFoo that spawns components that appBar will query
-	appFoo.AddSystem(startup, func(world *ecs.World, log app.Logger) error {
-		entity, err := ecs.Spawn(world, myComponent{value: 100})
-		if err != nil {
-			return err
-		}
-		log.Info("spawned entity %d with value 100", entity)
+	// 4. Add a resource that appBar will access
+	appFoo.AddResource(&myResource{})
 
-		entity, err = ecs.Spawn(world, myComponent{value: 200})
-		if err != nil {
-			return err
-		}
-		log.Info("spawned entity %d with value 200", entity)
-
-		fmt.Println()
-
+	// 5. Add a system for appBar that uses a resource from appFoo
+	appBar.AddSystem(update, func(res *ecs.OuterResource[*myResource, targetWorldAppFoo]) error {
+		res.Value.counter += 1
 		return nil
 	})
 
-	// 5. Now register a system for appBar that queries appFoo
-	appBar.AddSystem(update, func(query *ecs.Query1[myComponent, targetWorldAppFoo], log app.Logger) error {
-		query.Iter(func(entityId ecs.EntityId, a myComponent) {
-			log.Info("%d: %d", entityId, a.value)
-		})
-
-		fmt.Println()
-		return nil
+	appFoo.AddSystem(update, func(res myResource, log app.Logger) {
+		log.Info("counter: %d", res.counter)
 	})
 
 	run.RunApps(appFoo, appBar)

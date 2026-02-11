@@ -7,6 +7,13 @@ import (
 	"github.com/lucdrenth/murphecs/src/ecs"
 )
 
+var (
+	queryType         = reflect.TypeFor[ecs.Query]()
+	eventReaderType   = reflect.TypeFor[anyEventReader]()
+	eventWriterType   = reflect.TypeFor[anyEventWriter]()
+	outerResourceType = reflect.TypeFor[ecs.AnyOuterResource]()
+)
+
 type queryToOuterWorld struct {
 	worldId ecs.WorldId
 	query   ecs.Query
@@ -53,10 +60,6 @@ func (s *systemGroupBuilder) validate() error {
 
 func (s *systemGroupBuilder) build(source string, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, eventStorage *EventStorage) (systemGroup, error) {
 	systemGroup := systemGroup{}
-
-	queryType := reflect.TypeFor[ecs.Query]()
-	eventReaderType := reflect.TypeFor[anyEventReader]()
-	eventWriterType := reflect.TypeFor[anyEventWriter]()
 
 	for _, sys := range s.systems {
 		systemValue := reflect.ValueOf(sys)
@@ -109,6 +112,29 @@ func (s *systemGroupBuilder) build(source string, world *ecs.World, outerWorlds 
 				}
 				systemGroup.eventWriters = append(systemGroup.eventWriters, eventWriterParam)
 				params[i] = reflectedEventWriter
+			} else if parameterType.Implements(outerResourceType) {
+				instance := reflect.New(parameterType.Elem())
+				outerRes := instance.Interface().(ecs.AnyOuterResource)
+				worldId, resType := outerRes.OuterResourceInfo()
+
+				outerWorld, exists := (*outerWorlds)[*worldId]
+				if !exists {
+					return systemGroup, fmt.Errorf("%s: parameter %s: %w", systemToDebugString(sys), systemParameterDebugString(sys, i), ecs.ErrTargetWorldNotFound)
+				}
+
+				resource, err := outerWorld.Resources().GetReflectResource(resType)
+				if err != nil {
+					return systemGroup, fmt.Errorf("%s: parameter %s: %w", systemToDebugString(sys), systemParameterDebugString(sys, i), err)
+				}
+
+				valueField := instance.Elem().FieldByName("Value")
+				if resType.Kind() == reflect.Pointer {
+					valueField.Set(resource)
+				} else {
+					valueField.Set(resource.Elem())
+				}
+
+				params[i] = instance
 			} else {
 				// check if its a resource
 				resource, err := world.Resources().GetReflectResource(parameterType)
