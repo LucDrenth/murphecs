@@ -11,11 +11,23 @@ func TestObserver(t *testing.T) {
 	type myComponent1 struct{ Component }
 	type myComponent2 struct{ Component }
 
+	type observer1 struct{ Observer }
+	type observer2 struct{ Observer }
+
+	t.Run("Spawn nil observer does nothing", func(t *testing.T) {
+		world := NewDefaultWorld()
+		On[observer1](world, nil)
+	})
+
+	t.Run("Spawn observer pointer panics", func(t *testing.T) {
+		world := NewDefaultWorld()
+		assert.Panics(t, func() {
+			On(world, func(world *World, observer *observer1) {})
+		})
+	})
+
 	t.Run("Custom observer", func(t *testing.T) {
 		assert := assert.New(t)
-
-		type observer1 struct{ Observer }
-		type observer2 struct{ Observer }
 
 		world := NewDefaultWorld()
 

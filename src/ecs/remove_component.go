@@ -135,6 +135,8 @@ func removeComponents(world *World, entityId EntityId, componentIds []ComponentI
 	world.archetypeStorage.entityIdToArchetype[entityId] = newArchetype
 	newArchetype.entities = append(newArchetype.entities, entityId)
 
+	handleDespawnObservers(world, componentIdsToRemove, entityId)
+
 	return resultErr
 }
 

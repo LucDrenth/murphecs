@@ -121,6 +121,8 @@ func Insert(world *World, entity EntityId, components ...AnyComponent) (resultEr
 	world.archetypeStorage.entityIdToArchetype[entity] = newArchetype
 	newArchetype.entities = append(newArchetype.entities, entity)
 
+	handleSpawnObservers(world, componentIdsToAdd, entity)
+
 	return resultErr
 }
 
@@ -233,6 +235,8 @@ func InsertOrOverwrite(world *World, entity EntityId, components ...AnyComponent
 	entityData.row = newRow
 	world.archetypeStorage.entityIdToArchetype[entity] = newArchetype
 	newArchetype.entities = append(newArchetype.entities, entity)
+
+	handleSpawnObservers(world, componentIdsToAdd, entity)
 
 	return resultErr
 }

@@ -1,6 +1,8 @@
 package ecs
 
-import "reflect"
+import (
+	"reflect"
+)
 
 type observerType uint
 
@@ -28,6 +30,7 @@ func (Observer) componentId(_ *World) ComponentId {
 	panic("unexpected call to componentId")
 }
 
+// OnSpawn is triggered when a component gets spawned or added.
 type OnSpawn[C AnyComponent] struct {
 	Observer
 	Entity EntityId
@@ -41,6 +44,9 @@ func (OnSpawn[C]) componentId(world *World) ComponentId {
 	return ComponentIdFor[C](world)
 }
 
+// OnSpawn is triggered when:
+//   - the component gets removed from an entity
+//   - an entity that has the component gets despawned
 type OnDespawn[C AnyComponent] struct {
 	Observer
 	Entity EntityId
@@ -56,13 +62,21 @@ func (OnDespawn[C]) componentId(world *World) ComponentId {
 
 // On registers an observer
 func On[O AnyObserver](world *World, action func(world *World, observed O)) {
+	if action == nil {
+		return
+	}
+
 	var observer O
+
+	reflectedObserver := reflect.TypeFor[O]()
+	if reflectedObserver.Kind() == reflect.Pointer {
+		panic("can not register observer pointer")
+	}
 
 	switch observer.getObserverType() {
 	case customObserver:
 		{
-			observerId := reflect.TypeFor[O]()
-			world.observers[observerId] = append(world.observers[observerId], action)
+			world.observers[reflectedObserver] = append(world.observers[reflectedObserver], action)
 		}
 
 	case spawnObserver:
