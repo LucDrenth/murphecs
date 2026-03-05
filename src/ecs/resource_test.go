@@ -174,23 +174,23 @@ func TestGetResourceFromStorage(t *testing.T) {
 	t.Run("fails to get resource that was not added", func(t *testing.T) {
 		assert := assert.New(t)
 
-		storage := newResourceStorage()
+		world := NewDefaultWorld()
 
-		_, err := GetResourceFromStorage[resourceA](&storage)
+		_, err := GetResource[resourceA](world)
 		assert.ErrorIs(err, ErrResourceNotFound)
 
-		_, err = GetResourceFromStorage[*resourceA](&storage)
+		_, err = GetResource[*resourceA](world)
 		assert.ErrorIs(err, ErrResourceNotFound)
 	})
 
 	t.Run("successfully gets struct resource copy", func(t *testing.T) {
 		assert := assert.New(t)
 
-		storage := newResourceStorage()
-		err := storage.Add(&resourceA{value: 10})
+		world := NewDefaultWorld()
+		err := world.resources.Add(&resourceA{value: 10})
 		assert.NoError(err)
 
-		resource, err := GetResourceFromStorage[resourceA](&storage)
+		resource, err := GetResource[resourceA](world)
 		assert.NoError(err)
 		assert.Equal(10, resource.value)
 	})
@@ -198,15 +198,15 @@ func TestGetResourceFromStorage(t *testing.T) {
 	t.Run("struct resource copy can not be mutated", func(t *testing.T) {
 		assert := assert.New(t)
 
-		storage := newResourceStorage()
-		err := storage.Add(&resourceA{value: 0})
+		world := NewDefaultWorld()
+		err := world.resources.Add(&resourceA{value: 0})
 		assert.NoError(err)
 
-		resource, err := GetResourceFromStorage[resourceA](&storage)
+		resource, err := GetResource[resourceA](world)
 		assert.NoError(err)
 		resource.value = 10
 
-		resource, err = GetResourceFromStorage[resourceA](&storage)
+		resource, err = GetResource[resourceA](world)
 		assert.NoError(err)
 		assert.NotEqual(10, resource.value)
 	})
@@ -214,11 +214,11 @@ func TestGetResourceFromStorage(t *testing.T) {
 	t.Run("successfully gets struct resource pointer", func(t *testing.T) {
 		assert := assert.New(t)
 
-		storage := newResourceStorage()
-		err := storage.Add(&resourceA{value: 10})
+		world := NewDefaultWorld()
+		err := world.resources.Add(&resourceA{value: 10})
 		assert.NoError(err)
 
-		resource, err := GetResourceFromStorage[*resourceA](&storage)
+		resource, err := GetResource[*resourceA](world)
 		assert.NoError(err)
 		assert.Equal(10, resource.value)
 	})
@@ -226,15 +226,15 @@ func TestGetResourceFromStorage(t *testing.T) {
 	t.Run("struct resource passed by reference can be mutated", func(t *testing.T) {
 		assert := assert.New(t)
 
-		storage := newResourceStorage()
-		err := storage.Add(&resourceA{value: 0})
+		world := NewDefaultWorld()
+		err := world.resources.Add(&resourceA{value: 0})
 		assert.NoError(err)
 
-		resource, err := GetResourceFromStorage[*resourceA](&storage)
+		resource, err := GetResource[*resourceA](world)
 		assert.NoError(err)
 		resource.value = 10
 
-		resource, err = GetResourceFromStorage[*resourceA](&storage)
+		resource, err = GetResource[*resourceA](world)
 		assert.NoError(err)
 		assert.Equal(10, resource.value)
 	})
@@ -242,16 +242,16 @@ func TestGetResourceFromStorage(t *testing.T) {
 	t.Run("interface resource that is passed by reference can be retrieved and mutated", func(t *testing.T) {
 		assert := assert.New(t)
 
+		world := NewDefaultWorld()
 		var resource testResourceInterface = &testResourceInterfaceA{}
-		storage := newResourceStorage()
-		err := storage.Add(&resource)
+		err := world.resources.Add(&resource)
 		assert.NoError(err)
 
-		resource, err = GetResourceFromStorage[testResourceInterface](&storage)
+		resource, err = GetResource[testResourceInterface](world)
 		assert.NoError(err)
 		resource.Increment()
 
-		resource, err = GetResourceFromStorage[testResourceInterface](&storage)
+		resource, err = GetResource[testResourceInterface](world)
 		assert.NoError(err)
 		assert.Equal(1, resource.Get())
 	})
@@ -259,16 +259,16 @@ func TestGetResourceFromStorage(t *testing.T) {
 	t.Run("interface resource that is passed by value can be retrieved by its implementation and can be mutated", func(t *testing.T) {
 		assert := assert.New(t)
 
+		world := NewDefaultWorld()
 		var resource testResourceInterface = &testResourceInterfaceA{}
-		storage := newResourceStorage()
-		err := storage.Add(resource)
+		err := world.resources.Add(resource)
 		assert.NoError(err)
 
-		resource, err = GetResourceFromStorage[*testResourceInterfaceA](&storage)
+		resource, err = GetResource[*testResourceInterfaceA](world)
 		assert.NoError(err)
 		resource.Increment()
 
-		resource, err = GetResourceFromStorage[*testResourceInterfaceA](&storage)
+		resource, err = GetResource[*testResourceInterfaceA](world)
 		assert.NoError(err)
 		assert.Equal(1, resource.Get())
 	})
