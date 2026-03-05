@@ -16,7 +16,10 @@ type World struct {
 	componentRegistry componentRegistry
 	archetypeStorage  archetypeStorage
 
-	resources resourceStorage
+	resources        resourceStorage
+	observers        map[observerId][]any
+	spawnObservers   map[ComponentId][]func(*World, EntityId)
+	despawnObservers map[ComponentId][]func(*World, EntityId)
 
 	initialComponentCapacityStrategy initialComponentCapacityStrategy
 	componentCapacityGrowthStrategy  componentCapacityGrowthStrategy
@@ -55,6 +58,9 @@ func NewWorld(configs WorldConfigs) (World, error) {
 		componentRegistry:                newComponentRegistry(),
 		archetypeStorage:                 newArchetypeStorage(),
 		resources:                        newResourceStorage(),
+		observers:                        map[observerId][]any{},
+		spawnObservers:                   map[ComponentId][]func(*World, EntityId){},
+		despawnObservers:                 map[ComponentId][]func(*World, EntityId){},
 	}, nil
 }
 

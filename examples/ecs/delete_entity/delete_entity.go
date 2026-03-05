@@ -14,6 +14,6 @@ func main() {
 	entity, _ := ecs.Spawn(world, &NPC{})
 
 	fmt.Printf("Before deleting: %d entity in the world\n", world.CountEntities())
-	ecs.Delete(world, entity)
+	ecs.Despawn(world, entity)
 	fmt.Printf("After deleting: %d entities in the world\n", world.CountEntities())
 }

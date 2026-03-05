@@ -111,7 +111,7 @@ func TestStats(t *testing.T) {
 
 			entity, err := Spawn(world, &emptyComponentA{})
 			assert.NoError(err)
-			err = Delete(world, entity)
+			err = Despawn(world, entity)
 			assert.NoError(err)
 
 			assert.Equal(originalStats, world.Stats())

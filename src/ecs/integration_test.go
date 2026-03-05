@@ -43,7 +43,7 @@ func TestArchetypeMoveInsideQUery(t *testing.T) {
 	}
 
 	// reset
-	err = ecs.Delete(world, entityId)
+	err = ecs.Despawn(world, entityId)
 	assert.NoError(err)
 	entityId, err = ecs.Spawn(world, &componentA{value: 10})
 	assert.NoError(err)

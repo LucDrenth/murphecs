@@ -6,12 +6,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDelete(t *testing.T) {
+func TestDespawn(t *testing.T) {
 	t.Run("return an error if the entity was not found", func(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		err := Delete(world, nonExistingEntity)
+		err := Despawn(world, nonExistingEntity)
 
 		assert.ErrorIs(err, ErrEntityNotFound)
 	})
@@ -29,7 +29,7 @@ func TestDelete(t *testing.T) {
 		entity3, err := Spawn(world, &structA{})
 		assert.NoError(err)
 
-		err = Delete(world, entity2)
+		err = Despawn(world, entity2)
 		assert.NoError(err)
 
 		// check that we can still get entity1 and entity3

@@ -7,6 +7,12 @@ import (
 	"github.com/lucdrenth/murphecs/src/ecs"
 )
 
+func BenchmarkCreateWorld(b *testing.B) {
+	for b.Loop() {
+		_ = ecs.NewDefaultWorld()
+	}
+}
+
 func BenchmarkSpawn(b *testing.B) {
 	b.Run("VariadicOneComponent-ByReference", func(b *testing.B) {
 		for b.Loop() {
@@ -205,16 +211,25 @@ func BenchmarkRemove(b *testing.B) {
 	}
 }
 
-func BenchmarkDelete(b *testing.B) {
+func BenchmarkDespawn(b *testing.B) {
 	world := ecs.NewDefaultWorld()
 	if err := fillWorld(world); err != nil {
 		b.FailNow()
 	}
 
-	for b.Loop() {
-		entity, _ := ecs.Spawn(world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{})
-		ecs.Delete(world, entity)
-	}
+	b.Run("1 component", func(b *testing.B) {
+		for b.Loop() {
+			entity, _ := ecs.Spawn(world, emptyComponentA{})
+			ecs.Despawn(world, entity)
+		}
+	})
+
+	b.Run("4 components", func(b *testing.B) {
+		for b.Loop() {
+			entity, _ := ecs.Spawn(world, emptyComponentA{}, emptyComponentB{}, emptyComponentC{}, emptyComponentD{})
+			ecs.Despawn(world, entity)
+		}
+	})
 }
 
 func BenchmarkGet(b *testing.B) {
@@ -729,4 +744,88 @@ func fillWorld(world *ecs.World) error {
 	}
 
 	return nil
+}
+
+func BenchmarkObservers(b *testing.B) {
+	b.Run("custom observer", func(b *testing.B) {
+		type onSomething struct{ ecs.Observer }
+
+		b.Run("register", func(b *testing.B) {
+			for b.Loop() {
+				world := ecs.NewDefaultWorld()
+				ecs.On(world, func(*ecs.World, onSomething) {})
+			}
+		})
+
+		b.Run("trigger", func(b *testing.B) {
+			world := ecs.NewDefaultWorld()
+			ecs.On(world, func(*ecs.World, onSomething) {})
+
+			for b.Loop() {
+				ecs.Trigger(world, onSomething{})
+			}
+		})
+	})
+
+	b.Run("onSpawn", func(b *testing.B) {
+		b.Run("spawn 1 non-observed", func(b *testing.B) {
+			for b.Loop() {
+				world := ecs.NewDefaultWorld()
+				ecs.Spawn(world, emptyComponentA{})
+			}
+		})
+		b.Run("spawn 1 observed", func(b *testing.B) {
+			for b.Loop() {
+				world := ecs.NewDefaultWorld()
+				ecs.On(world, func(*ecs.World, ecs.OnSpawn[emptyComponentA]) {})
+				ecs.Spawn(world, emptyComponentA{})
+			}
+		})
+		b.Run("spawn 2 with 2 non-observed", func(b *testing.B) {
+			for b.Loop() {
+				world := ecs.NewDefaultWorld()
+				ecs.Spawn(world, emptyComponentA{}, emptyComponentB{})
+			}
+		})
+		b.Run("spawn 2 with 1 observer and 1 non-observed", func(b *testing.B) {
+			for b.Loop() {
+				world := ecs.NewDefaultWorld()
+				ecs.On(world, func(*ecs.World, ecs.OnSpawn[emptyComponentA]) {})
+				ecs.Spawn(world, emptyComponentA{}, emptyComponentB{})
+			}
+		})
+	})
+
+	b.Run("onDespawn", func(b *testing.B) {
+		b.Run("despawn 1 non-observed", func(b *testing.B) {
+			for b.Loop() {
+				world := ecs.NewDefaultWorld()
+				entity, _ := ecs.Spawn(world, emptyComponentA{})
+				ecs.Despawn(world, entity)
+			}
+		})
+		b.Run("despawn 1 observed", func(b *testing.B) {
+			for b.Loop() {
+				world := ecs.NewDefaultWorld()
+				ecs.On(world, func(*ecs.World, ecs.OnDespawn[emptyComponentA]) {})
+				entity, _ := ecs.Spawn(world, emptyComponentA{})
+				ecs.Despawn(world, entity)
+			}
+		})
+		b.Run("despawn 2 with 2 non-observed", func(b *testing.B) {
+			for b.Loop() {
+				world := ecs.NewDefaultWorld()
+				entity, _ := ecs.Spawn(world, emptyComponentA{}, emptyComponentB{})
+				ecs.Despawn(world, entity)
+			}
+		})
+		b.Run("despawn 2 with 1 observer and 1 non-observed", func(b *testing.B) {
+			for b.Loop() {
+				world := ecs.NewDefaultWorld()
+				ecs.On(world, func(*ecs.World, ecs.OnDespawn[emptyComponentA]) {})
+				entity, _ := ecs.Spawn(world, emptyComponentA{}, emptyComponentB{})
+				ecs.Despawn(world, entity)
+			}
+		})
+	})
 }
