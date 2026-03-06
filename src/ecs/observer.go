@@ -20,6 +20,11 @@ type AnyObserver interface {
 
 type observerId reflect.Type
 
+// Observer can be embedded in to a struct to make a custom observer.
+//
+// It can be used in two ways:
+//   - globally: register it with [On] and trigger it with [Trigger]
+//   - for an entity: register it with [Observe] and trigger it with [TriggerEntity]
 type Observer struct{}
 
 func (Observer) getObserverType() observerType {
@@ -30,7 +35,11 @@ func (Observer) componentId(_ *World) ComponentId {
 	panic("unexpected call to componentId")
 }
 
-// OnSpawn is triggered when a component gets spawned or added.
+// OnSpawn is triggered when:
+//   - an entity with component [C] is spawned using [Spawn]
+//   - component [C] is added to an entity using [Insert] or [InsertOrOverwrite]
+//
+// Global OnSpawn observers get triggered before entity-specific observers.
 type OnSpawn[C AnyComponent] struct {
 	Observer
 	Entity EntityId
@@ -45,8 +54,10 @@ func (OnSpawn[C]) componentId(world *World) ComponentId {
 }
 
 // OnSpawn is triggered when:
-//   - the component gets removed from an entity
-//   - an entity that has the component gets despawned
+//   - component [C] gets removed from an entity using [Remove1], [Remove2] and so on
+//   - an entity with component [C] gets despawned using [Despawn]
+//
+// Global OnDespawn observers get triggered before entity-specific observers.
 type OnDespawn[C AnyComponent] struct {
 	Observer
 	Entity EntityId

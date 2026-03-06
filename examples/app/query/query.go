@@ -1,4 +1,4 @@
-// Demonstrate how to use to Query the ECS with systems.
+// Demonstrate how to Query the ECS using systems.
 package main
 
 import (
