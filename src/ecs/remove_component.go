@@ -59,7 +59,7 @@ func Remove4[A, B, C, D AnyComponent](world *World, entity EntityId) (result err
 }
 
 func removeComponents(world *World, entityId EntityId, componentIds []ComponentId) (resultErr error) {
-	entity, ok := world.entities[entityId]
+	entityData, ok := world.entities[entityId]
 	if !ok {
 		return ErrEntityNotFound
 	}
@@ -71,7 +71,7 @@ func removeComponents(world *World, entityId EntityId, componentIds []ComponentI
 
 	componentIdsToRemove := make([]ComponentId, 0, len(componentIds))
 	for _, componentId := range componentIds {
-		if !entity.archetype.HasComponent(componentId) {
+		if !entityData.archetype.HasComponent(componentId) {
 			resultErr = fmt.Errorf("%w: %s", ErrComponentNotFound, componentId.DebugString())
 		} else {
 			componentIdsToRemove = append(componentIdsToRemove, componentId)
@@ -82,7 +82,7 @@ func removeComponents(world *World, entityId EntityId, componentIds []ComponentI
 		return resultErr
 	}
 
-	oldArchetype := entity.archetype
+	oldArchetype := entityData.archetype
 
 	newComponentIds := make([]ComponentId, 0, len(oldArchetype.componentIds))
 	for _, componentId := range oldArchetype.componentIds {
@@ -101,7 +101,7 @@ func removeComponents(world *World, entityId EntityId, componentIds []ComponentI
 
 	for componentId, oldStorage := range oldArchetype.components {
 		if newArchetype.HasComponent(componentId) {
-			rawComponent, err := oldStorage.getComponentPointer(entity.row)
+			rawComponent, err := oldStorage.getComponentPointer(entityData.row)
 			if err != nil {
 				resultErr = err
 				continue
@@ -115,7 +115,7 @@ func removeComponents(world *World, entityId EntityId, componentIds []ComponentI
 			}
 		}
 
-		removeResult, err := oldStorage.remove(entity.row)
+		removeResult, err := oldStorage.remove(entityData.row)
 		if err != nil {
 			resultErr = err
 			continue
@@ -130,12 +130,15 @@ func removeComponents(world *World, entityId EntityId, componentIds []ComponentI
 		resultErr = fmt.Errorf("failed to remove entity from old archetype: %w", err)
 	}
 
-	entity.archetype = newArchetype
-	entity.row = newRow
+	entityData.archetype = newArchetype
+	entityData.row = newRow
 	world.archetypeStorage.entityIdToArchetype[entityId] = newArchetype
 	newArchetype.entities = append(newArchetype.entities, entityId)
 
-	handleDespawnObservers(world, componentIdsToRemove, entityId)
+	world.observers.triggerDespawnObservers(world, componentIds, entityId)
+	if entityData.observers != nil {
+		entityData.observers.triggerDespawnObservers(world, componentIds, entityId)
+	}
 
 	return resultErr
 }

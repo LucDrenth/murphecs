@@ -60,69 +60,41 @@ func (OnDespawn[C]) componentId(world *World) ComponentId {
 	return ComponentIdFor[C](world)
 }
 
-// On registers an observer
+// On registers a global observer
 func On[O AnyObserver](world *World, action func(world *World, observed O)) {
-	if action == nil {
-		return
-	}
-
-	var observer O
-
-	reflectedObserver := reflect.TypeFor[O]()
-	if reflectedObserver.Kind() == reflect.Pointer {
-		panic("can not register observer pointer")
-	}
-
-	switch observer.getObserverType() {
-	case customObserver:
-		{
-			world.observers[reflectedObserver] = append(world.observers[reflectedObserver], action)
-		}
-
-	case spawnObserver:
-		{
-			componentId := observer.componentId(world)
-
-			observerType := reflect.TypeOf(observer)
-			o := reflect.New(observerType).Elem()
-			entityField, _ := observerType.FieldByName("Entity")
-			entityFieldIndex := entityField.Index[0]
-
-			world.spawnObservers[componentId] = append(world.spawnObservers[componentId], func(w *World, entityId EntityId) {
-				o.Field(entityFieldIndex).Set(reflect.ValueOf(entityId))
-				action(w, o.Interface().(O))
-			})
-		}
-
-	case despawnObserver:
-		{
-			componentId := observer.componentId(world)
-
-			observerType := reflect.TypeOf(observer)
-			o := reflect.New(observerType).Elem()
-			entityField, _ := observerType.FieldByName("Entity")
-			entityFieldIndex := entityField.Index[0]
-
-			world.despawnObservers[componentId] = append(world.despawnObservers[componentId], func(w *World, entityId EntityId) {
-				o.Field(entityFieldIndex).Set(reflect.ValueOf(entityId))
-				action(w, o.Interface().(O))
-			})
-		}
-
-	default:
-		panic("unhandled observer type")
-	}
+	registerObserver(&world.observers, world, action)
 }
 
 // Trigger triggers all registered observers for the given observer
 func Trigger[O AnyObserver](world *World, observed O) {
-	observerId := reflect.TypeFor[O]()
-	observers, exists := world.observers[observerId]
+	triggerObserver(world, &world.observers, observed)
+}
+
+// Trigger triggers all registered observers for the given observer
+func TriggerEntity[O AnyObserver](world *World, entity EntityId, observed O) error {
+	entityData, exists := world.entities[entity]
 	if !exists {
-		return
+		return ErrEntityNotFound
+	}
+	if entityData.observers == nil {
+		return nil
 	}
 
-	for _, observer := range observers {
-		observer.(func(*World, O))(world, observed)
+	triggerObserver(world, entityData.observers, observed)
+	return nil
+}
+
+// Observe registers an entity-specific observer
+func Observe[O AnyObserver](world *World, entity EntityId, action func(world *World, observed O)) error {
+	entityData, ok := world.entities[entity]
+	if !ok {
+		return ErrEntityNotFound
 	}
+
+	if entityData.observers == nil {
+		entityData.observers = new(newObserverRegistry())
+	}
+	registerObserver(entityData.observers, world, action)
+
+	return nil
 }

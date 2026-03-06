@@ -21,20 +21,10 @@ func Despawn(world *World, entity EntityId) error {
 	delete(world.archetypeStorage.entityIdToArchetype, entity)
 	delete(world.entities, entity)
 
-	handleDespawnObservers(world, componentIds, entity)
+	world.observers.triggerDespawnObservers(world, componentIds, entity)
+	if entityData.observers != nil {
+		entityData.observers.triggerDespawnObservers(world, componentIds, entity)
+	}
 
 	return nil
-}
-
-func handleDespawnObservers(world *World, componentIds []ComponentId, entity EntityId) {
-	for _, componentId := range componentIds {
-		observers, exists := world.despawnObservers[componentId]
-		if !exists {
-			continue
-		}
-
-		for _, observer := range observers {
-			observer(world, entity)
-		}
-	}
 }

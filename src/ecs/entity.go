@@ -8,7 +8,8 @@ const nonExistingEntity = EntityId(0)
 
 type EntityData struct {
 	archetype *Archetype
-	row       uint // index of archetype its component storages
+	row       uint              // index of archetype its component storages
+	observers *observerRegistry // lazily initialized to preserve space
 }
 
 func (e *EntityData) hasComponent(c ComponentId) bool {

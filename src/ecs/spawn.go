@@ -77,20 +77,7 @@ func Spawn(world *World, components ...AnyComponent) (EntityId, error) {
 		archetype: archetype,
 	}
 
-	handleSpawnObservers(world, componentIds, entityId)
+	world.observers.triggerSpawnObservers(world, componentIds, entityId)
 
 	return entityId, returnedErr
-}
-
-func handleSpawnObservers(world *World, componentIds []ComponentId, entity EntityId) {
-	for _, componentId := range componentIds {
-		observers, exists := world.spawnObservers[componentId]
-		if !exists {
-			continue
-		}
-
-		for _, observer := range observers {
-			observer(world, entity)
-		}
-	}
 }
