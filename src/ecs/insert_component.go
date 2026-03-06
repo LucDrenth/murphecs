@@ -122,6 +122,9 @@ func Insert(world *World, entity EntityId, components ...AnyComponent) (resultEr
 	newArchetype.entities = append(newArchetype.entities, entity)
 
 	world.observers.triggerSpawnObservers(world, componentIds, entity)
+	if entityData.observers != nil {
+		entityData.observers.triggerSpawnObservers(world, componentIds, entity)
+	}
 
 	return resultErr
 }
@@ -237,6 +240,9 @@ func InsertOrOverwrite(world *World, entity EntityId, components ...AnyComponent
 	newArchetype.entities = append(newArchetype.entities, entity)
 
 	world.observers.triggerSpawnObservers(world, componentIds, entity)
+	if entityData.observers != nil {
+		entityData.observers.triggerSpawnObservers(world, componentIds, entity)
+	}
 
 	return resultErr
 }

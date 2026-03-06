@@ -220,4 +220,36 @@ func TestEntityObserver(t *testing.T) {
 			assert.Equal(numberOfTriggers, 1)
 		})
 	})
+
+	t.Run("OnSpawn", func(t *testing.T) {
+		t.Run("gets triggered on Insert", func(t *testing.T) {
+			assert := assert.New(t)
+
+			world := NewDefaultWorld()
+
+			numberOfTriggers := 0
+
+			entity, err := Spawn(world, myComponent1{})
+			assert.NoError(err)
+			assert.NoError(ecs.Observe(world, entity, func(world *World, o OnSpawn[myComponent2]) { numberOfTriggers++ }))
+			assert.NoError(Insert(world, entity, myComponent2{}))
+
+			assert.Equal(numberOfTriggers, 1)
+		})
+
+		t.Run("gets triggered on InsertOrOverwrite", func(t *testing.T) {
+			assert := assert.New(t)
+
+			world := NewDefaultWorld()
+
+			numberOfTriggers := 0
+
+			entity, err := Spawn(world, myComponent1{})
+			assert.NoError(err)
+			assert.NoError(ecs.Observe(world, entity, func(world *World, o OnSpawn[myComponent2]) { numberOfTriggers++ }))
+			assert.NoError(InsertOrOverwrite(world, entity, myComponent2{}))
+
+			assert.Equal(numberOfTriggers, 1)
+		})
+	})
 }
