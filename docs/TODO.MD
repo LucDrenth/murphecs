@@ -1,6 +1,5 @@
 # ECS
 **Must have**
-- [feature] Observers
 - [feature] Define optional component by `Query[Optional[C], ...]` instead of `Query[C, Optional[C]]`
 
 **Nice-to-have**
