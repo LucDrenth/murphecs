@@ -26,7 +26,7 @@ func TestObserver(t *testing.T) {
 		})
 	})
 
-	t.Run("Custom observer", func(t *testing.T) {
+	t.Run("Custom observer can be registered and triggered", func(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
@@ -47,6 +47,11 @@ func TestObserver(t *testing.T) {
 
 		assert.Equal(uint(3), observed1)
 		assert.Equal(uint(1), observed2)
+	})
+
+	t.Run("Triggering observer without registering an observer does nothing", func(t *testing.T) {
+		world := NewDefaultWorld()
+		Trigger(world, observer1{})
 	})
 
 	t.Run("OnSpawn", func(t *testing.T) {
