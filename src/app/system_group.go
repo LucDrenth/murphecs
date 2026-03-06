@@ -9,8 +9,8 @@ import (
 
 var (
 	queryType         = reflect.TypeFor[ecs.Query]()
-	eventReaderType   = reflect.TypeFor[anyEventReader]()
-	eventWriterType   = reflect.TypeFor[anyEventWriter]()
+	eventReaderType   = reflect.TypeFor[ecs.AnyEventReader]()
+	eventWriterType   = reflect.TypeFor[ecs.AnyEventWriter]()
 	outerResourceType = reflect.TypeFor[ecs.AnyOuterResource]()
 )
 
@@ -32,7 +32,7 @@ type systemGroup struct {
 	systemParamQueries              []ecs.Query
 	systemParamQueriesToOuterWorlds []queryToOuterWorld
 	outerResources                  []outerResourceParam
-	eventWriters                    []anyEventWriter
+	eventWriters                    []ecs.AnyEventWriter
 }
 
 type systemGroupBuilder struct {
@@ -67,7 +67,7 @@ func (s *systemGroupBuilder) validate() error {
 	return nil
 }
 
-func (s *systemGroupBuilder) build(source string, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, eventStorage *EventStorage) (systemGroup, error) {
+func (s *systemGroupBuilder) build(source string, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, eventStorage *ecs.EventStorage) (systemGroup, error) {
 	systemGroup := systemGroup{}
 
 	for _, sys := range s.systems {
@@ -103,21 +103,21 @@ func (s *systemGroupBuilder) build(source string, world *ecs.World, outerWorlds 
 				//	2. it is probably unintended and would cause unexpected behavior
 				return systemGroup, fmt.Errorf("%s: parameter %s: %w", systemToDebugString(sys), systemParameterDebugString(sys, i), ErrSystemParamWorldNotAPointer)
 			} else if parameterType.Implements(eventReaderType) {
-				eventReader, ok := reflect.TypeAssert[anyEventReader](reflect.New(parameterType.Elem()))
+				eventReader, ok := reflect.TypeAssert[ecs.AnyEventReader](reflect.New(parameterType.Elem()))
 				if !ok {
-					panic("failed to type assert iEventReader")
+					panic("failed to type assert AnyEventReader")
 				}
-				params[i] = *eventStorage.getReader(eventReader)
+				params[i] = *eventStorage.GetReader(eventReader)
 			} else if parameterType.Implements(eventWriterType) {
-				eventWriter, ok := reflect.TypeAssert[anyEventWriter](reflect.New(parameterType.Elem()))
+				eventWriter, ok := reflect.TypeAssert[ecs.AnyEventWriter](reflect.New(parameterType.Elem()))
 				if !ok {
-					panic("failed to type assert iEventWriter")
+					panic("failed to type assert AnyEventWriter")
 				}
 
-				reflectedEventWriter := *eventStorage.getWriter(eventWriter)
-				eventWriterParam, ok := reflect.TypeAssert[anyEventWriter](reflectedEventWriter)
+				reflectedEventWriter := *eventStorage.GetWriter(eventWriter)
+				eventWriterParam, ok := reflect.TypeAssert[ecs.AnyEventWriter](reflectedEventWriter)
 				if !ok {
-					panic("failed to type assert iEventWriter")
+					panic("failed to type assert AnyEventWriter")
 				}
 				systemGroup.eventWriters = append(systemGroup.eventWriters, eventWriterParam)
 				params[i] = reflectedEventWriter

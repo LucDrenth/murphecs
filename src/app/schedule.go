@@ -21,7 +21,7 @@ func NewScheduler() Scheduler {
 	}
 }
 
-func (s *Scheduler) AddSchedule(schedule Schedule, scheduleSystemsId ScheduleSystemsId, order ScheduleOrder, isPaused bool) (err error) {
+func (s *Scheduler) AddSchedule(schedule Schedule, scheduleSystemsId ecs.ScheduleSystemsId, order ScheduleOrder, isPaused bool) (err error) {
 	if _, exists := s.systems[schedule]; exists {
 		return ErrScheduleAlreadyExists
 	}
@@ -40,7 +40,7 @@ func (s *Scheduler) AddSchedule(schedule Schedule, scheduleSystemsId ScheduleSys
 	return nil
 }
 
-func (s *Scheduler) AddSystem(schedule Schedule, system System, source string, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, eventStorage *EventStorage) error {
+func (s *Scheduler) AddSystem(schedule Schedule, system System, source string, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, eventStorage *ecs.EventStorage) error {
 	scheduleSystems, exists := s.systems[schedule]
 	if !exists {
 		return fmt.Errorf("%w: %s", ErrScheduleNotFound, schedule)

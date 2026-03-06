@@ -37,8 +37,7 @@ type SubApp struct {
 	lastDelta                *float64 // delta time of the last tick
 	runner                   Runner
 	outerWorlds              map[ecs.WorldId]*ecs.World
-	EventStorage             *EventStorage
-	scheduleSystemsIdCounter ScheduleSystemsId
+	scheduleSystemsIdCounter ecs.ScheduleSystemsId
 	OnStartupSchedulesDone   func()
 	features                 []IFeature // this slice will be process and emptied when starting this SubApp
 
@@ -78,7 +77,6 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
 		tickRate:         new(time.Second / 60.0),
 		lastDelta:        new(0.0),
 		outerWorlds:      map[ecs.WorldId]*ecs.World{},
-		EventStorage:     new(NewEventStorage()),
 		startupExecutor:  &ConsecutiveExecutor{},
 		repeatedExecutor: &ConsecutiveExecutor{},
 		cleanupExecutor:  &ConsecutiveExecutor{},
@@ -104,7 +102,7 @@ func (app *SubApp) addSystemWithSource(schedule Schedule, system System, source 
 		return app
 	}
 
-	err := scheduler.AddSystem(schedule, system, source, app.world, &app.outerWorlds, app.logger, app.EventStorage)
+	err := scheduler.AddSystem(schedule, system, source, app.world, &app.outerWorlds, app.logger, app.world.Events())
 	if err != nil {
 		app.logger.Error("%s - failed to add system: %v",
 			app.Name,
@@ -307,19 +305,19 @@ func (app *SubApp) prepareExecutors() error {
 	if err != nil {
 		return fmt.Errorf("failed to get startup systems: %v", err)
 	}
-	app.startupExecutor.Load(startupSystems, app.world, &app.outerWorlds, app.logger, app.Name, app.EventStorage)
+	app.startupExecutor.Load(startupSystems, app.world, &app.outerWorlds, app.logger, app.Name)
 
 	repeatedSystems, err := app.schedules[ScheduleTypeRepeating].GetScheduleSystems()
 	if err != nil {
 		return fmt.Errorf("failed to get repeated systems: %v", err)
 	}
-	app.repeatedExecutor.Load(repeatedSystems, app.world, &app.outerWorlds, app.logger, app.Name, app.EventStorage)
+	app.repeatedExecutor.Load(repeatedSystems, app.world, &app.outerWorlds, app.logger, app.Name)
 
 	cleanupSystems, err := app.schedules[ScheduleTypeCleanup].GetScheduleSystems()
 	if err != nil {
 		return fmt.Errorf("failed to get cleanup systems: %v", err)
 	}
-	app.cleanupExecutor.Load(cleanupSystems, app.world, &app.outerWorlds, app.logger, app.Name, app.EventStorage)
+	app.cleanupExecutor.Load(cleanupSystems, app.world, &app.outerWorlds, app.logger, app.Name)
 
 	return nil
 }

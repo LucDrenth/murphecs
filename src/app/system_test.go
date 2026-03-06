@@ -55,7 +55,7 @@ func TestAddSystem(t *testing.T) {
 		logger := NoOpLogger{}
 
 		outerWorlds := map[ecs.WorldId]*ecs.World{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		err := scheduleSystems.add(func(_ *ecs.Query1[componentA, ecs.TestCustomTargetWorld]) {}, "", world, &outerWorlds, &logger, &eventStorage)
 		assert.ErrorIs(err, ErrSystemParamQueryNotValid)
@@ -76,7 +76,7 @@ func TestAddSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		err = scheduleSystems.add(func(_ *ecs.Query1[componentA, ecs.QueryOptions2[ecs.TestCustomTargetWorld, ecs.Lazy]]) {}, "", world, &outerWorlds, &logger, &eventStorage)
 		assert.ErrorIs(err, ErrSystemParamQueryNotValid)
@@ -96,7 +96,7 @@ func TestAddSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		err = scheduleSystems.add(func(_ *ecs.Query1[componentA, ecs.TestCustomTargetWorld]) {}, "", world, &outerWorlds, &logger, &eventStorage)
 		assert.NoError(err)
@@ -121,7 +121,7 @@ func TestAddSystem(t *testing.T) {
 
 		err := world.Resources().Add(&resourceA{})
 		assert.NoError(err)
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		err = scheduleSystems.add(func(_ resourceA) {}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
@@ -138,41 +138,41 @@ func TestAddSystem(t *testing.T) {
 
 		err := world.Resources().Add(&resourceA{})
 		assert.NoError(err)
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		err = scheduleSystems.add(func(_ *resourceA) {}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 	})
 
 	t.Run("returns err if system param EventReader is not a pointer", func(t *testing.T) {
-		type testEvent struct{ Event }
+		type testEvent struct{ ecs.Event }
 
 		assert := assert.New(t)
-		err := simpleTestAddSystem(func(EventReader[*testEvent]) {})
+		err := simpleTestAddSystem(func(ecs.EventReader[*testEvent]) {})
 		assert.ErrorIs(err, ErrSystemParamEventReaderNotAPointer)
 	})
 
 	t.Run("can use system param *EventReader", func(t *testing.T) {
-		type testEvent struct{ Event }
+		type testEvent struct{ ecs.Event }
 
 		assert := assert.New(t)
-		err := simpleTestAddSystem(func(*EventReader[*testEvent]) {})
+		err := simpleTestAddSystem(func(*ecs.EventReader[*testEvent]) {})
 		assert.NoError(err)
 	})
 
 	t.Run("returns err if system param EventWriter is not a pointer", func(t *testing.T) {
-		type testEvent struct{ Event }
+		type testEvent struct{ ecs.Event }
 
 		assert := assert.New(t)
-		err := simpleTestAddSystem(func(EventWriter[*testEvent]) {})
+		err := simpleTestAddSystem(func(ecs.EventWriter[*testEvent]) {})
 		assert.ErrorIs(err, ErrSystemParamEventWriterNotAPointer)
 	})
 
 	t.Run("can use system param *EventWriter", func(t *testing.T) {
-		type testEvent struct{ Event }
+		type testEvent struct{ ecs.Event }
 
 		assert := assert.New(t)
-		err := simpleTestAddSystem(func(*EventWriter[*testEvent]) {})
+		err := simpleTestAddSystem(func(*ecs.EventWriter[*testEvent]) {})
 		assert.NoError(err)
 	})
 
@@ -217,7 +217,7 @@ func simpleTestAddSystem(system System) error {
 	world := ecs.NewDefaultWorld()
 	logger := NoOpLogger{}
 
-	eventStorage := NewEventStorage()
+	eventStorage := ecs.NewEventStorage()
 
 	return scheduleSystems.add(system, "", world, nil, &logger, &eventStorage)
 }
@@ -232,7 +232,7 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		didRun := false
 		err := scheduleSystems.add(func() { didRun = true }, "", world, nil, &logger, &eventStorage)
@@ -249,7 +249,7 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		resource := resourceA{value: 10}
 
@@ -269,7 +269,7 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		resource := resourceA{value: 10}
 
@@ -289,7 +289,7 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		resource := resourceA{value: 10}
 
@@ -343,7 +343,7 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		resource := resourceA{value: 7}
 		err = outerWorld.Resources().Add(&resource)
@@ -380,7 +380,7 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		resource := resourceA{value: 7}
 		err = outerWorld.Resources().Add(&resource)
@@ -417,7 +417,7 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		resource := resourceA{value: 7}
 		err = outerWorld.Resources().Add(&resource)
@@ -453,7 +453,7 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		err := scheduleSystems.add(func() {}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
@@ -468,7 +468,7 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		err := scheduleSystems.add(func() error { return nil }, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
@@ -483,7 +483,7 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		err := scheduleSystems.add(func() error { return errors.New("oops") }, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
@@ -498,7 +498,7 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		_, err := ecs.Spawn(world, &componentA{})
 		assert.NoError(err)
@@ -521,7 +521,7 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		_, err := ecs.Spawn(world, &componentA{})
 		assert.NoError(err)
@@ -552,7 +552,7 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems := ScheduleSystems{}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		_, err = ecs.Spawn(&outerWorld, &componentA{})
 		assert.NoError(err)
@@ -571,7 +571,7 @@ func TestExecSystem(t *testing.T) {
 
 	t.Run("event system", func(t *testing.T) {
 		type testEvent struct {
-			Event
+			ecs.Event
 			id int
 		}
 
@@ -584,7 +584,7 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems3 := &ScheduleSystems{id: 3}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 
 		eventsFromScheduleSystems1 := []*testEvent{}
 		eventsFromScheduleSystems2 := []*testEvent{}
@@ -592,7 +592,7 @@ func TestExecSystem(t *testing.T) {
 		doWriteEvent := true
 
 		err := scheduleSystems1.add(
-			func(eventReader *EventReader[*testEvent]) {
+			func(eventReader *ecs.EventReader[*testEvent]) {
 				eventsFromScheduleSystems1 = []*testEvent{}
 
 				for event := range eventReader.Read {
@@ -603,7 +603,7 @@ func TestExecSystem(t *testing.T) {
 		assert.NoError(err)
 
 		err = scheduleSystems2.add(
-			func(eventWriter *EventWriter[*testEvent]) {
+			func(eventWriter *ecs.EventWriter[*testEvent]) {
 				if doWriteEvent {
 					eventWriter.Write(&testEvent{id: 3})
 				}
@@ -611,7 +611,7 @@ func TestExecSystem(t *testing.T) {
 			"", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 		err = scheduleSystems2.add(
-			func(eventReader *EventReader[*testEvent]) {
+			func(eventReader *ecs.EventReader[*testEvent]) {
 				eventsFromScheduleSystems2 = []*testEvent{}
 
 				for event := range eventReader.Read {
@@ -622,7 +622,7 @@ func TestExecSystem(t *testing.T) {
 		assert.NoError(err)
 
 		err = scheduleSystems3.add(
-			func(eventReader *EventReader[*testEvent]) {
+			func(eventReader *ecs.EventReader[*testEvent]) {
 				eventsFromScheduleSystems3 = []*testEvent{}
 
 				for event := range eventReader.Read {
@@ -666,16 +666,16 @@ func TestExecSystem(t *testing.T) {
 	})
 
 	t.Run("EventReader without an EventWriter", func(t *testing.T) {
-		type testEvent struct{ Event }
+		type testEvent struct{ ecs.Event }
 
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{id: 1}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 		err := scheduleSystems.add(
-			func(eventReader *EventReader[*testEvent]) {
+			func(eventReader *ecs.EventReader[*testEvent]) {
 				for range eventReader.Read {
 				}
 			},
@@ -689,16 +689,16 @@ func TestExecSystem(t *testing.T) {
 	})
 
 	t.Run("EventWriter without an EventReader", func(t *testing.T) {
-		type testEvent struct{ Event }
+		type testEvent struct{ ecs.Event }
 
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{id: 1}
 		world := ecs.NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := NewEventStorage()
+		eventStorage := ecs.NewEventStorage()
 		err := scheduleSystems.add(
-			func(eventWriter *EventWriter[*testEvent]) {
+			func(eventWriter *ecs.EventWriter[*testEvent]) {
 				eventWriter.Write(&testEvent{})
 			},
 			"", world, nil, &logger, &eventStorage)

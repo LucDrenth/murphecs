@@ -1,25 +1,27 @@
-package app
+package ecs
 
 import (
 	"reflect"
 	"time"
 )
 
+type ScheduleSystemsId int
+
 type EventStorage struct {
-	eventReaders map[eventId]*reflect.Value
-	eventWriters map[eventId]*reflect.Value
+	eventReaders map[reflect.Type]*reflect.Value
+	eventWriters map[reflect.Type]*reflect.Value
 }
 
 func NewEventStorage() EventStorage {
 	return EventStorage{
-		eventReaders: map[eventId]*reflect.Value{},
-		eventWriters: map[eventId]*reflect.Value{},
+		eventReaders: map[reflect.Type]*reflect.Value{},
+		eventWriters: map[reflect.Type]*reflect.Value{},
 	}
 }
 
-// getReader gets a reader or creates and stores a new one
-func (s *EventStorage) getReader(reader anyEventReader) *reflect.Value {
-	id := reader.readerEventId()
+// GetReader gets a reader or creates and stores a new one
+func (s *EventStorage) GetReader(reader AnyEventReader) *reflect.Value {
+	id := reader.ReaderEventId()
 
 	result, exists := s.eventReaders[id]
 	if !exists {
@@ -31,9 +33,9 @@ func (s *EventStorage) getReader(reader anyEventReader) *reflect.Value {
 	return result
 }
 
-// getWriter gets a writer or creates and stores a new one
-func (s *EventStorage) getWriter(writer anyEventWriter) *reflect.Value {
-	id := writer.writerEventId()
+// GetWriter gets a writer or creates and stores a new one
+func (s *EventStorage) GetWriter(writer AnyEventWriter) *reflect.Value {
+	id := writer.WriterEventId()
 
 	result, exists := s.eventWriters[id]
 	if !exists {
@@ -48,11 +50,11 @@ func (s *EventStorage) getWriter(writer anyEventWriter) *reflect.Value {
 // ProcessEvents moves events from writers to readers and cleans up reader events.
 func (s *EventStorage) ProcessEvents(scheduleSystemsId ScheduleSystemsId, currentTick uint) {
 	for eventId, reflectWriter := range s.eventWriters {
-		writer, ok := reflect.TypeAssert[anyEventWriter](*reflectWriter)
+		writer, ok := reflect.TypeAssert[AnyEventWriter](*reflectWriter)
 		if !ok {
-			panic("failed to type assert iEventWriter")
+			panic("failed to type assert AnyEventWriter")
 		}
-		writerEvents := writer.extractEvents(currentTick)
+		writerEvents := writer.ExtractEvents(currentTick)
 
 		readerEntry, ok := s.eventReaders[eventId]
 		if !ok {
@@ -60,14 +62,14 @@ func (s *EventStorage) ProcessEvents(scheduleSystemsId ScheduleSystemsId, curren
 			continue
 		}
 
-		reader, ok := reflect.TypeAssert[anyEventReader](*readerEntry)
+		reader, ok := reflect.TypeAssert[AnyEventReader](*readerEntry)
 		if !ok {
-			panic("failed to type assert iEventReader")
+			panic("failed to type assert AnyEventReader")
 		}
-		reader.clearEvents(scheduleSystemsId, currentTick)
+		reader.ClearEvents(scheduleSystemsId, currentTick)
 
 		for _, reflectEvent := range writerEvents {
-			reader.addEvent(reflectEvent)
+			reader.AddEvent(reflectEvent)
 		}
 	}
 }
@@ -80,8 +82,6 @@ type IEvent interface {
 	setTickAddedToEventReader(uint)
 	getTickAddedToEventReader() uint
 }
-
-type eventId reflect.Type
 
 type Event struct {
 	// If true, this event should not be read anymore and should be removed
@@ -160,12 +160,12 @@ func (writer *EventWriter[E]) Write(event E) {
 	writer.events = append(writer.events, event)
 }
 
-func (writer *EventWriter[E]) writerEventId() eventId {
+func (writer *EventWriter[E]) WriterEventId() reflect.Type {
 	return reflect.TypeFor[E]()
 }
 
-// extractEvents returns the events as reflect.Value's and removes them from the event writer
-func (writer *EventWriter[E]) extractEvents(tick uint) []reflect.Value {
+// ExtractEvents returns the events as reflect.Value's and removes them from the event writer
+func (writer *EventWriter[E]) ExtractEvents(tick uint) []reflect.Value {
 	result := make([]reflect.Value, len(writer.events))
 	for i, event := range writer.events {
 		event.setTickAddedToEventReader(tick)
@@ -177,17 +177,17 @@ func (writer *EventWriter[E]) extractEvents(tick uint) []reflect.Value {
 	return result
 }
 
-func (writer *EventWriter[E]) setScheduleSystemsWriter(id ScheduleSystemsId) {
+func (writer *EventWriter[E]) SetScheduleSystemsWriter(id ScheduleSystemsId) {
 	writer.ScheduleSystemsId = id
 }
 
-type anyEventWriter interface {
-	writerEventId() eventId
-	extractEvents(tick uint) []reflect.Value
-	setScheduleSystemsWriter(ScheduleSystemsId)
+type AnyEventWriter interface {
+	WriterEventId() reflect.Type
+	ExtractEvents(tick uint) []reflect.Value
+	SetScheduleSystemsWriter(ScheduleSystemsId)
 }
 
-var _ anyEventReader = &EventReader[*Event]{}
+var _ AnyEventReader = &EventReader[*Event]{}
 
 type EventReader[E IEvent] struct {
 	events []E
@@ -244,27 +244,27 @@ func (reader *EventReader[E]) Len() int {
 	return result
 }
 
-func (writer *EventReader[E]) addEvent(event reflect.Value) {
+func (reader *EventReader[E]) AddEvent(event reflect.Value) {
 	element, ok := reflect.TypeAssert[E](event)
 	if !ok {
 		panic("failed to type assert event")
 	}
-	writer.events = append(writer.events, element)
+	reader.events = append(reader.events, element)
 }
 
-// Len returns wether there are any events in the reader
+// IsEmpty returns wether there are any events in the reader
 func (reader *EventReader[E]) IsEmpty() bool {
 	return reader.Len() == 0
 }
 
-func (reader *EventReader[E]) readerEventId() eventId {
+func (reader *EventReader[E]) ReaderEventId() reflect.Type {
 	return reflect.TypeFor[E]()
 }
 
-// clearEvents removes all events that satisfy one of the following:
+// ClearEvents removes all events that satisfy one of the following:
 //   - marked to be removed
 //   - written by [ScheduleSystems] with given [ScheduleSystemsId] AND added to reader at least 1 tick back
-func (reader *EventReader[E]) clearEvents(scheduleSystemsId ScheduleSystemsId, currentTick uint) {
+func (reader *EventReader[E]) ClearEvents(scheduleSystemsId ScheduleSystemsId, currentTick uint) {
 	newEvents := []E{}
 
 	for _, event := range reader.events {
@@ -282,10 +282,10 @@ func (reader *EventReader[E]) clearEvents(scheduleSystemsId ScheduleSystemsId, c
 	reader.events = newEvents
 }
 
-type anyEventReader interface {
-	readerEventId() eventId
-	addEvent(event reflect.Value)
-	clearEvents(scheduleSystemsId ScheduleSystemsId, currentTick uint)
+type AnyEventReader interface {
+	ReaderEventId() reflect.Type
+	AddEvent(event reflect.Value)
+	ClearEvents(scheduleSystemsId ScheduleSystemsId, currentTick uint)
 }
 
-var _ anyEventReader = &EventReader[*Event]{}
+var _ AnyEventReader = &EventReader[*Event]{}

@@ -1,9 +1,9 @@
 // Demonstrate how to use the event system.
 //
-// Events are structs that embed [app.Event]. They are written using an EventWriter and read using an
-// EventReader, which we declare as system parameters.
+// Events are structs that embed [ecs.Event]. They are written using an [ecs.EventWriter] and read using an
+// [ecs.EventReader], which are declared as system parameters.
 //
-// A Written event can be read from the next schedule until the end of the
+// A written event can be read from the next schedule until the end of the
 // next run of the schedule it is written in.
 // That means that they are not available for reading in the same schedule that they are written in.
 //
@@ -31,7 +31,7 @@ const (
 )
 
 type highRollEvent struct {
-	app.Event
+	ecs.Event
 	number int
 }
 
@@ -55,7 +55,7 @@ func main() {
 }
 
 // rollDice rolls a 10-sided dice. If the dice lands on 10, 11 or 12, we send a highRollEvent.
-func rollDice(eventWriter *app.EventWriter[*highRollEvent]) {
+func rollDice(eventWriter *ecs.EventWriter[*highRollEvent]) {
 	number := rand.IntN(12) + 1
 	if number >= 10 {
 		eventWriter.Write(&highRollEvent{number: number})
@@ -63,7 +63,7 @@ func rollDice(eventWriter *app.EventWriter[*highRollEvent]) {
 }
 
 // logHighRolls logs every highRollEvent that we receive
-func logHighRolls(logger app.Logger, eventReader *app.EventReader[*highRollEvent]) {
+func logHighRolls(logger app.Logger, eventReader *ecs.EventReader[*highRollEvent]) {
 	for highRollEvent := range eventReader.Read {
 		logger.Info("high dice roll: %d", highRollEvent.number)
 	}

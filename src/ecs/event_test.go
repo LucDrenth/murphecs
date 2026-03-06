@@ -1,4 +1,4 @@
-package app
+package ecs
 
 import (
 	"reflect"
@@ -20,7 +20,7 @@ func TestEventWriter(t *testing.T) {
 		const scheduleSystemsId ScheduleSystemsId = ScheduleSystemsId(10)
 
 		eventWriter := EventWriter[*testEvent]{}
-		eventWriter.setScheduleSystemsWriter(scheduleSystemsId)
+		eventWriter.SetScheduleSystemsWriter(scheduleSystemsId)
 
 		for i := range numberOfEvents {
 			eventWriter.Write(&testEvent{id: i})
@@ -36,12 +36,12 @@ func TestEventWriter(t *testing.T) {
 		const scheduleSystemsId ScheduleSystemsId = ScheduleSystemsId(11)
 
 		eventWriter := EventWriter[*testEvent]{}
-		eventWriter.setScheduleSystemsWriter(scheduleSystemsId)
+		eventWriter.SetScheduleSystemsWriter(scheduleSystemsId)
 		for i := range numberOfEvents {
 			eventWriter.Write(&testEvent{id: i})
 		}
 
-		extractedEvents := eventWriter.extractEvents(0)
+		extractedEvents := eventWriter.ExtractEvents(0)
 		assert.Len(extractedEvents, numberOfEvents)
 		assert.Len(eventWriter.events, 0)
 		for i, event := range extractedEvents {
@@ -194,12 +194,12 @@ func TestEventReader(t *testing.T) {
 			},
 		}
 
-		eventReader.clearEvents(2, 0)
+		eventReader.ClearEvents(2, 0)
 		assert.Len(eventReader.events, 3)
-		eventReader.clearEvents(2, 1)
+		eventReader.ClearEvents(2, 1)
 		assert.Len(eventReader.events, 3)
 
-		eventReader.clearEvents(2, 3)
+		eventReader.ClearEvents(2, 3)
 		expectedEventIds := []int{2, 4}
 		assert.Len(eventReader.events, len(expectedEventIds))
 

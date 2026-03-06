@@ -4,7 +4,7 @@ import "github.com/lucdrenth/murphecs/src/ecs"
 
 // Executor runs system
 type Executor interface {
-	Load(systems []*ScheduleSystems, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, appName string, eventStorage *EventStorage)
+	Load(systems []*ScheduleSystems, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, appName string)
 	Run(currentTick uint)
 	ProcessEvents(currentTick uint)
 }
@@ -17,16 +17,16 @@ type ConsecutiveExecutor struct {
 	outerWorlds  *map[ecs.WorldId]*ecs.World
 	logger       Logger
 	appName      string
-	eventStorage *EventStorage
+	eventStorage *ecs.EventStorage
 }
 
-func (executor *ConsecutiveExecutor) Load(systems []*ScheduleSystems, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, appName string, eventStorage *EventStorage) {
+func (executor *ConsecutiveExecutor) Load(systems []*ScheduleSystems, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, appName string) {
 	executor.systems = systems
 	executor.world = world
 	executor.outerWorlds = outerWorlds
 	executor.logger = logger
 	executor.appName = appName
-	executor.eventStorage = eventStorage
+	executor.eventStorage = world.Events()
 }
 
 func (executor *ConsecutiveExecutor) Run(currentTick uint) {

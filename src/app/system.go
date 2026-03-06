@@ -30,17 +30,15 @@ func (s *systemEntry) exec() error {
 	return nil
 }
 
-type ScheduleSystemsId int
-
 type ScheduleSystems struct {
 	systemGroups []systemGroup
-	id           ScheduleSystemsId
+	id           ecs.ScheduleSystemsId
 
 	isPaused               atomic.Bool
 	isFirstExecSincePaused bool
 }
 
-func (s *ScheduleSystems) Exec(world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, eventStorage *EventStorage, currentTick uint) []error {
+func (s *ScheduleSystems) Exec(world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, eventStorage *ecs.EventStorage, currentTick uint) []error {
 	if s.isPaused.Load() {
 		if s.isFirstExecSincePaused {
 			// The first exec since the schedule is paused needs to call ProcessEvents
@@ -55,8 +53,8 @@ func (s *ScheduleSystems) Exec(world *ecs.World, outerWorlds *map[ecs.WorldId]*e
 	}
 
 	for _, systemGroup := range s.systemGroups {
-		for _, eventWriters := range systemGroup.eventWriters {
-			eventWriters.setScheduleSystemsWriter(s.id)
+		for _, eventWriter := range systemGroup.eventWriters {
+			eventWriter.SetScheduleSystemsWriter(s.id)
 		}
 	}
 	defer eventStorage.ProcessEvents(s.id, currentTick)
@@ -185,7 +183,7 @@ func (s *ScheduleSystems) execSystems() []error {
 	return errors
 }
 
-func (s *ScheduleSystems) add(sys System, source string, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, eventStorage *EventStorage) error {
+func (s *ScheduleSystems) add(sys System, source string, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, eventStorage *ecs.EventStorage) error {
 	systemValue := reflect.ValueOf(sys)
 	systemGroupBuilderType2 := reflect.TypeFor[*systemGroupBuilder]()
 
@@ -218,11 +216,11 @@ func handleInvalidSystemParam(parameterType reflect.Type) error {
 		return ErrSystemParamQueryNotAPointer
 	}
 
-	if parameterType.Kind() != reflect.Pointer && reflect.PointerTo(parameterType).Implements(reflect.TypeFor[anyEventReader]()) {
+	if parameterType.Kind() != reflect.Pointer && reflect.PointerTo(parameterType).Implements(reflect.TypeFor[ecs.AnyEventReader]()) {
 		return fmt.Errorf("EventReader: %w", ErrSystemParamEventReaderNotAPointer)
 	}
 
-	if parameterType.Kind() != reflect.Pointer && reflect.PointerTo(parameterType).Implements(reflect.TypeFor[anyEventWriter]()) {
+	if parameterType.Kind() != reflect.Pointer && reflect.PointerTo(parameterType).Implements(reflect.TypeFor[ecs.AnyEventWriter]()) {
 		return fmt.Errorf("EventWriter: %w", ErrSystemParamEventWriterNotAPointer)
 	}
 

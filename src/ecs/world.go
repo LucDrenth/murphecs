@@ -18,6 +18,7 @@ type World struct {
 
 	resources resourceStorage
 	observers observerRegistry
+	events    EventStorage
 
 	initialComponentCapacityStrategy initialComponentCapacityStrategy
 	componentCapacityGrowthStrategy  componentCapacityGrowthStrategy
@@ -57,6 +58,7 @@ func NewWorld(configs WorldConfigs) (World, error) {
 		archetypeStorage:                 newArchetypeStorage(),
 		resources:                        newResourceStorage(),
 		observers:                        newObserverRegistry(),
+		events:                           NewEventStorage(),
 	}, nil
 }
 
@@ -90,6 +92,10 @@ func (world *World) Id() *WorldId {
 
 func (world *World) Resources() *resourceStorage {
 	return &world.resources
+}
+
+func (world *World) Events() *EventStorage {
+	return &world.events
 }
 
 type WorldStats struct {
