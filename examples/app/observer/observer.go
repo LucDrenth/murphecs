@@ -106,7 +106,6 @@ func observerExtinction(
 			err := ecs.Despawn(world, entityId)
 			if err != nil {
 				fmt.Printf("failed to despawn npc %d\n", entityId)
-
 			}
 		})
 	})

@@ -3,12 +3,11 @@ package ecs_test
 import (
 	"testing"
 
-	"github.com/lucdrenth/murphecs/src/ecs"
 	. "github.com/lucdrenth/murphecs/src/ecs"
 	"github.com/stretchr/testify/assert"
 )
 
-// TestGlobalObserver tests observers in the ecs.World
+// TestGlobalObserver tests observers in the [ecs.World] global observer registry
 func TestGlobalObserver(t *testing.T) {
 	type myComponent1 struct{ Component }
 	type myComponent2 struct{ Component }
@@ -135,7 +134,7 @@ func TestEntityObserver(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
-		err := Observe(world, ecs.EntityId(5), func(world *World, o observer1) {})
+		err := Observe(world, EntityId(5), func(world *World, o observer1) {})
 		assert.ErrorIs(err, ErrEntityNotFound)
 	})
 
@@ -145,7 +144,8 @@ func TestEntityObserver(t *testing.T) {
 
 		entity, err := Spawn(world)
 		assert.NoError(err)
-		TriggerEntity(world, entity, observer1{})
+		err = TriggerEntity(world, entity, observer1{})
+		assert.NoError(err)
 	})
 
 	t.Run("Custom observer", func(t *testing.T) {
@@ -165,7 +165,8 @@ func TestEntityObserver(t *testing.T) {
 			err = Observe(world, e2, func(world *World, o observer1) { triggersForEntity2++ })
 			assert.NoError(err)
 
-			TriggerEntity(world, e1, observer1{})
+			err = TriggerEntity(world, e1, observer1{})
+			assert.NoError(err)
 			assert.Equal(uint(1), triggersForEntity1)
 			assert.Equal(uint(0), triggersForEntity2)
 		})
@@ -183,7 +184,8 @@ func TestEntityObserver(t *testing.T) {
 			err = Observe(world, entity, func(world *World, o observer2) { triggersForObserve2++ })
 			assert.NoError(err)
 
-			TriggerEntity(world, entity, observer1{})
+			err = TriggerEntity(world, entity, observer1{})
+			assert.NoError(err)
 			assert.Equal(uint(1), triggersForObserve1)
 			assert.Equal(uint(0), triggersForObserve2)
 		})
@@ -199,10 +201,10 @@ func TestEntityObserver(t *testing.T) {
 
 			entity, err := Spawn(world, myComponent1{})
 			assert.NoError(err)
-			assert.NoError(ecs.Observe(world, entity, func(world *World, o OnDespawn[myComponent1]) { numberOfTriggers++ }))
+			assert.NoError(Observe(world, entity, func(world *World, o OnDespawn[myComponent1]) { numberOfTriggers++ }))
 			assert.NoError(Remove1[myComponent1](world, entity))
 
-			assert.Equal(numberOfTriggers, 1)
+			assert.Equal(1, numberOfTriggers)
 		})
 
 		t.Run("gets triggered when despawning entity", func(t *testing.T) {
@@ -214,10 +216,10 @@ func TestEntityObserver(t *testing.T) {
 
 			entity, err := Spawn(world, myComponent1{})
 			assert.NoError(err)
-			assert.NoError(ecs.Observe(world, entity, func(world *World, o OnDespawn[myComponent1]) { numberOfTriggers++ }))
+			assert.NoError(Observe(world, entity, func(world *World, o OnDespawn[myComponent1]) { numberOfTriggers++ }))
 			assert.NoError(Despawn(world, entity))
 
-			assert.Equal(numberOfTriggers, 1)
+			assert.Equal(1, numberOfTriggers)
 		})
 	})
 
@@ -231,10 +233,10 @@ func TestEntityObserver(t *testing.T) {
 
 			entity, err := Spawn(world, myComponent1{})
 			assert.NoError(err)
-			assert.NoError(ecs.Observe(world, entity, func(world *World, o OnSpawn[myComponent2]) { numberOfTriggers++ }))
+			assert.NoError(Observe(world, entity, func(world *World, o OnSpawn[myComponent2]) { numberOfTriggers++ }))
 			assert.NoError(Insert(world, entity, myComponent2{}))
 
-			assert.Equal(numberOfTriggers, 1)
+			assert.Equal(1, numberOfTriggers)
 		})
 
 		t.Run("gets triggered on InsertOrOverwrite", func(t *testing.T) {
@@ -246,10 +248,10 @@ func TestEntityObserver(t *testing.T) {
 
 			entity, err := Spawn(world, myComponent1{})
 			assert.NoError(err)
-			assert.NoError(ecs.Observe(world, entity, func(world *World, o OnSpawn[myComponent2]) { numberOfTriggers++ }))
+			assert.NoError(Observe(world, entity, func(world *World, o OnSpawn[myComponent2]) { numberOfTriggers++ }))
 			assert.NoError(InsertOrOverwrite(world, entity, myComponent2{}))
 
-			assert.Equal(numberOfTriggers, 1)
+			assert.Equal(1, numberOfTriggers)
 		})
 	})
 }
