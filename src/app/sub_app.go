@@ -249,20 +249,37 @@ func (app *SubApp) ProcessFeatures() {
 }
 
 func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
+	err := app.PrepareForRun()
+	if err != nil {
+		app.logger.Error("%s - prepare failed: %v", app.Name, err)
+		return
+	}
+
+	app.RunStartupSchedules(exitChannel)
+	app.RunRepeatedSchedules(exitChannel)
+	app.RunCleanupSchedules(exitChannel)
+
+	isDoneChannel <- true
+}
+
+func (app *SubApp) PrepareForRun() error {
 	app.ProcessFeatures()
 
 	err := app.prepareSystems()
 	if err != nil {
-		app.logger.Error("%s - prepare systems: %v", app.Name, err)
-		return
+		return fmt.Errorf("prepare systems failed: %w", err)
 	}
 
 	err = app.prepareExecutors()
 	if err != nil {
 		app.logger.Error("%s - prepare executors: %v", app.Name, err)
-		return
+		return fmt.Errorf("prepare executors failed: %w", err)
 	}
 
+	return nil
+}
+
+func (app *SubApp) RunStartupSchedules(exitChannel <-chan struct{}) {
 	onceRunner := app.newNTimesRunner(1)
 	onceRunner.Run(exitChannel, app.startupExecutor)
 	if app.OnStartupSchedulesDone != nil {
@@ -277,10 +294,15 @@ func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 	app.runner.setOnRunDone(func() {
 		app.currentTick++
 	})
+}
 
+func (app *SubApp) RunRepeatedSchedules(exitChannel <-chan struct{}) {
 	app.runner.Run(exitChannel, app.repeatedExecutor)
+}
+
+func (app *SubApp) RunCleanupSchedules(exitChannel <-chan struct{}) {
+	onceRunner := app.newNTimesRunner(1)
 	onceRunner.Run(exitChannel, app.cleanupExecutor)
-	isDoneChannel <- true
 }
 
 func (app *SubApp) prepareSystems() error {
@@ -405,6 +427,10 @@ func (app *SubApp) UseUncappedRunner() {
 func (app *SubApp) UseNTimesRunner(numberOfRuns int) {
 	runner := app.newNTimesRunner(numberOfRuns)
 	app.runner = &runner
+}
+
+func (app *SubApp) UseOnceRunner() {
+	app.runner = &onceRunner{RunnerBasis: NewRunnerBasis(app)}
 }
 
 // NewNTimesRunner creates a runner that runs systems [numberOfRuns] amount of  times

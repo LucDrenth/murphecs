@@ -129,3 +129,14 @@ func (runner *nTimesRunner) Run(exitChannel <-chan struct{}, executor Executor) 
 		runner.Done()
 	}
 }
+
+// onceRunner runs systems once
+type onceRunner struct {
+	RunnerBasis
+}
+
+func (runner *onceRunner) Run(exitChannel <-chan struct{}, executor Executor) {
+	runner.Start()
+	executor.Run(*runner.currentTick)
+	runner.Done()
+}
