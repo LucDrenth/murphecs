@@ -110,14 +110,6 @@ func (runner *uncappedRunner) Run(exitChannel <-chan struct{}, executor Executor
 	}
 }
 
-func (runner *uncappedRunner) setOnFirstRunDone(handler func()) {
-	runner.onFirstRunDone = handler
-}
-
-func (runner *uncappedRunner) setOnRunDone(handler func()) {
-	runner.onRunDone = handler
-}
-
 // nTimesRunner runs systems n amount of times and then returns
 type nTimesRunner struct {
 	RunnerBasis
@@ -136,12 +128,4 @@ func (runner *nTimesRunner) Run(exitChannel <-chan struct{}, executor Executor) 
 		executor.Run(*runner.currentTick)
 		runner.Done()
 	}
-}
-
-func (runner *nTimesRunner) setOnFirstRunDone(handler func()) {
-	runner.onFirstRunDone = handler
-}
-
-func (runner *nTimesRunner) setOnRunDone(handler func()) {
-	runner.onRunDone = handler
 }
