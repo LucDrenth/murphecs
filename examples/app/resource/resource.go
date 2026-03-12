@@ -11,7 +11,7 @@ import (
 	"github.com/lucdrenth/murphecs/src/ecs"
 )
 
-const update app.Schedule = "Update"
+const update ecs.Schedule = "Update"
 
 type counter interface {
 	getValue() int

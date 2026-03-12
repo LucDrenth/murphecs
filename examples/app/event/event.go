@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	update app.Schedule = "Update"
+	update ecs.Schedule = "Update"
 )
 
 type highRollEvent struct {

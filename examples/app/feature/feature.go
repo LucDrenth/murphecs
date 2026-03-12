@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	startup app.Schedule = "Startup"
-	update  app.Schedule = "Update"
-	cleanup app.Schedule = "Cleanup"
+	startup ecs.Schedule = "Startup"
+	update  ecs.Schedule = "Update"
+	cleanup ecs.Schedule = "Cleanup"
 )
 
 func main() {

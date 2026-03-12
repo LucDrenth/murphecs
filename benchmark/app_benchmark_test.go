@@ -24,7 +24,7 @@ func BenchmarkRunApp(b *testing.B) {
 				subApp.UseNTimesRunner(1)
 
 				for i := range schedules {
-					schedule := app.Schedule(fmt.Sprintf("schedule.%d", i))
+					schedule := ecs.Schedule(fmt.Sprintf("schedule.%d", i))
 					subApp.AddSchedule(schedule, app.ScheduleOptions{})
 
 					for range systems / schedules {

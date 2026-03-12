@@ -9,8 +9,8 @@ import (
 	"github.com/lucdrenth/murphecs/src/ecs"
 )
 
-const startup app.Schedule = "Startup"
-const update app.Schedule = "Update"
+const startup ecs.Schedule = "Startup"
+const update ecs.Schedule = "Update"
 
 // 1. First we define a worldId
 var appFooId = ecs.WorldId(10)

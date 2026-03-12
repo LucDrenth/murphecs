@@ -10,8 +10,8 @@ import (
 	"github.com/lucdrenth/murphecs/src/ecs"
 )
 
-const startup app.Schedule = "Startup"
-const update app.Schedule = "Update"
+const startup ecs.Schedule = "Startup"
+const update ecs.Schedule = "Update"
 
 type myComponent struct {
 	ecs.Component

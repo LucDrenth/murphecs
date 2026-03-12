@@ -7,8 +7,8 @@ import (
 	"github.com/lucdrenth/murphecs/src/ecs"
 )
 
-const beforeUpdate app.Schedule = "BeforeUpdate" // this schedule is where the new delta resource is set.
-const update app.Schedule = "Update"             // this schedule can use the updated delta resource
+const beforeUpdate ecs.Schedule = "BeforeUpdate" // this schedule is where the new delta resource is set.
+const update ecs.Schedule = "Update"             // this schedule can use the updated delta resource
 
 type delta struct {
 	secs float64

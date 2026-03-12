@@ -2,9 +2,6 @@ package app
 
 import "github.com/lucdrenth/murphecs/src/ecs"
 
-// Schedule is an alias for [ecs.Schedule].
-type Schedule = ecs.Schedule
-
 type scheduleType int
 
 const (

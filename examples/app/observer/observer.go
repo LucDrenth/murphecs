@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	startup app.Schedule = "Startup"
-	update  app.Schedule = "Update"
+	startup ecs.Schedule = "Startup"
+	update  ecs.Schedule = "Update"
 )
 
 type npc struct {
