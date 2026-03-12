@@ -31,12 +31,12 @@ type Feature struct {
 }
 
 type FeatureSystem struct {
-	schedule Schedule
-	system   System
+	schedule ecs.Schedule
+	system   ecs.System
 	source   string
 }
 
-func (feature *Feature) AddSystem(schedule Schedule, system System) *Feature {
+func (feature *Feature) AddSystem(schedule ecs.Schedule, system ecs.System) *Feature {
 	feature.systems = append(feature.systems, FeatureSystem{schedule, system, utils.Caller(2, SystemErrorPackageDepth)})
 	return feature
 }

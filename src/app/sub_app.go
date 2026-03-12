@@ -2,23 +2,14 @@ package app
 
 import (
 	"fmt"
-	"slices"
 	"time"
 
 	"github.com/lucdrenth/murphecs/src/ecs"
 	"github.com/lucdrenth/murphecs/src/utils"
 )
 
-type scheduleType int
-
-const (
-	ScheduleTypeStartup   scheduleType = iota // run only once, on startup
-	ScheduleTypeRepeating                     // runs repeatedly, in the main loop
-	ScheduleTypeCleanup                       // runs only once, before quitting
-)
-
 var (
-	SystemErrorPackageDepth = 3
+	SystemErrorPackageDepth = ecs.SystemErrorPackageDepth
 )
 
 // SubApp has startup systems, repeating systems and cleanup systems.
@@ -28,18 +19,17 @@ var (
 // For example: if the tickRate is 1 second and a tick suddenly takes 4 seconds, the next tick will be run immediately
 // after, and then after 1 second.
 type SubApp struct {
-	world                    *ecs.World
-	schedules                map[scheduleType]*Scheduler
-	logger                   Logger
-	Name                     string
-	tickRate                 *time.Duration // the rate at which the repeating systems run
-	currentTick              uint
-	lastDelta                *float64 // delta time of the last tick
-	runner                   Runner
-	outerWorlds              map[ecs.WorldId]*ecs.World
-	scheduleSystemsIdCounter ecs.ScheduleSystemsId
-	OnStartupSchedulesDone   func()
-	features                 []IFeature // this slice will be process and emptied when starting this SubApp
+	world         *ecs.World
+	scheduleTypes map[scheduleType][]ecs.Schedule
+	logger        Logger
+	Name          string
+	tickRate      *time.Duration // the rate at which the repeating systems run
+	currentTick   uint
+	lastDelta     *float64 // delta time of the last tick
+	runner        Runner
+	features      []IFeature // this slice will be processed and emptied when starting this SubApp
+
+	OnStartupSchedulesDone func()
 
 	startupExecutor  Executor
 	repeatedExecutor Executor
@@ -48,9 +38,11 @@ type SubApp struct {
 
 func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
 	if logger == nil {
-		noOpLogger := NoOpLogger{}
+		noOpLogger := ecs.NoOpLogger{}
 		logger = &noOpLogger
 	}
+
+	worldConfigs.Logger = logger
 
 	world, err := ecs.NewWorld(worldConfigs)
 	if err != nil {
@@ -58,7 +50,7 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
 	}
 
 	// The following resources are reserved by this app. If a user would add them, systems would
-	// use the reserved resource instead if the inserted resource, which could cause confusion. So
+	// use the reserved resource instead of the inserted resource, which could cause confusion. So
 	// we register them as blacklisted so that an error is logged when the user tries to add them.
 	err = ecs.RegisterBlacklistedResource[*ecs.World](world.Resources())
 	if err != nil {
@@ -67,16 +59,15 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
 
 	subApp := SubApp{
 		world: &world,
-		schedules: map[scheduleType]*Scheduler{
-			ScheduleTypeStartup:   new(NewScheduler()),
-			ScheduleTypeRepeating: new(NewScheduler()),
-			ScheduleTypeCleanup:   new(NewScheduler()),
+		scheduleTypes: map[scheduleType][]ecs.Schedule{
+			ScheduleTypeStartup:   {},
+			ScheduleTypeRepeating: {},
+			ScheduleTypeCleanup:   {},
 		},
 		logger:           logger,
 		Name:             "App",
 		tickRate:         new(time.Second / 60.0),
 		lastDelta:        new(0.0),
-		outerWorlds:      map[ecs.WorldId]*ecs.World{},
 		startupExecutor:  &ConsecutiveExecutor{},
 		repeatedExecutor: &ConsecutiveExecutor{},
 		cleanupExecutor:  &ConsecutiveExecutor{},
@@ -87,102 +78,43 @@ func New(logger Logger, worldConfigs ecs.WorldConfigs) (*SubApp, error) {
 }
 
 // AddSystem adds a system that will be run when the schedule is run. Systems must be a function.
-func (app *SubApp) AddSystem(schedule Schedule, system System) *SubApp {
+func (app *SubApp) AddSystem(schedule ecs.Schedule, system ecs.System) *SubApp {
 	return app.addSystemWithSource(schedule, system, utils.Caller(2, SystemErrorPackageDepth))
 }
 
-// AddSystem adds a system that will be run when the schedule is run. Systems must be a function.
-func (app *SubApp) addSystemWithSource(schedule Schedule, system System, source string) *SubApp {
-	scheduler := app.getScheduler(schedule)
-	if scheduler == nil {
-		app.logger.Error("%s - failed to add system: schedule %s not found",
-			app.Name,
-			schedule,
-		)
-		return app
-	}
-
-	err := scheduler.AddSystem(schedule, system, source, app.world, &app.outerWorlds, app.logger, app.world.Events())
+// addSystemWithSource adds a system with an explicit source path for error messages.
+func (app *SubApp) addSystemWithSource(schedule ecs.Schedule, system ecs.System, source string) *SubApp {
+	err := app.world.AddSystemWithSource(schedule, system, source)
 	if err != nil {
-		app.logger.Error("%s - failed to add system: %v",
-			app.Name,
-			err,
-		)
+		app.logger.Error("%s - failed to add system: %v", app.Name, err)
 	}
 
 	return app
 }
 
-func (app *SubApp) getScheduler(schedule Schedule) *Scheduler {
-	for _, scheduler := range app.schedules {
-		if slices.Contains(scheduler.order, schedule) {
-			return scheduler
-		}
-	}
-
-	return nil
-}
-
-type ScheduleOptions struct {
-	// ScheduleType can be one of:
-	//   - [ScheduleTypeStartup] - systems in a schedule with this schedule type run once, when starting the app
-	//   - [ScheduleTypeRepeating] - systems in a schedule with this schedule type run repeatedly, after startup
-	//   - [ScheduleTypeCleanup] - systems in a schedule with this schedule type run once, when closing the app
-	ScheduleType scheduleType
-
-	// Order decides when the schedule systems should run, relative to schedules. It can be one of:
-	//	- [ScheduleLast] - this is also the default if this field is left nil
-	// 	- [ScheduleBefore]
-	// 	- [ScheduleAfter]
-	Order ScheduleOrder
-
-	// IsPaused determines the initial pause state of the schedule
-	IsPaused bool
-}
-
 // AddSchedule adds a schedule that systems can be added to.
-func (app *SubApp) AddSchedule(schedule Schedule, options ScheduleOptions) *SubApp {
-	scheduler, ok := app.schedules[options.ScheduleType]
-	if !ok {
-		app.logger.Error("%s - failed to add schedule %s: %w: %d", app.Name, schedule, ErrScheduleTypeNotFound, options.ScheduleType)
+func (app *SubApp) AddSchedule(schedule ecs.Schedule, options ScheduleOptions) *SubApp {
+	if _, ok := app.scheduleTypes[options.ScheduleType]; !ok {
+		app.logger.Error("%s - failed to add schedule %s: %v: %d", app.Name, schedule, ErrScheduleTypeNotFound, options.ScheduleType)
 		return app
 	}
 
 	if options.Order == nil {
-		options.Order = ScheduleLast{}
+		options.Order = ecs.ScheduleLast{}
 	}
 
-	app.scheduleSystemsIdCounter++
-	err := scheduler.AddSchedule(schedule, app.scheduleSystemsIdCounter, options.Order, options.IsPaused)
+	err := app.world.AddSchedule(schedule, options.Order, options.IsPaused)
 	if err != nil {
 		app.logger.Error("%s - failed to add schedule %s: %v", app.Name, schedule, err)
+		return app
 	}
 
+	app.scheduleTypes[options.ScheduleType] = append(app.scheduleTypes[options.ScheduleType], schedule)
 	return app
 }
 
-func (app *SubApp) SetSchedulePaused(schedule Schedule, scheduleType scheduleType, isPaused bool) error {
-	scheduler, exists := app.schedules[scheduleType]
-	if !exists {
-		return fmt.Errorf("%w: %d", ErrScheduleTypeNotFound, scheduleType)
-	}
-
-	systems, exists := scheduler.systems[schedule]
-	if !exists {
-		return fmt.Errorf("%w: %s", ErrScheduleNotFound, schedule)
-	}
-
-	currentlyPaused := systems.isPaused.Load()
-	if currentlyPaused == isPaused {
-		return nil
-	}
-
-	if !currentlyPaused && isPaused {
-		systems.isFirstExecSincePaused = true
-	}
-	systems.isPaused.Store(isPaused)
-
-	return nil
+func (app *SubApp) SetSchedulePaused(schedule ecs.Schedule, isPaused bool) error {
+	return app.world.SetSchedulePaused(schedule, isPaused)
 }
 
 // AddResource adds a resource that can then be used in system params. There can only be 1 one of each resource type.
@@ -265,7 +197,7 @@ func (app *SubApp) Run(exitChannel <-chan struct{}, isDoneChannel chan<- bool) {
 func (app *SubApp) PrepareForRun() error {
 	app.ProcessFeatures()
 
-	err := app.prepareSystems()
+	err := app.world.PrepareSystems()
 	if err != nil {
 		return fmt.Errorf("prepare systems failed: %w", err)
 	}
@@ -305,41 +237,24 @@ func (app *SubApp) RunCleanupSchedules(exitChannel <-chan struct{}) {
 	onceRunner.Run(exitChannel, app.cleanupExecutor)
 }
 
-func (app *SubApp) prepareSystems() error {
-	for _, scheduler := range app.schedules {
-		systemsSet, err := scheduler.GetScheduleSystems()
-		if err != nil {
-			return fmt.Errorf("failed to get schedule systems: %w", err)
-		}
-
-		for _, systems := range systemsSet {
-			err := systems.prepare(&app.outerWorlds)
-			if err != nil {
-				return fmt.Errorf("failed to prepare systems: %w", err)
-			}
-		}
-	}
-	return nil
-}
-
 func (app *SubApp) prepareExecutors() error {
-	startupSystems, err := app.schedules[ScheduleTypeStartup].GetScheduleSystems()
+	startupSystems, err := app.world.GetScheduleSystemsBySchedules(app.scheduleTypes[ScheduleTypeStartup])
 	if err != nil {
 		return fmt.Errorf("failed to get startup systems: %v", err)
 	}
-	app.startupExecutor.Load(startupSystems, app.world, &app.outerWorlds, app.logger, app.Name)
+	app.startupExecutor.Load(startupSystems, app.world, app.logger, app.Name)
 
-	repeatedSystems, err := app.schedules[ScheduleTypeRepeating].GetScheduleSystems()
+	repeatedSystems, err := app.world.GetScheduleSystemsBySchedules(app.scheduleTypes[ScheduleTypeRepeating])
 	if err != nil {
 		return fmt.Errorf("failed to get repeated systems: %v", err)
 	}
-	app.repeatedExecutor.Load(repeatedSystems, app.world, &app.outerWorlds, app.logger, app.Name)
+	app.repeatedExecutor.Load(repeatedSystems, app.world, app.logger, app.Name)
 
-	cleanupSystems, err := app.schedules[ScheduleTypeCleanup].GetScheduleSystems()
+	cleanupSystems, err := app.world.GetScheduleSystemsBySchedules(app.scheduleTypes[ScheduleTypeCleanup])
 	if err != nil {
 		return fmt.Errorf("failed to get cleanup systems: %v", err)
 	}
-	app.cleanupExecutor.Load(cleanupSystems, app.world, &app.outerWorlds, app.logger, app.Name)
+	app.cleanupExecutor.Load(cleanupSystems, app.world, app.logger, app.Name)
 
 	return nil
 }
@@ -363,22 +278,11 @@ func (app *SubApp) NumberOfResources() uint {
 }
 
 func (app *SubApp) NumberOfSystems() uint {
-	result := uint(0)
-
-	for _, schedules := range app.schedules {
-		result += schedules.NumberOfSystems()
-	}
-	return result
+	return app.world.NumberOfSystems()
 }
 
 func (app *SubApp) NumberOfSchedules() uint {
-	result := uint(0)
-
-	for _, schedules := range app.schedules {
-		result += uint(len(schedules.systems))
-	}
-
-	return result
+	return app.world.NumberOfSchedules()
 }
 
 func (app *SubApp) World() *ecs.World {
@@ -386,17 +290,12 @@ func (app *SubApp) World() *ecs.World {
 }
 
 func (app *SubApp) OuterWorlds() *map[ecs.WorldId]*ecs.World {
-	return &app.outerWorlds
+	return app.world.OuterWorlds()
 }
 
 // RegisterOuterWorld lets you use the outer world in system param queries.
 func (app *SubApp) RegisterOuterWorld(id ecs.WorldId, world *ecs.World) error {
-	if _, exists := app.outerWorlds[id]; exists {
-		return fmt.Errorf("id %d is already registered", id)
-	}
-
-	app.outerWorlds[id] = world
-	return nil
+	return app.world.RegisterOuterWorld(id, world)
 }
 
 // SetRunner sets the runner for the repeated systems
@@ -409,7 +308,7 @@ func (app *SubApp) SetRunner(runner Runner) {
 	app.runner = runner
 }
 
-// SetFixedRunner makes the systems run repeatedly, at a fixed interval. To control the interval time, use `app.SetTickRate`.
+// UseFixedRunner makes the systems run repeatedly, at a fixed interval. To control the interval time, use `app.SetTickRate`.
 func (app *SubApp) UseFixedRunner() {
 	app.runner = &fixedRunner{
 		tickRate:    app.tickRate,
@@ -433,7 +332,7 @@ func (app *SubApp) UseOnceRunner() {
 	app.runner = &onceRunner{RunnerBasis: NewRunnerBasis(app)}
 }
 
-// NewNTimesRunner creates a runner that runs systems [numberOfRuns] amount of  times
+// newNTimesRunner creates a runner that runs systems [numberOfRuns] amount of times
 func (app *SubApp) newNTimesRunner(numberOfRuns int) nTimesRunner {
 	return nTimesRunner{
 		numberOfRuns: numberOfRuns,

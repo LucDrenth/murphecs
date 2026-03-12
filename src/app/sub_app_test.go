@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const testSchedule Schedule = "update"
+const testSchedule ecs.Schedule = "update"
 
 type testResourceForSubAppA struct{}
 type testResourceForSubAppB struct{}
@@ -71,7 +71,7 @@ func TestAddResource(t *testing.T) {
 }
 
 func TestAddSchedule(t *testing.T) {
-	const schedule Schedule = "schedule"
+	const schedule ecs.Schedule = "schedule"
 
 	t.Run("logs an error when the schedule type is not valid", func(t *testing.T) {
 		assert := assert.New(t)
@@ -113,17 +113,17 @@ func TestAddSchedule(t *testing.T) {
 }
 
 func TestSetSchedulePaused(t *testing.T) {
-	t.Run("returns error when schedule type not found", func(t *testing.T) {
+	t.Run("returns error when schedule not found", func(t *testing.T) {
 		assert := assert.New(t)
 
 		app, err := New(nil, ecs.DefaultWorldConfigs())
 		assert.NoError(err)
 
-		err = app.SetSchedulePaused(testSchedule, 100, true)
-		assert.ErrorIs(err, ErrScheduleTypeNotFound)
+		err = app.SetSchedulePaused(testSchedule, true)
+		assert.ErrorIs(err, ecs.ErrScheduleNotFound)
 	})
 
-	t.Run("returns error when schedule not found", func(t *testing.T) {
+	t.Run("returns error when schedule not found after adding a different schedule", func(t *testing.T) {
 		assert := assert.New(t)
 
 		logger := TestLogger{}
@@ -132,8 +132,8 @@ func TestSetSchedulePaused(t *testing.T) {
 		app.AddSchedule(testSchedule, ScheduleOptions{ScheduleType: ScheduleTypeRepeating})
 		assert.Equal(uint(0), logger.NumberOfErrorLogs)
 
-		err = app.SetSchedulePaused("nonExistingSchedule", ScheduleTypeRepeating, true)
-		assert.ErrorIs(err, ErrScheduleNotFound)
+		err = app.SetSchedulePaused("nonExistingSchedule", true)
+		assert.ErrorIs(err, ecs.ErrScheduleNotFound)
 	})
 
 	t.Run("succeeds", func(t *testing.T) {
@@ -145,13 +145,13 @@ func TestSetSchedulePaused(t *testing.T) {
 		app.AddSchedule(testSchedule, ScheduleOptions{ScheduleType: ScheduleTypeRepeating})
 		assert.Equal(uint(0), logger.NumberOfErrorLogs)
 
-		err = app.SetSchedulePaused(testSchedule, ScheduleTypeRepeating, true)
+		err = app.SetSchedulePaused(testSchedule, true)
 		assert.NoError(err)
 	})
 }
 
 func TestAddSystemToSubApp(t *testing.T) {
-	const schedule Schedule = "schedule"
+	const schedule ecs.Schedule = "schedule"
 
 	t.Run("logs error when schedule does not exist", func(t *testing.T) {
 		assert := assert.New(t)
@@ -254,8 +254,8 @@ func TestRun(t *testing.T) {
 		assert := assert.New(t)
 
 		const (
-			startup Schedule = "Startup"
-			update  Schedule = "Update"
+			startup ecs.Schedule = "Startup"
+			update  ecs.Schedule = "Update"
 		)
 
 		numberOfSystemsRun := 0
@@ -285,9 +285,9 @@ func TestRun(t *testing.T) {
 		assert := assert.New(t)
 
 		const (
-			startup Schedule = "Startup"
-			update  Schedule = "Update"
-			cleanup Schedule = "Cleanup"
+			startup ecs.Schedule = "Startup"
+			update  ecs.Schedule = "Update"
+			cleanup ecs.Schedule = "Cleanup"
 		)
 
 		numberOfSystemRuns := 0
@@ -351,7 +351,6 @@ func TestRun(t *testing.T) {
 
 		go app.Run(exitChannel, isDoneChannel)
 
-		// simulate an exit signal
 		go func() {
 			time.Sleep(100 * time.Millisecond)
 			close(exitChannel)
@@ -362,7 +361,7 @@ func TestRun(t *testing.T) {
 	})
 
 	t.Run("n times runner stops when closing exit channel", func(t *testing.T) {
-		const update Schedule = "Update"
+		const update ecs.Schedule = "Update"
 		const targetNumberOfRuns = 10
 
 		assert := assert.New(t)
@@ -390,10 +389,6 @@ func TestRun(t *testing.T) {
 		<-isDoneChannel
 		assert.Equal(uint(0), logger.NumberOfErrorLogs)
 
-		// We expect numberOfRunsDone to be 1, but we simply check if it didn't complete all target runs
-		// to keep the outcome of this test consistent.
-		// Not sure if this is true, but I'm not sure how exact the time.Sleep mechanisms are, especially
-		// considering running this test on a (temporary) slower device.
 		assert.Less(numberOfRunsDone, targetNumberOfRuns)
 	})
 
@@ -401,8 +396,8 @@ func TestRun(t *testing.T) {
 		assert := assert.New(t)
 
 		const (
-			update1 Schedule = "Update1"
-			update2 Schedule = "Update2"
+			update1 ecs.Schedule = "Update1"
+			update2 ecs.Schedule = "Update2"
 		)
 
 		numberOfSystemsRun1 := 0
@@ -416,7 +411,7 @@ func TestRun(t *testing.T) {
 		runner := app.newNTimesRunner(5)
 		app.SetRunner(&runner)
 		app.AddSystem(update1, func() {
-			err := app.SetSchedulePaused(update1, ScheduleTypeRepeating, true)
+			err := app.SetSchedulePaused(update1, true)
 			assert.NoError(err)
 			numberOfSystemsRun1++
 		})
@@ -425,8 +420,7 @@ func TestRun(t *testing.T) {
 			numberOfSystemsRun2++
 
 			if numberOfSystemsRun2 == 4 {
-				// unpause update1, making it run one more time before the app exists
-				err := app.SetSchedulePaused(update1, ScheduleTypeRepeating, false)
+				err := app.SetSchedulePaused(update1, false)
 				assert.NoError(err)
 			}
 		})
@@ -439,12 +433,10 @@ func TestRun(t *testing.T) {
 		assert.Equal(uint(0), logger.NumberOfErrorLogs)
 	})
 
-	t.Run("schedule does not run when is is added as initially paused", func(t *testing.T) {
+	t.Run("schedule does not run when it is added as initially paused", func(t *testing.T) {
 		assert := assert.New(t)
 
-		const (
-			update Schedule = "Update"
-		)
+		const update ecs.Schedule = "Update"
 
 		numberOfSystemsRun := 0
 
@@ -469,8 +461,8 @@ func TestRun(t *testing.T) {
 
 func TestConcurrency(t *testing.T) {
 	const (
-		startup Schedule = "Startup"
-		update  Schedule = "Update"
+		startup ecs.Schedule = "Startup"
+		update  ecs.Schedule = "Update"
 	)
 
 	type component struct {
@@ -479,10 +471,6 @@ func TestConcurrency(t *testing.T) {
 	}
 
 	t.Run("between-world query that competes for a resource", func(t *testing.T) {
-		// Run two subApps that both compete for `component.data`. When concurrency is not
-		// handled, this test will panic.
-		// It is not a guarantee that it will panic because of the nature of data races but,
-		// but increasing numberOfRuns will increase the likelihood.
 		numberOfRuns := 10_000
 
 		assert := assert.New(t)

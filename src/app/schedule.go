@@ -1,121 +1,31 @@
 package app
 
-import (
-	"fmt"
-	"slices"
+import "github.com/lucdrenth/murphecs/src/ecs"
 
-	"github.com/lucdrenth/murphecs/src/ecs"
+// Schedule is an alias for [ecs.Schedule].
+type Schedule = ecs.Schedule
+
+type scheduleType int
+
+const (
+	ScheduleTypeStartup   scheduleType = iota // run only once, on startup
+	ScheduleTypeRepeating                     // runs repeatedly, in the main loop
+	ScheduleTypeCleanup                       // runs only once, before quitting
 )
 
-type Schedule string
+type ScheduleOptions struct {
+	// ScheduleType can be one of:
+	//   - [ScheduleTypeStartup] - systems in a schedule with this schedule type run once, when starting the app
+	//   - [ScheduleTypeRepeating] - systems in a schedule with this schedule type run repeatedly, after startup
+	//   - [ScheduleTypeCleanup] - systems in a schedule with this schedule type run once, when closing the app
+	ScheduleType scheduleType
 
-type Scheduler struct {
-	systems map[Schedule]*ScheduleSystems
-	order   []Schedule
-}
+	// Order decides when the schedule systems should run, relative to schedules. It can be one of:
+	//	- [ScheduleLast] - this is also the default if this field is left nil
+	// 	- [ScheduleBefore]
+	// 	- [ScheduleAfter]
+	Order ecs.ScheduleOrder
 
-func NewScheduler() Scheduler {
-	return Scheduler{
-		systems: map[Schedule]*ScheduleSystems{},
-		order:   []Schedule{},
-	}
-}
-
-func (s *Scheduler) AddSchedule(schedule Schedule, scheduleSystemsId ecs.ScheduleSystemsId, order ScheduleOrder, isPaused bool) (err error) {
-	if _, exists := s.systems[schedule]; exists {
-		return ErrScheduleAlreadyExists
-	}
-
-	scheduleSystems := &ScheduleSystems{id: scheduleSystemsId}
-	if isPaused {
-		scheduleSystems.isPaused.Store(true)
-	}
-	s.systems[schedule] = scheduleSystems
-
-	s.order, err = order.insert(schedule, s.order)
-	if err != nil {
-		return fmt.Errorf("ScheduleOrder failed to insert: %w", err)
-	}
-
-	return nil
-}
-
-func (s *Scheduler) AddSystem(schedule Schedule, system System, source string, world *ecs.World, outerWorlds *map[ecs.WorldId]*ecs.World, logger Logger, eventStorage *ecs.EventStorage) error {
-	scheduleSystems, exists := s.systems[schedule]
-	if !exists {
-		return fmt.Errorf("%w: %s", ErrScheduleNotFound, schedule)
-	}
-
-	return scheduleSystems.add(system, source, world, outerWorlds, logger, eventStorage)
-}
-
-func (s *Scheduler) GetScheduleSystems() ([]*ScheduleSystems, error) {
-	if len(s.order) != len(s.systems) {
-		return nil, fmt.Errorf("order of length %d does not match schedules of length %d", len(s.order), len(s.systems))
-	}
-
-	result := make([]*ScheduleSystems, len(s.order))
-
-	for i, schedule := range s.order {
-		scheduleSystems, ok := s.systems[schedule]
-		if !ok {
-			return nil, fmt.Errorf("schedule %s from schedule order does not exist", schedule)
-		}
-
-		result[i] = scheduleSystems
-	}
-
-	return result, nil
-}
-
-func (s *Scheduler) NumberOfSystems() uint {
-	result := uint(0)
-	for _, scheduleSystems := range s.systems {
-		for _, systemGroup := range scheduleSystems.systemGroups {
-			result += uint(len(systemGroup.systems))
-		}
-	}
-	return result
-}
-
-type ScheduleOrder interface {
-	insert(Schedule, []Schedule) ([]Schedule, error)
-}
-
-var (
-	_ ScheduleOrder = &ScheduleLast{}
-	_ ScheduleOrder = &ScheduleBefore{}
-	_ ScheduleOrder = &ScheduleAfter{}
-)
-
-type ScheduleLast struct{}
-
-func (scheduleOrder ScheduleLast) insert(schedule Schedule, schedules []Schedule) ([]Schedule, error) {
-	return append(schedules, schedule), nil
-}
-
-type ScheduleBefore struct {
-	Other Schedule
-}
-
-func (scheduleOrder ScheduleBefore) insert(schedule Schedule, schedules []Schedule) ([]Schedule, error) {
-	i := slices.Index(schedules, scheduleOrder.Other)
-	if i == -1 {
-		return schedules, fmt.Errorf("%w: '%s'", ErrScheduleNotFound, scheduleOrder.Other)
-	}
-
-	return slices.Insert(schedules, i, schedule), nil
-}
-
-type ScheduleAfter struct {
-	Other Schedule
-}
-
-func (scheduleOrder ScheduleAfter) insert(schedule Schedule, schedules []Schedule) ([]Schedule, error) {
-	i := slices.Index(schedules, scheduleOrder.Other)
-	if i == -1 {
-		return schedules, fmt.Errorf("%w: '%s'", ErrScheduleNotFound, scheduleOrder.Other)
-	}
-
-	return slices.Insert(schedules, i+1, schedule), nil
+	// IsPaused determines the initial pause state of the schedule
+	IsPaused bool
 }

@@ -1,27 +1,18 @@
 package app
 
-import "fmt"
+import (
+	"fmt"
 
-type Logger interface {
-	// Log a debug message
-	Debug(message string, arguments ...any)
-	// Log an info message
-	Info(message string, arguments ...any)
-	// Log a warning message
-	Warn(message string, arguments ...any)
-	// Log an error message
-	Error(message string, arguments ...any)
-}
+	"github.com/lucdrenth/murphecs/src/ecs"
+)
 
-var _ Logger = (*NoOpLogger)(nil)
+// Logger is an alias for [ecs.Logger].
+type Logger = ecs.Logger
 
-// NoOpLogger is a no-op logger that does nothing.
-type NoOpLogger struct{}
+// NoOpLogger is an alias for [ecs.NoOpLogger].
+type NoOpLogger = ecs.NoOpLogger
 
-func (n *NoOpLogger) Debug(message string, arguments ...any) {}
-func (n *NoOpLogger) Info(message string, arguments ...any)  {}
-func (n *NoOpLogger) Warn(message string, arguments ...any)  {}
-func (n *NoOpLogger) Error(message string, arguments ...any) {}
+var _ Logger = (*SimpleConsoleLogger)(nil)
 
 // SimpleConsoleLogger is a logger that prints messages to the console with a level prefix
 type SimpleConsoleLogger struct {

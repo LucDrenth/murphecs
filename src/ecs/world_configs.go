@@ -8,6 +8,9 @@ type WorldConfigs struct {
 	ComponentCapacityGrowthStrategy componentCapacityGrowthStrategy
 
 	Id *WorldId
+
+	// Logger is optional. Defaults to [NoOpLogger] if nil.
+	Logger Logger
 }
 
 func DefaultWorldConfigs() WorldConfigs {

@@ -1,15 +1,14 @@
-package app
+package ecs
 
 import (
 	"errors"
 	"testing"
 
-	"github.com/lucdrenth/murphecs/src/ecs"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAddSystem(t *testing.T) {
-	type componentA struct{ ecs.Component }
+	type componentA struct{ Component }
 
 	t.Run("error if adding an invalid system", func(t *testing.T) {
 		assert := assert.New(t)
@@ -25,80 +24,80 @@ func TestAddSystem(t *testing.T) {
 
 	t.Run("can use world as system param", func(t *testing.T) {
 		assert := assert.New(t)
-		err := simpleTestAddSystem(func(world *ecs.World) {})
+		err := simpleTestAddSystem(func(world *World) {})
 		assert.NoError(err)
 	})
 
-	t.Run("returns an error when using non-pointer ecs.Query as system param", func(t *testing.T) {
+	t.Run("returns an error when using non-pointer Query as system param", func(t *testing.T) {
 		assert := assert.New(t)
-		err := simpleTestAddSystem(func(_ ecs.Query1[componentA, ecs.Default]) {})
+		err := simpleTestAddSystem(func(_ Query1[componentA, Default]) {})
 		assert.ErrorIs(err, ErrSystemParamQueryNotAPointer)
 	})
 
 	t.Run("returns an error when using Query interface as system parameter", func(t *testing.T) {
 		assert := assert.New(t)
-		err := simpleTestAddSystem(func(_ ecs.Query) {})
+		err := simpleTestAddSystem(func(_ Query) {})
 		assert.ErrorIs(err, ErrSystemParamQueryNotValid)
 	})
 
-	t.Run("can use an ecs.Query as system param", func(t *testing.T) {
+	t.Run("can use a Query as system param", func(t *testing.T) {
 		assert := assert.New(t)
-		err := simpleTestAddSystem(func(_ *ecs.Query1[componentA, ecs.Default]) {})
+		err := simpleTestAddSystem(func(_ *Query1[componentA, Default]) {})
 		assert.NoError(err)
 	})
 
-	t.Run("fails when app is not aware of the outer world in the ecs.Query", func(t *testing.T) {
+	t.Run("fails when app is not aware of the outer world in the Query", func(t *testing.T) {
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
 
-		outerWorlds := map[ecs.WorldId]*ecs.World{}
-		eventStorage := ecs.NewEventStorage()
+		outerWorlds := map[WorldId]*World{}
+		eventStorage := NewEventStorage()
 
-		err := scheduleSystems.add(func(_ *ecs.Query1[componentA, ecs.TestCustomTargetWorld]) {}, "", world, &outerWorlds, &logger, &eventStorage)
+		err := scheduleSystems.add(func(_ *Query1[componentA, TestCustomTargetWorld]) {}, "", world, &outerWorlds, &logger, &eventStorage)
 		assert.ErrorIs(err, ErrSystemParamQueryNotValid)
-		assert.ErrorIs(err, ecs.ErrTargetWorldNotFound)
+		assert.ErrorIs(err, ErrTargetWorldNotFound)
 	})
 
-	t.Run("fails when app is not aware of the outer world in the ecs.Query", func(t *testing.T) {
+	t.Run("fails when query targets outer world with lazy option", func(t *testing.T) {
 		assert := assert.New(t)
 
-		outerWorldConfigs := ecs.DefaultWorldConfigs()
-		outerWorldConfigs.Id = &ecs.TestCustomTargetWorldId
-		outerWorld, err := ecs.NewWorld(outerWorldConfigs)
+		outerWorldConfigs := DefaultWorldConfigs()
+		outerWorldConfigs.Id = &TestCustomTargetWorldId
+		outerWorld, err := NewWorld(outerWorldConfigs)
 		assert.NoError(err)
-		outerWorlds := map[ecs.WorldId]*ecs.World{
-			ecs.TestCustomTargetWorldId: &outerWorld,
+		outerWorlds := map[WorldId]*World{
+			TestCustomTargetWorldId: &outerWorld,
 		}
 
 		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 
-		err = scheduleSystems.add(func(_ *ecs.Query1[componentA, ecs.QueryOptions2[ecs.TestCustomTargetWorld, ecs.Lazy]]) {}, "", world, &outerWorlds, &logger, &eventStorage)
+		err = scheduleSystems.add(func(_ *Query1[componentA, QueryOptions2[TestCustomTargetWorld, Lazy]]) {}, "", world, &outerWorlds, &logger, &eventStorage)
 		assert.ErrorIs(err, ErrSystemParamQueryNotValid)
 	})
 
-	t.Run("can insert ecs.Query that targets an outer world", func(t *testing.T) {
+	t.Run("can insert Query that targets an outer world", func(t *testing.T) {
 		assert := assert.New(t)
 
-		outerWorldConfigs := ecs.DefaultWorldConfigs()
-		outerWorldConfigs.Id = &ecs.TestCustomTargetWorldId
-		outerWorld, err := ecs.NewWorld(outerWorldConfigs)
+		outerWorldConfigs := DefaultWorldConfigs()
+		outerWorldConfigs.Id = &TestCustomTargetWorldId
+		outerWorld, err := NewWorld(outerWorldConfigs)
 		assert.NoError(err)
-		outerWorlds := map[ecs.WorldId]*ecs.World{
-			ecs.TestCustomTargetWorldId: &outerWorld,
+		outerWorlds := map[WorldId]*World{
+			TestCustomTargetWorldId: &outerWorld,
 		}
 
 		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 
-		err = scheduleSystems.add(func(_ *ecs.Query1[componentA, ecs.TestCustomTargetWorld]) {}, "", world, &outerWorlds, &logger, &eventStorage)
+		err = scheduleSystems.add(func(_ *Query1[componentA, TestCustomTargetWorld]) {}, "", world, &outerWorlds, &logger, &eventStorage)
 		assert.NoError(err)
 	})
 
@@ -116,12 +115,12 @@ func TestAddSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
 
 		err := world.Resources().Add(&resourceA{})
 		assert.NoError(err)
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 
 		err = scheduleSystems.add(func(_ resourceA) {}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
@@ -133,53 +132,53 @@ func TestAddSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
 
 		err := world.Resources().Add(&resourceA{})
 		assert.NoError(err)
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 
 		err = scheduleSystems.add(func(_ *resourceA) {}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 	})
 
 	t.Run("returns err if system param EventReader is not a pointer", func(t *testing.T) {
-		type testEvent struct{ ecs.Event }
+		type testEvent struct{ Event }
 
 		assert := assert.New(t)
-		err := simpleTestAddSystem(func(ecs.EventReader[*testEvent]) {})
+		err := simpleTestAddSystem(func(EventReader[*testEvent]) {})
 		assert.ErrorIs(err, ErrSystemParamEventReaderNotAPointer)
 	})
 
 	t.Run("can use system param *EventReader", func(t *testing.T) {
-		type testEvent struct{ ecs.Event }
+		type testEvent struct{ Event }
 
 		assert := assert.New(t)
-		err := simpleTestAddSystem(func(*ecs.EventReader[*testEvent]) {})
+		err := simpleTestAddSystem(func(*EventReader[*testEvent]) {})
 		assert.NoError(err)
 	})
 
 	t.Run("returns err if system param EventWriter is not a pointer", func(t *testing.T) {
-		type testEvent struct{ ecs.Event }
+		type testEvent struct{ Event }
 
 		assert := assert.New(t)
-		err := simpleTestAddSystem(func(ecs.EventWriter[*testEvent]) {})
+		err := simpleTestAddSystem(func(EventWriter[*testEvent]) {})
 		assert.ErrorIs(err, ErrSystemParamEventWriterNotAPointer)
 	})
 
 	t.Run("can use system param *EventWriter", func(t *testing.T) {
-		type testEvent struct{ ecs.Event }
+		type testEvent struct{ Event }
 
 		assert := assert.New(t)
-		err := simpleTestAddSystem(func(*ecs.EventWriter[*testEvent]) {})
+		err := simpleTestAddSystem(func(*EventWriter[*testEvent]) {})
 		assert.NoError(err)
 	})
 
 	t.Run("returns err if system param OuterResource is a pointer", func(t *testing.T) {
 		type resource struct{}
 		assert := assert.New(t)
-		err := simpleTestAddSystem(func(*ecs.OuterResource[*resource, ecs.TestCustomTargetWorld]) {})
+		err := simpleTestAddSystem(func(*OuterResource[*resource, TestCustomTargetWorld]) {})
 		assert.ErrorIs(err, ErrSystemParamOuterResourceIsAPointer)
 	})
 
@@ -214,32 +213,32 @@ func TestAddSystem(t *testing.T) {
 
 func simpleTestAddSystem(system System) error {
 	scheduleSystems := ScheduleSystems{}
-	world := ecs.NewDefaultWorld()
+	world := NewDefaultWorld()
 	logger := NoOpLogger{}
 
-	eventStorage := ecs.NewEventStorage()
+	eventStorage := NewEventStorage()
 
 	return scheduleSystems.add(system, "", world, nil, &logger, &eventStorage)
 }
 
 func TestExecSystem(t *testing.T) {
-	type componentA struct{ ecs.Component }
+	type componentA struct{ Component }
 	type resourceA struct{ value int }
 
 	t.Run("runs system without system params", func(t *testing.T) {
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 
 		didRun := false
 		err := scheduleSystems.add(func() { didRun = true }, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
-		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
-		assert.Empty(errors)
+		errs := scheduleSystems.Exec(world, nil, &eventStorage, 1)
+		assert.Empty(errs)
 		assert.True(didRun)
 	})
 
@@ -247,9 +246,9 @@ func TestExecSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 
 		resource := resourceA{value: 10}
 
@@ -258,8 +257,8 @@ func TestExecSystem(t *testing.T) {
 
 		err = scheduleSystems.add(func(r *resourceA) { r.value = 20 }, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
-		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
-		assert.Empty(errors)
+		errs := scheduleSystems.Exec(world, nil, &eventStorage, 1)
+		assert.Empty(errs)
 		assert.Equal(20, resource.value)
 	})
 
@@ -267,9 +266,9 @@ func TestExecSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 
 		resource := resourceA{value: 10}
 
@@ -278,8 +277,8 @@ func TestExecSystem(t *testing.T) {
 
 		err = scheduleSystems.add(func(r resourceA) { r.value = 20 }, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
-		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
-		assert.Empty(errors)
+		errs := scheduleSystems.Exec(world, nil, &eventStorage, 1)
+		assert.Empty(errs)
 		assert.Equal(10, resource.value)
 	})
 
@@ -287,40 +286,35 @@ func TestExecSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 
 		resource := resourceA{value: 10}
 
 		err := world.Resources().Add(&resource)
 		assert.NoError(err)
 
-		// first system updates the resource
 		err = scheduleSystems.add(func(r *resourceA) { r.value = 20 }, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
-		// second system should have the updated resource value
 		err = scheduleSystems.add(func(r resourceA) {
 			assert.Equal(20, r.value)
-			r.value = 30 // should not do anything
+			r.value = 30
 		}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
-		// third system should have the updated resource value from the first system
 		err = scheduleSystems.add(func(r resourceA) {
 			assert.Equal(20, r.value)
 		}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
-		// fourth system should also have the updated resource value from the first system
 		err = scheduleSystems.add(func(r *resourceA) {
 			assert.Equal(20, r.value)
 			r.value = 40
 		}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
-		// fifth system should have an updated value from the fourth system
 		err = scheduleSystems.add(func(r resourceA) {
 			assert.Equal(40, r.value)
 		}, "", world, nil, &logger, &eventStorage)
@@ -332,99 +326,99 @@ func TestExecSystem(t *testing.T) {
 	t.Run("OuterResource with resource pointer can mutate", func(t *testing.T) {
 		assert := assert.New(t)
 
-		outerWorldConfigs := ecs.DefaultWorldConfigs()
-		outerWorldConfigs.Id = &ecs.TestCustomTargetWorldId
-		outerWorld, err := ecs.NewWorld(outerWorldConfigs)
+		outerWorldConfigs := DefaultWorldConfigs()
+		outerWorldConfigs.Id = &TestCustomTargetWorldId
+		outerWorld, err := NewWorld(outerWorldConfigs)
 		assert.NoError(err)
-		outerWorlds := map[ecs.WorldId]*ecs.World{
-			ecs.TestCustomTargetWorldId: &outerWorld,
+		outerWorlds := map[WorldId]*World{
+			TestCustomTargetWorldId: &outerWorld,
 		}
 
 		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 
 		resource := resourceA{value: 7}
 		err = outerWorld.Resources().Add(&resource)
 		assert.NoError(err)
 
-		err = scheduleSystems.add(func(res ecs.OuterResource[*resourceA, ecs.TestCustomTargetWorld]) {
+		err = scheduleSystems.add(func(res OuterResource[*resourceA, TestCustomTargetWorld]) {
 			assert.Equal(7, res.Value.value)
 			res.Value.value = 77
 		}, "", world, &outerWorlds, &logger, &eventStorage)
 		assert.NoError(err)
 
-		err = scheduleSystems.add(func(res ecs.OuterResource[*resourceA, ecs.TestCustomTargetWorld]) {
+		err = scheduleSystems.add(func(res OuterResource[*resourceA, TestCustomTargetWorld]) {
 			assert.Equal(77, res.Value.value)
 		}, "", world, &outerWorlds, &logger, &eventStorage)
 		assert.NoError(err)
 
 		assert.NoError(scheduleSystems.prepare(&outerWorlds))
 
-		errors := scheduleSystems.Exec(world, &outerWorlds, &eventStorage, 1)
-		assert.Empty(errors)
+		errs := scheduleSystems.Exec(world, &outerWorlds, &eventStorage, 1)
+		assert.Empty(errs)
 	})
 
 	t.Run("OuterResource without resource pointer can not mutate", func(t *testing.T) {
 		assert := assert.New(t)
 
-		outerWorldConfigs := ecs.DefaultWorldConfigs()
-		outerWorldConfigs.Id = &ecs.TestCustomTargetWorldId
-		outerWorld, err := ecs.NewWorld(outerWorldConfigs)
+		outerWorldConfigs := DefaultWorldConfigs()
+		outerWorldConfigs.Id = &TestCustomTargetWorldId
+		outerWorld, err := NewWorld(outerWorldConfigs)
 		assert.NoError(err)
-		outerWorlds := map[ecs.WorldId]*ecs.World{
-			ecs.TestCustomTargetWorldId: &outerWorld,
+		outerWorlds := map[WorldId]*World{
+			TestCustomTargetWorldId: &outerWorld,
 		}
 
 		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 
 		resource := resourceA{value: 7}
 		err = outerWorld.Resources().Add(&resource)
 		assert.NoError(err)
 
-		err = scheduleSystems.add(func(res ecs.OuterResource[*resourceA, ecs.TestCustomTargetWorld]) {
+		err = scheduleSystems.add(func(res OuterResource[*resourceA, TestCustomTargetWorld]) {
 			assert.Equal(7, res.Value.value)
 			res.Value.value = 77
 		}, "", world, &outerWorlds, &logger, &eventStorage)
 		assert.NoError(err)
 
-		err = scheduleSystems.add(func(res ecs.OuterResource[resourceA, ecs.TestCustomTargetWorld]) {
+		err = scheduleSystems.add(func(res OuterResource[resourceA, TestCustomTargetWorld]) {
 			assert.Equal(7, res.Value.value)
 		}, "", world, &outerWorlds, &logger, &eventStorage)
 		assert.NoError(err)
 
 		assert.NoError(scheduleSystems.prepare(&outerWorlds))
 
-		errors := scheduleSystems.Exec(world, &outerWorlds, &eventStorage, 1)
-		assert.Empty(errors)
+		errs := scheduleSystems.Exec(world, &outerWorlds, &eventStorage, 1)
+		assert.Empty(errs)
 	})
 
 	t.Run("non-pointer OuterResource is updated between executions", func(t *testing.T) {
 		assert := assert.New(t)
 
-		outerWorldConfigs := ecs.DefaultWorldConfigs()
-		outerWorldConfigs.Id = &ecs.TestCustomTargetWorldId
-		outerWorld, err := ecs.NewWorld(outerWorldConfigs)
+		outerWorldConfigs := DefaultWorldConfigs()
+		outerWorldConfigs.Id = &TestCustomTargetWorldId
+		outerWorld, err := NewWorld(outerWorldConfigs)
 		assert.NoError(err)
-		outerWorlds := map[ecs.WorldId]*ecs.World{
-			ecs.TestCustomTargetWorldId: &outerWorld,
+		outerWorlds := map[WorldId]*World{
+			TestCustomTargetWorldId: &outerWorld,
 		}
 
 		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 
 		resource := resourceA{value: 7}
 		err = outerWorld.Resources().Add(&resource)
 		assert.NoError(err)
 
 		execCount := 0
-		err = scheduleSystems.add(func(res ecs.OuterResource[resourceA, ecs.TestCustomTargetWorld]) {
+		err = scheduleSystems.add(func(res OuterResource[resourceA, TestCustomTargetWorld]) {
 			if execCount == 0 {
 				assert.Equal(7, res.Value.value)
 			} else {
@@ -436,14 +430,13 @@ func TestExecSystem(t *testing.T) {
 
 		assert.NoError(scheduleSystems.prepare(&outerWorlds))
 
-		errors := scheduleSystems.Exec(world, &outerWorlds, &eventStorage, 1)
-		assert.Empty(errors)
+		errs := scheduleSystems.Exec(world, &outerWorlds, &eventStorage, 1)
+		assert.Empty(errs)
 
-		// Mutate the resource in the outer world between executions
 		resource.value = 77
 
-		errors = scheduleSystems.Exec(world, &outerWorlds, &eventStorage, 2)
-		assert.Empty(errors)
+		errs = scheduleSystems.Exec(world, &outerWorlds, &eventStorage, 2)
+		assert.Empty(errs)
 		assert.Equal(2, execCount)
 	})
 
@@ -451,66 +444,66 @@ func TestExecSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 
 		err := scheduleSystems.add(func() {}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
-		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
+		errs := scheduleSystems.Exec(world, nil, &eventStorage, 1)
 
-		assert.Empty(errors)
+		assert.Empty(errs)
 	})
 
 	t.Run("returns no errors if the system does not return an error", func(t *testing.T) {
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 
 		err := scheduleSystems.add(func() error { return nil }, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
-		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
+		errs := scheduleSystems.Exec(world, nil, &eventStorage, 1)
 
-		assert.Empty(errors)
+		assert.Empty(errs)
 	})
 
 	t.Run("returns an error if the system returns an error", func(t *testing.T) {
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 
 		err := scheduleSystems.add(func() error { return errors.New("oops") }, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
-		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
+		errs := scheduleSystems.Exec(world, nil, &eventStorage, 1)
 
-		assert.Len(errors, 1)
+		assert.Len(errs, 1)
 	})
 
 	t.Run("automatically execute non-lazy queries in system params before executing systems", func(t *testing.T) {
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 
-		_, err := ecs.Spawn(world, &componentA{})
+		_, err := Spawn(world, &componentA{})
 		assert.NoError(err)
 
 		numberOfResults := 0
-		err = scheduleSystems.add(func(q *ecs.Query1[componentA, ecs.Default]) {
+		err = scheduleSystems.add(func(q *Query1[componentA, Default]) {
 			numberOfResults = int(q.NumberOfResult())
 		}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
-		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
-		assert.Empty(errors)
+		errs := scheduleSystems.Exec(world, nil, &eventStorage, 1)
+		assert.Empty(errs)
 
 		assert.Equal(1, numberOfResults)
 	})
@@ -519,21 +512,21 @@ func TestExecSystem(t *testing.T) {
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 
-		_, err := ecs.Spawn(world, &componentA{})
+		_, err := Spawn(world, &componentA{})
 		assert.NoError(err)
 
 		numberOfResults := 0
-		err = scheduleSystems.add(func(q *ecs.Query1[componentA, ecs.Lazy]) {
+		err = scheduleSystems.add(func(q *Query1[componentA, Lazy]) {
 			numberOfResults = int(q.NumberOfResult())
 		}, "", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
-		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
-		assert.Empty(errors)
+		errs := scheduleSystems.Exec(world, nil, &eventStorage, 1)
+		assert.Empty(errs)
 
 		assert.Equal(0, numberOfResults)
 	})
@@ -541,37 +534,37 @@ func TestExecSystem(t *testing.T) {
 	t.Run("executes query to outer world", func(t *testing.T) {
 		assert := assert.New(t)
 
-		outerWorldConfigs := ecs.DefaultWorldConfigs()
-		outerWorldConfigs.Id = &ecs.TestCustomTargetWorldId
-		outerWorld, err := ecs.NewWorld(outerWorldConfigs)
+		outerWorldConfigs := DefaultWorldConfigs()
+		outerWorldConfigs.Id = &TestCustomTargetWorldId
+		outerWorld, err := NewWorld(outerWorldConfigs)
 		assert.NoError(err)
-		outerWorlds := map[ecs.WorldId]*ecs.World{
-			ecs.TestCustomTargetWorldId: &outerWorld,
+		outerWorlds := map[WorldId]*World{
+			TestCustomTargetWorldId: &outerWorld,
 		}
 
 		scheduleSystems := ScheduleSystems{}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 
-		_, err = ecs.Spawn(&outerWorld, &componentA{})
+		_, err = Spawn(&outerWorld, &componentA{})
 		assert.NoError(err)
 
 		numberOfResults := 0
-		err = scheduleSystems.add(func(q *ecs.Query1[componentA, ecs.TestCustomTargetWorld]) {
+		err = scheduleSystems.add(func(q *Query1[componentA, TestCustomTargetWorld]) {
 			numberOfResults = int(q.NumberOfResult())
 		}, "", world, &outerWorlds, &logger, &eventStorage)
 		assert.NoError(err)
 
-		errors := scheduleSystems.Exec(world, &outerWorlds, &eventStorage, 1)
-		assert.Empty(errors)
+		errs := scheduleSystems.Exec(world, &outerWorlds, &eventStorage, 1)
+		assert.Empty(errs)
 
 		assert.Equal(1, numberOfResults)
 	})
 
 	t.Run("event system", func(t *testing.T) {
 		type testEvent struct {
-			ecs.Event
+			Event
 			id int
 		}
 
@@ -582,9 +575,9 @@ func TestExecSystem(t *testing.T) {
 		scheduleSystems1 := &ScheduleSystems{id: 1}
 		scheduleSystems2 := &ScheduleSystems{id: 2}
 		scheduleSystems3 := &ScheduleSystems{id: 3}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 
 		eventsFromScheduleSystems1 := []*testEvent{}
 		eventsFromScheduleSystems2 := []*testEvent{}
@@ -592,7 +585,7 @@ func TestExecSystem(t *testing.T) {
 		doWriteEvent := true
 
 		err := scheduleSystems1.add(
-			func(eventReader *ecs.EventReader[*testEvent]) {
+			func(eventReader *EventReader[*testEvent]) {
 				eventsFromScheduleSystems1 = []*testEvent{}
 
 				for event := range eventReader.Read {
@@ -603,7 +596,7 @@ func TestExecSystem(t *testing.T) {
 		assert.NoError(err)
 
 		err = scheduleSystems2.add(
-			func(eventWriter *ecs.EventWriter[*testEvent]) {
+			func(eventWriter *EventWriter[*testEvent]) {
 				if doWriteEvent {
 					eventWriter.Write(&testEvent{id: 3})
 				}
@@ -611,7 +604,7 @@ func TestExecSystem(t *testing.T) {
 			"", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 		err = scheduleSystems2.add(
-			func(eventReader *ecs.EventReader[*testEvent]) {
+			func(eventReader *EventReader[*testEvent]) {
 				eventsFromScheduleSystems2 = []*testEvent{}
 
 				for event := range eventReader.Read {
@@ -622,7 +615,7 @@ func TestExecSystem(t *testing.T) {
 		assert.NoError(err)
 
 		err = scheduleSystems3.add(
-			func(eventReader *ecs.EventReader[*testEvent]) {
+			func(eventReader *EventReader[*testEvent]) {
 				eventsFromScheduleSystems3 = []*testEvent{}
 
 				for event := range eventReader.Read {
@@ -632,15 +625,14 @@ func TestExecSystem(t *testing.T) {
 			"", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
-		executeScheduleSystemss := func(tick uint) {
-			for _, scheduleSystems := range []*ScheduleSystems{scheduleSystems1, scheduleSystems2, scheduleSystems3} {
-				errors := scheduleSystems.Exec(world, nil, &eventStorage, tick)
-				assert.Empty(errors)
+		executeAll := func(tick uint) {
+			for _, ss := range []*ScheduleSystems{scheduleSystems1, scheduleSystems2, scheduleSystems3} {
+				errs := ss.Exec(world, nil, &eventStorage, tick)
+				assert.Empty(errs)
 			}
 		}
 
-		// first run (event written by scheduleSystems1)
-		executeScheduleSystemss(1)
+		executeAll(1)
 
 		assert.Empty(eventsFromScheduleSystems1)
 		assert.Empty(eventsFromScheduleSystems2)
@@ -649,8 +641,7 @@ func TestExecSystem(t *testing.T) {
 
 		doWriteEvent = false
 
-		// second run
-		executeScheduleSystemss(2)
+		executeAll(2)
 
 		assert.Len(eventsFromScheduleSystems1, 1)
 		assert.Equal(eventId, eventsFromScheduleSystems1[0].id)
@@ -658,55 +649,54 @@ func TestExecSystem(t *testing.T) {
 		assert.Equal(eventId, eventsFromScheduleSystems2[0].id)
 		assert.Empty(eventsFromScheduleSystems3)
 
-		// third run
-		executeScheduleSystemss(3)
+		executeAll(3)
 		assert.Empty(eventsFromScheduleSystems1)
 		assert.Empty(eventsFromScheduleSystems2)
 		assert.Empty(eventsFromScheduleSystems3)
 	})
 
 	t.Run("EventReader without an EventWriter", func(t *testing.T) {
-		type testEvent struct{ ecs.Event }
+		type testEvent struct{ Event }
 
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{id: 1}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 		err := scheduleSystems.add(
-			func(eventReader *ecs.EventReader[*testEvent]) {
+			func(eventReader *EventReader[*testEvent]) {
 				for range eventReader.Read {
 				}
 			},
 			"", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
-		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
-		assert.Empty(errors)
-		errors = scheduleSystems.Exec(world, nil, &eventStorage, 2)
-		assert.Empty(errors)
+		errs := scheduleSystems.Exec(world, nil, &eventStorage, 1)
+		assert.Empty(errs)
+		errs = scheduleSystems.Exec(world, nil, &eventStorage, 2)
+		assert.Empty(errs)
 	})
 
 	t.Run("EventWriter without an EventReader", func(t *testing.T) {
-		type testEvent struct{ ecs.Event }
+		type testEvent struct{ Event }
 
 		assert := assert.New(t)
 
 		scheduleSystems := ScheduleSystems{id: 1}
-		world := ecs.NewDefaultWorld()
+		world := NewDefaultWorld()
 		logger := NoOpLogger{}
-		eventStorage := ecs.NewEventStorage()
+		eventStorage := NewEventStorage()
 		err := scheduleSystems.add(
-			func(eventWriter *ecs.EventWriter[*testEvent]) {
+			func(eventWriter *EventWriter[*testEvent]) {
 				eventWriter.Write(&testEvent{})
 			},
 			"", world, nil, &logger, &eventStorage)
 		assert.NoError(err)
 
-		errors := scheduleSystems.Exec(world, nil, &eventStorage, 1)
-		assert.Empty(errors)
-		errors = scheduleSystems.Exec(world, nil, &eventStorage, 2)
-		assert.Empty(errors)
+		errs := scheduleSystems.Exec(world, nil, &eventStorage, 1)
+		assert.Empty(errs)
+		errs = scheduleSystems.Exec(world, nil, &eventStorage, 2)
+		assert.Empty(errs)
 	})
 }

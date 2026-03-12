@@ -2,6 +2,7 @@ package ecs
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 )
 
@@ -22,6 +23,11 @@ type World struct {
 
 	initialComponentCapacityStrategy initialComponentCapacityStrategy
 	componentCapacityGrowthStrategy  componentCapacityGrowthStrategy
+
+	scheduler                Scheduler
+	outerWorlds              map[WorldId]*World
+	logger                   Logger
+	scheduleSystemsIdCounter ScheduleSystemsId
 
 	Mutex sync.RWMutex
 }
@@ -49,6 +55,11 @@ func NewWorld(configs WorldConfigs) (World, error) {
 		return World{}, errors.New("config ComponentCapacityGrowthStrategy can not be nil")
 	}
 
+	logger := configs.Logger
+	if logger == nil {
+		logger = &NoOpLogger{}
+	}
+
 	return World{
 		entities:                         map[EntityId]*EntityData{},
 		id:                               configs.Id,
@@ -59,6 +70,9 @@ func NewWorld(configs WorldConfigs) (World, error) {
 		resources:                        newResourceStorage(),
 		observers:                        newObserverRegistry(),
 		events:                           NewEventStorage(),
+		scheduler:                        newScheduler(),
+		outerWorlds:                      map[WorldId]*World{},
+		logger:                           logger,
 	}, nil
 }
 
@@ -96,6 +110,97 @@ func (world *World) Resources() *resourceStorage {
 
 func (world *World) Events() *EventStorage {
 	return &world.events
+}
+
+// AddSchedule adds a schedule that systems can be added to.
+func (world *World) AddSchedule(schedule Schedule, order ScheduleOrder, isPaused bool) error {
+	if order == nil {
+		order = ScheduleLast{}
+	}
+
+	world.scheduleSystemsIdCounter++
+	return world.scheduler.addSchedule(schedule, world.scheduleSystemsIdCounter, order, isPaused)
+}
+
+// AddSystem adds a system to the given schedule. Systems must be functions.
+func (world *World) AddSystem(schedule Schedule, system System) error {
+	return world.AddSystemWithSource(schedule, system, callerSource(1))
+}
+
+// AddSystemWithSource adds a system to the given schedule with an explicit source path for error messages.
+func (world *World) AddSystemWithSource(schedule Schedule, system System, source string) error {
+	return world.scheduler.addSystem(schedule, system, source, world, &world.outerWorlds, world.logger, world.Events())
+}
+
+// SetSchedulePaused pauses or unpauses a schedule.
+func (world *World) SetSchedulePaused(schedule Schedule, isPaused bool) error {
+	systems, exists := world.scheduler.systems[schedule]
+	if !exists {
+		return fmt.Errorf("%w: %s", ErrScheduleNotFound, schedule)
+	}
+
+	currentlyPaused := systems.isPaused.Load()
+	if currentlyPaused == isPaused {
+		return nil
+	}
+
+	if !currentlyPaused && isPaused {
+		systems.isFirstExecSincePaused = true
+	}
+	systems.isPaused.Store(isPaused)
+
+	return nil
+}
+
+// RegisterOuterWorld lets systems query components and resources from another world.
+func (world *World) RegisterOuterWorld(id WorldId, other *World) error {
+	if _, exists := world.outerWorlds[id]; exists {
+		return fmt.Errorf("id %d is already registered", id)
+	}
+
+	world.outerWorlds[id] = other
+	return nil
+}
+
+// OuterWorlds returns the map of registered outer worlds.
+func (world *World) OuterWorlds() *map[WorldId]*World {
+	return &world.outerWorlds
+}
+
+// GetScheduleSystems returns all [ScheduleSystems] in their execution order.
+func (world *World) GetScheduleSystems() ([]*ScheduleSystems, error) {
+	return world.scheduler.getScheduleSystems()
+}
+
+// GetScheduleSystemsBySchedules returns the [ScheduleSystems] for the given schedule names, in order.
+func (world *World) GetScheduleSystemsBySchedules(schedules []Schedule) ([]*ScheduleSystems, error) {
+	return world.scheduler.getScheduleSystemsBySchedules(schedules)
+}
+
+// PrepareSystems resolves outer-resource system params for all schedules.
+func (world *World) PrepareSystems() error {
+	scheduleSystems, err := world.scheduler.getScheduleSystems()
+	if err != nil {
+		return fmt.Errorf("failed to get schedule systems: %w", err)
+	}
+
+	for _, systems := range scheduleSystems {
+		if err := systems.prepare(&world.outerWorlds); err != nil {
+			return fmt.Errorf("failed to prepare systems: %w", err)
+		}
+	}
+
+	return nil
+}
+
+// NumberOfSystems returns the total number of systems across all schedules.
+func (world *World) NumberOfSystems() uint {
+	return world.scheduler.numberOfSystems()
+}
+
+// NumberOfSchedules returns the total number of registered schedules.
+func (world *World) NumberOfSchedules() uint {
+	return world.scheduler.numberOfSchedules()
 }
 
 type WorldStats struct {
