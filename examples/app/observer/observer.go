@@ -50,7 +50,7 @@ func main() {
 
 	myApp.
 		AddSystem(startup, spawn).
-		AddSystem(startup, observerExtinction).
+		AddSystem(startup, registerExtinctionObserver).
 		AddSystem(update, letNpcTalk).
 		AddSystem(update, randomlyTriggerExtinction)
 
@@ -64,7 +64,7 @@ func spawn(world *ecs.World) error {
 			return fmt.Errorf("failed to spawn npc %d: %w", i+1, err)
 		}
 
-		err = ecs.Observe(world, npcEntity, npcTalkObserver)
+		err = ecs.Observe[talk](world, npcEntity, npcTalkObserver)
 		if err != nil {
 			return fmt.Errorf("failed to add observer for npc %d: %w", i+1, err)
 		}
@@ -86,14 +86,15 @@ func letNpcTalk(world *ecs.World, query *ecs.Query1[npc, ecs.Default]) error {
 	})
 }
 
-func observerExtinction(
-	world *ecs.World,
-	npcQuery *ecs.Query0[ecs.QueryOptions2[
-		ecs.With[npc],
-		ecs.Lazy,
-	]],
-) {
-	ecs.On(world, func(world *ecs.World, _ extinction) {
+func registerExtinctionObserver(world *ecs.World) error {
+	return ecs.On[extinction](world, func(
+		world *ecs.World,
+		npcQuery *ecs.Query0[ecs.QueryOptions2[
+			ecs.With[npc],
+			ecs.Lazy,
+		]],
+		_ extinction,
+	) {
 		fmt.Println("! extinction !")
 
 		err := npcQuery.Exec(world)

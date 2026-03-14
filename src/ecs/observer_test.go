@@ -17,13 +17,13 @@ func TestGlobalObserver(t *testing.T) {
 
 	t.Run("Spawn nil observer does nothing", func(t *testing.T) {
 		world := NewDefaultWorld()
-		On[observer1](world, nil)
+		assert.NoError(t, On[observer1](world, nil))
 	})
 
 	t.Run("Spawn observer pointer panics", func(t *testing.T) {
 		world := NewDefaultWorld()
 		assert.Panics(t, func() {
-			On(world, func(world *World, observer *observer1) {})
+			_ = On[*observer1](world, func(world *World, observer *observer1) {})
 		})
 	})
 
@@ -34,12 +34,12 @@ func TestGlobalObserver(t *testing.T) {
 
 		var observed1, observed2 uint
 
-		On(world, func(world *World, observer observer1) {
+		assert.NoError(On[observer1](world, func(world *World, observer observer1) {
 			observed1++
-		})
-		On(world, func(world *World, observer observer2) {
+		}))
+		assert.NoError(On[observer2](world, func(world *World, observer observer2) {
 			observed2++
-		})
+		}))
 
 		Trigger(world, observer1{})
 		Trigger(world, observer2{})
@@ -62,14 +62,14 @@ func TestGlobalObserver(t *testing.T) {
 		nrObserved := 0
 		var expectedEntityId EntityId
 
-		On(world, func(world *World, observed OnSpawn[myComponent1]) {
+		assert.NoError(On[OnSpawn[myComponent1]](world, func(world *World, observed OnSpawn[myComponent1]) {
 			nrObserved++
 			assert.Equal(expectedEntityId, observed.Entity)
-		})
+		}))
 
-		On(world, func(world *World, observed OnDespawn[myComponent1]) {
+		assert.NoError(On[OnDespawn[myComponent1]](world, func(world *World, observed OnDespawn[myComponent1]) {
 			assert.FailNow("did not expect OnDespawn to trigger")
-		})
+		}))
 
 		expectedEntityId = 1
 		_, err := Spawn(world, myComponent1{}) // triggers
@@ -93,10 +93,10 @@ func TestGlobalObserver(t *testing.T) {
 		nrObserved := 0
 		var expectedEntityId EntityId
 
-		On(world, func(world *World, observed OnDespawn[myComponent1]) {
+		assert.NoError(On[OnDespawn[myComponent1]](world, func(world *World, observed OnDespawn[myComponent1]) {
 			nrObserved++
 			assert.Equal(expectedEntityId, observed.Entity)
-		})
+		}))
 
 		id1, err := Spawn(world, myComponent1{}) // despawn will trigger
 		assert.NoError(err)
@@ -134,7 +134,7 @@ func TestEntityObserver(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
-		err := Observe(world, EntityId(5), func(world *World, o observer1) {})
+		err := Observe[observer1](world, EntityId(5), func(world *World, o observer1) {})
 		assert.ErrorIs(err, ErrEntityNotFound)
 	})
 
@@ -160,9 +160,9 @@ func TestEntityObserver(t *testing.T) {
 
 			var triggersForEntity1, triggersForEntity2 uint
 
-			err = Observe(world, e1, func(world *World, o observer1) { triggersForEntity1++ })
+			err = Observe[observer1](world, e1, func(world *World, o observer1) { triggersForEntity1++ })
 			assert.NoError(err)
-			err = Observe(world, e2, func(world *World, o observer1) { triggersForEntity2++ })
+			err = Observe[observer1](world, e2, func(world *World, o observer1) { triggersForEntity2++ })
 			assert.NoError(err)
 
 			err = TriggerEntity(world, e1, observer1{})
@@ -179,9 +179,9 @@ func TestEntityObserver(t *testing.T) {
 			assert.NoError(err)
 
 			var triggersForObserve1, triggersForObserve2 uint
-			err = Observe(world, entity, func(world *World, o observer1) { triggersForObserve1++ })
+			err = Observe[observer1](world, entity, func(world *World, o observer1) { triggersForObserve1++ })
 			assert.NoError(err)
-			err = Observe(world, entity, func(world *World, o observer2) { triggersForObserve2++ })
+			err = Observe[observer2](world, entity, func(world *World, o observer2) { triggersForObserve2++ })
 			assert.NoError(err)
 
 			err = TriggerEntity(world, entity, observer1{})
@@ -201,7 +201,7 @@ func TestEntityObserver(t *testing.T) {
 
 			entity, err := Spawn(world, myComponent1{})
 			assert.NoError(err)
-			assert.NoError(Observe(world, entity, func(world *World, o OnDespawn[myComponent1]) { numberOfTriggers++ }))
+			assert.NoError(Observe[OnDespawn[myComponent1]](world, entity, func(world *World, o OnDespawn[myComponent1]) { numberOfTriggers++ }))
 			assert.NoError(Remove1[myComponent1](world, entity))
 
 			assert.Equal(1, numberOfTriggers)
@@ -216,7 +216,7 @@ func TestEntityObserver(t *testing.T) {
 
 			entity, err := Spawn(world, myComponent1{})
 			assert.NoError(err)
-			assert.NoError(Observe(world, entity, func(world *World, o OnDespawn[myComponent1]) { numberOfTriggers++ }))
+			assert.NoError(Observe[OnDespawn[myComponent1]](world, entity, func(world *World, o OnDespawn[myComponent1]) { numberOfTriggers++ }))
 			assert.NoError(Despawn(world, entity))
 
 			assert.Equal(1, numberOfTriggers)
@@ -233,7 +233,7 @@ func TestEntityObserver(t *testing.T) {
 
 			entity, err := Spawn(world, myComponent1{})
 			assert.NoError(err)
-			assert.NoError(Observe(world, entity, func(world *World, o OnSpawn[myComponent2]) { numberOfTriggers++ }))
+			assert.NoError(Observe[OnSpawn[myComponent2]](world, entity, func(world *World, o OnSpawn[myComponent2]) { numberOfTriggers++ }))
 			assert.NoError(Insert(world, entity, myComponent2{}))
 
 			assert.Equal(1, numberOfTriggers)
@@ -248,7 +248,7 @@ func TestEntityObserver(t *testing.T) {
 
 			entity, err := Spawn(world, myComponent1{})
 			assert.NoError(err)
-			assert.NoError(Observe(world, entity, func(world *World, o OnSpawn[myComponent2]) { numberOfTriggers++ }))
+			assert.NoError(Observe[OnSpawn[myComponent2]](world, entity, func(world *World, o OnSpawn[myComponent2]) { numberOfTriggers++ }))
 			assert.NoError(InsertOrOverwrite(world, entity, myComponent2{}))
 
 			assert.Equal(1, numberOfTriggers)

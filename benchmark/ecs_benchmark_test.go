@@ -748,21 +748,21 @@ func fillWorld(world *ecs.World) error {
 
 func BenchmarkObservers(b *testing.B) {
 	b.Run("custom observer", func(b *testing.B) {
-		type onSomething struct{ ecs.Observer }
+		type someEvent struct{ ecs.Observer }
 
 		b.Run("register", func(b *testing.B) {
 			for b.Loop() {
 				world := ecs.NewDefaultWorld()
-				ecs.On(world, func(*ecs.World, onSomething) {})
+				ecs.On[someEvent](world, func(*ecs.World, someEvent) {})
 			}
 		})
 
 		b.Run("trigger", func(b *testing.B) {
 			world := ecs.NewDefaultWorld()
-			ecs.On(world, func(*ecs.World, onSomething) {})
+			ecs.On[someEvent](world, func(*ecs.World, someEvent) {})
 
 			for b.Loop() {
-				ecs.Trigger(world, onSomething{})
+				ecs.Trigger(world, someEvent{})
 			}
 		})
 	})
@@ -777,7 +777,7 @@ func BenchmarkObservers(b *testing.B) {
 		b.Run("spawn 1 observed", func(b *testing.B) {
 			for b.Loop() {
 				world := ecs.NewDefaultWorld()
-				ecs.On(world, func(*ecs.World, ecs.OnSpawn[emptyComponentA]) {})
+				ecs.On[ecs.OnSpawn[emptyComponentA]](world, func(*ecs.World, ecs.OnSpawn[emptyComponentA]) {})
 				ecs.Spawn(world, emptyComponentA{})
 			}
 		})
@@ -790,7 +790,7 @@ func BenchmarkObservers(b *testing.B) {
 		b.Run("spawn 2 with 1 observer and 1 non-observed", func(b *testing.B) {
 			for b.Loop() {
 				world := ecs.NewDefaultWorld()
-				ecs.On(world, func(*ecs.World, ecs.OnSpawn[emptyComponentA]) {})
+				ecs.On[ecs.OnSpawn[emptyComponentA]](world, func(*ecs.World, ecs.OnSpawn[emptyComponentA]) {})
 				ecs.Spawn(world, emptyComponentA{}, emptyComponentB{})
 			}
 		})
@@ -807,7 +807,7 @@ func BenchmarkObservers(b *testing.B) {
 		b.Run("despawn 1 observed", func(b *testing.B) {
 			for b.Loop() {
 				world := ecs.NewDefaultWorld()
-				ecs.On(world, func(*ecs.World, ecs.OnDespawn[emptyComponentA]) {})
+				ecs.On[ecs.OnDespawn[emptyComponentA]](world, func(*ecs.World, ecs.OnDespawn[emptyComponentA]) {})
 				entity, _ := ecs.Spawn(world, emptyComponentA{})
 				ecs.Despawn(world, entity)
 			}
@@ -822,7 +822,7 @@ func BenchmarkObservers(b *testing.B) {
 		b.Run("despawn 2 with 1 observer and 1 non-observed", func(b *testing.B) {
 			for b.Loop() {
 				world := ecs.NewDefaultWorld()
-				ecs.On(world, func(*ecs.World, ecs.OnDespawn[emptyComponentA]) {})
+				ecs.On[ecs.OnDespawn[emptyComponentA]](world, func(*ecs.World, ecs.OnDespawn[emptyComponentA]) {})
 				entity, _ := ecs.Spawn(world, emptyComponentA{}, emptyComponentB{})
 				ecs.Despawn(world, entity)
 			}

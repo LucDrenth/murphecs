@@ -53,7 +53,7 @@ func (OnSpawn[C]) componentId(world *World) ComponentId {
 	return ComponentIdFor[C](world)
 }
 
-// OnSpawn is triggered when:
+// OnDespawn is triggered when:
 //   - component [C] gets removed from an entity using [Remove1], [Remove2] and so on
 //   - an entity with component [C] gets despawned using [Despawn]
 //
@@ -71,9 +71,10 @@ func (OnDespawn[C]) componentId(world *World) ComponentId {
 	return ComponentIdFor[C](world)
 }
 
-// On registers a global observer
-func On[O AnyObserver](world *World, action func(world *World, observed O)) {
-	registerObserver(&world.observers, world, action)
+// On registers a global observer. The action must be a system (function) that can optionally
+// take O as a parameter, which will be set to the triggered observer value before running.
+func On[O AnyObserver](world *World, action System) error {
+	return registerObserver[O](&world.observers, world, action, callerSource(1))
 }
 
 // Trigger triggers all registered observers for the given observer
@@ -81,7 +82,7 @@ func Trigger[O AnyObserver](world *World, observed O) {
 	triggerObserver(world, &world.observers, observed)
 }
 
-// Trigger triggers all registered observers for the given observer
+// TriggerEntity triggers all registered observers for the given observer on a specific entity
 func TriggerEntity[O AnyObserver](world *World, entity EntityId, observed O) error {
 	entityData, exists := world.entities[entity]
 	if !exists {
@@ -95,17 +96,19 @@ func TriggerEntity[O AnyObserver](world *World, entity EntityId, observed O) err
 	return nil
 }
 
-// Observe registers an entity-specific observer
-func Observe[O AnyObserver](world *World, entity EntityId, action func(world *World, observed O)) error {
+// Observe registers an entity-specific observer. The action must be a system (function) that
+// can optionally take O as a parameter, which will be set to the triggered observer value before
+// running.
+func Observe[O AnyObserver](world *World, entity EntityId, action System) error {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return ErrEntityNotFound
 	}
 
 	if entityData.observers == nil {
-		entityData.observers = new(newObserverRegistry())
+		obs := newObserverRegistry()
+		entityData.observers = &obs
 	}
-	registerObserver(entityData.observers, world, action)
 
-	return nil
+	return registerObserver[O](entityData.observers, world, action, callerSource(1))
 }
