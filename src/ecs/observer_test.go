@@ -255,3 +255,279 @@ func TestEntityObserver(t *testing.T) {
 		})
 	})
 }
+
+func TestObserverSystemParams(t *testing.T) {
+	type myObserver struct{ Observer }
+
+	t.Run("Resource", func(t *testing.T) {
+		type myResource struct{ value int }
+
+		t.Run("can register observer with resource by pointer", func(t *testing.T) {
+			assert := assert.New(t)
+			world := NewDefaultWorld()
+			assert.NoError(world.Resources().Add(&myResource{}))
+			assert.NoError(On[myObserver](world, func(_ myObserver, _ *myResource) {}))
+		})
+
+		t.Run("can register observer with resource by value", func(t *testing.T) {
+			assert := assert.New(t)
+			world := NewDefaultWorld()
+			assert.NoError(world.Resources().Add(&myResource{}))
+			assert.NoError(On[myObserver](world, func(_ myObserver, _ myResource) {}))
+		})
+
+		t.Run("resource by pointer can be mutated", func(t *testing.T) {
+			assert := assert.New(t)
+			world := NewDefaultWorld()
+			assert.NoError(world.Resources().Add(&myResource{value: 1}))
+			assert.NoError(On[myObserver](world, func(_ myObserver, res *myResource) { res.value++ }))
+			Trigger(world, myObserver{})
+			res, err := GetResource[myResource](world)
+			assert.NoError(err)
+			assert.Equal(2, res.value)
+		})
+
+		t.Run("resource by value cannot be mutated", func(t *testing.T) {
+			assert := assert.New(t)
+			world := NewDefaultWorld()
+			assert.NoError(world.Resources().Add(&myResource{value: 1}))
+			assert.NoError(On[myObserver](world, func(_ myObserver, res myResource) { res.value++ }))
+			Trigger(world, myObserver{})
+			res, err := GetResource[myResource](world)
+			assert.NoError(err)
+			assert.Equal(1, res.value)
+		})
+
+		t.Run("fails if resource is not added", func(t *testing.T) {
+			assert := assert.New(t)
+			world := NewDefaultWorld()
+			assert.Error(On[myObserver](world, func(_ myObserver, _ *myResource) {}))
+		})
+	})
+
+	t.Run("EventReader", func(t *testing.T) {
+		type myEvent struct{ Event }
+
+		t.Run("can register observer with EventReader", func(t *testing.T) {
+			assert := assert.New(t)
+			world := NewDefaultWorld()
+			assert.NoError(On[myObserver](world, func(_ myObserver, _ *EventReader[*myEvent]) {}))
+		})
+
+		t.Run("fails if EventReader is not a pointer", func(t *testing.T) {
+			assert := assert.New(t)
+			world := NewDefaultWorld()
+			assert.ErrorIs(On[myObserver](world, func(_ myObserver, _ EventReader[*myEvent]) {}), ErrSystemParamEventReaderNotAPointer)
+		})
+
+		t.Run("observer can read events written by a schedule system in the same tick", func(t *testing.T) {
+			// The observer reads events that were written by an earlier system in the same schedule run.
+			// ProcessEvents runs after all systems, so the event is in the reader by the next schedule run.
+			// To read within the same tick, the observer must be triggered AFTER the writing system runs.
+			assert := assert.New(t)
+			world := NewDefaultWorld()
+			assert.NoError(world.AddSchedule("update", ScheduleLast{}, false))
+
+			var readEvents []*myEvent
+			assert.NoError(On[myObserver](world, func(_ myObserver, reader *EventReader[*myEvent]) {
+				readEvents = nil
+				for e := range reader.Read {
+					readEvents = append(readEvents, e)
+				}
+			}))
+
+			// Writing system runs first in the schedule
+			assert.NoError(world.AddSystem("update", func(w *EventWriter[*myEvent]) {
+				w.Write(&myEvent{})
+			}))
+			assert.NoError(world.PrepareSystems())
+
+			schedules, err := world.GetScheduleSystemsBySchedules([]Schedule{"update"})
+			assert.NoError(err)
+			eventStorage := world.Events()
+
+			// Run once: writing system writes to writer; ProcessEvents moves it to reader
+			schedules[0].Exec(world, nil, eventStorage, 1)
+			// Observer triggered after schedule: events are now in the reader
+			Trigger(world, myObserver{})
+
+			assert.Len(readEvents, 1)
+		})
+	})
+
+	t.Run("EventWriter", func(t *testing.T) {
+		type myEvent struct {
+			Event
+			value int
+		}
+
+		t.Run("can register observer with EventWriter", func(t *testing.T) {
+			assert := assert.New(t)
+			world := NewDefaultWorld()
+			assert.NoError(On[myObserver](world, func(_ myObserver, _ *EventWriter[*myEvent]) {}))
+		})
+
+		t.Run("fails if EventWriter is not a pointer", func(t *testing.T) {
+			assert := assert.New(t)
+			world := NewDefaultWorld()
+			assert.ErrorIs(On[myObserver](world, func(_ myObserver, _ EventWriter[*myEvent]) {}), ErrSystemParamEventWriterNotAPointer)
+		})
+
+		t.Run("events written by observer inside a schedule are readable in subsequent schedule run", func(t *testing.T) {
+			// Observer is triggered by Spawn inside a system. The observer's event writer uses
+			// the same schedule ID as the running schedule (same lifecycle as regular event writers).
+			type spawnedComponent struct{ Component }
+
+			assert := assert.New(t)
+			world := NewDefaultWorld()
+			assert.NoError(world.AddSchedule("update", ScheduleLast{}, false))
+
+			assert.NoError(On[OnSpawn[spawnedComponent]](world, func(_ OnSpawn[spawnedComponent], w *EventWriter[*myEvent]) {
+				w.Write(&myEvent{value: 42})
+			}))
+
+			var readEvents []*myEvent
+			assert.NoError(world.AddSystem("update", func(reader *EventReader[*myEvent]) {
+				readEvents = nil
+				for e := range reader.Read {
+					readEvents = append(readEvents, e)
+				}
+			}))
+			// This system triggers the observer by spawning
+			assert.NoError(world.AddSystem("update", func(w *World) {
+				_, _ = Spawn(w, spawnedComponent{})
+			}))
+			assert.NoError(world.PrepareSystems())
+
+			schedules, err := world.GetScheduleSystemsBySchedules([]Schedule{"update"})
+			assert.NoError(err)
+			eventStorage := world.Events()
+
+			// Run 1: Spawn triggers observer which writes event; ProcessEvents moves it to reader
+			schedules[0].Exec(world, nil, eventStorage, 1)
+			assert.Empty(readEvents) // reader system ran before the spawning system
+
+			// Run 2: reader system sees the event
+			schedules[0].Exec(world, nil, eventStorage, 2)
+			assert.Len(readEvents, 1)
+			assert.Equal(42, readEvents[0].value)
+		})
+
+		t.Run("observer events follow the same clearing lifecycle as schedule events", func(t *testing.T) {
+			// Events written by an observer inside schedule S are cleared when schedule S runs again.
+			type spawnedComponent struct{ Component }
+
+			assert := assert.New(t)
+			world := NewDefaultWorld()
+			assert.NoError(world.AddSchedule("update", ScheduleLast{}, false))
+
+			spawnOnce := true
+			assert.NoError(world.AddSystem("update", func(w *World) {
+				if spawnOnce {
+					spawnOnce = false
+					_, _ = Spawn(w, spawnedComponent{})
+				}
+			}))
+
+			assert.NoError(On[OnSpawn[spawnedComponent]](world, func(_ OnSpawn[spawnedComponent], w *EventWriter[*myEvent]) {
+				w.Write(&myEvent{value: 1})
+			}))
+
+			var readEvents []*myEvent
+			assert.NoError(world.AddSystem("update", func(reader *EventReader[*myEvent]) {
+				readEvents = nil
+				for e := range reader.Read {
+					readEvents = append(readEvents, e)
+				}
+			}))
+			assert.NoError(world.PrepareSystems())
+			schedules, err := world.GetScheduleSystemsBySchedules([]Schedule{"update"})
+			assert.NoError(err)
+			eventStorage := world.Events()
+
+			schedules[0].Exec(world, nil, eventStorage, 1) // spawn triggers observer; event goes to writer; ProcessEvents moves to reader
+			assert.Empty(readEvents)                       // reader system ran before the spawning system
+
+			schedules[0].Exec(world, nil, eventStorage, 2) // reader system reads the event; ProcessEvents clears it
+			assert.Len(readEvents, 1)
+
+			schedules[0].Exec(world, nil, eventStorage, 3) // event cleared by previous ProcessEvents
+			assert.Empty(readEvents)
+		})
+	})
+
+	t.Run("OuterResource", func(t *testing.T) {
+		type myResource struct{ value int }
+
+		t.Run("fails if OuterResource is a pointer", func(t *testing.T) {
+			assert := assert.New(t)
+			world := NewDefaultWorld()
+			assert.ErrorIs(
+				On[myObserver](world, func(_ myObserver, _ *OuterResource[*myResource, TestCustomTargetWorld]) {}),
+				ErrSystemParamOuterResourceIsAPointer,
+			)
+		})
+
+		t.Run("can register observer with OuterResource pointer resource", func(t *testing.T) {
+			assert := assert.New(t)
+
+			outerWorldConfigs := DefaultWorldConfigs()
+			outerWorldConfigs.Id = &TestCustomTargetWorldId
+			outerWorld, err := NewWorld(outerWorldConfigs)
+			assert.NoError(err)
+			assert.NoError(outerWorld.Resources().Add(&myResource{value: 10}))
+
+			world := NewDefaultWorld()
+			assert.NoError(world.RegisterOuterWorld(TestCustomTargetWorldId, &outerWorld))
+
+			assert.NoError(On[myObserver](world, func(_ myObserver, _ OuterResource[*myResource, TestCustomTargetWorld]) {}))
+		})
+
+		t.Run("outer resource pointer value is accessible when observer triggers", func(t *testing.T) {
+			assert := assert.New(t)
+
+			outerWorldConfigs := DefaultWorldConfigs()
+			outerWorldConfigs.Id = &TestCustomTargetWorldId
+			outerWorld, err := NewWorld(outerWorldConfigs)
+			assert.NoError(err)
+			assert.NoError(outerWorld.Resources().Add(&myResource{value: 10}))
+
+			world := NewDefaultWorld()
+			assert.NoError(world.RegisterOuterWorld(TestCustomTargetWorldId, &outerWorld))
+
+			var gotValue int
+			assert.NoError(On[myObserver](world, func(_ myObserver, res OuterResource[*myResource, TestCustomTargetWorld]) {
+				gotValue = res.Value.value
+			}))
+
+			Trigger(world, myObserver{})
+			assert.Equal(10, gotValue)
+		})
+
+		t.Run("non-pointer outer resource is refreshed between observer triggers", func(t *testing.T) {
+			assert := assert.New(t)
+
+			outerWorldConfigs := DefaultWorldConfigs()
+			outerWorldConfigs.Id = &TestCustomTargetWorldId
+			outerWorld, err := NewWorld(outerWorldConfigs)
+			assert.NoError(err)
+			res := &myResource{value: 10}
+			assert.NoError(outerWorld.Resources().Add(res))
+
+			world := NewDefaultWorld()
+			assert.NoError(world.RegisterOuterWorld(TestCustomTargetWorldId, &outerWorld))
+
+			var gotValue int
+			assert.NoError(On[myObserver](world, func(_ myObserver, r OuterResource[myResource, TestCustomTargetWorld]) {
+				gotValue = r.Value.value
+			}))
+
+			Trigger(world, myObserver{})
+			assert.Equal(10, gotValue)
+
+			res.value = 99
+			Trigger(world, myObserver{})
+			assert.Equal(99, gotValue)
+		})
+	})
+}

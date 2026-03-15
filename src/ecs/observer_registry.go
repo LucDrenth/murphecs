@@ -5,13 +5,36 @@ import (
 	"reflect"
 )
 
+type observerOuterResourceParam struct {
+	paramIndex        int
+	worldId           WorldId
+	resourceType      reflect.Type // type of the actual resource (e.g. *R or R)
+	outerResourceType reflect.Type // type of the OuterResource[R, W] struct
+}
+
 type observerEntry struct {
 	systemEntry
-	observerParamIndex int     // -1 if observer is not used as a param
-	queries            []Query // queries to execute before running
+	observerParamIndex int                        // -1 if observer is not used as a param
+	queries            []Query                    // queries to execute before running
+	eventWriters       []AnyEventWriter           // event writers to process after running
+	outerResources     []observerOuterResourceParam // outer resource params to update before running
 }
 
 func (e *observerEntry) execWithObserver(world *World, observerValue reflect.Value) error {
+	for _, orp := range e.outerResources {
+		if orp.resourceType.Kind() == reflect.Pointer {
+			continue // pointer outer resources reference memory directly; no refresh needed
+		}
+		outerWorld := (*world.OuterWorlds())[orp.worldId]
+		resource, err := outerWorld.Resources().GetReflectResource(orp.resourceType)
+		if err != nil {
+			return err
+		}
+		instance := reflect.New(orp.outerResourceType)
+		instance.Elem().FieldByName("Value").Set(resource.Elem())
+		e.params[orp.paramIndex] = instance.Elem()
+	}
+
 	for _, q := range e.queries {
 		if q.IsLazy() {
 			q.ClearResults()
@@ -20,6 +43,10 @@ func (e *observerEntry) execWithObserver(world *World, observerValue reflect.Val
 				return err
 			}
 		}
+	}
+
+	for _, ew := range e.eventWriters {
+		ew.SetScheduleSystemsWriter(world.currentScheduleSystemsId)
 	}
 
 	if e.observerParamIndex >= 0 {
@@ -49,7 +76,7 @@ func newObserverRegistry() observerRegistry {
 	}
 }
 
-func (registry observerRegistry) triggerDespawnObservers(world *World, componentIds []ComponentId, entity EntityId) {
+func (registry *observerRegistry) triggerDespawnObservers(world *World, componentIds []ComponentId, entity EntityId) {
 	for _, componentId := range componentIds {
 		entries, exists := registry.despawnObservers[componentId]
 		if !exists {
@@ -67,7 +94,7 @@ func (registry observerRegistry) triggerDespawnObservers(world *World, component
 	}
 }
 
-func (registry observerRegistry) triggerSpawnObservers(world *World, componentIds []ComponentId, entity EntityId) {
+func (registry *observerRegistry) triggerSpawnObservers(world *World, componentIds []ComponentId, entity EntityId) {
 	for _, componentId := range componentIds {
 		entries, exists := registry.spawnObservers[componentId]
 		if !exists {
@@ -167,6 +194,8 @@ func buildObserverEntry[O AnyObserver](action System, world *World, source strin
 	numberOfParams := actionValue.Type().NumIn()
 	params := make([]reflect.Value, numberOfParams)
 	var queries []Query
+	var eventWriters []AnyEventWriter
+	var outerResources []observerOuterResourceParam
 
 	for i := range numberOfParams {
 		paramType := actionValue.Type().In(i)
@@ -188,6 +217,53 @@ func buildObserverEntry[O AnyObserver](action System, world *World, source strin
 			}
 			queries = append(queries, query)
 			params[i] = reflect.ValueOf(query)
+		} else if paramType.Implements(eventReaderType) {
+			eventReader, ok := reflect.TypeAssert[AnyEventReader](reflect.New(paramType.Elem()))
+			if !ok {
+				panic("failed to type assert AnyEventReader")
+			}
+			params[i] = *world.Events().GetReader(eventReader)
+		} else if paramType.Implements(eventWriterType) {
+			eventWriter, ok := reflect.TypeAssert[AnyEventWriter](reflect.New(paramType.Elem()))
+			if !ok {
+				panic("failed to type assert AnyEventWriter")
+			}
+			reflectedEventWriter := *world.Events().GetWriter(eventWriter)
+			eventWriterInstance, ok := reflect.TypeAssert[AnyEventWriter](reflectedEventWriter)
+			if !ok {
+				panic("failed to type assert AnyEventWriter")
+			}
+			eventWriters = append(eventWriters, eventWriterInstance)
+			params[i] = reflectedEventWriter
+		} else if paramType.Implements(outerResourceType) {
+			return observerEntry{}, fmt.Errorf("parameter %d: %w", i, ErrSystemParamOuterResourceIsAPointer)
+		} else if paramType.Kind() != reflect.Pointer && reflect.PointerTo(paramType).Implements(outerResourceType) {
+			instance := reflect.New(paramType)
+			outerRes := instance.Interface().(AnyOuterResource)
+			worldId, resType := outerRes.OuterResourceInfo()
+			outerResources = append(outerResources, observerOuterResourceParam{
+				paramIndex:        i,
+				worldId:           *worldId,
+				resourceType:      resType,
+				outerResourceType: paramType,
+			})
+			if resType.Kind() == reflect.Pointer {
+				// Pointer outer resources reference the same memory across all invocations,
+				// so we initialize them once here (mirroring what prepare() does for schedule systems).
+				outerWorld, exists := (*world.OuterWorlds())[*worldId]
+				if !exists {
+					return observerEntry{}, fmt.Errorf("parameter %d: %w: world id %d", i, ErrTargetWorldNotFound, *worldId)
+				}
+				resource, err := outerWorld.Resources().GetReflectResource(resType)
+				if err != nil {
+					return observerEntry{}, err
+				}
+				initInstance := reflect.New(paramType)
+				initInstance.Elem().FieldByName("Value").Set(resource)
+				params[i] = initInstance.Elem()
+			} else {
+				params[i] = reflect.Zero(paramType)
+			}
 		} else {
 			resource, err := world.Resources().GetReflectResource(paramType)
 			if err != nil {
@@ -209,5 +285,7 @@ func buildObserverEntry[O AnyObserver](action System, world *World, source strin
 		},
 		observerParamIndex: observerParamIdx,
 		queries:            queries,
+		eventWriters:       eventWriters,
+		outerResources:     outerResources,
 	}, nil
 }

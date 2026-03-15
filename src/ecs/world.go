@@ -28,6 +28,7 @@ type World struct {
 	outerWorlds              map[WorldId]*World
 	logger                   Logger
 	scheduleSystemsIdCounter ScheduleSystemsId
+	currentScheduleSystemsId ScheduleSystemsId // set to the running schedule's id during Exec, 0 otherwise
 
 	Mutex sync.RWMutex
 }

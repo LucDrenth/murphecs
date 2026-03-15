@@ -208,6 +208,9 @@ func (s *ScheduleSystems) Exec(world *World, outerWorlds *map[WorldId]*World, ev
 		}
 	}
 
+	world.currentScheduleSystemsId = s.id
+	defer func() { world.currentScheduleSystemsId = 0 }()
+
 	return s.execSystems()
 }
 
