@@ -252,7 +252,7 @@ func (reader *EventReader[E]) AddEvent(event reflect.Value) {
 	reader.events = append(reader.events, element)
 }
 
-// IsEmpty returns wether there are any events in the reader
+// IsEmpty returns whether there are any events in the reader
 func (reader *EventReader[E]) IsEmpty() bool {
 	return reader.Len() == 0
 }

@@ -332,7 +332,7 @@ func TestResourceId(t *testing.T) {
 	type resourceA struct{}
 	type resourceB struct{}
 
-	t.Run("resource return the same result, regardless of wether its passed by reference", func(t *testing.T) {
+	t.Run("resource return the same result, regardless of whether its passed by reference", func(t *testing.T) {
 		assert := assert.New(t)
 
 		a := reflectTypeToResourceId(reflect.TypeFor[resourceA]())

@@ -97,7 +97,7 @@ func GetResource[T Resource](world *World) (result T, err error) {
 	return result, nil
 }
 
-// GetReflectResource returns a pointer to the resource, regardless if wether resourceType is a pointer or not.
+// GetReflectResource returns a pointer to the resource, regardless if whether resourceType is a pointer or not.
 func (s *resourceStorage) GetReflectResource(resourceType reflect.Type) (result reflect.Value, err error) {
 	resourceId := reflectTypeToResourceId(resourceType)
 

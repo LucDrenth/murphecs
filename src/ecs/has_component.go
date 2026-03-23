@@ -1,6 +1,6 @@
 package ecs
 
-// HasComponent returns wether entity has component C.
+// HasComponent returns whether entity has component C.
 //
 // Can return the following errors:
 //   - Returns an ErrEntityNotFound error if the entity is not found.
@@ -13,7 +13,7 @@ func HasComponent[C AnyComponent](world *World, entity EntityId) (bool, error) {
 	return entityData.archetype.HasComponent(ComponentIdFor[C](world)), nil
 }
 
-// HasComponentId returns wether entity has a component with id componentId. This is more performant than
+// HasComponentId returns whether entity has a component with id componentId. This is more performant than
 // HasComponent if you use this method multiple times with the same componentId because the componentId does
 // not have to be calculated every call.
 //

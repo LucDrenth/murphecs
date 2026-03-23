@@ -27,11 +27,11 @@ type Query interface {
 	// Clear the query results that got filled when last running Exec.
 	ClearResults()
 
-	// IsLazy returns wether this query should be treated as lazy or not. Being lazy means that it should
+	// IsLazy returns whether this query should be treated as lazy or not. Being lazy means that it should
 	// not get executed automatically, and should be done by the user.
 	IsLazy() bool
 
-	// TargetWorld returns wether this query should be executed in a custom world. Returns nil if no custom
+	// TargetWorld returns whether this query should be executed in a custom world. Returns nil if no custom
 	// world should be used, in which case it defaults to the world of the SubApp it is used in.
 	TargetWorld() *WorldId
 
@@ -2974,7 +2974,7 @@ func (q *Query14[A, B, C, D, E, F, G, H, I, J, K, L, M, N, Options]) ClearResult
 func (q *Query15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, Options]) ClearResults()    { q.Clear() }
 func (q *Query16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Options]) ClearResults() { q.Clear() }
 
-// shouldHandleQueryComponent returns wether a component should be fetched and/or skipped:
+// shouldHandleQueryComponent returns whether a component should be fetched and/or skipped:
 //   - shouldSkip=true means that the archetype should not be included in the query results.
 //   - shouldSkip=false means that the archetype should be included in the query results.
 //   - shouldFetch=true means that the (entities of the) archetype should be included in the query and should be fetched from a component storage.

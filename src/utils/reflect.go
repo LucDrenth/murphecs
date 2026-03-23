@@ -16,7 +16,7 @@ func AlignedSize(t reflect.Type) uintptr {
 	return (size + (align - 1)) / align * align
 }
 
-// MethodHasPointerReceiver checks wether the implementation of a method uses a pointer receiver.
+// MethodHasPointerReceiver checks whether the implementation of a method uses a pointer receiver.
 func MethodHasPointerReceiver(i any, methodName string) (bool, error) {
 	if i == nil {
 		return false, fmt.Errorf("interface value is nil")
