@@ -1,4 +1,4 @@
-// Demonstrate how to delete an entity from the world
+// Demonstrate how to despawn an entity
 package main
 
 import (
