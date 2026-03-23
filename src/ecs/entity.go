@@ -15,3 +15,10 @@ type EntityData struct {
 func (e *EntityData) hasComponent(c ComponentId) bool {
 	return e.archetype.HasComponent(c)
 }
+
+// EntityExists returns whether the entity is currently in the world.
+// It returns false if the entity did exist but got despawned.
+func EntityExists(world *World, entity EntityId) bool {
+	_, exists := world.entities[entity]
+	return exists
+}
