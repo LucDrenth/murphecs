@@ -4,8 +4,15 @@ import "fmt"
 
 // Despawn removes an entity from the world.
 //
-// Returns an ErrEntityNotFound error if the entity did not exist in the world.
+// Can return the following errors:
+//   - ErrEntityNotFound error if the entity did not exist in the world.
+//   - ErrWorldIsLocked error while querying
 func Despawn(world *World, entity EntityId) error {
+	if world.isQuerying {
+		// Prevent messing with query results
+		return ErrWorldIsLocked
+	}
+
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return ErrEntityNotFound

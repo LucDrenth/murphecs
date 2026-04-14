@@ -81,6 +81,8 @@ func (o *queryOptions) Validate() error {
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query0[_ QueryOption] struct {
+	world *World
+
 	Query0Result
 	queryOptions
 }
@@ -98,6 +100,8 @@ type Query0[_ QueryOption] struct {
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query1[ComponentA AnyComponent, _ QueryOption] struct {
+	world *World
+
 	Query1Result[ComponentA]
 	queryOptions
 
@@ -117,6 +121,8 @@ type Query1[ComponentA AnyComponent, _ QueryOption] struct {
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query2[ComponentA, ComponentB AnyComponent, _ QueryOption] struct {
+	world *World
+
 	Query2Result[ComponentA, ComponentB]
 	queryOptions
 
@@ -137,6 +143,8 @@ type Query2[ComponentA, ComponentB AnyComponent, _ QueryOption] struct {
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query3[ComponentA, ComponentB, ComponentC AnyComponent, _ QueryOption] struct {
+	world *World
+
 	Query3Result[ComponentA, ComponentB, ComponentC]
 	queryOptions
 
@@ -158,6 +166,8 @@ type Query3[ComponentA, ComponentB, ComponentC AnyComponent, _ QueryOption] stru
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query4[ComponentA, ComponentB, ComponentC, ComponentD AnyComponent, _ QueryOption] struct {
+	world *World
+
 	Query4Result[ComponentA, ComponentB, ComponentC, ComponentD]
 	queryOptions
 
@@ -180,6 +190,8 @@ type Query4[ComponentA, ComponentB, ComponentC, ComponentD AnyComponent, _ Query
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query5[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE AnyComponent, _ QueryOption] struct {
+	world *World
+
 	Query5Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE]
 	queryOptions
 
@@ -203,6 +215,8 @@ type Query5[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE AnyCompon
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query6[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF AnyComponent, _ QueryOption] struct {
+	world *World
+
 	Query6Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF]
 	queryOptions
 
@@ -227,6 +241,8 @@ type Query6[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Componen
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query7[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG AnyComponent, _ QueryOption] struct {
+	world *World
+
 	Query7Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG]
 	queryOptions
 
@@ -252,6 +268,8 @@ type Query7[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Componen
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query8[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH AnyComponent, _ QueryOption] struct {
+	world *World
+
 	Query8Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH]
 	queryOptions
 
@@ -278,6 +296,8 @@ type Query8[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Componen
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query9[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI AnyComponent, _ QueryOption] struct {
+	world *World
+
 	Query9Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI]
 	queryOptions
 
@@ -305,6 +325,8 @@ type Query9[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Componen
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query10[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ AnyComponent, _ QueryOption] struct {
+	world *World
+
 	Query10Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ]
 	queryOptions
 
@@ -333,6 +355,8 @@ type Query10[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query11[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK AnyComponent, _ QueryOption] struct {
+	world *World
+
 	Query11Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK]
 	queryOptions
 
@@ -362,6 +386,8 @@ type Query11[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query12[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL AnyComponent, _ QueryOption] struct {
+	world *World
+
 	Query12Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL]
 	queryOptions
 
@@ -392,6 +418,8 @@ type Query12[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query13[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM AnyComponent, _ QueryOption] struct {
+	world *World
+
 	Query13Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM]
 	queryOptions
 
@@ -423,6 +451,8 @@ type Query13[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query14[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM, ComponentN AnyComponent, _ QueryOption] struct {
+	world *World
+
 	Query14Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM, ComponentN]
 	queryOptions
 
@@ -455,6 +485,8 @@ type Query14[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query15[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM, ComponentN, ComponentO AnyComponent, _ QueryOption] struct {
+	world *World
+
 	Query15Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM, ComponentN, ComponentO]
 	queryOptions
 
@@ -488,6 +520,8 @@ type Query15[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 //   - use [Without] to make the results only include entities that do not have a specific component.
 //   - use [And] and [Or] to combine filters.
 type Query16[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM, ComponentN, ComponentO, ComponentP AnyComponent, _ QueryOption] struct {
+	world *World
+
 	Query16Result[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, ComponentI, ComponentJ, ComponentK, ComponentL, ComponentM, ComponentN, ComponentO, ComponentP]
 	queryOptions
 
@@ -512,6 +546,8 @@ type Query16[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Compone
 func (q *Query0[QueryOptions]) Exec(world *World) error {
 	q.ClearResults()
 
+	q.world = world
+
 	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
 		if q.options.isArchetypeFilteredOut(archetype) {
 			continue
@@ -525,6 +561,8 @@ func (q *Query0[QueryOptions]) Exec(world *World) error {
 
 func (q *Query1[ComponentA, QueryOptions]) Exec(world *World) (err error) {
 	q.ClearResults()
+
+	q.world = world
 
 	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
 		if q.options.isArchetypeFilteredOut(archetype) {
@@ -554,6 +592,8 @@ func (q *Query1[ComponentA, QueryOptions]) Exec(world *World) (err error) {
 }
 func (q *Query2[ComponentA, ComponentB, QueryOptions]) Exec(world *World) (err error) {
 	q.ClearResults()
+
+	q.world = world
 
 	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
 		if q.options.isArchetypeFilteredOut(archetype) {
@@ -596,6 +636,8 @@ func (q *Query2[ComponentA, ComponentB, QueryOptions]) Exec(world *World) (err e
 }
 func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Exec(world *World) (err error) {
 	q.ClearResults()
+
+	q.world = world
 
 	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
 		if q.options.isArchetypeFilteredOut(archetype) {
@@ -651,6 +693,8 @@ func (q *Query3[ComponentA, ComponentB, ComponentC, QueryOptions]) Exec(world *W
 }
 func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) Exec(world *World) (err error) {
 	q.ClearResults()
+
+	q.world = world
 
 	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
 		if q.options.isArchetypeFilteredOut(archetype) {
@@ -719,6 +763,8 @@ func (q *Query4[ComponentA, ComponentB, ComponentC, ComponentD, QueryOptions]) E
 }
 func (q *Query5[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, QueryOptions]) Exec(world *World) (err error) {
 	q.ClearResults()
+
+	q.world = world
 
 	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
 		if q.options.isArchetypeFilteredOut(archetype) {
@@ -800,6 +846,8 @@ func (q *Query5[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Quer
 }
 func (q *Query6[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, QueryOptions]) Exec(world *World) (err error) {
 	q.ClearResults()
+
+	q.world = world
 
 	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
 		if q.options.isArchetypeFilteredOut(archetype) {
@@ -894,6 +942,8 @@ func (q *Query6[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Comp
 }
 func (q *Query7[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, QueryOptions]) Exec(world *World) (err error) {
 	q.ClearResults()
+
+	q.world = world
 
 	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
 		if q.options.isArchetypeFilteredOut(archetype) {
@@ -1001,6 +1051,8 @@ func (q *Query7[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Comp
 }
 func (q *Query8[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, ComponentF, ComponentG, ComponentH, QueryOptions]) Exec(world *World) (err error) {
 	q.ClearResults()
+
+	q.world = world
 
 	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
 		if q.options.isArchetypeFilteredOut(archetype) {
@@ -1122,6 +1174,8 @@ func (q *Query8[ComponentA, ComponentB, ComponentC, ComponentD, ComponentE, Comp
 
 func (q *Query9[A, B, C, D, E, F, G, H, I, Options]) Exec(world *World) (err error) {
 	q.ClearResults()
+
+	q.world = world
 
 	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
 		if q.options.isArchetypeFilteredOut(archetype) {
@@ -1256,6 +1310,8 @@ func (q *Query9[A, B, C, D, E, F, G, H, I, Options]) Exec(world *World) (err err
 
 func (q *Query10[A, B, C, D, E, F, G, H, I, J, Options]) Exec(world *World) (err error) {
 	q.ClearResults()
+
+	q.world = world
 
 	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
 		if q.options.isArchetypeFilteredOut(archetype) {
@@ -1403,6 +1459,8 @@ func (q *Query10[A, B, C, D, E, F, G, H, I, J, Options]) Exec(world *World) (err
 
 func (q *Query11[A, B, C, D, E, F, G, H, I, J, K, Options]) Exec(world *World) (err error) {
 	q.ClearResults()
+
+	q.world = world
 
 	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
 		if q.options.isArchetypeFilteredOut(archetype) {
@@ -1563,6 +1621,8 @@ func (q *Query11[A, B, C, D, E, F, G, H, I, J, K, Options]) Exec(world *World) (
 
 func (q *Query12[A, B, C, D, E, F, G, H, I, J, K, L, Options]) Exec(world *World) (err error) {
 	q.ClearResults()
+
+	q.world = world
 
 	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
 		if q.options.isArchetypeFilteredOut(archetype) {
@@ -1736,6 +1796,8 @@ func (q *Query12[A, B, C, D, E, F, G, H, I, J, K, L, Options]) Exec(world *World
 
 func (q *Query13[A, B, C, D, E, F, G, H, I, J, K, L, M, Options]) Exec(world *World) (err error) {
 	q.ClearResults()
+
+	q.world = world
 
 	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
 		if q.options.isArchetypeFilteredOut(archetype) {
@@ -1922,6 +1984,8 @@ func (q *Query13[A, B, C, D, E, F, G, H, I, J, K, L, M, Options]) Exec(world *Wo
 
 func (q *Query14[A, B, C, D, E, F, G, H, I, J, K, L, M, N, Options]) Exec(world *World) (err error) {
 	q.ClearResults()
+
+	q.world = world
 
 	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
 		if q.options.isArchetypeFilteredOut(archetype) {
@@ -2121,6 +2185,8 @@ func (q *Query14[A, B, C, D, E, F, G, H, I, J, K, L, M, N, Options]) Exec(world 
 
 func (q *Query15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, Options]) Exec(world *World) (err error) {
 	q.ClearResults()
+
+	q.world = world
 
 	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
 		if q.options.isArchetypeFilteredOut(archetype) {
@@ -2333,6 +2399,8 @@ func (q *Query15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, Options]) Exec(wor
 
 func (q *Query16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Options]) Exec(world *World) (err error) {
 	q.ClearResults()
+
+	q.world = world
 
 	for _, archetype := range world.archetypeStorage.componentsHashToArchetype {
 		if q.options.isArchetypeFilteredOut(archetype) {
@@ -3000,4 +3068,276 @@ func fetchComponentForQueryResult[T AnyComponent](componentInfo queryComponentIn
 	}
 
 	return result, nil
+}
+
+// Iter executes function f on each entity that the query returned.
+func (q *Query0[_]) Iter(f func(entityId EntityId)) {
+	q.world.isQuerying = true
+	q.iter(f)
+	q.world.isQuerying = false
+}
+
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query0[_]) IterUntilErr(f func(entityId EntityId) error) error {
+	q.world.isQuerying = true
+	err := q.iterUntilErr(f)
+	q.world.isQuerying = false
+	return err
+}
+
+// Iter executes function f on each entity that the query returned.
+func (q *Query1[A, _]) Iter(f func(entityId EntityId, a A)) {
+	q.world.isQuerying = true
+	q.iter(f)
+	q.world.isQuerying = false
+}
+
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query1[A, _]) IterUntilErr(f func(entityId EntityId, a A) error) error {
+	q.world.isQuerying = true
+	err := q.iterUntilErr(f)
+	q.world.isQuerying = false
+	return err
+}
+
+// Iter executes function f on each entity that the query returned.
+func (q *Query2[A, B, _]) Iter(f func(entityId EntityId, a A, b B)) {
+	q.world.isQuerying = true
+	q.iter(f)
+	q.world.isQuerying = false
+}
+
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query2[A, B, _]) IterUntilErr(f func(entityId EntityId, a A, b B) error) error {
+	q.world.isQuerying = true
+	err := q.iterUntilErr(f)
+	q.world.isQuerying = false
+	return err
+}
+
+// Iter executes function f on each entity that the query returned.
+func (q *Query3[A, B, C, _]) Iter(f func(entityId EntityId, a A, b B, c C)) {
+	q.world.isQuerying = true
+	q.iter(f)
+	q.world.isQuerying = false
+}
+
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query3[A, B, C, _]) IterUntilErr(f func(entityId EntityId, a A, b B, c C) error) error {
+	q.world.isQuerying = true
+	err := q.iterUntilErr(f)
+	q.world.isQuerying = false
+	return err
+}
+
+// Iter executes function f on each entity that the query returned.
+func (q *Query4[A, B, C, D, _]) Iter(f func(entityId EntityId, a A, b B, c C, d D)) {
+	q.world.isQuerying = true
+	q.iter(f)
+	q.world.isQuerying = false
+}
+
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query4[A, B, C, D, _]) IterUntilErr(f func(entityId EntityId, a A, b B, c C, d D) error) error {
+	q.world.isQuerying = true
+	err := q.iterUntilErr(f)
+	q.world.isQuerying = false
+	return err
+}
+
+// Iter executes function f on each entity that the query returned.
+func (q *Query5[A, B, C, D, E, _]) Iter(f func(entityId EntityId, a A, b B, c C, d D, e E)) {
+	q.world.isQuerying = true
+	q.iter(f)
+	q.world.isQuerying = false
+}
+
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query5[A, B, C, D, E, _]) IterUntilErr(f func(entityId EntityId, a A, b B, c C, d D, e E) error) error {
+	q.world.isQuerying = true
+	err := q.iterUntilErr(f)
+	q.world.isQuerying = false
+	return err
+}
+
+// Iter executes function f on each entity that the query returned.
+func (q *Query6[A, B, C, D, E, F, _]) Iter(f func(entityId EntityId, a A, b B, c C, d D, e E, f F)) {
+	q.world.isQuerying = true
+	q.iter(f)
+	q.world.isQuerying = false
+}
+
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query6[A, B, C, D, E, F, _]) IterUntilErr(f func(entityId EntityId, a A, b B, c C, d D, e E, f F) error) error {
+	q.world.isQuerying = true
+	err := q.iterUntilErr(f)
+	q.world.isQuerying = false
+	return err
+}
+
+// Iter executes function f on each entity that the query returned.
+func (q *Query7[A, B, C, D, E, F, G, _]) Iter(f func(entityId EntityId, a A, b B, c C, d D, e E, f F, g G)) {
+	q.world.isQuerying = true
+	q.iter(f)
+	q.world.isQuerying = false
+}
+
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query7[A, B, C, D, E, F, G, _]) IterUntilErr(f func(entityId EntityId, a A, b B, c C, d D, e E, f F, g G) error) error {
+	q.world.isQuerying = true
+	err := q.iterUntilErr(f)
+	q.world.isQuerying = false
+	return err
+}
+
+// Iter executes function f on each entity that the query returned.
+func (q *Query8[A, B, C, D, E, F, G, H, _]) Iter(f func(entityId EntityId, a A, b B, c C, d D, e E, f F, g G, h H)) {
+	q.world.isQuerying = true
+	q.iter(f)
+	q.world.isQuerying = false
+}
+
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query8[A, B, C, D, E, F, G, H, _]) IterUntilErr(f func(entityId EntityId, a A, b B, c C, d D, e E, f F, g G, h H) error) error {
+	q.world.isQuerying = true
+	err := q.iterUntilErr(f)
+	q.world.isQuerying = false
+	return err
+}
+
+// Iter executes function f on each entity that the query returned.
+func (q *Query9[A, B, C, D, E, F, G, H, I, _]) Iter(f func(EntityId, A, B, C, D, E, F, G, H, I)) {
+	q.world.isQuerying = true
+	q.iter(f)
+	q.world.isQuerying = false
+}
+
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query9[A, B, C, D, E, F, G, H, I, _]) IterUntilErr(f func(EntityId, A, B, C, D, E, F, G, H, I) error) error {
+	q.world.isQuerying = true
+	err := q.iterUntilErr(f)
+	q.world.isQuerying = false
+	return err
+}
+
+// Iter executes function f on each entity that the query returned.
+func (q *Query10[A, B, C, D, E, F, G, H, I, J, _]) Iter(f func(EntityId, A, B, C, D, E, F, G, H, I, J)) {
+	q.world.isQuerying = true
+	q.iter(f)
+	q.world.isQuerying = false
+}
+
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query10[A, B, C, D, E, F, G, H, I, J, _]) IterUntilErr(f func(EntityId, A, B, C, D, E, F, G, H, I, J) error) error {
+	q.world.isQuerying = true
+	err := q.iterUntilErr(f)
+	q.world.isQuerying = false
+	return err
+}
+
+// Iter executes function f on each entity that the query returned.
+func (q *Query11[A, B, C, D, E, F, G, H, I, J, K, _]) Iter(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K)) {
+	q.world.isQuerying = true
+	q.iter(f)
+	q.world.isQuerying = false
+}
+
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query11[A, B, C, D, E, F, G, H, I, J, K, _]) IterUntilErr(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K) error) error {
+	q.world.isQuerying = true
+	err := q.iterUntilErr(f)
+	q.world.isQuerying = false
+	return err
+}
+
+// Iter executes function f on each entity that the query returned.
+func (q *Query12[A, B, C, D, E, F, G, H, I, J, K, L, _]) Iter(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L)) {
+	q.world.isQuerying = true
+	q.iter(f)
+	q.world.isQuerying = false
+}
+
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query12[A, B, C, D, E, F, G, H, I, J, K, L, _]) IterUntilErr(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L) error) error {
+	q.world.isQuerying = true
+	err := q.iterUntilErr(f)
+	q.world.isQuerying = false
+	return err
+}
+
+// Iter executes function f on each entity that the query returned.
+func (q *Query13[A, B, C, D, E, F, G, H, I, J, K, L, M, _]) Iter(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L, M)) {
+	q.world.isQuerying = true
+	q.iter(f)
+	q.world.isQuerying = false
+}
+
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query13[A, B, C, D, E, F, G, H, I, J, K, L, M, _]) IterUntilErr(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L, M) error) error {
+	q.world.isQuerying = true
+	err := q.iterUntilErr(f)
+	q.world.isQuerying = false
+	return err
+}
+
+// Iter executes function f on each entity that the query returned.
+func (q *Query14[A, B, C, D, E, F, G, H, I, J, K, L, M, N, _]) Iter(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L, M, N)) {
+	q.world.isQuerying = true
+	q.iter(f)
+	q.world.isQuerying = false
+}
+
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query14[A, B, C, D, E, F, G, H, I, J, K, L, M, N, _]) IterUntilErr(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L, M, N) error) error {
+	q.world.isQuerying = true
+	err := q.iterUntilErr(f)
+	q.world.isQuerying = false
+	return err
+}
+
+// Iter executes function f on each entity that the query returned.
+func (q *Query15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, _]) Iter(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O)) {
+	q.world.isQuerying = true
+	q.iter(f)
+	q.world.isQuerying = false
+}
+
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, _]) IterUntilErr(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O) error) error {
+	q.world.isQuerying = true
+	err := q.iterUntilErr(f)
+	q.world.isQuerying = false
+	return err
+}
+
+// Iter executes function f on each entity that the query returned.
+func (q *Query16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, _]) Iter(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P)) {
+	q.world.isQuerying = true
+	q.iter(f)
+	q.world.isQuerying = false
+}
+
+// IterUntilErr executes function f on each entity that the query returned, until f returns an error.
+// If any of the calls to f returned an error, this function returns that error.
+func (q *Query16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, _]) IterUntilErr(f func(EntityId, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P) error) error {
+	q.world.isQuerying = true
+	err := q.iterUntilErr(f)
+	q.world.isQuerying = false
+	return err
 }

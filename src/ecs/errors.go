@@ -37,4 +37,6 @@ var (
 
 	ErrScheduleAlreadyExists error = errors.New("schedule already exists")
 	ErrScheduleNotFound      error = errors.New("schedule not found")
+
+	ErrWorldIsLocked error = errors.New("world is locked")
 )

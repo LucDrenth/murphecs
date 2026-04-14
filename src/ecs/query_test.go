@@ -95,6 +95,43 @@ func TestQuery0(t *testing.T) {
 		_, err = query.Single()
 		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
 	})
+
+	t.Run("adding or removing components while querying results in an error", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewDefaultWorld()
+		query := Query0[Default]{}
+		err := query.Prepare(world, nil)
+		assert.NoError(err)
+		_, err = Spawn(world, componentA{})
+		assert.NoError(err)
+		err = query.Exec(world)
+		assert.NoError(err)
+		assert.True(query.NumberOfResult() > 0) // make sure the tests get executed
+
+		query.Iter(func(entityId EntityId) {
+			_, err := Spawn(world)
+			assert.ErrorIs(err, ErrWorldIsLocked)
+
+			err = Despawn(world, entityId)
+			assert.ErrorIs(err, ErrWorldIsLocked)
+
+			err = Insert(world, entityId, componentB{})
+			assert.ErrorIs(err, ErrWorldIsLocked)
+
+			err = InsertOrOverwrite(world, entityId, componentB{})
+			assert.ErrorIs(err, ErrWorldIsLocked)
+
+			err = Remove1[componentA](world, entityId)
+			assert.ErrorIs(err, ErrWorldIsLocked)
+			err = Remove2[componentA, componentB](world, entityId)
+			assert.ErrorIs(err, ErrWorldIsLocked)
+			err = Remove3[componentA, componentB, componentC](world, entityId)
+			assert.ErrorIs(err, ErrWorldIsLocked)
+			err = Remove4[componentA, componentB, componentC, componentD](world, entityId)
+			assert.ErrorIs(err, ErrWorldIsLocked)
+		})
+	})
 }
 
 func TestQuery1(t *testing.T) {
@@ -447,6 +484,43 @@ func TestQuery1(t *testing.T) {
 		_, item, err := query.Single()
 		assert.NoError(err)
 		assert.Equal(5, item.value)
+	})
+
+	t.Run("adding or removing components while querying results in an error", func(t *testing.T) {
+		assert := assert.New(t)
+
+		world := NewDefaultWorld()
+		query := Query1[componentA, Default]{}
+		err := query.Prepare(world, nil)
+		assert.NoError(err)
+		_, err = Spawn(world, componentA{})
+		assert.NoError(err)
+		err = query.Exec(world)
+		assert.NoError(err)
+		assert.True(query.NumberOfResult() > 0) // make sure the tests get executed
+
+		query.Iter(func(entityId EntityId, _ componentA) {
+			_, err := Spawn(world)
+			assert.ErrorIs(err, ErrWorldIsLocked)
+
+			err = Despawn(world, entityId)
+			assert.ErrorIs(err, ErrWorldIsLocked)
+
+			err = Insert(world, entityId, componentB{})
+			assert.ErrorIs(err, ErrWorldIsLocked)
+
+			err = InsertOrOverwrite(world, entityId, componentB{})
+			assert.ErrorIs(err, ErrWorldIsLocked)
+
+			err = Remove1[componentA](world, entityId)
+			assert.ErrorIs(err, ErrWorldIsLocked)
+			err = Remove2[componentA, componentB](world, entityId)
+			assert.ErrorIs(err, ErrWorldIsLocked)
+			err = Remove3[componentA, componentB, componentC](world, entityId)
+			assert.ErrorIs(err, ErrWorldIsLocked)
+			err = Remove4[componentA, componentB, componentC, componentD](world, entityId)
+			assert.ErrorIs(err, ErrWorldIsLocked)
+		})
 	})
 }
 

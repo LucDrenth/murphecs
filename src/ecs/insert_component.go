@@ -17,9 +17,16 @@ import (
 //     the components that are not yet present.
 //   - Returns an ErrInvalidComponentStorageCapacity if the component storage capacity, that is decided through World
 //     configs, is not valid
+//   - Returns an ErrWorldIsLocked error while querying
 func Insert(world *World, entity EntityId, components ...AnyComponent) (resultErr error) {
 	if len(components) == 0 {
 		return nil
+	}
+
+	if world.isQuerying {
+		// We can not allow this ecs operation while querying because archetype moves
+		// will mess with the query results.
+		return ErrWorldIsLocked
 	}
 
 	for i, component := range components {
@@ -139,9 +146,16 @@ func Insert(world *World, entity EntityId, components ...AnyComponent) (resultEr
 //   - Returns an ErrDuplicateComponent error when any of the given components are of the same type.
 //   - Returns an ErrInvalidComponentStorageCapacity if the component storage capacity, that is decided through World
 //     configs, is not valid
+//   - Returns an ErrWorldIsLocked error while querying
 func InsertOrOverwrite(world *World, entity EntityId, components ...AnyComponent) (resultErr error) {
 	if len(components) == 0 {
 		return nil
+	}
+
+	if world.isQuerying {
+		// We can not allow this ecs operation while querying because archetype moves
+		// will mess with the query results.
+		return ErrWorldIsLocked
 	}
 
 	entityData, ok := world.entities[entity]

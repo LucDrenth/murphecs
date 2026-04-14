@@ -41,3 +41,4 @@ linters:
         - require-error
         - empty
         - compares
+        - negative-positive

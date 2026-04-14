@@ -13,7 +13,13 @@ import (
 // Can return the following errors:
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
+//   - ErrWorldIsLocked error while querying
 func Remove1[A AnyComponent](world *World, entity EntityId) error {
+	if world.isQuerying {
+		// Prevent archetype moves during querying to prevent unexpected behavior.
+		return ErrWorldIsLocked
+	}
+
 	return removeComponents(world, entity, []ComponentId{
 		ComponentIdFor[A](world),
 	})
@@ -24,7 +30,13 @@ func Remove1[A AnyComponent](world *World, entity EntityId) error {
 // Can return the following errors:
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
+//   - ErrWorldIsLocked error while querying
 func Remove2[A, B AnyComponent](world *World, entity EntityId) (result error) {
+	if world.isQuerying {
+		// Prevent archetype moves during querying to prevent unexpected behavior.
+		return ErrWorldIsLocked
+	}
+
 	return removeComponents(world, entity, []ComponentId{
 		ComponentIdFor[A](world),
 		ComponentIdFor[B](world),
@@ -36,7 +48,13 @@ func Remove2[A, B AnyComponent](world *World, entity EntityId) (result error) {
 // Can return the following errors:
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
+//   - ErrWorldIsLocked error while querying
 func Remove3[A, B, C AnyComponent](world *World, entity EntityId) (result error) {
+	if world.isQuerying {
+		// Prevent archetype moves during querying to prevent unexpected behavior.
+		return ErrWorldIsLocked
+	}
+
 	return removeComponents(world, entity, []ComponentId{
 		ComponentIdFor[A](world),
 		ComponentIdFor[B](world),
@@ -49,7 +67,13 @@ func Remove3[A, B, C AnyComponent](world *World, entity EntityId) (result error)
 // Can return the following errors:
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
+//   - ErrWorldIsLocked error while querying
 func Remove4[A, B, C, D AnyComponent](world *World, entity EntityId) (result error) {
+	if world.isQuerying {
+		// Prevent archetype moves during querying to prevent unexpected behavior.
+		return ErrWorldIsLocked
+	}
+
 	return removeComponents(world, entity, []ComponentId{
 		ComponentIdFor[A](world),
 		ComponentIdFor[B](world),

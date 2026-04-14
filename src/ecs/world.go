@@ -31,6 +31,8 @@ type World struct {
 	currentScheduleSystemsId ScheduleSystemsId // set to the running schedule's id during Exec, 0 otherwise
 
 	Mutex sync.RWMutex
+
+	isQuerying bool
 }
 
 // NewDefaultWorld returns a World with default configs.
