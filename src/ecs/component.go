@@ -44,6 +44,24 @@ func (c *componentRegistry) getId(componentType reflect.Type) uint {
 	return uint(newId)
 }
 
+func (c *componentRegistry) getTypeByString(componentType string) reflect.Type {
+	for c, _ := range c.components {
+		if c.String() == componentType {
+			return c
+		}
+	}
+
+	c.concurrencySafeComponentsMutex.RLock()
+	defer c.concurrencySafeComponentsMutex.RUnlock()
+	for c, _ := range c.concurrencySafeComponents {
+		if c.String() == componentType {
+			return c
+		}
+	}
+
+	return nil
+}
+
 // processComponentIdRegistries moves ids from the mutex protected map
 // to the non-mutex protected map.
 //

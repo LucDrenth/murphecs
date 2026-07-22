@@ -3,6 +3,7 @@ package ecs
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"sync"
 )
 
@@ -218,4 +219,15 @@ func (world *World) Stats() WorldStats {
 		NumberOfComponents: world.CountEntities(),
 		NumberOfArchetypes: world.CountArchetypes(),
 	}
+}
+
+// TODO: change to World method once go 1.26 lands. This will be a breaking change.
+func GetComponentTypeByString(world *World, typeString string) reflect.Type {
+	return world.componentRegistry.getTypeByString(typeString)
+}
+
+// TODO: change to World method once go 1.26 lands. This will be a breaking change.
+func RegisterComponent[C AnyComponent](world *World) {
+	componentType := reflect.TypeFor[C]()
+	_ = world.componentRegistry.getId(componentType)
 }
