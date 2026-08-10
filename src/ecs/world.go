@@ -222,8 +222,13 @@ func (world *World) Stats() WorldStats {
 }
 
 // TODO: change to World method once go 1.26 lands. This will be a breaking change.
-func GetComponentTypeByString(world *World, typeString string) reflect.Type {
-	return world.componentRegistry.getTypeByString(typeString)
+//
+// GetComponentTypeByPath gets a component by its full package path + type.
+// For example: "github.com/path/to/package.ComponentType"
+//
+// Returns nil if not found.
+func GetComponentTypeByPath(world *World, componentPath string) reflect.Type {
+	return world.componentRegistry.getTypeByPath(componentPath)
 }
 
 // TODO: change to World method once go 1.26 lands. This will be a breaking change.

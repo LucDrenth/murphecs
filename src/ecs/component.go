@@ -44,17 +44,19 @@ func (c *componentRegistry) getId(componentType reflect.Type) uint {
 	return uint(newId)
 }
 
-func (c *componentRegistry) getTypeByString(componentType string) reflect.Type {
-	for c, _ := range c.components {
-		if c.String() == componentType {
+func (c *componentRegistry) getTypeByPath(componentPath string) reflect.Type {
+	for c := range c.components {
+		pathToMatch := c.PkgPath() + "." + strings.Split(c.String(), ".")[1]
+		if pathToMatch == componentPath {
 			return c
 		}
 	}
 
 	c.concurrencySafeComponentsMutex.RLock()
 	defer c.concurrencySafeComponentsMutex.RUnlock()
-	for c, _ := range c.concurrencySafeComponents {
-		if c.String() == componentType {
+	for c := range c.concurrencySafeComponents {
+		pathToMatch := c.PkgPath() + "." + strings.Split(c.String(), ".")[1]
+		if pathToMatch == componentPath {
 			return c
 		}
 	}
