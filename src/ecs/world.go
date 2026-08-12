@@ -221,6 +221,31 @@ func (world *World) Stats() WorldStats {
 	}
 }
 
+// GetComponentsForEntity returns all components that belong to the given entity, keyed by their ComponentId.
+// Returned components are copies.
+//
+// Can return the following errors:
+//   - Returns an ErrEntityNotFound error if the entity is not found.
+func (world *World) GetComponentsForEntity(entity EntityId) (map[ComponentId]any, error) {
+	entityData, ok := world.entities[entity]
+	if !ok {
+		return nil, ErrEntityNotFound
+	}
+
+	components := make(map[ComponentId]any, len(entityData.archetype.componentIds))
+
+	for componentId, storage := range entityData.archetype.components {
+		componentPointer, err := storage.getComponentPointer(entityData.row)
+		if err != nil {
+			return nil, err
+		}
+
+		components[componentId] = reflect.NewAt(componentId.componentType, componentPointer).Elem().Interface()
+	}
+
+	return components, nil
+}
+
 // TODO: change to World method once go 1.26 lands. This will be a breaking change.
 //
 // GetComponentTypeByPath gets a component by its full package path + type.
