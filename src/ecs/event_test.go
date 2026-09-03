@@ -187,10 +187,10 @@ func TestEventReader(t *testing.T) {
 
 		eventReader := EventReader[*testEvent]{
 			events: []*testEvent{
-				{id: 1, Event: Event{tickAddedToEventReader: 1, scheduleSystemsWriter: 0, remove: true}},
-				{id: 2, Event: Event{tickAddedToEventReader: 1, scheduleSystemsWriter: 1}},
-				{id: 3, Event: Event{tickAddedToEventReader: 1, scheduleSystemsWriter: 2}},
-				{id: 4, Event: Event{tickAddedToEventReader: 1, scheduleSystemsWriter: 3}},
+				{id: 1, tickAddedToEventReader: 1, scheduleSystemsWriter: 0, remove: true},
+				{id: 2, tickAddedToEventReader: 1, scheduleSystemsWriter: 1},
+				{id: 3, tickAddedToEventReader: 1, scheduleSystemsWriter: 2},
+				{id: 4, tickAddedToEventReader: 1, scheduleSystemsWriter: 3},
 			},
 		}
 

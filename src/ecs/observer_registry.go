@@ -14,9 +14,9 @@ type observerOuterResourceParam struct {
 
 type observerEntry struct {
 	systemEntry
-	observerParamIndex int                        // -1 if observer is not used as a param
-	queries            []Query                    // queries to execute before running
-	eventWriters       []AnyEventWriter           // event writers to process after running
+	observerParamIndex int                          // -1 if observer is not used as a param
+	queries            []Query                      // queries to execute before running
+	eventWriters       []AnyEventWriter             // event writers to process after running
 	outerResources     []observerOuterResourceParam // outer resource params to update before running
 }
 
@@ -278,11 +278,9 @@ func buildObserverEntry[O AnyObserver](action System, world *World, source strin
 	}
 
 	return observerEntry{
-		systemEntry: systemEntry{
-			system:     actionValue,
-			params:     params,
-			sourcePath: source,
-		},
+		system:             actionValue,
+		params:             params,
+		sourcePath:         source,
 		observerParamIndex: observerParamIdx,
 		queries:            queries,
 		eventWriters:       eventWriters,

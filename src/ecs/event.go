@@ -2,6 +2,7 @@ package ecs
 
 import (
 	"reflect"
+	"slices"
 	"time"
 )
 
@@ -222,9 +223,9 @@ func (reader *EventReader[E]) First() (E, bool) {
 // Last returns the last written event.
 // Returns (_, false) if there are no elements.
 func (reader *EventReader[E]) Last() (E, bool) {
-	for i := len(reader.events) - 1; i >= 0; i-- {
-		if !reader.events[i].shouldRemove() {
-			return reader.events[i], true
+	for _, v := range slices.Backward(reader.events) {
+		if !v.shouldRemove() {
+			return v, true
 		}
 	}
 
