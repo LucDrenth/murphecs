@@ -18,7 +18,7 @@ import (
 //   - Returns an ErrInvalidComponentStorageCapacity if the component storage capacity, that is decided through World
 //     configs, is not valid
 //   - Returns an ErrWorldIsLocked error while querying
-func Insert(world *World, entity EntityId, components ...AnyComponent) (resultErr error) {
+func insert(world *World, entity EntityId, components ...AnyComponent) (resultErr error) {
 	if len(components) == 0 {
 		return nil
 	}
@@ -147,7 +147,7 @@ func Insert(world *World, entity EntityId, components ...AnyComponent) (resultEr
 //   - Returns an ErrInvalidComponentStorageCapacity if the component storage capacity, that is decided through World
 //     configs, is not valid
 //   - Returns an ErrWorldIsLocked error while querying
-func InsertOrOverwrite(world *World, entity EntityId, components ...AnyComponent) (resultErr error) {
+func insertOrOverwrite(world *World, entity EntityId, components ...AnyComponent) (resultErr error) {
 	if len(components) == 0 {
 		return nil
 	}

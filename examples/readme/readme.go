@@ -26,7 +26,7 @@ func main() {
 
 	for range 3 {
 		// Create a new Entity with a Position and a Velocity component
-		ecs.Spawn(world,
+		world.Spawn(
 			Position{X: rand.Float64() * 100, Y: rand.Float64() * 100},
 			Velocity{X: rand.NormFloat64(), Y: rand.NormFloat64()},
 		)

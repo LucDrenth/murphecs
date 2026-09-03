@@ -11,9 +11,9 @@ type NPC struct{ ecs.Component }
 
 func main() {
 	world := ecs.NewDefaultWorld()
-	entity, _ := ecs.Spawn(world, &NPC{})
+	entity, _ := world.Spawn(&NPC{})
 
 	fmt.Printf("Before deleting: %d entity in the world\n", world.CountEntities())
-	ecs.Despawn(world, entity)
+	world.Despawn(entity)
 	fmt.Printf("After deleting: %d entities in the world\n", world.CountEntities())
 }

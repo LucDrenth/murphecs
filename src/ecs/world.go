@@ -216,7 +216,7 @@ type WorldStats struct {
 func (world *World) Stats() WorldStats {
 	return WorldStats{
 		NumberOfEntities:   world.CountEntities(),
-		NumberOfComponents: world.CountEntities(),
+		NumberOfComponents: world.CountComponents(),
 		NumberOfArchetypes: world.CountArchetypes(),
 	}
 }
@@ -246,18 +246,96 @@ func (world *World) GetComponentsForEntity(entity EntityId) (map[ComponentId]any
 	return components, nil
 }
 
-// TODO: change to World method once go 1.26 lands. This will be a breaking change.
-//
-// GetComponentTypeByPath gets a component by its full package path + type.
-// For example: "github.com/path/to/package.ComponentType"
-//
-// Returns nil if not found.
-func GetComponentTypeByPath(world *World, componentPath string) reflect.Type {
-	return world.componentRegistry.getTypeByPath(componentPath)
+func (world *World) Spawn(components ...AnyComponent) (EntityId, error) {
+	return spawn(world, components...)
 }
-
-// TODO: change to World method once go 1.26 lands. This will be a breaking change.
-func RegisterComponent[C AnyComponent](world *World) {
-	componentType := reflect.TypeFor[C]()
-	_ = world.componentRegistry.getId(componentType)
+func (world *World) Insert(entity EntityId, components ...AnyComponent) error {
+	return insert(world, entity, components...)
+}
+func (world *World) InsertOrOverwrite(entity EntityId, components ...AnyComponent) error {
+	return insertOrOverwrite(world, entity, components...)
+}
+func (world *World) Remove1[A AnyComponent](entity EntityId) error {
+	return remove1[A](world, entity)
+}
+func (world *World) Remove2[A, B AnyComponent](entity EntityId) error {
+	return remove2[A, B](world, entity)
+}
+func (world *World) Remove3[A, B, C AnyComponent](entity EntityId) error {
+	return remove3[A, B, C](world, entity)
+}
+func (world *World) Remove4[A, B, C, D AnyComponent](entity EntityId) error {
+	return remove4[A, B, C, D](world, entity)
+}
+func (world *World) Despawn(entity EntityId) error {
+	return despawn(world, entity)
+}
+func (world *World) HasComponent[C AnyComponent](entity EntityId) (bool, error) {
+	return hasComponent[C](world, entity)
+}
+func (world *World) HasComponentId(entity EntityId, componentId ComponentId) (bool, error) {
+	return hasComponentId(world, entity, componentId)
+}
+func (world *World) Get1[A AnyComponent](entity EntityId) (A, error) {
+	return get1[A](world, entity)
+}
+func (world *World) Get2[A, B AnyComponent](entity EntityId) (A, B, error) {
+	return get2[A, B](world, entity)
+}
+func (world *World) Get3[A, B, C AnyComponent](entity EntityId) (A, B, C, error) {
+	return get3[A, B, C](world, entity)
+}
+func (world *World) Get4[A, B, C, D AnyComponent](entity EntityId) (A, B, C, D, error) {
+	return get4[A, B, C, D](world, entity)
+}
+func (world *World) Get5[A, B, C, D, E AnyComponent](entity EntityId) (A, B, C, D, E, error) {
+	return get5[A, B, C, D, E](world, entity)
+}
+func (world *World) Get6[A, B, C, D, E, F AnyComponent](entity EntityId) (A, B, C, D, E, F, error) {
+	return get6[A, B, C, D, E, F](world, entity)
+}
+func (world *World) Get7[A, B, C, D, E, F, G AnyComponent](entity EntityId) (A, B, C, D, E, F, G, error) {
+	return get7[A, B, C, D, E, F, G](world, entity)
+}
+func (world *World) Get8[A, B, C, D, E, F, G, H AnyComponent](entity EntityId) (A, B, C, D, E, F, G, H, error) {
+	return get8[A, B, C, D, E, F, G, H](world, entity)
+}
+func (world *World) Get9[A, B, C, D, E, F, G, H, I AnyComponent](entity EntityId) (A, B, C, D, E, F, G, H, I, error) {
+	return get9[A, B, C, D, E, F, G, H, I](world, entity)
+}
+func (world *World) Get10[A, B, C, D, E, F, G, H, I, J AnyComponent](entity EntityId) (A, B, C, D, E, F, G, H, I, J, error) {
+	return get10[A, B, C, D, E, F, G, H, I, J](world, entity)
+}
+func (world *World) Get11[A, B, C, D, E, F, G, H, I, J, K AnyComponent](entity EntityId) (A, B, C, D, E, F, G, H, I, J, K, error) {
+	return get11[A, B, C, D, E, F, G, H, I, J, K](world, entity)
+}
+func (world *World) Get12[A, B, C, D, E, F, G, H, I, J, K, L AnyComponent](entity EntityId) (A, B, C, D, E, F, G, H, I, J, K, L, error) {
+	return get12[A, B, C, D, E, F, G, H, I, J, K, L](world, entity)
+}
+func (world *World) Get13[A, B, C, D, E, F, G, H, I, J, K, L, M AnyComponent](entity EntityId) (A, B, C, D, E, F, G, H, I, J, K, L, M, error) {
+	return get13[A, B, C, D, E, F, G, H, I, J, K, L, M](world, entity)
+}
+func (world *World) Get14[A, B, C, D, E, F, G, H, I, J, K, L, M, N AnyComponent](entity EntityId) (A, B, C, D, E, F, G, H, I, J, K, L, M, N, error) {
+	return get14[A, B, C, D, E, F, G, H, I, J, K, L, M, N](world, entity)
+}
+func (world *World) Get15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O AnyComponent](entity EntityId) (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, error) {
+	return get15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O](world, entity)
+}
+func (world *World) Get16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P AnyComponent](entity EntityId) (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, error) {
+	return get16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P](world, entity)
+}
+func (world *World) Observe[O AnyObserver](entity EntityId, action System) error {
+	return observe[O](world, entity, action)
+}
+func (world *World) On[O AnyObserver](action System) error {
+	return on[O](world, action)
+}
+func (world *World) Trigger[O AnyObserver](observed O) {
+	trigger[O](world, observed)
+}
+func (world *World) TriggerEntity[O AnyObserver](entity EntityId, observed O) error {
+	return triggerEntity[O](world, entity, observed)
+}
+func (world *World) GetResource[R Resource]() (result R, err error) {
+	return getResource[R](world)
 }

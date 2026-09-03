@@ -14,7 +14,7 @@ func TestQueryFilter(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(world, &componentA{})
+		entity, err := world.Spawn(&componentA{})
 		assert.NoError(err)
 		entityData := world.entities[entity]
 
@@ -33,7 +33,7 @@ func TestQueryFilter(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(world, &componentA{})
+		entity, err := world.Spawn(&componentA{})
 		assert.NoError(err)
 		entityData := world.entities[entity]
 
@@ -52,7 +52,7 @@ func TestQueryFilter(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(world, &componentA{})
+		entity, err := world.Spawn(&componentA{})
 		assert.NoError(err)
 		entityData := world.entities[entity]
 
@@ -94,7 +94,7 @@ func TestQueryFilter(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(world, &componentA{}, &componentB{})
+		entity, err := world.Spawn(&componentA{}, &componentB{})
 		assert.NoError(err)
 		entityData := world.entities[entity]
 

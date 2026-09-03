@@ -14,7 +14,7 @@ func TestSpawn(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
-		entity, err := Spawn(world, nil)
+		entity, err := world.Spawn(nil)
 		assert.ErrorIs(err, ErrComponentIsNil)
 		assert.Equal(nonExistingEntity, entity)
 
@@ -26,7 +26,7 @@ func TestSpawn(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
-		entity, err := Spawn(world, componentA{})
+		entity, err := world.Spawn(componentA{})
 		assert.NoError(err)
 		assert.NotEqual(nonExistingEntity, entity)
 
@@ -38,12 +38,12 @@ func TestSpawn(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
-		entity, err := Spawn(world, componentA{}, &componentB{})
+		entity, err := world.Spawn(componentA{}, &componentB{})
 		assert.NoError(err)
 		assert.NotEqual(nonExistingEntity, entity)
 
 		// retry with different component order
-		entity, err = Spawn(world, &componentA{}, componentB{})
+		entity, err = world.Spawn(&componentA{}, componentB{})
 		assert.NoError(err)
 		assert.NotEqual(nonExistingEntity, entity)
 
@@ -55,15 +55,15 @@ func TestSpawn(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
-		_, err := Spawn(world, &componentA{}, &componentA{})
+		_, err := world.Spawn(&componentA{}, &componentA{})
 		assert.ErrorIs(err, ErrComponentDuplicate)
-		_, err = Spawn(world, &componentA{}, &componentA{}, &componentA{})
+		_, err = world.Spawn(&componentA{}, &componentA{}, &componentA{})
 		assert.ErrorIs(err, ErrComponentDuplicate)
-		_, err = Spawn(world, &componentA{}, &componentA{}, &componentB{})
+		_, err = world.Spawn(&componentA{}, &componentA{}, &componentB{})
 		assert.ErrorIs(err, ErrComponentDuplicate)
-		_, err = Spawn(world, &componentA{}, &componentB{}, &componentA{})
+		_, err = world.Spawn(&componentA{}, &componentB{}, &componentA{})
 		assert.ErrorIs(err, ErrComponentDuplicate)
-		_, err = Spawn(world, &componentB{}, &componentA{}, &componentA{})
+		_, err = world.Spawn(&componentB{}, &componentA{}, &componentA{})
 		assert.ErrorIs(err, ErrComponentDuplicate)
 
 		assert.Equal(0, world.CountEntities())
@@ -74,22 +74,22 @@ func TestSpawn(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
-		entity, err := Spawn(world)
+		entity, err := world.Spawn()
 		assert.NoError(err)
 		assert.Equal(entity, EntityId(1))
-		entity, err = Spawn(world, &componentA{})
+		entity, err = world.Spawn(&componentA{})
 		assert.NoError(err)
 		assert.Equal(entity, EntityId(2))
-		entity, err = Spawn(world, &componentA{})
+		entity, err = world.Spawn(&componentA{})
 		assert.NoError(err)
 		assert.Equal(entity, EntityId(3))
-		entity, err = Spawn(world, &componentB{})
+		entity, err = world.Spawn(&componentB{})
 		assert.NoError(err)
 		assert.Equal(entity, EntityId(4))
-		entity, err = Spawn(world, &componentA{}, &componentB{})
+		entity, err = world.Spawn(&componentA{}, &componentB{})
 		assert.NoError(err)
 		assert.Equal(entity, EntityId(5))
-		entity, err = Spawn(world, &componentB{}, &componentA{})
+		entity, err = world.Spawn(&componentB{}, &componentA{})
 		assert.NoError(err)
 		assert.Equal(entity, EntityId(6))
 
@@ -115,13 +115,13 @@ func TestSpawnWithRequiredComponents(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
-		entity, err := Spawn(world, &withRequiredComponents{})
+		entity, err := world.Spawn(&withRequiredComponents{})
 
 		assert.NoError(err)
 		assert.Equal(1, world.CountEntities())
 		assert.Equal(3, world.CountComponents())
 
-		a, b, c, err := Get3[requiredComponentA, requiredComponentB, withRequiredComponents](world, entity)
+		a, b, c, err := world.Get3[requiredComponentA, requiredComponentB, withRequiredComponents](entity)
 		assert.NotNil(a)
 		assert.NotNil(b)
 		assert.NotNil(c)

@@ -73,17 +73,17 @@ func (OnDespawn[C]) componentId(world *World) ComponentId {
 
 // On registers a global observer. The action must be a system (function) that can optionally
 // take O as a parameter, which will be set to the triggered observer value before running.
-func On[O AnyObserver](world *World, action System) error {
+func on[O AnyObserver](world *World, action System) error {
 	return registerObserver[O](&world.observers, world, action, callerSource(1))
 }
 
 // Trigger triggers all registered observers for the given observer
-func Trigger[O AnyObserver](world *World, observed O) {
+func trigger[O AnyObserver](world *World, observed O) {
 	triggerObserver(world, &world.observers, observed)
 }
 
 // TriggerEntity triggers all registered observers for the given observer on a specific entity
-func TriggerEntity[O AnyObserver](world *World, entity EntityId, observed O) error {
+func triggerEntity[O AnyObserver](world *World, entity EntityId, observed O) error {
 	entityData, exists := world.entities[entity]
 	if !exists {
 		return ErrEntityNotFound
@@ -99,7 +99,7 @@ func TriggerEntity[O AnyObserver](world *World, entity EntityId, observed O) err
 // Observe registers an entity-specific observer. The action must be a system (function) that
 // can optionally take O as a parameter, which will be set to the triggered observer value before
 // running.
-func Observe[O AnyObserver](world *World, entity EntityId, action System) error {
+func observe[O AnyObserver](world *World, entity EntityId, action System) error {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return ErrEntityNotFound

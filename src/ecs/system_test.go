@@ -493,7 +493,7 @@ func TestExecSystem(t *testing.T) {
 		logger := NoOpLogger{}
 		eventStorage := NewEventStorage()
 
-		_, err := Spawn(world, &componentA{})
+		_, err := world.Spawn(&componentA{})
 		assert.NoError(err)
 
 		numberOfResults := 0
@@ -516,7 +516,7 @@ func TestExecSystem(t *testing.T) {
 		logger := NoOpLogger{}
 		eventStorage := NewEventStorage()
 
-		_, err := Spawn(world, &componentA{})
+		_, err := world.Spawn(&componentA{})
 		assert.NoError(err)
 
 		numberOfResults := 0
@@ -547,7 +547,7 @@ func TestExecSystem(t *testing.T) {
 		logger := NoOpLogger{}
 		eventStorage := NewEventStorage()
 
-		_, err = Spawn(&outerWorld, &componentA{})
+		_, err = outerWorld.Spawn(&componentA{})
 		assert.NoError(err)
 
 		numberOfResults := 0

@@ -496,7 +496,7 @@ func TestConcurrency(t *testing.T) {
 
 		subAppA.
 			AddSystem(startup, func(world *ecs.World) error {
-				_, err := ecs.Spawn(world, component{
+				_, err := world.Spawn(component{
 					data: map[string]int{},
 				})
 				return err

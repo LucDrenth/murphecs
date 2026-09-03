@@ -26,7 +26,7 @@ func main() {
 	world := ecs.NewDefaultWorld()
 
 	// You can spawn any amount of unique components!
-	entity, err := ecs.Spawn(world,
+	entity, err := world.Spawn(
 		&Friendly{},
 		&NPC{name: "Murphy"},
 		&Health{max: 100, current: 80},

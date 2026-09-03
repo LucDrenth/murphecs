@@ -52,13 +52,13 @@ func main() {
 
 func spawn(world *ecs.World) error {
 	// this has the player component so this entity will be queried
-	_, err := ecs.Spawn(world, position{}, velocity{x: 1, y: 2}, player{})
+	_, err := world.Spawn(position{}, velocity{x: 1, y: 2}, player{})
 	if err != nil {
 		return err
 	}
 
 	// this entity does not have the [player] component so it will not be queried
-	_, err = ecs.Spawn(world, position{x: 1_000, y: 1_000}, velocity{x: 10, y: 10})
+	_, err = world.Spawn(position{x: 1_000, y: 1_000}, velocity{x: 10, y: 10})
 	if err != nil {
 		return err
 	}

@@ -14,7 +14,7 @@ import (
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
 //   - ErrWorldIsLocked error while querying
-func Remove1[A AnyComponent](world *World, entity EntityId) error {
+func remove1[A AnyComponent](world *World, entity EntityId) error {
 	if world.isQuerying {
 		// Prevent archetype moves during querying to prevent unexpected behavior.
 		return ErrWorldIsLocked
@@ -31,7 +31,7 @@ func Remove1[A AnyComponent](world *World, entity EntityId) error {
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
 //   - ErrWorldIsLocked error while querying
-func Remove2[A, B AnyComponent](world *World, entity EntityId) (result error) {
+func remove2[A, B AnyComponent](world *World, entity EntityId) (result error) {
 	if world.isQuerying {
 		// Prevent archetype moves during querying to prevent unexpected behavior.
 		return ErrWorldIsLocked
@@ -49,7 +49,7 @@ func Remove2[A, B AnyComponent](world *World, entity EntityId) (result error) {
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
 //   - ErrWorldIsLocked error while querying
-func Remove3[A, B, C AnyComponent](world *World, entity EntityId) (result error) {
+func remove3[A, B, C AnyComponent](world *World, entity EntityId) (result error) {
 	if world.isQuerying {
 		// Prevent archetype moves during querying to prevent unexpected behavior.
 		return ErrWorldIsLocked
@@ -68,7 +68,7 @@ func Remove3[A, B, C AnyComponent](world *World, entity EntityId) (result error)
 //   - ErrEntityNotFound error if the entity does not exist in world.
 //   - ErrComponentNotFound error if the component is not present in the entity.
 //   - ErrWorldIsLocked error while querying
-func Remove4[A, B, C, D AnyComponent](world *World, entity EntityId) (result error) {
+func remove4[A, B, C, D AnyComponent](world *World, entity EntityId) (result error) {
 	if world.isQuerying {
 		// Prevent archetype moves during querying to prevent unexpected behavior.
 		return ErrWorldIsLocked

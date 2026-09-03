@@ -25,6 +25,10 @@ func (runner *customRunner) Run(exitChannel <-chan struct{}, executor app.Execut
 	for {
 		fmt.Print("Press enter to run systems")
 		scanner.Scan()
+		err := scanner.Err()
+		if err != nil {
+			fmt.Println("scanner error:", err)
+		}
 
 		select {
 		case <-exitChannel:

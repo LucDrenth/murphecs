@@ -20,7 +20,7 @@ func TestEntityExists(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
-		entity, err := Spawn(world, &componentA{})
+		entity, err := world.Spawn(&componentA{})
 		assert.NoError(err)
 
 		assert.True(EntityExists(world, entity))
@@ -30,10 +30,10 @@ func TestEntityExists(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
-		entity, err := Spawn(world, &componentA{})
+		entity, err := world.Spawn(&componentA{})
 		assert.NoError(err)
 
-		err = Despawn(world, entity)
+		err = world.Despawn(entity)
 		assert.NoError(err)
 
 		assert.False(EntityExists(world, entity))

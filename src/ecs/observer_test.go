@@ -17,13 +17,13 @@ func TestGlobalObserver(t *testing.T) {
 
 	t.Run("Spawn nil observer does nothing", func(t *testing.T) {
 		world := NewDefaultWorld()
-		assert.NoError(t, On[observer1](world, nil))
+		assert.NoError(t, world.On[observer1](func(world *World, observer observer1) {}))
 	})
 
 	t.Run("Spawn observer pointer panics", func(t *testing.T) {
 		world := NewDefaultWorld()
 		assert.Panics(t, func() {
-			_ = On[*observer1](world, func(world *World, observer *observer1) {})
+			_ = world.On[*observer1](func(world *World, observer *observer1) {})
 		})
 	})
 
@@ -34,17 +34,17 @@ func TestGlobalObserver(t *testing.T) {
 
 		var observed1, observed2 uint
 
-		assert.NoError(On[observer1](world, func(world *World, observer observer1) {
+		assert.NoError(world.On[observer1](func(world *World, observer observer1) {
 			observed1++
 		}))
-		assert.NoError(On[observer2](world, func(world *World, observer observer2) {
+		assert.NoError(world.On[observer2](func(world *World, observer observer2) {
 			observed2++
 		}))
 
-		Trigger(world, observer1{})
-		Trigger(world, observer2{})
-		Trigger(world, observer1{})
-		Trigger(world, observer1{})
+		world.Trigger(observer1{})
+		world.Trigger(observer2{})
+		world.Trigger(observer1{})
+		world.Trigger(observer1{})
 
 		assert.Equal(uint(3), observed1)
 		assert.Equal(uint(1), observed2)
@@ -52,7 +52,7 @@ func TestGlobalObserver(t *testing.T) {
 
 	t.Run("Triggering observer without registering an observer does nothing", func(t *testing.T) {
 		world := NewDefaultWorld()
-		Trigger(world, observer1{})
+		world.Trigger(observer1{})
 	})
 
 	t.Run("OnSpawn", func(t *testing.T) {
@@ -62,25 +62,25 @@ func TestGlobalObserver(t *testing.T) {
 		nrObserved := 0
 		var expectedEntityId EntityId
 
-		assert.NoError(On[OnSpawn[myComponent1]](world, func(world *World, observed OnSpawn[myComponent1]) {
+		assert.NoError(world.On[OnSpawn[myComponent1]](func(world *World, observed OnSpawn[myComponent1]) {
 			nrObserved++
 			assert.Equal(expectedEntityId, observed.Entity)
 		}))
 
-		assert.NoError(On[OnDespawn[myComponent1]](world, func(world *World, observed OnDespawn[myComponent1]) {
+		assert.NoError(world.On[OnDespawn[myComponent1]](func(world *World, observed OnDespawn[myComponent1]) {
 			assert.FailNow("did not expect OnDespawn to trigger")
 		}))
 
 		expectedEntityId = 1
-		_, err := Spawn(world, myComponent1{}) // triggers
+		_, err := world.Spawn(myComponent1{}) // triggers
 		assert.NoError(err)
-		_, err = Spawn(world, myComponent2{}) // does not trigger
+		_, err = world.Spawn(myComponent2{}) // does not trigger
 		assert.NoError(err)
 		expectedEntityId = 3
-		_, err = Spawn(world, myComponent1{}, myComponent2{}) // triggers
+		_, err = world.Spawn(myComponent1{}, myComponent2{}) // triggers
 		assert.NoError(err)
 		expectedEntityId = 4
-		_, err = Spawn(world, myComponent2{}, myComponent1{}) // triggers
+		_, err = world.Spawn(myComponent2{}, myComponent1{}) // triggers
 		assert.NoError(err)
 
 		assert.Equal(3, nrObserved)
@@ -93,30 +93,30 @@ func TestGlobalObserver(t *testing.T) {
 		nrObserved := 0
 		var expectedEntityId EntityId
 
-		assert.NoError(On[OnDespawn[myComponent1]](world, func(world *World, observed OnDespawn[myComponent1]) {
+		assert.NoError(world.On[OnDespawn[myComponent1]](func(world *World, observed OnDespawn[myComponent1]) {
 			nrObserved++
 			assert.Equal(expectedEntityId, observed.Entity)
 		}))
 
-		id1, err := Spawn(world, myComponent1{}) // despawn will trigger
+		id1, err := world.Spawn(myComponent1{}) // despawn will trigger
 		assert.NoError(err)
-		_, err = Spawn(world, myComponent2{}) // despawn won't trigger
+		_, err = world.Spawn(myComponent2{}) // despawn won't trigger
 		assert.NoError(err)
-		id3, err := Spawn(world, myComponent1{}, myComponent2{}) // despawn will trigger
+		id3, err := world.Spawn(myComponent1{}, myComponent2{}) // despawn will trigger
 		assert.NoError(err)
-		id4, err := Spawn(world, myComponent2{}, myComponent1{}) // despawn will trigger
+		id4, err := world.Spawn(myComponent2{}, myComponent1{}) // despawn will trigger
 		assert.NoError(err)
 
 		assert.Equal(0, nrObserved)
 
 		expectedEntityId = id3
-		err = Despawn(world, id3)
+		err = world.Despawn(id3)
 		assert.NoError(err)
 		expectedEntityId = id1
-		err = Despawn(world, id1)
+		err = world.Despawn(id1)
 		assert.NoError(err)
 		expectedEntityId = id4
-		err = Despawn(world, id4)
+		err = world.Despawn(id4)
 		assert.NoError(err)
 
 		assert.Equal(3, nrObserved)
@@ -134,7 +134,7 @@ func TestEntityObserver(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
-		err := Observe[observer1](world, EntityId(5), func(world *World, o observer1) {})
+		err := world.Observe[observer1](EntityId(5), func(world *World, o observer1) {})
 		assert.ErrorIs(err, ErrEntityNotFound)
 	})
 
@@ -142,9 +142,9 @@ func TestEntityObserver(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
-		entity, err := Spawn(world)
+		entity, err := world.Spawn()
 		assert.NoError(err)
-		err = TriggerEntity(world, entity, observer1{})
+		err = world.TriggerEntity(entity, observer1{})
 		assert.NoError(err)
 	})
 
@@ -153,19 +153,19 @@ func TestEntityObserver(t *testing.T) {
 			assert := assert.New(t)
 
 			world := NewDefaultWorld()
-			e1, err := Spawn(world)
+			e1, err := world.Spawn()
 			assert.NoError(err)
-			e2, err := Spawn(world)
+			e2, err := world.Spawn()
 			assert.NoError(err)
 
 			var triggersForEntity1, triggersForEntity2 uint
 
-			err = Observe[observer1](world, e1, func(world *World, o observer1) { triggersForEntity1++ })
+			err = world.Observe[observer1](e1, func(world *World, o observer1) { triggersForEntity1++ })
 			assert.NoError(err)
-			err = Observe[observer1](world, e2, func(world *World, o observer1) { triggersForEntity2++ })
+			err = world.Observe[observer1](e2, func(world *World, o observer1) { triggersForEntity2++ })
 			assert.NoError(err)
 
-			err = TriggerEntity(world, e1, observer1{})
+			err = world.TriggerEntity(e1, observer1{})
 			assert.NoError(err)
 			assert.Equal(uint(1), triggersForEntity1)
 			assert.Equal(uint(0), triggersForEntity2)
@@ -175,16 +175,16 @@ func TestEntityObserver(t *testing.T) {
 			assert := assert.New(t)
 
 			world := NewDefaultWorld()
-			entity, err := Spawn(world)
+			entity, err := world.Spawn()
 			assert.NoError(err)
 
 			var triggersForObserve1, triggersForObserve2 uint
-			err = Observe[observer1](world, entity, func(world *World, o observer1) { triggersForObserve1++ })
+			err = world.Observe[observer1](entity, func(world *World, o observer1) { triggersForObserve1++ })
 			assert.NoError(err)
-			err = Observe[observer2](world, entity, func(world *World, o observer2) { triggersForObserve2++ })
+			err = world.Observe[observer2](entity, func(world *World, o observer2) { triggersForObserve2++ })
 			assert.NoError(err)
 
-			err = TriggerEntity(world, entity, observer1{})
+			err = world.TriggerEntity(entity, observer1{})
 			assert.NoError(err)
 			assert.Equal(uint(1), triggersForObserve1)
 			assert.Equal(uint(0), triggersForObserve2)
@@ -199,10 +199,10 @@ func TestEntityObserver(t *testing.T) {
 
 			numberOfTriggers := 0
 
-			entity, err := Spawn(world, myComponent1{})
+			entity, err := world.Spawn(myComponent1{})
 			assert.NoError(err)
-			assert.NoError(Observe[OnDespawn[myComponent1]](world, entity, func(world *World, o OnDespawn[myComponent1]) { numberOfTriggers++ }))
-			assert.NoError(Remove1[myComponent1](world, entity))
+			assert.NoError(world.Observe[OnDespawn[myComponent1]](entity, func(world *World, o OnDespawn[myComponent1]) { numberOfTriggers++ }))
+			assert.NoError(world.Remove1[myComponent1](entity))
 
 			assert.Equal(1, numberOfTriggers)
 		})
@@ -214,10 +214,10 @@ func TestEntityObserver(t *testing.T) {
 
 			numberOfTriggers := 0
 
-			entity, err := Spawn(world, myComponent1{})
+			entity, err := world.Spawn(myComponent1{})
 			assert.NoError(err)
-			assert.NoError(Observe[OnDespawn[myComponent1]](world, entity, func(world *World, o OnDespawn[myComponent1]) { numberOfTriggers++ }))
-			assert.NoError(Despawn(world, entity))
+			assert.NoError(world.Observe[OnDespawn[myComponent1]](entity, func(world *World, o OnDespawn[myComponent1]) { numberOfTriggers++ }))
+			assert.NoError(world.Despawn(entity))
 
 			assert.Equal(1, numberOfTriggers)
 		})
@@ -231,10 +231,10 @@ func TestEntityObserver(t *testing.T) {
 
 			numberOfTriggers := 0
 
-			entity, err := Spawn(world, myComponent1{})
+			entity, err := world.Spawn(myComponent1{})
 			assert.NoError(err)
-			assert.NoError(Observe[OnSpawn[myComponent2]](world, entity, func(world *World, o OnSpawn[myComponent2]) { numberOfTriggers++ }))
-			assert.NoError(Insert(world, entity, myComponent2{}))
+			assert.NoError(world.Observe[OnSpawn[myComponent2]](entity, func(world *World, o OnSpawn[myComponent2]) { numberOfTriggers++ }))
+			assert.NoError(world.Insert(entity, myComponent2{}))
 
 			assert.Equal(1, numberOfTriggers)
 		})
@@ -246,10 +246,10 @@ func TestEntityObserver(t *testing.T) {
 
 			numberOfTriggers := 0
 
-			entity, err := Spawn(world, myComponent1{})
+			entity, err := world.Spawn(myComponent1{})
 			assert.NoError(err)
-			assert.NoError(Observe[OnSpawn[myComponent2]](world, entity, func(world *World, o OnSpawn[myComponent2]) { numberOfTriggers++ }))
-			assert.NoError(InsertOrOverwrite(world, entity, myComponent2{}))
+			assert.NoError(world.Observe[OnSpawn[myComponent2]](entity, func(world *World, o OnSpawn[myComponent2]) { numberOfTriggers++ }))
+			assert.NoError(world.InsertOrOverwrite(entity, myComponent2{}))
 
 			assert.Equal(1, numberOfTriggers)
 		})
@@ -266,23 +266,23 @@ func TestObserverSystemParams(t *testing.T) {
 			assert := assert.New(t)
 			world := NewDefaultWorld()
 			assert.NoError(world.Resources().Add(&myResource{}))
-			assert.NoError(On[myObserver](world, func(_ myObserver, _ *myResource) {}))
+			assert.NoError(world.On[myObserver](func(_ myObserver, _ *myResource) {}))
 		})
 
 		t.Run("can register observer with resource by value", func(t *testing.T) {
 			assert := assert.New(t)
 			world := NewDefaultWorld()
 			assert.NoError(world.Resources().Add(&myResource{}))
-			assert.NoError(On[myObserver](world, func(_ myObserver, _ myResource) {}))
+			assert.NoError(world.On[myObserver](func(_ myObserver, _ myResource) {}))
 		})
 
 		t.Run("resource by pointer can be mutated", func(t *testing.T) {
 			assert := assert.New(t)
 			world := NewDefaultWorld()
 			assert.NoError(world.Resources().Add(&myResource{value: 1}))
-			assert.NoError(On[myObserver](world, func(_ myObserver, res *myResource) { res.value++ }))
-			Trigger(world, myObserver{})
-			res, err := GetResource[myResource](world)
+			assert.NoError(world.On[myObserver](func(_ myObserver, res *myResource) { res.value++ }))
+			world.Trigger(myObserver{})
+			res, err := world.GetResource[myResource]()
 			assert.NoError(err)
 			assert.Equal(2, res.value)
 		})
@@ -291,9 +291,9 @@ func TestObserverSystemParams(t *testing.T) {
 			assert := assert.New(t)
 			world := NewDefaultWorld()
 			assert.NoError(world.Resources().Add(&myResource{value: 1}))
-			assert.NoError(On[myObserver](world, func(_ myObserver, res myResource) { res.value++ }))
-			Trigger(world, myObserver{})
-			res, err := GetResource[myResource](world)
+			assert.NoError(world.On[myObserver](func(_ myObserver, res myResource) { res.value++ }))
+			world.Trigger(myObserver{})
+			res, err := world.GetResource[myResource]()
 			assert.NoError(err)
 			assert.Equal(1, res.value)
 		})
@@ -301,7 +301,7 @@ func TestObserverSystemParams(t *testing.T) {
 		t.Run("fails if resource is not added", func(t *testing.T) {
 			assert := assert.New(t)
 			world := NewDefaultWorld()
-			assert.Error(On[myObserver](world, func(_ myObserver, _ *myResource) {}))
+			assert.Error(world.On[myObserver](func(_ myObserver, _ *myResource) {}))
 		})
 	})
 
@@ -311,13 +311,13 @@ func TestObserverSystemParams(t *testing.T) {
 		t.Run("can register observer with EventReader", func(t *testing.T) {
 			assert := assert.New(t)
 			world := NewDefaultWorld()
-			assert.NoError(On[myObserver](world, func(_ myObserver, _ *EventReader[*myEvent]) {}))
+			assert.NoError(world.On[myObserver](func(_ myObserver, _ *EventReader[*myEvent]) {}))
 		})
 
 		t.Run("fails if EventReader is not a pointer", func(t *testing.T) {
 			assert := assert.New(t)
 			world := NewDefaultWorld()
-			assert.ErrorIs(On[myObserver](world, func(_ myObserver, _ EventReader[*myEvent]) {}), ErrSystemParamEventReaderNotAPointer)
+			assert.ErrorIs(world.On[myObserver](func(_ myObserver, _ EventReader[*myEvent]) {}), ErrSystemParamEventReaderNotAPointer)
 		})
 
 		t.Run("observer can read events written by a schedule system in the same tick", func(t *testing.T) {
@@ -329,7 +329,7 @@ func TestObserverSystemParams(t *testing.T) {
 			assert.NoError(world.AddSchedule("update", ScheduleLast{}, false))
 
 			var readEvents []*myEvent
-			assert.NoError(On[myObserver](world, func(_ myObserver, reader *EventReader[*myEvent]) {
+			assert.NoError(world.On[myObserver](func(_ myObserver, reader *EventReader[*myEvent]) {
 				readEvents = nil
 				for e := range reader.Read {
 					readEvents = append(readEvents, e)
@@ -349,7 +349,7 @@ func TestObserverSystemParams(t *testing.T) {
 			// Run once: writing system writes to writer; ProcessEvents moves it to reader
 			schedules[0].Exec(world, nil, eventStorage, 1)
 			// Observer triggered after schedule: events are now in the reader
-			Trigger(world, myObserver{})
+			world.Trigger(myObserver{})
 
 			assert.Len(readEvents, 1)
 		})
@@ -364,13 +364,13 @@ func TestObserverSystemParams(t *testing.T) {
 		t.Run("can register observer with EventWriter", func(t *testing.T) {
 			assert := assert.New(t)
 			world := NewDefaultWorld()
-			assert.NoError(On[myObserver](world, func(_ myObserver, _ *EventWriter[*myEvent]) {}))
+			assert.NoError(world.On[myObserver](func(_ myObserver, _ *EventWriter[*myEvent]) {}))
 		})
 
 		t.Run("fails if EventWriter is not a pointer", func(t *testing.T) {
 			assert := assert.New(t)
 			world := NewDefaultWorld()
-			assert.ErrorIs(On[myObserver](world, func(_ myObserver, _ EventWriter[*myEvent]) {}), ErrSystemParamEventWriterNotAPointer)
+			assert.ErrorIs(world.On[myObserver](func(_ myObserver, _ EventWriter[*myEvent]) {}), ErrSystemParamEventWriterNotAPointer)
 		})
 
 		t.Run("events written by observer inside a schedule are readable in subsequent schedule run", func(t *testing.T) {
@@ -382,7 +382,7 @@ func TestObserverSystemParams(t *testing.T) {
 			world := NewDefaultWorld()
 			assert.NoError(world.AddSchedule("update", ScheduleLast{}, false))
 
-			assert.NoError(On[OnSpawn[spawnedComponent]](world, func(_ OnSpawn[spawnedComponent], w *EventWriter[*myEvent]) {
+			assert.NoError(world.On[OnSpawn[spawnedComponent]](func(_ OnSpawn[spawnedComponent], w *EventWriter[*myEvent]) {
 				w.Write(&myEvent{value: 42})
 			}))
 
@@ -395,7 +395,7 @@ func TestObserverSystemParams(t *testing.T) {
 			}))
 			// This system triggers the observer by spawning
 			assert.NoError(world.AddSystem("update", func(w *World) {
-				_, _ = Spawn(w, spawnedComponent{})
+				_, _ = w.Spawn(spawnedComponent{})
 			}))
 			assert.NoError(world.PrepareSystems())
 
@@ -425,11 +425,11 @@ func TestObserverSystemParams(t *testing.T) {
 			assert.NoError(world.AddSystem("update", func(w *World) {
 				if spawnOnce {
 					spawnOnce = false
-					_, _ = Spawn(w, spawnedComponent{})
+					_, _ = w.Spawn(spawnedComponent{})
 				}
 			}))
 
-			assert.NoError(On[OnSpawn[spawnedComponent]](world, func(_ OnSpawn[spawnedComponent], w *EventWriter[*myEvent]) {
+			assert.NoError(world.On[OnSpawn[spawnedComponent]](func(_ OnSpawn[spawnedComponent], w *EventWriter[*myEvent]) {
 				w.Write(&myEvent{value: 1})
 			}))
 
@@ -463,7 +463,7 @@ func TestObserverSystemParams(t *testing.T) {
 			assert := assert.New(t)
 			world := NewDefaultWorld()
 			assert.ErrorIs(
-				On[myObserver](world, func(_ myObserver, _ *OuterResource[*myResource, TestCustomTargetWorld]) {}),
+				world.On[myObserver](func(_ myObserver, _ *OuterResource[*myResource, TestCustomTargetWorld]) {}),
 				ErrSystemParamOuterResourceIsAPointer,
 			)
 		})
@@ -480,7 +480,7 @@ func TestObserverSystemParams(t *testing.T) {
 			world := NewDefaultWorld()
 			assert.NoError(world.RegisterOuterWorld(TestCustomTargetWorldId, &outerWorld))
 
-			assert.NoError(On[myObserver](world, func(_ myObserver, _ OuterResource[*myResource, TestCustomTargetWorld]) {}))
+			assert.NoError(world.On[myObserver](func(_ myObserver, _ OuterResource[*myResource, TestCustomTargetWorld]) {}))
 		})
 
 		t.Run("outer resource pointer value is accessible when observer triggers", func(t *testing.T) {
@@ -496,11 +496,11 @@ func TestObserverSystemParams(t *testing.T) {
 			assert.NoError(world.RegisterOuterWorld(TestCustomTargetWorldId, &outerWorld))
 
 			var gotValue int
-			assert.NoError(On[myObserver](world, func(_ myObserver, res OuterResource[*myResource, TestCustomTargetWorld]) {
+			assert.NoError(world.On[myObserver](func(_ myObserver, res OuterResource[*myResource, TestCustomTargetWorld]) {
 				gotValue = res.Value.value
 			}))
 
-			Trigger(world, myObserver{})
+			world.Trigger(myObserver{})
 			assert.Equal(10, gotValue)
 		})
 
@@ -518,15 +518,15 @@ func TestObserverSystemParams(t *testing.T) {
 			assert.NoError(world.RegisterOuterWorld(TestCustomTargetWorldId, &outerWorld))
 
 			var gotValue int
-			assert.NoError(On[myObserver](world, func(_ myObserver, r OuterResource[myResource, TestCustomTargetWorld]) {
+			assert.NoError(world.On[myObserver](func(_ myObserver, r OuterResource[myResource, TestCustomTargetWorld]) {
 				gotValue = r.Value.value
 			}))
 
-			Trigger(world, myObserver{})
+			world.Trigger(myObserver{})
 			assert.Equal(10, gotValue)
 
 			res.value = 99
-			Trigger(world, myObserver{})
+			world.Trigger(myObserver{})
 			assert.Equal(99, gotValue)
 		})
 	})

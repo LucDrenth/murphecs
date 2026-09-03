@@ -10,7 +10,7 @@ import "reflect"
 //   - Returns an ErrComponentNotFound error if the entity does not have the component.
 //
 // WARNING: Do not store the component pointer
-func Get1[A AnyComponent](world *World, entity EntityId) (a A, err error) {
+func get1[A AnyComponent](world *World, entity EntityId) (a A, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return a, ErrEntityNotFound
@@ -32,7 +32,7 @@ func Get1[A AnyComponent](world *World, entity EntityId) (a A, err error) {
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get2[A, B AnyComponent](world *World, entity EntityId) (a A, b B, err error) {
+func get2[A, B AnyComponent](world *World, entity EntityId) (a A, b B, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return a, b, ErrEntityNotFound
@@ -47,7 +47,7 @@ func Get2[A, B AnyComponent](world *World, entity EntityId) (a A, b B, err error
 	return a, b, nil
 }
 
-// Get3 returns the component that belongs to the given entity.
+// get3 returns the component that belongs to the given entity.
 //
 // Can return the following errors:
 //   - ErrEntityNotFound error if the entity is not found.
@@ -56,7 +56,7 @@ func Get2[A, B AnyComponent](world *World, entity EntityId) (a A, b B, err error
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get3[A, B, C AnyComponent](world *World, entity EntityId) (a A, b B, c C, err error) {
+func get3[A, B, C AnyComponent](world *World, entity EntityId) (a A, b B, c C, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return a, b, c, ErrEntityNotFound
@@ -82,7 +82,7 @@ func Get3[A, B, C AnyComponent](world *World, entity EntityId) (a A, b B, c C, e
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get4[A, B, C, D AnyComponent](world *World, entity EntityId) (a A, b B, c C, d D, err error) {
+func get4[A, B, C, D AnyComponent](world *World, entity EntityId) (a A, b B, c C, d D, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return a, b, c, d, ErrEntityNotFound
@@ -110,7 +110,7 @@ func Get4[A, B, C, D AnyComponent](world *World, entity EntityId) (a A, b B, c C
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get5[A, B, C, D, E AnyComponent](world *World, entity EntityId) (a A, b B, c C, d D, e E, err error) {
+func get5[A, B, C, D, E AnyComponent](world *World, entity EntityId) (a A, b B, c C, d D, e E, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return a, b, c, d, e, ErrEntityNotFound
@@ -140,7 +140,7 @@ func Get5[A, B, C, D, E AnyComponent](world *World, entity EntityId) (a A, b B, 
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get6[A, B, C, D, E, F AnyComponent](world *World, entity EntityId) (a A, b B, c C, d D, e E, f F, err error) {
+func get6[A, B, C, D, E, F AnyComponent](world *World, entity EntityId) (a A, b B, c C, d D, e E, f F, err error) {
 	entityData, ok := world.entities[entity]
 	if !ok {
 		return a, b, c, d, e, f, ErrEntityNotFound
@@ -172,7 +172,7 @@ func Get6[A, B, C, D, E, F AnyComponent](world *World, entity EntityId) (a A, b 
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get7[A, B, C, D, E, F, G AnyComponent](world *World, entity EntityId) (
+func get7[A, B, C, D, E, F, G AnyComponent](world *World, entity EntityId) (
 	a A, b B, c C, d D, e E, f F, g G, err error,
 ) {
 	entityData, ok := world.entities[entity]
@@ -208,7 +208,7 @@ func Get7[A, B, C, D, E, F, G AnyComponent](world *World, entity EntityId) (
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get8[A, B, C, D, E, F, G, H AnyComponent](world *World, entity EntityId) (
+func get8[A, B, C, D, E, F, G, H AnyComponent](world *World, entity EntityId) (
 	a A, b B, c C, d D, e E, f F, g G, h H, err error,
 ) {
 	entityData, ok := world.entities[entity]
@@ -246,7 +246,7 @@ func Get8[A, B, C, D, E, F, G, H AnyComponent](world *World, entity EntityId) (
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get9[A, B, C, D, E, F, G, H, I AnyComponent](world *World, entity EntityId) (
+func get9[A, B, C, D, E, F, G, H, I AnyComponent](world *World, entity EntityId) (
 	a A, b B, c C, d D, e E, f F, g G, h H, i I, err error,
 ) {
 	entityData, ok := world.entities[entity]
@@ -286,7 +286,7 @@ func Get9[A, B, C, D, E, F, G, H, I AnyComponent](world *World, entity EntityId)
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get10[A, B, C, D, E, F, G, H, I, J AnyComponent](world *World, entity EntityId) (
+func get10[A, B, C, D, E, F, G, H, I, J AnyComponent](world *World, entity EntityId) (
 	a A, b B, c C, d D, e E, f F, g G, h H, i I, j J, err error,
 ) {
 	entityData, ok := world.entities[entity]
@@ -328,7 +328,7 @@ func Get10[A, B, C, D, E, F, G, H, I, J AnyComponent](world *World, entity Entit
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get11[A, B, C, D, E, F, G, H, I, J, K AnyComponent](world *World, entity EntityId) (
+func get11[A, B, C, D, E, F, G, H, I, J, K AnyComponent](world *World, entity EntityId) (
 	a A, b B, c C, d D, e E, f F, g G, h H, i I, j J, k K, err error,
 ) {
 	entityData, ok := world.entities[entity]
@@ -372,7 +372,7 @@ func Get11[A, B, C, D, E, F, G, H, I, J, K AnyComponent](world *World, entity En
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get12[A, B, C, D, E, F, G, H, I, J, K, L AnyComponent](world *World, entity EntityId) (
+func get12[A, B, C, D, E, F, G, H, I, J, K, L AnyComponent](world *World, entity EntityId) (
 	a A, b B, c C, d D, e E, f F, g G, h H, i I, j J, k K, l L, err error,
 ) {
 	entityData, ok := world.entities[entity]
@@ -418,7 +418,7 @@ func Get12[A, B, C, D, E, F, G, H, I, J, K, L AnyComponent](world *World, entity
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get13[A, B, C, D, E, F, G, H, I, J, K, L, M AnyComponent](world *World, entity EntityId) (
+func get13[A, B, C, D, E, F, G, H, I, J, K, L, M AnyComponent](world *World, entity EntityId) (
 	a A, b B, c C, d D, e E, f F, g G, h H, i I, j J, k K, l L, m M, err error,
 ) {
 	entityData, ok := world.entities[entity]
@@ -466,7 +466,7 @@ func Get13[A, B, C, D, E, F, G, H, I, J, K, L, M AnyComponent](world *World, ent
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get14[A, B, C, D, E, F, G, H, I, J, K, L, M, N AnyComponent](world *World, entity EntityId) (
+func get14[A, B, C, D, E, F, G, H, I, J, K, L, M, N AnyComponent](world *World, entity EntityId) (
 	a A, b B, c C, d D, e E, f F, g G, h H, i I, j J, k K, l L, m M, n N, err error,
 ) {
 	entityData, ok := world.entities[entity]
@@ -516,7 +516,7 @@ func Get14[A, B, C, D, E, F, G, H, I, J, K, L, M, N AnyComponent](world *World, 
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O AnyComponent](world *World, entity EntityId) (
+func get15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O AnyComponent](world *World, entity EntityId) (
 	a A, b B, c C, d D, e E, f F, g G, h H, i I, j J, k K, l L, m M, n N, o O, err error,
 ) {
 	entityData, ok := world.entities[entity]
@@ -568,7 +568,7 @@ func Get15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O AnyComponent](world *Worl
 // Returns the same component pointer multiple times if multiple component of the same type are given.
 //
 // WARNING: Do not store any of the component pointers
-func Get16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P AnyComponent](world *World, entity EntityId) (
+func get16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P AnyComponent](world *World, entity EntityId) (
 	a A, b B, c C, d D, e E, f F, g G, h H, i I, j J, k K, l L, m M, n N, o O, p P, err error,
 ) {
 	entityData, ok := world.entities[entity]

@@ -176,10 +176,10 @@ func TestGetResourceFromStorage(t *testing.T) {
 
 		world := NewDefaultWorld()
 
-		_, err := GetResource[resourceA](world)
+		_, err := world.GetResource[resourceA]()
 		assert.ErrorIs(err, ErrResourceNotFound)
 
-		_, err = GetResource[*resourceA](world)
+		_, err = world.GetResource[*resourceA]()
 		assert.ErrorIs(err, ErrResourceNotFound)
 	})
 
@@ -190,7 +190,7 @@ func TestGetResourceFromStorage(t *testing.T) {
 		err := world.resources.Add(&resourceA{value: 10})
 		assert.NoError(err)
 
-		resource, err := GetResource[resourceA](world)
+		resource, err := world.GetResource[resourceA]()
 		assert.NoError(err)
 		assert.Equal(10, resource.value)
 	})
@@ -202,11 +202,11 @@ func TestGetResourceFromStorage(t *testing.T) {
 		err := world.resources.Add(&resourceA{value: 0})
 		assert.NoError(err)
 
-		resource, err := GetResource[resourceA](world)
+		resource, err := world.GetResource[resourceA]()
 		assert.NoError(err)
 		resource.value = 10
 
-		resource, err = GetResource[resourceA](world)
+		resource, err = world.GetResource[resourceA]()
 		assert.NoError(err)
 		assert.NotEqual(10, resource.value)
 	})
@@ -218,7 +218,7 @@ func TestGetResourceFromStorage(t *testing.T) {
 		err := world.resources.Add(&resourceA{value: 10})
 		assert.NoError(err)
 
-		resource, err := GetResource[*resourceA](world)
+		resource, err := world.GetResource[*resourceA]()
 		assert.NoError(err)
 		assert.Equal(10, resource.value)
 	})
@@ -230,11 +230,11 @@ func TestGetResourceFromStorage(t *testing.T) {
 		err := world.resources.Add(&resourceA{value: 0})
 		assert.NoError(err)
 
-		resource, err := GetResource[*resourceA](world)
+		resource, err := world.GetResource[*resourceA]()
 		assert.NoError(err)
 		resource.value = 10
 
-		resource, err = GetResource[*resourceA](world)
+		resource, err = world.GetResource[*resourceA]()
 		assert.NoError(err)
 		assert.Equal(10, resource.value)
 	})
@@ -247,11 +247,11 @@ func TestGetResourceFromStorage(t *testing.T) {
 		err := world.resources.Add(&resource)
 		assert.NoError(err)
 
-		resource, err = GetResource[testResourceInterface](world)
+		resource, err = world.GetResource[testResourceInterface]()
 		assert.NoError(err)
 		resource.Increment()
 
-		resource, err = GetResource[testResourceInterface](world)
+		resource, err = world.GetResource[testResourceInterface]()
 		assert.NoError(err)
 		assert.Equal(1, resource.Get())
 	})
@@ -264,11 +264,11 @@ func TestGetResourceFromStorage(t *testing.T) {
 		err := world.resources.Add(resource)
 		assert.NoError(err)
 
-		resource, err = GetResource[*testResourceInterfaceA](world)
+		resource, err = world.GetResource[*testResourceInterfaceA]()
 		assert.NoError(err)
 		resource.Increment()
 
-		resource, err = GetResource[*testResourceInterfaceA](world)
+		resource, err = world.GetResource[*testResourceInterfaceA]()
 		assert.NoError(err)
 		assert.Equal(1, resource.Get())
 	})

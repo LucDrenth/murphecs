@@ -60,13 +60,13 @@ func main() {
 
 	// 4. We register a startup system for appFoo that spawns components that appBar will query
 	appFoo.AddSystem(startup, func(world *ecs.World, log app.Logger) error {
-		entity, err := ecs.Spawn(world, myComponent{value: 100})
+		entity, err := world.Spawn(myComponent{value: 100})
 		if err != nil {
 			return err
 		}
 		log.Info("spawned entity %d with value 100", entity)
 
-		entity, err = ecs.Spawn(world, myComponent{value: 200})
+		entity, err = world.Spawn(myComponent{value: 200})
 		if err != nil {
 			return err
 		}

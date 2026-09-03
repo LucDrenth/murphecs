@@ -25,11 +25,11 @@ func TestQuery0(t *testing.T) {
 		assert.Equal(uint(0), query.NumberOfResult())
 
 		// spawn 2 entities that are expected to be returned from the query and 1 decoy entity that should be skipped
-		expectedEntity1, err := Spawn(world, &componentA{}, &componentB{})
+		expectedEntity1, err := world.Spawn(&componentA{}, &componentB{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentB{}) // decoy component, we should not get this one in the query results
+		_, err = world.Spawn(&componentB{}) // decoy component, we should not get this one in the query results
 		assert.NoError(err)
-		expectedEntity2, err := Spawn(world, &componentA{}, &componentB{})
+		expectedEntity2, err := world.Spawn(&componentA{}, &componentB{})
 		assert.NoError(err)
 
 		err = query.Exec(world)
@@ -77,7 +77,7 @@ func TestQuery0(t *testing.T) {
 		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
 
 		// 1 result
-		entity, err := Spawn(world)
+		entity, err := world.Spawn()
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -87,7 +87,7 @@ func TestQuery0(t *testing.T) {
 		assert.Equal(entity, queryResultEntity)
 
 		// 2 results
-		_, err = Spawn(world)
+		_, err = world.Spawn()
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -103,32 +103,32 @@ func TestQuery0(t *testing.T) {
 		query := Query0[Default]{}
 		err := query.Prepare(world, nil)
 		assert.NoError(err)
-		_, err = Spawn(world, componentA{})
+		_, err = world.Spawn(componentA{})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
 		assert.True(query.NumberOfResult() > 0) // make sure the tests get executed
 
 		query.Iter(func(entityId EntityId) {
-			_, err := Spawn(world)
+			_, err := world.Spawn()
 			assert.ErrorIs(err, ErrWorldIsLocked)
 
-			err = Despawn(world, entityId)
+			err = world.Despawn(entityId)
 			assert.ErrorIs(err, ErrWorldIsLocked)
 
-			err = Insert(world, entityId, componentB{})
+			err = world.Insert(entityId, componentB{})
 			assert.ErrorIs(err, ErrWorldIsLocked)
 
-			err = InsertOrOverwrite(world, entityId, componentB{})
+			err = world.InsertOrOverwrite(entityId, componentB{})
 			assert.ErrorIs(err, ErrWorldIsLocked)
 
-			err = Remove1[componentA](world, entityId)
+			err = world.Remove1[componentA](entityId)
 			assert.ErrorIs(err, ErrWorldIsLocked)
-			err = Remove2[componentA, componentB](world, entityId)
+			err = world.Remove2[componentA, componentB](entityId)
 			assert.ErrorIs(err, ErrWorldIsLocked)
-			err = Remove3[componentA, componentB, componentC](world, entityId)
+			err = world.Remove3[componentA, componentB, componentC](entityId)
 			assert.ErrorIs(err, ErrWorldIsLocked)
-			err = Remove4[componentA, componentB, componentC, componentD](world, entityId)
+			err = world.Remove4[componentA, componentB, componentC, componentD](entityId)
 			assert.ErrorIs(err, ErrWorldIsLocked)
 		})
 	})
@@ -159,11 +159,11 @@ func TestQuery1(t *testing.T) {
 		assert.NoError(err)
 		assert.Equal(uint(0), query.NumberOfResult())
 
-		expectedEntity1, err := Spawn(world, &componentA{value: expectedValue1}, &componentB{})
+		expectedEntity1, err := world.Spawn(&componentA{value: expectedValue1}, &componentB{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentB{value: -10}) // decoy component, we should not get this one in the query results
+		_, err = world.Spawn(&componentB{value: -10}) // decoy component, we should not get this one in the query results
 		assert.NoError(err)
-		expectedEntity2, err := Spawn(world, &componentA{value: expectedValue2}, &componentB{})
+		expectedEntity2, err := world.Spawn(&componentA{value: expectedValue2}, &componentB{})
 		assert.NoError(err)
 
 		err = query.Exec(world)
@@ -192,17 +192,17 @@ func TestQuery1(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		_, err := Spawn(world, &componentA{}, &componentB{}, &componentC{})
+		_, err := world.Spawn(&componentA{}, &componentB{}, &componentC{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentA{}, &componentB{})
+		_, err = world.Spawn(&componentA{}, &componentB{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentA{})
+		_, err = world.Spawn(&componentA{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentB{})
+		_, err = world.Spawn(&componentB{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentC{})
+		_, err = world.Spawn(&componentC{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentB{}, &componentC{})
+		_, err = world.Spawn(&componentB{}, &componentC{})
 		assert.NoError(err)
 
 		query := Query1[componentA, With[componentB]]{}
@@ -218,17 +218,17 @@ func TestQuery1(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		_, err := Spawn(world, &componentA{}, &componentB{}, &componentC{})
+		_, err := world.Spawn(&componentA{}, &componentB{}, &componentC{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentA{}, &componentB{})
+		_, err = world.Spawn(&componentA{}, &componentB{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentA{})
+		_, err = world.Spawn(&componentA{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentB{})
+		_, err = world.Spawn(&componentB{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentC{})
+		_, err = world.Spawn(&componentC{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentB{}, &componentC{})
+		_, err = world.Spawn(&componentB{}, &componentC{})
 		assert.NoError(err)
 
 		query := Query1[componentA, Without[componentB]]{}
@@ -244,17 +244,17 @@ func TestQuery1(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		expected, err := Spawn(world, &componentA{}, &componentB{}, &componentC{})
+		expected, err := world.Spawn(&componentA{}, &componentB{}, &componentC{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentA{}, &componentB{})
+		_, err = world.Spawn(&componentA{}, &componentB{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentA{})
+		_, err = world.Spawn(&componentA{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentB{})
+		_, err = world.Spawn(&componentB{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentC{})
+		_, err = world.Spawn(&componentC{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentB{}, &componentC{})
+		_, err = world.Spawn(&componentB{}, &componentC{})
 		assert.NoError(err)
 
 		query := Query1[componentA, And[With[componentB], With[componentC]]]{}
@@ -273,17 +273,17 @@ func TestQuery1(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		_, err := Spawn(world, &componentA{}, &componentB{}, &componentC{})
+		_, err := world.Spawn(&componentA{}, &componentB{}, &componentC{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentA{}, &componentB{})
+		_, err = world.Spawn(&componentA{}, &componentB{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentA{})
+		_, err = world.Spawn(&componentA{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentB{})
+		_, err = world.Spawn(&componentB{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentC{})
+		_, err = world.Spawn(&componentC{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentB{}, &componentC{})
+		_, err = world.Spawn(&componentB{}, &componentC{})
 		assert.NoError(err)
 
 		query := Query1[componentA, Or[With[componentB], With[componentC]]]{}
@@ -299,17 +299,17 @@ func TestQuery1(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		_, err := Spawn(world, componentA{}, componentB{}, componentC{})
+		_, err := world.Spawn(componentA{}, componentB{}, componentC{})
 		assert.NoError(err)
-		_, err = Spawn(world, componentA{}, componentB{})
+		_, err = world.Spawn(componentA{}, componentB{})
 		assert.NoError(err)
-		_, err = Spawn(world, componentA{})
+		_, err = world.Spawn(componentA{})
 		assert.NoError(err)
-		_, err = Spawn(world, componentB{})
+		_, err = world.Spawn(componentB{})
 		assert.NoError(err)
-		_, err = Spawn(world, componentC{})
+		_, err = world.Spawn(componentC{})
 		assert.NoError(err)
-		_, err = Spawn(world, componentB{}, componentC{})
+		_, err = world.Spawn(componentB{}, componentC{})
 		assert.NoError(err)
 
 		query := Query1[componentA, QueryOptions[With[componentB], Optional1[componentA], NotLazy, DefaultWorld]]{}
@@ -325,7 +325,7 @@ func TestQuery1(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
-		expectedEntityId, err := Spawn(world, componentB{})
+		expectedEntityId, err := world.Spawn(componentB{})
 		assert.NoError(err)
 
 		query := Query1[*componentA, Optional1[componentA]]{}
@@ -357,9 +357,9 @@ func TestQuery1(t *testing.T) {
 		query := Query1[*componentA, Default]{}
 		err := query.Prepare(world, nil)
 		assert.NoError(err)
-		_, err = Spawn(world, componentA{value: 0}, componentB{})
+		_, err = world.Spawn(componentA{value: 0}, componentB{})
 		assert.NoError(err)
-		_, err = Spawn(world, componentB{})
+		_, err = world.Spawn(componentB{})
 		assert.NoError(err)
 
 		err = query.Exec(world)
@@ -383,9 +383,9 @@ func TestQuery1(t *testing.T) {
 		query := Query1[componentA, Default]{}
 		err := query.Prepare(world, nil)
 		assert.NoError(err)
-		_, err = Spawn(world, &componentA{value: 0}, &componentB{})
+		_, err = world.Spawn(&componentA{value: 0}, &componentB{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentB{})
+		_, err = world.Spawn(&componentB{})
 		assert.NoError(err)
 
 		err = query.Exec(world)
@@ -405,9 +405,9 @@ func TestQuery1(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		_, err := Spawn(world, &componentA{})
+		_, err := world.Spawn(&componentA{})
 		assert.NoError(err)
-		_, err = Spawn(world, &componentA{})
+		_, err = world.Spawn(&componentA{})
 		assert.NoError(err)
 		query := Query1[componentA, Default]{}
 		err = query.Prepare(world, nil)
@@ -442,7 +442,7 @@ func TestQuery1(t *testing.T) {
 		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
 
 		// 1 result
-		entity, err := Spawn(world, &componentA{value: 3})
+		entity, err := world.Spawn(&componentA{value: 3})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -453,7 +453,7 @@ func TestQuery1(t *testing.T) {
 		assert.Equal(3, queryResultComponentA.value)
 
 		// 2 results
-		_, err = Spawn(world, &componentA{value: 5})
+		_, err = world.Spawn(&componentA{value: 5})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -466,9 +466,9 @@ func TestQuery1(t *testing.T) {
 		assert := assert.New(t)
 
 		world1 := NewDefaultWorld()
-		_, err := Spawn(world1, &componentA{}) // distraction component
+		_, err := world1.Spawn(&componentA{}) // distraction component
 		assert.NoError(err)
-		_, err = Spawn(world1, &componentB{value: 5})
+		_, err = world1.Spawn(&componentB{value: 5})
 		assert.NoError(err)
 		otherWorlds := &map[WorldId]*World{
 			TestCustomTargetWorldId: world1,
@@ -493,32 +493,32 @@ func TestQuery1(t *testing.T) {
 		query := Query1[componentA, Default]{}
 		err := query.Prepare(world, nil)
 		assert.NoError(err)
-		_, err = Spawn(world, componentA{})
+		_, err = world.Spawn(componentA{})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
 		assert.True(query.NumberOfResult() > 0) // make sure the tests get executed
 
 		query.Iter(func(entityId EntityId, _ componentA) {
-			_, err := Spawn(world)
+			_, err := world.Spawn()
 			assert.ErrorIs(err, ErrWorldIsLocked)
 
-			err = Despawn(world, entityId)
+			err = world.Despawn(entityId)
 			assert.ErrorIs(err, ErrWorldIsLocked)
 
-			err = Insert(world, entityId, componentB{})
+			err = world.Insert(entityId, componentB{})
 			assert.ErrorIs(err, ErrWorldIsLocked)
 
-			err = InsertOrOverwrite(world, entityId, componentB{})
+			err = world.InsertOrOverwrite(entityId, componentB{})
 			assert.ErrorIs(err, ErrWorldIsLocked)
 
-			err = Remove1[componentA](world, entityId)
+			err = world.Remove1[componentA](entityId)
 			assert.ErrorIs(err, ErrWorldIsLocked)
-			err = Remove2[componentA, componentB](world, entityId)
+			err = world.Remove2[componentA, componentB](entityId)
 			assert.ErrorIs(err, ErrWorldIsLocked)
-			err = Remove3[componentA, componentB, componentC](world, entityId)
+			err = world.Remove3[componentA, componentB, componentC](entityId)
 			assert.ErrorIs(err, ErrWorldIsLocked)
-			err = Remove4[componentA, componentB, componentC, componentD](world, entityId)
+			err = world.Remove4[componentA, componentB, componentC, componentD](entityId)
 			assert.ErrorIs(err, ErrWorldIsLocked)
 		})
 	})
@@ -554,7 +554,7 @@ func TestQuery2(t *testing.T) {
 		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
 
 		// 1 result
-		entity, err := Spawn(world, &componentA{value: 3}, &componentB{value: 30})
+		entity, err := world.Spawn(&componentA{value: 3}, &componentB{value: 30})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -566,7 +566,7 @@ func TestQuery2(t *testing.T) {
 		assert.Equal(30, queryResultComponentB.value)
 
 		// 2 results
-		_, err = Spawn(world, &componentA{value: 5}, &componentB{value: 50})
+		_, err = world.Spawn(&componentA{value: 5}, &componentB{value: 50})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -610,7 +610,7 @@ func TestQuery3(t *testing.T) {
 		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
 
 		// 1 result
-		entity, err := Spawn(world, &componentA{value: 3}, &componentB{value: 30}, &componentC{value: 300})
+		entity, err := world.Spawn(&componentA{value: 3}, &componentB{value: 30}, &componentC{value: 300})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -623,7 +623,7 @@ func TestQuery3(t *testing.T) {
 		assert.Equal(300, queryResultComponentC.value)
 
 		// 2 results
-		_, err = Spawn(world, &componentA{value: 5}, &componentB{value: 50}, &componentC{value: 500})
+		_, err = world.Spawn(&componentA{value: 5}, &componentB{value: 50}, &componentC{value: 500})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -671,7 +671,7 @@ func TestQuery4(t *testing.T) {
 		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
 
 		// 1 result
-		entity, err := Spawn(world, &componentA{value: 1}, &componentB{value: 2}, &componentC{value: 3}, &componentD{value: 4})
+		entity, err := world.Spawn(&componentA{value: 1}, &componentB{value: 2}, &componentC{value: 3}, &componentD{value: 4})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -685,7 +685,7 @@ func TestQuery4(t *testing.T) {
 		assert.Equal(4, queryResultComponentD.value)
 
 		// 2 results
-		_, err = Spawn(world, &componentA{value: 101}, &componentB{value: 102}, &componentC{value: 103}, &componentD{value: 104})
+		_, err = world.Spawn(&componentA{value: 101}, &componentB{value: 102}, &componentC{value: 103}, &componentD{value: 104})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -737,7 +737,7 @@ func TestQuery5(t *testing.T) {
 		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
 
 		// 1 result
-		entity, err := Spawn(world, &componentA{value: 1}, &componentB{value: 2}, &componentC{value: 3}, &componentD{value: 4}, &componentE{value: 5})
+		entity, err := world.Spawn(&componentA{value: 1}, &componentB{value: 2}, &componentC{value: 3}, &componentD{value: 4}, &componentE{value: 5})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -752,7 +752,7 @@ func TestQuery5(t *testing.T) {
 		assert.Equal(5, queryResultComponentE.value)
 
 		// 2 results
-		_, err = Spawn(world, &componentA{value: 101}, &componentB{value: 102}, &componentC{value: 103}, &componentD{value: 104}, &componentE{value: 105})
+		_, err = world.Spawn(&componentA{value: 101}, &componentB{value: 102}, &componentC{value: 103}, &componentD{value: 104}, &componentE{value: 105})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -808,7 +808,7 @@ func TestQuery6(t *testing.T) {
 		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
 
 		// 1 result
-		entity, err := Spawn(world, &componentA{value: 1}, &componentB{value: 2}, &componentC{value: 3}, &componentD{value: 4}, &componentE{value: 5}, &componentF{value: 6})
+		entity, err := world.Spawn(&componentA{value: 1}, &componentB{value: 2}, &componentC{value: 3}, &componentD{value: 4}, &componentE{value: 5}, &componentF{value: 6})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -824,7 +824,7 @@ func TestQuery6(t *testing.T) {
 		assert.Equal(6, queryResultComponentF.value)
 
 		// 2 results
-		_, err = Spawn(world, &componentA{value: 101}, &componentB{value: 102}, &componentC{value: 103}, &componentD{value: 104}, &componentE{value: 105}, &componentF{value: 106})
+		_, err = world.Spawn(&componentA{value: 101}, &componentB{value: 102}, &componentC{value: 103}, &componentD{value: 104}, &componentE{value: 105}, &componentF{value: 106})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -884,7 +884,7 @@ func TestQuery7(t *testing.T) {
 		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
 
 		// 1 result
-		entity, err := Spawn(world, &componentA{value: 1}, &componentB{value: 2}, &componentC{value: 3}, &componentD{value: 4}, &componentE{value: 5}, &componentF{value: 6}, &componentG{value: 7})
+		entity, err := world.Spawn(&componentA{value: 1}, &componentB{value: 2}, &componentC{value: 3}, &componentD{value: 4}, &componentE{value: 5}, &componentF{value: 6}, &componentG{value: 7})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -901,7 +901,7 @@ func TestQuery7(t *testing.T) {
 		assert.Equal(7, queryResultComponentG.value)
 
 		// 2 results
-		_, err = Spawn(world, &componentA{value: 101}, &componentB{value: 102}, &componentC{value: 103}, &componentD{value: 104}, &componentE{value: 105}, &componentF{value: 106}, &componentG{value: 107})
+		_, err = world.Spawn(&componentA{value: 101}, &componentB{value: 102}, &componentC{value: 103}, &componentD{value: 104}, &componentE{value: 105}, &componentF{value: 106}, &componentG{value: 107})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -965,7 +965,7 @@ func TestQuery8(t *testing.T) {
 		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
 
 		// 1 result
-		entity, err := Spawn(world, &componentA{value: 1}, &componentB{value: 2}, &componentC{value: 3}, &componentD{value: 4}, &componentE{value: 5}, &componentF{value: 6}, &componentG{value: 7}, &componentH{value: 8})
+		entity, err := world.Spawn(&componentA{value: 1}, &componentB{value: 2}, &componentC{value: 3}, &componentD{value: 4}, &componentE{value: 5}, &componentF{value: 6}, &componentG{value: 7}, &componentH{value: 8})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -983,7 +983,7 @@ func TestQuery8(t *testing.T) {
 		assert.Equal(8, queryResultComponentH.value)
 
 		// 2 results
-		_, err = Spawn(world, &componentA{value: 101}, &componentB{value: 102}, &componentC{value: 103}, &componentD{value: 104}, &componentE{value: 105}, &componentF{value: 106}, &componentG{value: 107}, &componentH{value: 108})
+		_, err = world.Spawn(&componentA{value: 101}, &componentB{value: 102}, &componentC{value: 103}, &componentD{value: 104}, &componentE{value: 105}, &componentF{value: 106}, &componentG{value: 107}, &componentH{value: 108})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -1051,7 +1051,7 @@ func TestQuery9(t *testing.T) {
 		assert.ErrorIs(err, ErrUnexpectedNumberOfQueryResults)
 
 		// 1 result
-		entity, err := Spawn(world, &componentA{value: 1}, &componentB{value: 2}, &componentC{value: 3}, &componentD{value: 4}, &componentE{value: 5}, &componentF{value: 6}, &componentG{value: 7}, &componentH{value: 8}, &componentI{value: 9})
+		entity, err := world.Spawn(&componentA{value: 1}, &componentB{value: 2}, &componentC{value: 3}, &componentD{value: 4}, &componentE{value: 5}, &componentF{value: 6}, &componentG{value: 7}, &componentH{value: 8}, &componentI{value: 9})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)
@@ -1070,7 +1070,7 @@ func TestQuery9(t *testing.T) {
 		assert.Equal(9, queryResultComponentI.value)
 
 		// 2 results
-		_, err = Spawn(world, &componentA{value: 101}, &componentB{value: 102}, &componentC{value: 103}, &componentD{value: 104}, &componentE{value: 105}, &componentF{value: 106}, &componentG{value: 107}, &componentH{value: 108}, &componentI{value: 109})
+		_, err = world.Spawn(&componentA{value: 101}, &componentB{value: 102}, &componentC{value: 103}, &componentD{value: 104}, &componentE{value: 105}, &componentF{value: 106}, &componentG{value: 107}, &componentH{value: 108}, &componentI{value: 109})
 		assert.NoError(err)
 		err = query.Exec(world)
 		assert.NoError(err)

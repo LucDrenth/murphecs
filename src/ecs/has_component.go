@@ -4,7 +4,7 @@ package ecs
 //
 // Can return the following errors:
 //   - Returns an ErrEntityNotFound error if the entity is not found.
-func HasComponent[C AnyComponent](world *World, entity EntityId) (bool, error) {
+func hasComponent[C AnyComponent](world *World, entity EntityId) (bool, error) {
 	entityData, exists := world.entities[entity]
 	if !exists {
 		return false, ErrEntityNotFound
@@ -19,7 +19,7 @@ func HasComponent[C AnyComponent](world *World, entity EntityId) (bool, error) {
 //
 // Can return the following errors:
 //   - Returns an ErrEntityNotFound error if the entity is not found.
-func HasComponentId(world *World, entity EntityId, componentId ComponentId) (bool, error) {
+func hasComponentId(world *World, entity EntityId, componentId ComponentId) (bool, error) {
 	entityData, exists := world.entities[entity]
 	if !exists {
 		return false, ErrEntityNotFound

@@ -72,7 +72,7 @@ func RegisterBlacklistedResource[T Resource](storage *resourceStorage) error {
 	return nil
 }
 
-func GetResource[T Resource](world *World) (result T, err error) {
+func getResource[T Resource](world *World) (result T, err error) {
 	resourceType := reflect.TypeFor[T]()
 	resourceId := reflectTypeToResourceId(resourceType)
 

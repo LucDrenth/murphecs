@@ -14,7 +14,7 @@ import (
 //   - Returns an ErrComponentIsNil error when any of the given components is nil
 //   - Returns an ErrDuplicateComponent error when any of the given components are of the same type.
 //   - Returns an ErrWorldIsLocked error while querying
-func Spawn(world *World, components ...AnyComponent) (EntityId, error) {
+func spawn(world *World, components ...AnyComponent) (EntityId, error) {
 	for i, component := range components {
 		if component == nil {
 			return nonExistingEntity, fmt.Errorf("%w: at position %d", ErrComponentIsNil, i+1)

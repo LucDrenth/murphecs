@@ -19,10 +19,10 @@ type Dialog struct {
 
 func main() {
 	world := ecs.NewDefaultWorld()
-	ecs.Spawn(world, NPC{name: "Murphy"}, Friendly{}, Dialog{text: "hi my name is Murphy"})
-	ecs.Spawn(world, NPC{name: "Yuki"}, Dialog{text: "my name is Yuki"})
-	ecs.Spawn(world, NPC{name: "Fiona"}, Friendly{}, Dialog{text: "hi my name is Fiona"})
-	ecs.Spawn(world, NPC{name: "Bob"})
+	world.Spawn(NPC{name: "Murphy"}, Friendly{}, Dialog{text: "hi my name is Murphy"})
+	world.Spawn(NPC{name: "Yuki"}, Dialog{text: "my name is Yuki"})
+	world.Spawn(NPC{name: "Fiona"}, Friendly{}, Dialog{text: "hi my name is Fiona"})
+	world.Spawn(NPC{name: "Bob"})
 
 	// Query all NPC components
 	query := ecs.Query1[NPC, ecs.Default]{}

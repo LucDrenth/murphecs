@@ -33,10 +33,10 @@ func TestInsert(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(world)
+		entity, err := world.Spawn()
 		assert.NoError(err)
 
-		err = Insert(world, entity)
+		err = world.Insert(entity)
 		assert.NoError(err)
 	})
 
@@ -44,23 +44,23 @@ func TestInsert(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(world)
+		entity, err := world.Spawn()
 		assert.NoError(err)
 
 		// only 1 nil
-		err = Insert(world, entity, nil)
+		err = world.Insert(entity, nil)
 		assert.ErrorIs(err, ErrComponentIsNil)
 
 		// 1 valid, 1 nil
-		err = Insert(world, entity, &componentA{}, nil)
+		err = world.Insert(entity, &componentA{}, nil)
 		assert.ErrorIs(err, ErrComponentIsNil)
 
 		// 1 nil, 1 valid
-		err = Insert(world, entity, nil, &componentA{})
+		err = world.Insert(entity, nil, &componentA{})
 		assert.ErrorIs(err, ErrComponentIsNil)
 
 		// 1 nil, 1 valid, 1 nil
-		err = Insert(world, entity, nil, &componentA{}, nil)
+		err = world.Insert(entity, nil, &componentA{}, nil)
 		assert.ErrorIs(err, ErrComponentIsNil)
 
 		assert.Equal(1, world.CountEntities())
@@ -71,7 +71,7 @@ func TestInsert(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
-		err := Insert(world, nonExistingEntity, &componentA{})
+		err := world.Insert(nonExistingEntity, &componentA{})
 		assert.ErrorIs(err, ErrEntityNotFound)
 	})
 
@@ -79,31 +79,31 @@ func TestInsert(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(world, &componentA{}, &componentB{})
+		entity, err := world.Spawn(&componentA{}, &componentB{})
 		assert.NoError(err)
 
 		// one component that is already present
-		err = Insert(world, entity, &componentA{})
+		err = world.Insert(entity, &componentA{})
 		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 
 		// another component that is already present
-		err = Insert(world, entity, &componentB{})
+		err = world.Insert(entity, &componentB{})
 		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 
 		// all components already present
-		err = Insert(world, entity, &componentA{}, &componentB{})
+		err = world.Insert(entity, &componentA{}, &componentB{})
 		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 
 		// all components already present - different order
-		err = Insert(world, entity, &componentB{}, &componentA{})
+		err = world.Insert(entity, &componentB{}, &componentA{})
 		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 
 		// one component already and 1 component not present
-		err = Insert(world, entity, &componentB{}, &componentC{})
+		err = world.Insert(entity, &componentB{}, &componentC{})
 		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 
 		// one component already and 1 component not present - different order
-		err = Insert(world, entity, &componentC{}, &componentB{})
+		err = world.Insert(entity, &componentC{}, &componentB{})
 		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 	})
 
@@ -111,10 +111,10 @@ func TestInsert(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(world, &componentB{})
+		entity, err := world.Spawn(&componentB{})
 		assert.NoError(err)
 
-		err = Insert(world, entity, &componentA{}, &componentB{}, &componentC{})
+		err = world.Insert(entity, &componentA{}, &componentB{}, &componentC{})
 		assert.ErrorIs(err, ErrComponentAlreadyPresent)
 
 		assert.Equal(3, world.CountComponents())
@@ -124,18 +124,18 @@ func TestInsert(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entityA, err := Spawn(world)
+		entityA, err := world.Spawn()
 		assert.NoError(err)
-		entityB, err := Spawn(world, &componentB{})
-		assert.NoError(err)
-
-		err = Insert(world, entityA, &componentA{}, &componentC{})
+		entityB, err := world.Spawn(&componentB{})
 		assert.NoError(err)
 
-		a, err := Get1[*componentA](world, entityA)
+		err = world.Insert(entityA, &componentA{}, &componentC{})
+		assert.NoError(err)
+
+		a, err := world.Get1[*componentA](entityA)
 		assert.NoError(err)
 		assert.NotNil(a)
-		a, err = Get1[*componentA](world, entityB)
+		a, err = world.Get1[*componentA](entityB)
 		assert.Error(err)
 		assert.Nil(a)
 
@@ -146,10 +146,10 @@ func TestInsert(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(world, &testInsertComponentA{})
+		entity, err := world.Spawn(&testInsertComponentA{})
 		assert.NoError(err)
 
-		err = Insert(world, entity, &testInsertComponentC{})
+		err = world.Insert(entity, &testInsertComponentC{})
 		assert.NoError(err)
 
 		assert.Equal(4, world.CountComponents())
@@ -166,10 +166,10 @@ func TestInsertOrOverwrite(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(world)
+		entity, err := world.Spawn()
 		assert.NoError(err)
 
-		err = InsertOrOverwrite(world, entity)
+		err = world.InsertOrOverwrite(entity)
 		assert.NoError(err)
 	})
 
@@ -177,7 +177,7 @@ func TestInsertOrOverwrite(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
-		err := InsertOrOverwrite(world, nonExistingEntity, &componentA{})
+		err := world.InsertOrOverwrite(nonExistingEntity, &componentA{})
 		assert.ErrorIs(err, ErrEntityNotFound)
 	})
 
@@ -185,19 +185,19 @@ func TestInsertOrOverwrite(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(world, &componentA{}, &componentWithValueA{value: 10})
+		entity, err := world.Spawn(&componentA{}, &componentWithValueA{value: 10})
 		assert.NoError(err)
 
-		err = InsertOrOverwrite(world, entity, &componentB{}, &componentWithValueA{value: 20})
+		err = world.InsertOrOverwrite(entity, &componentB{}, &componentWithValueA{value: 20})
 		assert.NoError(err)
-		component, err := Get1[componentWithValueA](world, entity)
+		component, err := world.Get1[*componentWithValueA](entity)
 		assert.NoError(err)
 		assert.Equal(20, component.value)
 
 		// try again with different component order
-		err = InsertOrOverwrite(world, entity, &componentWithValueA{value: 30}, &componentC{})
+		err = world.InsertOrOverwrite(entity, &componentWithValueA{value: 30}, &componentC{})
 		assert.NoError(err)
-		component, err = Get1[componentWithValueA](world, entity)
+		component, err = world.Get1[*componentWithValueA](entity)
 		assert.NoError(err)
 		assert.Equal(30, component.value)
 	})
@@ -206,10 +206,10 @@ func TestInsertOrOverwrite(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(world, &componentB{})
+		entity, err := world.Spawn(&componentB{})
 		assert.NoError(err)
 
-		err = InsertOrOverwrite(world, entity, &componentA{}, &componentB{}, &componentC{})
+		err = world.InsertOrOverwrite(entity, &componentA{}, &componentB{}, &componentC{})
 		assert.NoError(err)
 
 		assert.Equal(3, world.CountComponents())
@@ -219,10 +219,10 @@ func TestInsertOrOverwrite(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(world, &componentA{})
+		entity, err := world.Spawn(&componentA{})
 		assert.NoError(err)
 
-		err = InsertOrOverwrite(world, entity, &componentB{}, componentC{}, &componentD{})
+		err = world.InsertOrOverwrite(entity, &componentB{}, componentC{}, &componentD{})
 		assert.NoError(err)
 
 		assert.Equal(4, world.CountComponents())
@@ -232,18 +232,18 @@ func TestInsertOrOverwrite(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entityA, err := Spawn(world)
+		entityA, err := world.Spawn()
 		assert.NoError(err)
-		entityB, err := Spawn(world, &componentB{})
-		assert.NoError(err)
-
-		err = InsertOrOverwrite(world, entityA, &componentA{}, &componentC{})
+		entityB, err := world.Spawn(&componentB{})
 		assert.NoError(err)
 
-		a, err := Get1[*componentA](world, entityA)
+		err = world.InsertOrOverwrite(entityA, &componentA{}, &componentC{})
+		assert.NoError(err)
+
+		a, err := world.Get1[*componentA](entityA)
 		assert.NoError(err)
 		assert.NotNil(a)
-		a, err = Get1[*componentA](world, entityB)
+		a, err = world.Get1[*componentA](entityB)
 		assert.Error(err)
 		assert.Nil(a)
 
@@ -254,10 +254,10 @@ func TestInsertOrOverwrite(t *testing.T) {
 		assert := assert.New(t)
 
 		world := NewDefaultWorld()
-		entity, err := Spawn(world, &testInsertComponentA{})
+		entity, err := world.Spawn(&testInsertComponentA{})
 		assert.NoError(err)
 
-		err = InsertOrOverwrite(world, entity, &testInsertComponentC{})
+		err = world.InsertOrOverwrite(entity, &testInsertComponentC{})
 		assert.NoError(err)
 
 		assert.Equal(4, world.CountComponents())

@@ -59,12 +59,12 @@ func main() {
 
 func spawn(world *ecs.World) error {
 	for i := range 10 {
-		npcEntity, err := ecs.Spawn(world, npc{name: fmt.Sprintf("%d", i+1)})
+		npcEntity, err := world.Spawn(npc{name: fmt.Sprintf("%d", i+1)})
 		if err != nil {
 			return fmt.Errorf("failed to spawn npc %d: %w", i+1, err)
 		}
 
-		err = ecs.Observe[talk](world, npcEntity, npcTalkObserver)
+		err = world.Observe[talk](npcEntity, npcTalkObserver)
 		if err != nil {
 			return fmt.Errorf("failed to add observer for npc %d: %w", i+1, err)
 		}
@@ -80,14 +80,14 @@ func npcTalkObserver(world *ecs.World, observer talk) {
 func letNpcTalk(world *ecs.World, query *ecs.Query1[npc, ecs.Default]) error {
 	return query.IterUntilErr(func(entityId ecs.EntityId, npc npc) error {
 		if rand.IntN(20) == 0 {
-			return ecs.TriggerEntity(world, entityId, talk{text: fmt.Sprintf("I am NPC %s", npc.name)})
+			return world.TriggerEntity(entityId, talk{text: fmt.Sprintf("I am NPC %s", npc.name)})
 		}
 		return nil
 	})
 }
 
 func registerExtinctionObserver(world *ecs.World) error {
-	return ecs.On[extinction](world, func(
+	return world.On[extinction](func(
 		world *ecs.World,
 		npcQuery *ecs.Query0[ecs.QueryOptions2[
 			ecs.With[npc],
@@ -104,7 +104,7 @@ func registerExtinctionObserver(world *ecs.World) error {
 		}
 
 		npcQuery.Iter(func(entityId ecs.EntityId) {
-			err := ecs.Despawn(world, entityId)
+			err := world.Despawn(entityId)
 			if err != nil {
 				fmt.Printf("failed to despawn npc %d\n", entityId)
 			}
@@ -114,6 +114,6 @@ func registerExtinctionObserver(world *ecs.World) error {
 
 func randomlyTriggerExtinction(world *ecs.World) {
 	if rand.IntN(100) == 0 {
-		ecs.Trigger(world, extinction{})
+		world.Trigger(extinction{})
 	}
 }

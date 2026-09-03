@@ -66,28 +66,28 @@ func main() {
 
 // Fills the world with 7 different archetypes
 func insertComponents(world *ecs.World) error {
-	if _, err := ecs.Spawn(world, &emptyComponentA{}); err != nil {
+	if _, err := world.Spawn(&emptyComponentA{}); err != nil {
 		return err
 	}
-	if _, err := ecs.Spawn(world, &emptyComponentB{}, &emptyComponentA{}); err != nil {
+	if _, err := world.Spawn(&emptyComponentB{}, &emptyComponentA{}); err != nil {
 		return err
 	}
-	if _, err := ecs.Spawn(world, &emptyComponentC{}); err != nil {
+	if _, err := world.Spawn(&emptyComponentC{}); err != nil {
 		return err
 	}
-	if _, err := ecs.Spawn(world, &emptyComponentA{}); err != nil {
+	if _, err := world.Spawn(&emptyComponentA{}); err != nil {
 		return err
 	}
-	if _, err := ecs.Spawn(world, &componentWithValue{value: 456}, &emptyComponentA{}); err != nil {
+	if _, err := world.Spawn(&componentWithValue{value: 456}, &emptyComponentA{}); err != nil {
 		return err
 	}
-	if _, err := ecs.Spawn(world, &emptyComponentC{}, &emptyComponentA{}, &emptyComponentB{}); err != nil {
+	if _, err := world.Spawn(&emptyComponentC{}, &emptyComponentA{}, &emptyComponentB{}); err != nil {
 		return err
 	}
-	if _, err := ecs.Spawn(world, &emptyComponentD{}, &emptyComponentC{}); err != nil {
+	if _, err := world.Spawn(&emptyComponentD{}, &emptyComponentC{}); err != nil {
 		return err
 	}
-	if _, err := ecs.Spawn(world, &emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{}); err != nil {
+	if _, err := world.Spawn(&emptyComponentA{}, &emptyComponentB{}, &emptyComponentC{}, &emptyComponentD{}); err != nil {
 		return err
 	}
 

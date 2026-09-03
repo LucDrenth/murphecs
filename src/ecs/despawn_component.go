@@ -7,7 +7,7 @@ import "fmt"
 // Can return the following errors:
 //   - ErrEntityNotFound error if the entity did not exist in the world.
 //   - ErrWorldIsLocked error while querying
-func Despawn(world *World, entity EntityId) error {
+func despawn(world *World, entity EntityId) error {
 	if world.isQuerying {
 		// Prevent messing with query results
 		return ErrWorldIsLocked
@@ -19,8 +19,21 @@ func Despawn(world *World, entity EntityId) error {
 	}
 
 	componentIds := entityData.archetype.componentIds
+	archetype := entityData.archetype
 
-	err := entityData.archetype.removeEntity(entity)
+	var movedComponent *movedComponent
+	for _, storage := range archetype.components {
+		removeResult, err := storage.remove(entityData.row)
+		if err != nil {
+			return fmt.Errorf("failed to remove component from storage: %w", err)
+		}
+
+		movedComponent = removeResult
+	}
+
+	handleComponentStorageIndexMove(world, movedComponent, archetype)
+
+	err := archetype.removeEntity(entity)
 	if err != nil {
 		return fmt.Errorf("failed to remove entity from archetype: %w", err)
 	}
