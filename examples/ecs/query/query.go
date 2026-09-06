@@ -77,7 +77,6 @@ func main() {
 					ecs.With[Friendly],
 				],
 			],
-			ecs.NoOptional,
 			ecs.Lazy,
 			ecs.DefaultWorld,
 		],
@@ -89,4 +88,17 @@ func main() {
 	ecs.QueryWithout[Friendly](world, &dynamicallyBuildQuery)
 	ecs.QueryWithOptional[NPC](world, &dynamicallyBuildQuery)
 	dynamicallyBuildQuery.Exec(world)
+
+	// Wrap a component in ecs.Optional to mark it as optional right in the component list.
+	// If the component is not present, Present will be false and Value will be the zero value of the component.
+	query5 := ecs.Query2[NPC, ecs.Optional[Dialog], ecs.Default]{}
+	query5.Prepare(world, nil)
+	query5.Exec(world)
+	query5.Iter(func(entityId ecs.EntityId, npc NPC, dialog ecs.Optional[Dialog]) {
+		if dialog.Present {
+			fmt.Printf("optional component: %d: %s says %s \n", entityId, npc.name, dialog.Value.text)
+		} else {
+			fmt.Printf("optional component: %d: %s says nothing \n", entityId, npc.name)
+		}
+	})
 }

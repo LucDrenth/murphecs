@@ -468,7 +468,7 @@ func BenchmarkQuery(b *testing.B) {
 		})
 
 		b.Run(fmt.Sprintf("Query1-Optional-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query1[emptyComponentA, ecs.Optional1[emptyComponentA]]{}
+			query := ecs.Query1[ecs.Optional[emptyComponentA], ecs.Default]{}
 
 			err := query.Prepare(world, nil)
 			if err != nil {
@@ -533,7 +533,7 @@ func BenchmarkQuery(b *testing.B) {
 		})
 
 		b.Run(fmt.Sprintf("Query2-Optional-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query2[emptyComponentA, emptyComponentD, ecs.Optional1[emptyComponentA]]{}
+			query := ecs.Query2[ecs.Optional[emptyComponentA], emptyComponentD, ecs.Default]{}
 
 			err := query.Prepare(world, nil)
 			if err != nil {
@@ -598,7 +598,7 @@ func BenchmarkQuery(b *testing.B) {
 		})
 
 		b.Run(fmt.Sprintf("Query3-Optional-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query3[emptyComponentA, emptyComponentD, emptyComponentC, ecs.Optional1[emptyComponentA]]{}
+			query := ecs.Query3[ecs.Optional[emptyComponentA], emptyComponentD, emptyComponentC, ecs.Default]{}
 
 			err := query.Prepare(world, nil)
 			if err != nil {
@@ -663,7 +663,7 @@ func BenchmarkQuery(b *testing.B) {
 		})
 
 		b.Run(fmt.Sprintf("Query4-Optional-Size-%d", size), func(b *testing.B) {
-			query := ecs.Query4[emptyComponentA, emptyComponentD, emptyComponentB, emptyComponentC, ecs.Optional1[emptyComponentA]]{}
+			query := ecs.Query4[ecs.Optional[emptyComponentA], emptyComponentD, emptyComponentB, emptyComponentC, ecs.Default]{}
 
 			err := query.Prepare(world, nil)
 			if err != nil {

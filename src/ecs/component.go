@@ -120,8 +120,12 @@ func ComponentIdOf(component AnyComponent, world *World) ComponentId {
 
 // ComponentIdFor returns a unique representation of the component ID
 func ComponentIdFor[T AnyComponent](world *World) ComponentId {
-	componentType := reflect.TypeFor[T]()
+	return componentIdFromReflectType(world, reflect.TypeFor[T]())
+}
 
+// componentIdFromReflectType returns a unique representation of the component ID of componentType.
+// Unlike [ComponentIdFor], this does not require the component type to be known at compile time.
+func componentIdFromReflectType(world *World, componentType reflect.Type) ComponentId {
 	if componentType.Kind() == reflect.Pointer {
 		componentType = componentType.Elem()
 	}

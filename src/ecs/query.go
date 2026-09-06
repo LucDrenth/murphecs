@@ -39,15 +39,49 @@ type Query interface {
 }
 
 type queryComponentInfo struct {
-	id        ComponentId
-	isPointer bool
+	id         ComponentId
+	isPointer  bool
+	isOptional bool
 }
 
+// queryComponentInfoFor resolves the storage info for a query's component type parameter T.
+//
+// T may either be a component type directly, or an [Optional] wrapping a component type (e.g.
+// Optional[NPC] instead of NPC). In the latter case, the returned info describes the wrapped
+// component (NPC) and is marked as optional, which is equivalent to also passing that component
+// to [Optional1]..[Optional8].
 func queryComponentInfoFor[T AnyComponent](world *World) queryComponentInfo {
+	var zero T
+	if optional, ok := any(zero).(isOptionalQueryComponent); ok {
+		componentType := optional.optionalComponentType()
+
+		return queryComponentInfo{
+			id:         componentIdFromReflectType(world, componentType),
+			isPointer:  componentType.Kind() == reflect.Pointer,
+			isOptional: true,
+		}
+	}
+
 	return queryComponentInfo{
 		id:        ComponentIdFor[T](world),
 		isPointer: reflect.TypeFor[T]().Kind() == reflect.Pointer,
 	}
+}
+
+// buildQueryComponentIds collects the component ids of infos, and registers any that are optional
+// (see [queryComponentInfoFor]) with options.
+func buildQueryComponentIds(options *CombinedQueryOptions, infos ...queryComponentInfo) []ComponentId {
+	ids := make([]ComponentId, len(infos))
+
+	for i, info := range infos {
+		ids[i] = info.id
+
+		if info.isOptional {
+			options.OptionalComponents = append(options.OptionalComponents, info.id)
+		}
+	}
+
+	return ids
 }
 
 type queryOptions struct {
@@ -2642,9 +2676,7 @@ func (q *Query1[A, QueryOptions]) Prepare(world *World, otherWorlds *map[WorldId
 	}
 
 	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
-	q.components = []ComponentId{
-		q.componentInfoA.id,
-	}
+	q.components = buildQueryComponentIds(&q.options, q.componentInfoA)
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2657,10 +2689,7 @@ func (q *Query2[A, B, QueryOptions]) Prepare(world *World, otherWorlds *map[Worl
 
 	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
 	q.componentInfoB = queryComponentInfoFor[B](targetWorld)
-	q.components = []ComponentId{
-		q.componentInfoA.id,
-		q.componentInfoB.id,
-	}
+	q.components = buildQueryComponentIds(&q.options, q.componentInfoA, q.componentInfoB)
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2674,11 +2703,7 @@ func (q *Query3[A, B, C, QueryOptions]) Prepare(world *World, otherWorlds *map[W
 	q.componentInfoA = queryComponentInfoFor[A](targetWorld)
 	q.componentInfoB = queryComponentInfoFor[B](targetWorld)
 	q.componentInfoC = queryComponentInfoFor[C](targetWorld)
-	q.components = []ComponentId{
-		q.componentInfoA.id,
-		q.componentInfoB.id,
-		q.componentInfoC.id,
-	}
+	q.components = buildQueryComponentIds(&q.options, q.componentInfoA, q.componentInfoB, q.componentInfoC)
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2693,12 +2718,7 @@ func (q *Query4[A, B, C, D, QueryOptions]) Prepare(world *World, otherWorlds *ma
 	q.componentInfoB = queryComponentInfoFor[B](targetWorld)
 	q.componentInfoC = queryComponentInfoFor[C](targetWorld)
 	q.componentInfoD = queryComponentInfoFor[D](targetWorld)
-	q.components = []ComponentId{
-		q.componentInfoA.id,
-		q.componentInfoB.id,
-		q.componentInfoC.id,
-		q.componentInfoD.id,
-	}
+	q.components = buildQueryComponentIds(&q.options, q.componentInfoA, q.componentInfoB, q.componentInfoC, q.componentInfoD)
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2714,13 +2734,7 @@ func (q *Query5[A, B, C, D, E, QueryOptions]) Prepare(world *World, otherWorlds 
 	q.componentInfoC = queryComponentInfoFor[C](targetWorld)
 	q.componentInfoD = queryComponentInfoFor[D](targetWorld)
 	q.componentInfoE = queryComponentInfoFor[E](targetWorld)
-	q.components = []ComponentId{
-		q.componentInfoA.id,
-		q.componentInfoB.id,
-		q.componentInfoC.id,
-		q.componentInfoD.id,
-		q.componentInfoE.id,
-	}
+	q.components = buildQueryComponentIds(&q.options, q.componentInfoA, q.componentInfoB, q.componentInfoC, q.componentInfoD, q.componentInfoE)
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2737,14 +2751,7 @@ func (q *Query6[A, B, C, D, E, F, QueryOptions]) Prepare(world *World, otherWorl
 	q.componentInfoD = queryComponentInfoFor[D](targetWorld)
 	q.componentInfoE = queryComponentInfoFor[E](targetWorld)
 	q.componentInfoF = queryComponentInfoFor[F](targetWorld)
-	q.components = []ComponentId{
-		q.componentInfoA.id,
-		q.componentInfoB.id,
-		q.componentInfoC.id,
-		q.componentInfoD.id,
-		q.componentInfoE.id,
-		q.componentInfoF.id,
-	}
+	q.components = buildQueryComponentIds(&q.options, q.componentInfoA, q.componentInfoB, q.componentInfoC, q.componentInfoD, q.componentInfoE, q.componentInfoF)
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2762,15 +2769,7 @@ func (q *Query7[A, B, C, D, E, F, G, QueryOptions]) Prepare(world *World, otherW
 	q.componentInfoE = queryComponentInfoFor[E](targetWorld)
 	q.componentInfoF = queryComponentInfoFor[F](targetWorld)
 	q.componentInfoG = queryComponentInfoFor[G](targetWorld)
-	q.components = []ComponentId{
-		q.componentInfoA.id,
-		q.componentInfoB.id,
-		q.componentInfoC.id,
-		q.componentInfoD.id,
-		q.componentInfoE.id,
-		q.componentInfoF.id,
-		q.componentInfoG.id,
-	}
+	q.components = buildQueryComponentIds(&q.options, q.componentInfoA, q.componentInfoB, q.componentInfoC, q.componentInfoD, q.componentInfoE, q.componentInfoF, q.componentInfoG)
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2789,16 +2788,7 @@ func (q *Query8[A, B, C, D, E, F, G, H, QueryOptions]) Prepare(world *World, oth
 	q.componentInfoF = queryComponentInfoFor[F](targetWorld)
 	q.componentInfoG = queryComponentInfoFor[G](targetWorld)
 	q.componentInfoH = queryComponentInfoFor[H](targetWorld)
-	q.components = []ComponentId{
-		q.componentInfoA.id,
-		q.componentInfoB.id,
-		q.componentInfoC.id,
-		q.componentInfoD.id,
-		q.componentInfoE.id,
-		q.componentInfoF.id,
-		q.componentInfoG.id,
-		q.componentInfoH.id,
-	}
+	q.components = buildQueryComponentIds(&q.options, q.componentInfoA, q.componentInfoB, q.componentInfoC, q.componentInfoD, q.componentInfoE, q.componentInfoF, q.componentInfoG, q.componentInfoH)
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2819,7 +2809,7 @@ func (q *Query9[A, B, C, D, E, F, G, H, I, Options]) Prepare(world *World, other
 	q.componentInfoG = queryComponentInfoFor[G](targetWorld)
 	q.componentInfoH = queryComponentInfoFor[H](targetWorld)
 	q.componentInfoI = queryComponentInfoFor[I](targetWorld)
-	q.components = []ComponentId{q.componentInfoA.id, q.componentInfoB.id, q.componentInfoC.id, q.componentInfoD.id, q.componentInfoE.id, q.componentInfoF.id, q.componentInfoG.id, q.componentInfoH.id, q.componentInfoI.id}
+	q.components = buildQueryComponentIds(&q.options, q.componentInfoA, q.componentInfoB, q.componentInfoC, q.componentInfoD, q.componentInfoE, q.componentInfoF, q.componentInfoG, q.componentInfoH, q.componentInfoI)
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2841,7 +2831,7 @@ func (q *Query10[A, B, C, D, E, F, G, H, I, J, Options]) Prepare(world *World, o
 	q.componentInfoH = queryComponentInfoFor[H](targetWorld)
 	q.componentInfoI = queryComponentInfoFor[I](targetWorld)
 	q.componentInfoJ = queryComponentInfoFor[J](targetWorld)
-	q.components = []ComponentId{q.componentInfoA.id, q.componentInfoB.id, q.componentInfoC.id, q.componentInfoD.id, q.componentInfoE.id, q.componentInfoF.id, q.componentInfoG.id, q.componentInfoH.id, q.componentInfoI.id, q.componentInfoJ.id}
+	q.components = buildQueryComponentIds(&q.options, q.componentInfoA, q.componentInfoB, q.componentInfoC, q.componentInfoD, q.componentInfoE, q.componentInfoF, q.componentInfoG, q.componentInfoH, q.componentInfoI, q.componentInfoJ)
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2864,7 +2854,7 @@ func (q *Query11[A, B, C, D, E, F, G, H, I, J, K, Options]) Prepare(world *World
 	q.componentInfoI = queryComponentInfoFor[I](targetWorld)
 	q.componentInfoJ = queryComponentInfoFor[J](targetWorld)
 	q.componentInfoK = queryComponentInfoFor[K](targetWorld)
-	q.components = []ComponentId{q.componentInfoA.id, q.componentInfoB.id, q.componentInfoC.id, q.componentInfoD.id, q.componentInfoE.id, q.componentInfoF.id, q.componentInfoG.id, q.componentInfoH.id, q.componentInfoI.id, q.componentInfoJ.id, q.componentInfoK.id}
+	q.components = buildQueryComponentIds(&q.options, q.componentInfoA, q.componentInfoB, q.componentInfoC, q.componentInfoD, q.componentInfoE, q.componentInfoF, q.componentInfoG, q.componentInfoH, q.componentInfoI, q.componentInfoJ, q.componentInfoK)
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2888,7 +2878,7 @@ func (q *Query12[A, B, C, D, E, F, G, H, I, J, K, L, Options]) Prepare(world *Wo
 	q.componentInfoJ = queryComponentInfoFor[J](targetWorld)
 	q.componentInfoK = queryComponentInfoFor[K](targetWorld)
 	q.componentInfoL = queryComponentInfoFor[L](targetWorld)
-	q.components = []ComponentId{q.componentInfoA.id, q.componentInfoB.id, q.componentInfoC.id, q.componentInfoD.id, q.componentInfoE.id, q.componentInfoF.id, q.componentInfoG.id, q.componentInfoH.id, q.componentInfoI.id, q.componentInfoJ.id, q.componentInfoK.id, q.componentInfoL.id}
+	q.components = buildQueryComponentIds(&q.options, q.componentInfoA, q.componentInfoB, q.componentInfoC, q.componentInfoD, q.componentInfoE, q.componentInfoF, q.componentInfoG, q.componentInfoH, q.componentInfoI, q.componentInfoJ, q.componentInfoK, q.componentInfoL)
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2913,7 +2903,7 @@ func (q *Query13[A, B, C, D, E, F, G, H, I, J, K, L, M, Options]) Prepare(world 
 	q.componentInfoK = queryComponentInfoFor[K](targetWorld)
 	q.componentInfoL = queryComponentInfoFor[L](targetWorld)
 	q.componentInfoM = queryComponentInfoFor[M](targetWorld)
-	q.components = []ComponentId{q.componentInfoA.id, q.componentInfoB.id, q.componentInfoC.id, q.componentInfoD.id, q.componentInfoE.id, q.componentInfoF.id, q.componentInfoG.id, q.componentInfoH.id, q.componentInfoI.id, q.componentInfoJ.id, q.componentInfoK.id, q.componentInfoL.id, q.componentInfoM.id}
+	q.components = buildQueryComponentIds(&q.options, q.componentInfoA, q.componentInfoB, q.componentInfoC, q.componentInfoD, q.componentInfoE, q.componentInfoF, q.componentInfoG, q.componentInfoH, q.componentInfoI, q.componentInfoJ, q.componentInfoK, q.componentInfoL, q.componentInfoM)
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2939,7 +2929,7 @@ func (q *Query14[A, B, C, D, E, F, G, H, I, J, K, L, M, N, Options]) Prepare(wor
 	q.componentInfoL = queryComponentInfoFor[L](targetWorld)
 	q.componentInfoM = queryComponentInfoFor[M](targetWorld)
 	q.componentInfoN = queryComponentInfoFor[N](targetWorld)
-	q.components = []ComponentId{q.componentInfoA.id, q.componentInfoB.id, q.componentInfoC.id, q.componentInfoD.id, q.componentInfoE.id, q.componentInfoF.id, q.componentInfoG.id, q.componentInfoH.id, q.componentInfoI.id, q.componentInfoJ.id, q.componentInfoK.id, q.componentInfoL.id, q.componentInfoM.id, q.componentInfoN.id}
+	q.components = buildQueryComponentIds(&q.options, q.componentInfoA, q.componentInfoB, q.componentInfoC, q.componentInfoD, q.componentInfoE, q.componentInfoF, q.componentInfoG, q.componentInfoH, q.componentInfoI, q.componentInfoJ, q.componentInfoK, q.componentInfoL, q.componentInfoM, q.componentInfoN)
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2966,7 +2956,7 @@ func (q *Query15[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, Options]) Prepare(
 	q.componentInfoM = queryComponentInfoFor[M](targetWorld)
 	q.componentInfoN = queryComponentInfoFor[N](targetWorld)
 	q.componentInfoO = queryComponentInfoFor[O](targetWorld)
-	q.components = []ComponentId{q.componentInfoA.id, q.componentInfoB.id, q.componentInfoC.id, q.componentInfoD.id, q.componentInfoE.id, q.componentInfoF.id, q.componentInfoG.id, q.componentInfoH.id, q.componentInfoI.id, q.componentInfoJ.id, q.componentInfoK.id, q.componentInfoL.id, q.componentInfoM.id, q.componentInfoN.id, q.componentInfoO.id}
+	q.components = buildQueryComponentIds(&q.options, q.componentInfoA, q.componentInfoB, q.componentInfoC, q.componentInfoD, q.componentInfoE, q.componentInfoF, q.componentInfoG, q.componentInfoH, q.componentInfoI, q.componentInfoJ, q.componentInfoK, q.componentInfoL, q.componentInfoM, q.componentInfoN, q.componentInfoO)
 	q.options.optimize(q.components)
 	return nil
 }
@@ -2994,10 +2984,7 @@ func (q *Query16[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Options]) Prepa
 	q.componentInfoN = queryComponentInfoFor[N](targetWorld)
 	q.componentInfoO = queryComponentInfoFor[O](targetWorld)
 	q.componentInfoP = queryComponentInfoFor[P](targetWorld)
-	q.components = []ComponentId{
-		q.componentInfoA.id, q.componentInfoB.id, q.componentInfoC.id, q.componentInfoD.id, q.componentInfoE.id, q.componentInfoF.id, q.componentInfoG.id, q.componentInfoH.id,
-		q.componentInfoI.id, q.componentInfoJ.id, q.componentInfoK.id, q.componentInfoL.id, q.componentInfoM.id, q.componentInfoN.id, q.componentInfoO.id, q.componentInfoP.id,
-	}
+	q.components = buildQueryComponentIds(&q.options, q.componentInfoA, q.componentInfoB, q.componentInfoC, q.componentInfoD, q.componentInfoE, q.componentInfoF, q.componentInfoG, q.componentInfoH, q.componentInfoI, q.componentInfoJ, q.componentInfoK, q.componentInfoL, q.componentInfoM, q.componentInfoN, q.componentInfoO, q.componentInfoP)
 	q.options.optimize(q.components)
 	return nil
 }
@@ -3062,12 +3049,49 @@ func shouldHandleQueryComponent(componentId ComponentId, archetype *Archetype, q
 // fetchComponentForQueryResult fetches a component from the component storage
 func fetchComponentForQueryResult[T AnyComponent](componentInfo queryComponentInfo, entityRow uint, archetype *Archetype) (result T, err error) {
 	storage := archetype.components[componentInfo.id]
+
+	if componentInfo.isOptional {
+		result, err = fetchOptionalComponentForQueryResult[T](storage, componentInfo, entityRow)
+		if err != nil {
+			return result, fmt.Errorf("failed to retrieve optional component %s from storage: %v", componentInfo.id.DebugString(), err)
+		}
+
+		return result, nil
+	}
+
 	result, err = getComponentFromComponentStorage[T](storage, entityRow, componentInfo.isPointer)
 	if err != nil {
 		return result, fmt.Errorf("failed to retrieve component %s from storage: %v", componentInfo.id.DebugString(), err)
 	}
 
 	return result, nil
+}
+
+// fetchOptionalComponentForQueryResult fetches a component from the component storage and wraps it
+// in an [Optional]. T is expected to be an instantiation of Optional[C], where C is the component
+// that componentInfo describes.
+//
+// This relies on reflection rather than [getComponentFromComponentStorage] because C is not
+// available as its own type parameter here - only as a field inside T, discoverable at runtime.
+func fetchOptionalComponentForQueryResult[T AnyComponent](storage *componentStorage, componentInfo queryComponentInfo, entityRow uint) (result T, err error) {
+	componentPointer, err := storage.getComponentPointer(entityRow)
+	if err != nil {
+		return result, err
+	}
+
+	var value reflect.Value
+	if componentInfo.isPointer {
+		value = reflect.NewAt(storage.componentId.componentType, componentPointer)
+	} else {
+		value = reflect.NewAt(storage.componentId.componentType, componentPointer).Elem()
+	}
+
+	// Optional[C] always has Value as field 0 and Present as field 1, regardless of C.
+	wrapped := reflect.New(reflect.TypeFor[T]()).Elem()
+	wrapped.Field(0).Set(value)
+	wrapped.Field(1).SetBool(true)
+
+	return wrapped.Interface().(T), nil
 }
 
 // Iter executes function f on each entity that the query returned.

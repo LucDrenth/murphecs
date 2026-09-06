@@ -312,7 +312,7 @@ func TestQuery1(t *testing.T) {
 		_, err = world.Spawn(componentB{}, componentC{})
 		assert.NoError(err)
 
-		query := Query1[componentA, QueryOptions[With[componentB], Optional1[componentA], NotLazy, DefaultWorld]]{}
+		query := Query1[Optional[componentA], With[componentB]]{}
 		err = query.Prepare(world, nil)
 		assert.NoError(err)
 		err = query.Exec(world)
@@ -321,14 +321,14 @@ func TestQuery1(t *testing.T) {
 		assert.Equal(uint(4), query.NumberOfResult())
 	})
 
-	t.Run("query with optional component returns nil when optional component was not found", func(t *testing.T) {
+	t.Run("query with optional component returns not present when optional component was not found", func(t *testing.T) {
 		assert := assert.New(t)
 		world := NewDefaultWorld()
 
 		expectedEntityId, err := world.Spawn(componentB{})
 		assert.NoError(err)
 
-		query := Query1[*componentA, Optional1[componentA]]{}
+		query := Query1[Optional[*componentA], Default]{}
 		assert.NoError(query.Prepare(world, nil))
 		assert.NoError(query.Exec(world))
 
@@ -336,17 +336,78 @@ func TestQuery1(t *testing.T) {
 		{
 			gotEntityId, component, err := query.Single()
 			assert.NoError(err)
-			assert.Nil(component)
+			assert.False(component.Present)
+			assert.Nil(component.Value)
 			assert.Equal(expectedEntityId, gotEntityId)
 		}
 
 		// Iter
 		{
-			query.Iter(func(gotEntityId EntityId, component *componentA) {
-				assert.Nil(component)
+			query.Iter(func(gotEntityId EntityId, component Optional[*componentA]) {
+				assert.False(component.Present)
+				assert.Nil(component.Value)
 				assert.Equal(expectedEntityId, gotEntityId)
 			})
 		}
+	})
+
+	t.Run("query with Optional[C] component slot returns the expected results", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewDefaultWorld()
+
+		entityWithBoth, err := world.Spawn(componentA{value: 5}, componentB{})
+		assert.NoError(err)
+		entityWithoutA, err := world.Spawn(componentB{})
+		assert.NoError(err)
+
+		query := Query2[componentB, Optional[componentA], Default]{}
+		assert.NoError(query.Prepare(world, nil))
+		assert.NoError(query.Validate())
+		assert.NoError(query.Exec(world))
+		assert.Equal(uint(2), query.NumberOfResult())
+
+		results := map[EntityId]Optional[componentA]{}
+		query.Iter(func(entityId EntityId, _ componentB, a Optional[componentA]) {
+			results[entityId] = a
+		})
+
+		assert.True(results[entityWithBoth].Present)
+		assert.Equal(5, results[entityWithBoth].Value.value)
+		assert.False(results[entityWithoutA].Present)
+		assert.Equal(componentA{}, results[entityWithoutA].Value)
+	})
+
+	t.Run("query with Optional[*C] component slot allows mutation and reports absence", func(t *testing.T) {
+		assert := assert.New(t)
+		world := NewDefaultWorld()
+
+		entityWithA, err := world.Spawn(componentA{value: 1}, componentB{})
+		assert.NoError(err)
+		entityWithoutA, err := world.Spawn(componentB{})
+		assert.NoError(err)
+
+		query := Query2[componentB, Optional[*componentA], Default]{}
+		assert.NoError(query.Prepare(world, nil))
+		assert.NoError(query.Exec(world))
+
+		query.Iter(func(entityId EntityId, _ componentB, a Optional[*componentA]) {
+			switch entityId {
+			case entityWithA:
+				assert.True(a.Present)
+				assert.NotNil(a.Value)
+				a.Value.value = 42
+			case entityWithoutA:
+				assert.False(a.Present)
+				assert.Nil(a.Value)
+			}
+		})
+
+		queryA := Query1[componentA, Default]{}
+		assert.NoError(queryA.Prepare(world, nil))
+		assert.NoError(queryA.Exec(world))
+		_, component, err := queryA.Single()
+		assert.NoError(err)
+		assert.Equal(42, component.value)
 	})
 
 	t.Run("queried component can be mutated if declared with a pointer", func(t *testing.T) {

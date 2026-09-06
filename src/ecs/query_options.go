@@ -51,15 +51,15 @@ type QueryOption interface {
 	GetCombinedQueryOptions(*World) (CombinedQueryOptions, error)
 }
 
-// default query options: [NoFilter], [NoOptional], [NotLazy]
+// default query options: [NoFilter], [NotLazy]
 type Default struct{}
-type QueryOptions[_ QueryParamFilter, _ OptionalComponents, _ IsQueryLazy, _ TargetWorld] struct{}
+type QueryOptions[_ QueryParamFilter, _ IsQueryLazy, _ TargetWorld] struct{}
 
 func (Default) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
 	return CombinedQueryOptions{}, nil
 }
 
-func (o QueryOptions[QueryParamFilter, OptionalComponents, IsQueryLazy, TargetWorld]) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
+func (o QueryOptions[QueryParamFilter, IsQueryLazy, TargetWorld]) GetCombinedQueryOptions(world *World) (CombinedQueryOptions, error) {
 	result := CombinedQueryOptions{}
 
 	concreteFilters, err := utils.ToConcrete[QueryParamFilter]()
@@ -74,12 +74,6 @@ func (o QueryOptions[QueryParamFilter, OptionalComponents, IsQueryLazy, TargetWo
 	if filter != nil {
 		result.Filters = append(result.Filters, filter)
 	}
-
-	concreteOptionals, err := utils.ToConcrete[OptionalComponents]()
-	if err != nil {
-		return result, fmt.Errorf("failed to cast optional components to concrete type: %w", err)
-	}
-	result.OptionalComponents = concreteOptionals.getOptionalComponentIds(world)
 
 	queryOptionLazy, err := utils.ToConcrete[IsQueryLazy]()
 	if err != nil {
